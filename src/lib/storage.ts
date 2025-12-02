@@ -883,3 +883,77 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
         return false;
     }
 }
+
+// ============================================
+// USER SETTINGS (for cross-device sync)
+// ============================================
+
+/**
+ * Get user's custom settings (strategies, setups, assets, etc.)
+ */
+export async function getUserSettings(): Promise<import('@/types').UserSettings | null> {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+        console.error('User not authenticated');
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+    // PGRST116 means no rows found - this is expected for new users
+    if (error && error.code !== 'PGRST116') {
+        console.error('Error loading user settings:', error);
+        return null;
+    }
+
+    if (!data) {
+        return null;
+    }
+
+    // Convert postgres snake_case to camelCase
+    return {
+        id: data.id,
+        user_id: data.user_id,
+        currencies: data.currencies || [],
+        leverages: data.leverages || [],
+        assets: data.assets || [],
+        strategies: data.strategies || [],
+        setups: data.setups || [],
+        created_at: data.created_at,
+        updated_at: data.updated_at
+    };
+}
+
+/**
+ * Save user's custom settings to Supabase
+ */
+export async function saveUserSettings(settings: import('@/types').UserSettings): Promise<boolean> {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+        console.error('User not authenticated');
+        return false;
+    }
+
+    const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+            user_id: userId,
+            currencies: settings.currencies,
+            leverages: settings.leverages,
+            assets: settings.assets,
+            strategies: settings.strategies,
+            setups: settings.setups,
+            updated_at: new Date().toISOString()
+        });
+
+    if (error) {
+        console.error('Error saving user settings:', error);
+        return false;
+    }
+
+    return true;
+}

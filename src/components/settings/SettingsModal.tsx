@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
@@ -35,8 +35,16 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
         removeStrategy: removeStrategyFromStore,
         setups,
         addSetup: addSetupToStore,
-        removeSetup: removeSetupFromStore
+        removeSetup: removeSetupFromStore,
+        loadSettings
     } = useSettingsStore();
+    
+    // Load settings from Supabase when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            loadSettings();
+        }
+    }, [isOpen, loadSettings]);
     
     const [newCurrency, setNewCurrency] = useState('');
     const [newLeverage, setNewLeverage] = useState('');

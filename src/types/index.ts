@@ -191,3 +191,24 @@ export interface User {
     provider: AuthProvider;
     createdAt: string;
 }
+
+// ============================================
+// USER SETTINGS TYPES
+// ============================================
+
+export interface Asset {
+    symbol: string;
+    multiplier: number;
+}
+
+export interface UserSettings {
+    id?: string;
+    user_id?: string;
+    currencies: string[];
+    leverages: string[];
+    assets: Asset[];
+    strategies: string[];
+    setups: string[];
+    created_at?: string;
+    updated_at?: string;
+}
