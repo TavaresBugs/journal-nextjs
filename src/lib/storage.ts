@@ -948,6 +948,8 @@ export async function saveUserSettings(settings: import('@/types').UserSettings)
             strategies: settings.strategies,
             setups: settings.setups,
             updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'user_id' // Use user_id to detect existing record
         });
 
     if (error) {
