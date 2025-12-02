@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/hooks/useAuth';
 import { CreateAccountModal } from '@/components/accounts/CreateAccountModal';
@@ -15,6 +16,7 @@ import { SettingsModal } from '@/components/settings/SettingsModal';
 export default function HomePage() {
   const router = useRouter();
   const { accounts, loadAccounts, addAccount, setCurrentAccount, removeAccount } = useAccountStore();
+  const { loadSettings } = useSettingsStore();
   const { showToast } = useToast();
   const { signOut, user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -23,11 +25,14 @@ export default function HomePage() {
   
   useEffect(() => {
     const init = async () => {
-      await loadAccounts();
+      await Promise.all([
+        loadAccounts(),
+        loadSettings() // Load user settings on app init
+      ]);
       setIsLoading(false);
     };
     init();
-  }, [loadAccounts]);
+  }, [loadAccounts, loadSettings]);
   
   const handleCreateAccount = async (accountData: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     const newAccount: Account = {
