@@ -79,7 +79,7 @@ export function JournalEntryForm({
   
   // Image management
   const initialImages = initialData?.images || {};
-  const { images, handlePasteImage, handleFileSelect, removeLastImage } = useImageUpload(initialImages as any);
+  const { images, handlePasteImage, handleFileSelect, removeLastImage } = useImageUpload(initialImages as Record<string, string[]>);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 

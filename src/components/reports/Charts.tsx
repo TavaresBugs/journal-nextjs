@@ -200,7 +200,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
                                 outerRadius={140}
                                 fill="#82ca9d"
                                 stroke="none"
-                                label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                                label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                             >
                                 {outerPieData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.color} />
@@ -214,8 +214,8 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
                                     color: '#f3f4f6'
                                 }}
                                 itemStyle={{ color: '#f3f4f6' }}
-                                formatter={(value: number, name: string, props: any) => {
-                                    if (props.payload.strategy) {
+                                formatter={(value: number, name: string, props: { payload?: { strategy?: string } }) => {
+                                    if (props.payload?.strategy) {
                                         return [`${value} trades`, `${props.payload.strategy} - ${name}`];
                                     }
                                     return [`${value} trades`, name];

@@ -126,6 +126,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
     // Reset to page 1 when trades change
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setCurrentPage(1);
     }, [trades.length]);
 
