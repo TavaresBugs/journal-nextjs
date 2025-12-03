@@ -15,11 +15,16 @@ import type { User, AuthProvider } from '@/types';
  */
 export async function getCurrentUser(): Promise<User | null> {
     try {
+        console.log('[getCurrentUser] Starting...');
         // Try to get the session first (faster, no network call if cached)
+        console.log('[getCurrentUser] About to call supabase.auth.getSession()...');
+        
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
+        console.log('[getCurrentUser] getSession() returned. Session exists:', !!session, 'Error:', sessionError);
+        
         if (sessionError) {
-            console.error('Error getting session:', sessionError);
+            console.error('[getCurrentUser] Error getting session:', sessionError);
             return null;
         }
 
@@ -27,7 +32,9 @@ export async function getCurrentUser(): Promise<User | null> {
 
         // Fallback to getUser if no session (verifies with server)
         if (!user) {
+            console.log('[getCurrentUser] No session, trying getUser...');
             const { data: { user: authUser }, error } = await supabase.auth.getUser();
+            console.log('[getCurrentUser] getUser() returned. User exists:', !!authUser, 'Error:', error);
             if (error || !authUser) {
                 return null;
             }
@@ -43,7 +50,7 @@ export async function getCurrentUser(): Promise<User | null> {
             createdAt: user.created_at
         };
     } catch (error) {
-        console.error('Error getting current user:', error);
+        console.error('[getCurrentUser] Unexpected error:', error);
         return null;
     }
 }
