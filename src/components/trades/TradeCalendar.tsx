@@ -168,13 +168,13 @@ export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
                 </div>
             </div>
             
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-3">
-                {/* Week day headers */}
+            {/* Calendar Grid - Responsive: 3 cols on mobile, 4 on tablet, 7 on desktop */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+                {/* Week day headers - Only show on desktop */}
                 {weekDays.map(day => (
                     <div 
                         key={day}
-                        className="text-center text-sm font-semibold text-gray-400 py-2"
+                        className="hidden lg:block text-center text-sm font-semibold text-gray-400 py-2"
                     >
                         {day}
                     </div>
@@ -203,7 +203,7 @@ export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
                             key={index}
                             onClick={() => (hasTrades || hasJournal || isCurrentMonth) && onDayClick && onDayClick(date.format('YYYY-MM-DD'), stats.dayTrades)}
                             className={`
-                                aspect-square p-2 rounded-xl border transition-all relative flex flex-col items-center justify-between
+                                min-h-[120px] min-w-[100px] h-auto p-3 rounded-xl border transition-all relative flex flex-col items-center justify-between touch-manipulation
                                 ${bgClass}
                                 ${isToday ? 'ring-2 ring-cyan-500' : ''}
                                 ${hasTrades || hasJournal || isCurrentMonth ? 'hover:border-cyan-500 cursor-pointer' : ''}
