@@ -15,32 +15,23 @@ import type { User, AuthProvider } from '@/types';
  */
 export async function getCurrentUser(): Promise<User | null> {
     try {
-        console.log('[getCurrentUser] Starting...');
-        // Try to get the session first (faster, no network call if cached)
-        console.log('[getCurrentUser] About to call supabase.auth.getSession()...');
+        // Use getUser() directly - it's faster and more reliable than getSession()
+        // getUser() makes a direct API call and bypasses localStorage/LockManager issues
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('getUser timeout after 8s')), 8000)
+        );
         
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const userPromise = supabase.auth.getUser();
         
-        console.log('[getCurrentUser] getSession() returned. Session exists:', !!session, 'Error:', sessionError);
+        // Race between getUser and timeout
+        const { data: { user }, error } = await Promise.race([
+            userPromise,
+            timeoutPromise
+        ]);
         
-        if (sessionError) {
-            console.error('[getCurrentUser] Error getting session:', sessionError);
+        if (error || !user) {
             return null;
         }
-
-        let user = session?.user;
-
-        // Fallback to getUser if no session (verifies with server)
-        if (!user) {
-            console.log('[getCurrentUser] No session, trying getUser...');
-            const { data: { user: authUser }, error } = await supabase.auth.getUser();
-            console.log('[getCurrentUser] getUser() returned. User exists:', !!authUser, 'Error:', error);
-            if (error || !authUser) {
-                return null;
-            }
-            user = authUser;
-        }
-
         return {
             id: user.id,
             email: user.email || '',

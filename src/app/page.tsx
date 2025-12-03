@@ -7,7 +7,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useToast } from '@/contexts/ToastContext';
 import { useAuth } from '@/hooks/useAuth';
 import { CreateAccountModal } from '@/components/accounts/CreateAccountModal';
-import { Button, Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import type { Account } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
 
@@ -26,17 +26,13 @@ export default function HomePage() {
   
   useEffect(() => {
     const init = async () => {
-      console.log('HomePage: init called. User:', user?.email, 'authLoading:', authLoading);
-      
       // If still loading auth, don't try to load data yet
       if (authLoading) {
-        console.log('HomePage: Still loading auth, waiting...');
         return;
       }
 
       // If no user after auth is done, we're not logged in
       if (!user) {
-        console.log('HomePage: No user after auth loaded, skipping data load');
         setIsLoading(false);
         return;
       }
@@ -51,7 +47,6 @@ export default function HomePage() {
 
       // User is authenticated, load their data
       try {
-        console.log('HomePage: Loading accounts and settings...');
         setDataError(null); // Clear any previous error
         
         // Timeout to prevent infinite loading
@@ -63,7 +58,6 @@ export default function HomePage() {
           Promise.all([loadAccounts(), loadSettings()]),
           timeoutPromise
         ]);
-        console.log('HomePage: Data loaded successfully');
       } catch (error) {
         console.error('Error initializing home page:', error);
         setDataError('Erro ao carregar dados. Tente recarregar a página.');

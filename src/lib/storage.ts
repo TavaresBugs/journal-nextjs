@@ -26,31 +26,16 @@ import type {
 
 async function getCurrentUserId(): Promise<string | null> {
     try {
-        console.log('[getCurrentUserId] Starting...');
-        // Try to get the session first (faster, no network call if cached)
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Use getUser() for reliability and consistency with auth.ts
+        const { data: { user }, error } = await supabase.auth.getUser();
         
-        if (error) {
-            console.error('[getCurrentUserId] Error getting session:', error);
+        if (error || !user) {
             return null;
         }
 
-        if (session?.user) {
-            console.log('[getCurrentUserId] Session found:', session.user.id);
-            return session.user.id;
-        }
-
-        // Fallback to getUser if no session (verifies with server)
-        console.log('[getCurrentUserId] No session found, trying getUser...');
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-            console.error('[getCurrentUserId] User not authenticated (getUser):', userError);
-            return null;
-        }
-        console.log('[getCurrentUserId] User found via getUser:', user.id);
         return user.id;
     } catch (e) {
-        console.error('[getCurrentUserId] Unexpected error:', e);
+        console.error('[getCurrentUserId] Error:', e);
         return null;
     }
 }
@@ -284,7 +269,7 @@ export async function getAccount(id: string): Promise<Account | null> {
         .select('*')
         .eq('id', id)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error('Error fetching account:', error);
@@ -776,14 +761,9 @@ export async function getSettings(accountId?: string): Promise<Settings | null> 
             .select('*')
             .eq('account_id', accountId || null)
             .eq('user_id', userId)
-            .single();
+            .maybeSingle();
 
         if (error) {
-            // PGRST116 = no rows found, which is OK for new users
-            if (error.code === 'PGRST116') {
-                console.log('[getSettings] No settings found (expected for new users)');
-                return null;
-            }
             console.error('[getSettings] Supabase error (likely RLS or permissions):', error);
             console.error('[getSettings] Error details:', JSON.stringify(error, null, 2));
             // Return null instead of propagating error - fail gracefully
@@ -992,7 +972,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
 export async function getUserSettings(): Promise<import('@/types').UserSettings | null> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        console.log('[getUserSettings] User not authenticated');
         return null;
     }
 
@@ -1000,15 +980,15 @@ export async function getUserSettings(): Promise<import('@/types').UserSettings 
         .from('settings')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single() to avoid 406 errors when no row exists
 
-    // PGRST116 means no rows found - this is expected for new users
-    if (error && error.code !== 'PGRST116') {
-        console.error('Error loading user settings:', error);
+    if (error) {
+        console.error('[getUserSettings] Error loading user settings:', error);
         return null;
     }
 
     if (!data) {
+        console.log('[getUserSettings] No settings found for user (expected for new users)');
         return null;
     }
 
