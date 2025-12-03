@@ -142,8 +142,16 @@ const DayTradesTableComponent = ({
             // Calculate duration if exitDate exists
             let duration = "-";
             if (trade.entryDate && trade.exitDate) {
-              const start = dayjs(trade.entryDate);
-              const end = dayjs(trade.exitDate);
+              // Combine date and time for accurate calculation
+              const entryDateTime = trade.entryTime 
+                ? `${trade.entryDate} ${trade.entryTime}`
+                : trade.entryDate;
+              const exitDateTime = trade.exitTime 
+                ? `${trade.exitDate} ${trade.exitTime}`
+                : trade.exitDate;
+              
+              const start = dayjs(entryDateTime);
+              const end = dayjs(exitDateTime);
               const diffInMinutes = end.diff(start, "minute");
               const hours = Math.floor(diffInMinutes / 60);
               const minutes = diffInMinutes % 60;
