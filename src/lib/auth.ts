@@ -139,6 +139,9 @@ export async function signInWithEmail(email: string, password: string): Promise<
  */
 export async function signInWithGoogle(): Promise<{ error: string | null }> {
     try {
+        console.log('[signInWithGoogle] Starting OAuth flow...');
+        console.log('[signInWithGoogle] Redirect URL will be:', `${window.location.origin}/auth/callback`);
+        
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -147,11 +150,15 @@ export async function signInWithGoogle(): Promise<{ error: string | null }> {
         });
 
         if (error) {
+            console.error('[signInWithGoogle] OAuth error:', error);
+            console.error('[signInWithGoogle] Error details:', JSON.stringify(error, null, 2));
             return { error: error.message };
         }
 
+        console.log('[signInWithGoogle] OAuth initiated successfully');
         return { error: null };
     } catch (error: unknown) {
+        console.error('[signInWithGoogle] Unexpected error:', error);
         return { error: getErrorMessage(error) };
     }
 }

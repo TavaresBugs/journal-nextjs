@@ -241,24 +241,35 @@ const mapSettingsToDB = (app: Settings): DBSettings => ({
 // ============================================
 
 export async function getAccounts(): Promise<Account[]> {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-        console.error('User not authenticated');
+    try {
+        const userId = await getCurrentUserId();
+        if (!userId) {
+            console.warn('[getAccounts] No userId - user not authenticated, returning empty array');
+            return [];
+        }
+
+        console.log('[getAccounts] Fetching accounts for user:', userId);
+
+        const { data, error } = await supabase
+            .from('accounts')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[getAccounts] Supabase error (likely RLS or permissions):', error);
+            console.error('[getAccounts] Error details:', JSON.stringify(error, null, 2));
+            // Return empty array instead of propagating error - fail gracefully
+            return [];
+        }
+
+        console.log('[getAccounts] Successfully fetched', data?.length || 0, 'accounts');
+        return data ? data.map(mapAccountFromDB) : [];
+    } catch (err) {
+        console.error('[getAccounts] Unexpected error:', err);
+        // Always return empty array to prevent app crash
         return [];
     }
-
-    const { data, error } = await supabase
-        .from('accounts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-
-    if (error) {
-        console.error('Error fetching accounts:', error);
-        return [];
-    }
-
-    return data ? data.map(mapAccountFromDB) : [];
 }
 
 export async function getAccount(id: string): Promise<Account | null> {
@@ -751,25 +762,41 @@ export async function deleteDailyRoutine(id: string): Promise<boolean> {
 // ============================================
 
 export async function getSettings(accountId?: string): Promise<Settings | null> {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-        console.error('User not authenticated');
+    try {
+        const userId = await getCurrentUserId();
+        if (!userId) {
+            console.warn('[getSettings] No userId - user not authenticated, returning null');
+            return null;
+        }
+
+        console.log('[getSettings] Fetching settings for user:', userId, 'accountId:', accountId || 'global');
+
+        const { data, error } = await supabase
+            .from('settings')
+            .select('*')
+            .eq('account_id', accountId || null)
+            .eq('user_id', userId)
+            .single();
+
+        if (error) {
+            // PGRST116 = no rows found, which is OK for new users
+            if (error.code === 'PGRST116') {
+                console.log('[getSettings] No settings found (expected for new users)');
+                return null;
+            }
+            console.error('[getSettings] Supabase error (likely RLS or permissions):', error);
+            console.error('[getSettings] Error details:', JSON.stringify(error, null, 2));
+            // Return null instead of propagating error - fail gracefully
+            return null;
+        }
+
+        console.log('[getSettings] Successfully fetched settings');
+        return data ? mapSettingsFromDB(data) : null;
+    } catch (err) {
+        console.error('[getSettings] Unexpected error:', err);
+        // Always return null to prevent app crash
         return null;
     }
-
-    const { data, error } = await supabase
-        .from('settings')
-        .select('*')
-        .eq('account_id', accountId || null)
-        .eq('user_id', userId)
-        .single();
-
-    if (error) {
-        console.error('Error fetching settings:', error);
-        return null;
-    }
-
-    return data ? mapSettingsFromDB(data) : null;
 }
 
 export async function saveSettings(settings: Settings): Promise<boolean> {

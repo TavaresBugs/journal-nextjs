@@ -22,6 +22,7 @@ export default function HomePage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
   
   useEffect(() => {
     const init = async () => {
@@ -40,9 +41,19 @@ export default function HomePage() {
         return;
       }
 
+      // Check network connectivity
+      if (!navigator.onLine) {
+        console.error('HomePage: No network connection');
+        setDataError('Sem conexão com a internet. Verifique sua conexão.');
+        setIsLoading(false);
+        return;
+      }
+
       // User is authenticated, load their data
       try {
         console.log('HomePage: Loading accounts and settings...');
+        setDataError(null); // Clear any previous error
+        
         // Timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Timeout loading data')), 8000)
@@ -55,6 +66,7 @@ export default function HomePage() {
         console.log('HomePage: Data loaded successfully');
       } catch (error) {
         console.error('Error initializing home page:', error);
+        setDataError('Erro ao carregar dados. Tente recarregar a página.');
       } finally {
          setIsLoading(false);
       }
@@ -105,6 +117,24 @@ export default function HomePage() {
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:20px_20px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
       
       <div className="relative z-10 container mx-auto px-4 py-6 max-w-6xl">
+        {/* Error Banner */}
+        {dataError && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-400 font-medium">{dataError}</p>
+            </div>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded-lg text-red-300 transition-colors"
+            >
+              Recarregar
+            </button>
+          </div>
+        )}
+
         {/* Header Box */}
         <div className="bg-gray-900/80 border border-gray-800 rounded-2xl p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm shadow-xl">
           {/* Left: Title & Subtitle */}
