@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function LoginPage() {
     const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithGithub, loading } = useAuth();
@@ -41,8 +42,8 @@ export default function LoginPage() {
             } else {
                 await signUpWithEmail(email, password);
             }
-        } catch (err: any) {
-            setError(err.message || 'Erro ao autenticar');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err));
         } finally {
             setIsLoading(false);
         }
@@ -53,8 +54,8 @@ export default function LoginPage() {
         setIsLoading(true);
         try {
             await signInWithGoogle();
-        } catch (err: any) {
-            setError(err.message || 'Erro ao autenticar com Google');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err));
             setIsLoading(false);
         }
     };
@@ -64,8 +65,8 @@ export default function LoginPage() {
         setIsLoading(true);
         try {
             await signInWithGithub();
-        } catch (err: any) {
-            setError(err.message || 'Erro ao autenticar com GitHub');
+        } catch (err: unknown) {
+            setError(getErrorMessage(err));
             setIsLoading(false);
         }
     };

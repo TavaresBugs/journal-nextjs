@@ -23,12 +23,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const { showToast } = useToast();
     
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
-    const [type, setType] = useState<'Long' | 'Short'>(initialData?.type || 'Long');
+    const [type, setType] = useState<'Long' | 'Short' | ''>(initialData?.type || '');
     const [entryPrice, setEntryPrice] = useState(initialData?.entryPrice?.toString() || '');
     const [stopLoss, setStopLoss] = useState(initialData?.stopLoss?.toString() || '');
     const [takeProfit, setTakeProfit] = useState(initialData?.takeProfit?.toString() || '');
     const [exitPrice, setExitPrice] = useState(initialData?.exitPrice?.toString() || '');
-    const [lot, setLot] = useState(initialData?.lot?.toString() || '1.0');
+    const [lot, setLot] = useState(initialData?.lot?.toString() || '');
     const [entryDate, setEntryDate] = useState(initialData?.entryDate || dayjs().format('YYYY-MM-DD'));
     const [entryTime, setEntryTime] = useState(initialData?.entryTime || '');
     const [exitDate, setExitDate] = useState(initialData?.exitDate || '');
@@ -71,6 +71,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validate type is not empty
+        if (!type || (type !== 'Long' && type !== 'Short')) {
+            showToast('Por favor, selecione a direção (Long ou Short)', 'error');
+            return;
+        }
+
         // Find asset in store or default to 1
         const asset = assets.find(a => a.symbol === symbol.toUpperCase());
         const assetMultiplier = asset ? asset.multiplier : 1;
@@ -79,7 +85,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             userId: '', // Will be set by storage
             accountId,
             symbol: symbol.toUpperCase(),
-            type,
+            type: type as 'Long' | 'Short',
             entryPrice: parseFloat(entryPrice),
             stopLoss: stopLoss ? parseFloat(stopLoss) : 0,
             takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
@@ -111,12 +117,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
 
         // Reset form
         setSymbol('');
-        setType('Long');
+        setType('');
         setEntryPrice('');
         setStopLoss('');
         setTakeProfit('');
         setExitPrice('');
-        setLot('1.0');
+        setLot('');
         setEntryDate(dayjs().format('YYYY-MM-DD'));
         setEntryTime('');
         setExitDate('');
@@ -188,11 +194,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     </div>
                     
                     <Input
-                        label="Lote / Contratos"
+                        label="Lote"
                         type="number"
                         step="0.01"
                         value={lot}
                         onChange={(e) => setLot(e.target.value)}
+                        placeholder="1.0"
                         required
                     />
 
@@ -417,11 +424,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     />
                 </div>
 
-                {/* Se Trade Concluído - Resultado do Trade */}
-                {!isTradeOpen && (
+                {/* Resultado do Trade - Always show in edit mode, or when trade is closed in create mode */}
+                {(mode === 'edit' || !isTradeOpen) && (
                     <>
                         <div className="border-t border-gray-700 my-4"></div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">Resultado do Trade</h3>
+                        <h3 className="text-sm font-medium text-gray-400 mb-3">
+                            {isTradeOpen ? 'Finalizar Trade (Opcional)' : 'Resultado do Trade'}
+                        </h3>
                         
                         <Input
                             label="Preço Saída"
@@ -429,6 +438,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             step="0.00001"
                             value={exitPrice}
                             onChange={(e) => setExitPrice(e.target.value)}
+                            placeholder={isTradeOpen ? "Deixe vazio se ainda em aberto" : ""}
                         />
 
                         {/* Indicador de Resultado */}
@@ -437,7 +447,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 // Sem dados suficientes
                                 return (
                                     <div className="rounded-xl p-6 text-center font-bold text-2xl bg-gray-800/50 border-2 border-gray-600 text-gray-400">
-                                        Resultado
+                                        {isTradeOpen ? 'Trade em Aberto' : 'Resultado'}
                                     </div>
                                 );
                             }
@@ -487,12 +497,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 type="date"
                                 value={exitDate}
                                 onChange={(e) => setExitDate(e.target.value)}
+                                placeholder={isTradeOpen ? "Opcional" : ""}
                             />
                             <Input
                                 label="Hora Saída"
                                 type="time"
                                 value={exitTime}
                                 onChange={(e) => setExitTime(e.target.value)}
+                                placeholder={isTradeOpen ? "Opcional" : ""}
                             />
                         </div>
                     </>

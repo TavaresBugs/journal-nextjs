@@ -3,6 +3,7 @@
 // ============================================
 
 import { supabase } from './supabase';
+import { getErrorMessage } from './utils';
 import type { User, AuthProvider } from '@/types';
 
 // ============================================
@@ -82,8 +83,8 @@ export async function signUpWithEmail(email: string, password: string): Promise<
         };
 
         return { user, error: null };
-    } catch (error: any) {
-        return { user: null, error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { user: null, error: getErrorMessage(error) };
     }
 }
 
@@ -115,8 +116,8 @@ export async function signInWithEmail(email: string, password: string): Promise<
         };
 
         return { user, error: null };
-    } catch (error: any) {
-        return { user: null, error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { user: null, error: getErrorMessage(error) };
     }
 }
 
@@ -137,8 +138,8 @@ export async function signInWithGoogle(): Promise<{ error: string | null }> {
         }
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { error: getErrorMessage(error) };
     }
 }
 
@@ -159,8 +160,8 @@ export async function signInWithGithub(): Promise<{ error: string | null }> {
         }
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { error: getErrorMessage(error) };
     }
 }
 
@@ -180,8 +181,8 @@ export async function signOut(): Promise<{ error: string | null }> {
         }
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { error: getErrorMessage(error) };
     }
 }
 
@@ -203,8 +204,8 @@ export async function resetPassword(email: string): Promise<{ error: string | nu
         }
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { error: getErrorMessage(error) };
     }
 }
 
@@ -222,7 +223,7 @@ export async function updatePassword(newPassword: string): Promise<{ error: stri
         }
 
         return { error: null };
-    } catch (error: any) {
-        return { error: error.message || 'An error occurred' };
+    } catch (error: unknown) {
+        return { error: getErrorMessage(error) };
     }
 }

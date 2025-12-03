@@ -7,9 +7,18 @@ import type {
     Account,
     Trade,
     JournalEntry,
+    JournalImage,
     DailyRoutine,
     Settings,
 } from '@/types';
+import type {
+    DBAccount,
+    DBTrade,
+    DBJournalEntry,
+    DBJournalImage,
+    DBDailyRoutine,
+    DBSettings,
+} from '@/types/database';
 
 // ============================================
 // HELPER - Get Authenticated User ID
@@ -28,7 +37,7 @@ async function getCurrentUserId(): Promise<string | null> {
 // MAPPERS (CamelCase <-> SnakeCase)
 // ============================================
 
-const mapAccountFromDB = (db: any): Account => ({
+const mapAccountFromDB = (db: DBAccount): Account => ({
     id: db.id,
     userId: db.user_id,
     name: db.name,
@@ -41,7 +50,7 @@ const mapAccountFromDB = (db: any): Account => ({
     updatedAt: db.updated_at,
 });
 
-const mapAccountToDB = (app: Account): any => ({
+const mapAccountToDB = (app: Account): DBAccount => ({
     id: app.id,
     user_id: app.userId,
     name: app.name,
@@ -54,7 +63,7 @@ const mapAccountToDB = (app: Account): any => ({
     updated_at: new Date().toISOString(),
 });
 
-const mapTradeFromDB = (db: any): Trade => ({
+const mapTradeFromDB = (db: DBTrade): Trade => ({
     id: db.id,
     userId: db.user_id,
     accountId: db.account_id,
@@ -81,7 +90,7 @@ const mapTradeFromDB = (db: any): Trade => ({
     updatedAt: db.updated_at,
 });
 
-const mapTradeToDB = (app: Trade): any => ({
+const mapTradeToDB = (app: Trade): DBTrade => ({
     id: app.id,
     user_id: app.userId,
     account_id: app.accountId,
@@ -99,7 +108,7 @@ const mapTradeToDB = (app: Trade): any => ({
     setup: app.setup,
     notes: app.notes,
     entry_date: app.entryDate,
-    entry_time: app.entryTime,
+    entry_time: app.entryTime || '',
     exit_date: app.exitDate,
     exit_time: app.exitTime,
     pnl: app.pnl,
@@ -108,20 +117,20 @@ const mapTradeToDB = (app: Trade): any => ({
     updated_at: new Date().toISOString(),
 });
 
-const mapJournalEntryFromDB = (db: any): JournalEntry => ({
+const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
     id: db.id,
     userId: db.user_id,
     accountId: db.account_id,
     date: db.date,
-    title: db.title,
+    title: db.title || '',
     asset: db.asset,
     tradeId: db.trade_id,
-    images: db.journal_images ? db.journal_images.map((img: any) => ({
+    images: db.journal_images ? db.journal_images.map((img: DBJournalImage) => ({
         id: img.id,
         userId: img.user_id,
         journalEntryId: img.journal_entry_id,
         url: img.url,
-        path: img.path,
+        path: img.path || '',
         timeframe: img.timeframe,
         displayOrder: img.display_order,
         createdAt: img.created_at,
@@ -133,7 +142,7 @@ const mapJournalEntryFromDB = (db: any): JournalEntry => ({
     updatedAt: db.updated_at,
 });
 
-const mapJournalEntryToDB = (app: JournalEntry): any => ({
+const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'journal_images'> => ({
     id: app.id,
     user_id: app.userId,
     account_id: app.accountId,
@@ -149,7 +158,7 @@ const mapJournalEntryToDB = (app: JournalEntry): any => ({
     updated_at: new Date().toISOString(),
 });
 
-const mapDailyRoutineFromDB = (db: any): DailyRoutine => ({
+const mapDailyRoutineFromDB = (db: DBDailyRoutine): DailyRoutine => ({
     id: db.id,
     userId: db.user_id,
     accountId: db.account_id,
@@ -164,7 +173,7 @@ const mapDailyRoutineFromDB = (db: any): DailyRoutine => ({
     updatedAt: db.updated_at,
 });
 
-const mapDailyRoutineToDB = (app: DailyRoutine): any => ({
+const mapDailyRoutineToDB = (app: DailyRoutine): DBDailyRoutine => ({
     id: app.id,
     user_id: app.userId,
     account_id: app.accountId,
@@ -179,7 +188,7 @@ const mapDailyRoutineToDB = (app: DailyRoutine): any => ({
     updated_at: new Date().toISOString(),
 });
 
-const mapSettingsFromDB = (db: any): Settings => ({
+const mapSettingsFromDB = (db: DBSettings): Settings => ({
     id: db.id,
     userId: db.user_id,
     accountId: db.account_id,
@@ -192,7 +201,7 @@ const mapSettingsFromDB = (db: any): Settings => ({
     updatedAt: db.updated_at,
 });
 
-const mapSettingsToDB = (app: Settings): any => ({
+const mapSettingsToDB = (app: Settings): DBSettings => ({
     id: app.id,
     user_id: app.userId,
     account_id: app.accountId,
@@ -420,7 +429,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
     // 2. Save the Images
     // 2. Save the Images
     if (entry.images) {
-        let imagesToSave: any[] = [];
+        let imagesToSave: Partial<DBJournalImage>[] = [];
 
         if (Array.isArray(entry.images)) {
             // Already in correct format (JournalImage[])
@@ -795,16 +804,20 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
 
         // Migrar journal entries
         const allEntriesData = localStorage.getItem('tj_journal');
-        const allEntries: any[] = allEntriesData ? JSON.parse(allEntriesData) : [];
+        const allEntries: unknown[] = allEntriesData ? JSON.parse(allEntriesData) : [];
         console.log(`Found ${allEntries.length} journal entries to migrate.`);
         
-        for (const entry of allEntries) {
+        // Define a type for the legacy entry structure
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type LegacyEntry = JournalEntry & { images?: Record<string, string> | any[] };
+
+        for (const entry of allEntries as LegacyEntry[]) {
             console.log(`Migrating images for entry ${entry.id}...`);
-            const newImages: any[] = [];
+            const newImages: JournalImage[] = [];
             
             // Check if images is the old object structure or already an array
             if (entry.images && !Array.isArray(entry.images)) {
-                const oldImages = entry.images;
+                const oldImages = entry.images as Record<string, string>;
                 
                 for (const [tf, base64] of Object.entries(oldImages)) {
                     if (typeof base64 === 'string' && base64.startsWith('data:image')) {
@@ -833,7 +846,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
                             
                             newImages.push({
                                 id: crypto.randomUUID(),
-                                userId,
+                                userId: userId,
                                 journalEntryId: entry.id,
                                 url: publicUrl,
                                 path: fileName,
@@ -847,11 +860,24 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
                     }
                 }
             } else if (Array.isArray(entry.images)) {
-                // Already migrated format - just add userId
-                newImages.push(...entry.images.map((img: any) => ({ ...img, userId })));
+                // Already migrated format - just ensure userId is set and map to App type if needed
+                // Assuming entry.images are already in a format close to DB or App
+                // If they are from localStorage, they might be any.
+                // Let's map them to JournalImage
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                newImages.push(...entry.images.map((img: any) => ({
+                    id: img.id || crypto.randomUUID(),
+                    userId: userId,
+                    journalEntryId: entry.id,
+                    url: img.url,
+                    path: img.path || '',
+                    timeframe: img.timeframe || '',
+                    displayOrder: img.display_order || img.displayOrder || 0,
+                    createdAt: img.created_at || img.createdAt || new Date().toISOString()
+                })));
             }
             
-            const entryWithImages = {
+            const entryWithImages: JournalEntry = {
                 ...entry,
                 userId,
                 images: newImages

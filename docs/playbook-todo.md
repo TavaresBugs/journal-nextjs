@@ -3,8 +3,8 @@
 ## ✅ Concluído
 
 - [x] Criar modal de criação de playbook
-  - [x] Aba "Informações Gerais" (emoji, cor, nome, descrição)
-  - [x] Aba "Regras do Playbook" (3 grupos padrão)
+- [x] Aba "Informações Gerais" (emoji, cor, nome, descrição)
+- [x] Aba "Regras do Playbook" (3 grupos padrão)
 - [x] Criar migration do Supabase (`009_playbooks.sql`)
 - [x] Criar tipos TypeScript (`Playbook`, `RuleGroup`)
 - [x] Criar `usePlaybookStore` com CRUD completo

@@ -4,6 +4,8 @@ import { use, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTradeStore } from '@/store/useTradeStore';
+import { useJournalStore } from '@/store/useJournalStore';
+import { useToast } from '@/contexts/ToastContext';
 import { CreateTradeModal } from '@/components/trades/CreateTradeModal';
 import { EditTradeModal } from '@/components/trades/EditTradeModal';
 import { TradeList } from '@/components/trades/TradeList';
@@ -31,6 +33,8 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
     const { trades, loadTrades, addTrade, updateTrade, removeTrade } = useTradeStore();
+    const { entries: journalEntries, loadEntries } = useJournalStore();
+    const { showToast } = useToast();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDayDetailModalOpen, setIsDayDetailModalOpen] = useState(false);
@@ -52,7 +56,12 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const paginatedTrades = trades.slice(startIndex, endIndex);
 
     const streakMetrics = useMemo(() => {
-        const dates = Array.from(new Set(trades.map(t => t.entryDate.split('T')[0]))).sort();
+        // Combine dates from trades and journal entries
+        const tradeDates = trades.map(t => t.entryDate.split('T')[0]);
+        const journalDates = journalEntries.map(e => e.date);
+        
+        // Create a unique sorted list of all activity dates
+        const dates = Array.from(new Set([...tradeDates, ...journalDates])).sort();
         const daysAccessed = dates.length;
         
         if (dates.length === 0) return { daysAccessed: 0, streak: 0 };
@@ -65,7 +74,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         const yesterdayStr = yesterday.toISOString().split('T')[0];
         const lastDate = dates[dates.length - 1];
 
-        // Se o último trade não foi hoje nem ontem, a sequência quebrou
+        // Se a última atividade não foi hoje nem ontem, a sequência quebrou
         if (lastDate !== todayStr && lastDate !== yesterdayStr) return { daysAccessed, streak: 0 };
 
         let streak = 1;
@@ -79,7 +88,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             else break;
         }
         return { daysAccessed, streak };
-    }, [trades]);
+    }, [trades, journalEntries]);
 
     useEffect(() => {
         const init = async () => {
@@ -93,11 +102,12 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
             setCurrentAccount(accountId);
             await loadTrades(accountId);
+            await loadEntries(accountId);
             setIsLoading(false);
         };
 
         init();
-    }, [accountId, accounts, setCurrentAccount, loadTrades, router]);
+    }, [accountId, accounts, setCurrentAccount, loadTrades, loadEntries, router]);
 
     // Update account balance when trades change - with debounce to prevent loops
     useEffect(() => {
@@ -143,7 +153,17 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     };
 
     const handleDeleteTrade = async (tradeId: string) => {
-        await removeTrade(tradeId);
+        if (!confirm('⚠️ Tem certeza que deseja excluir este trade?')) {
+            return;
+        }
+        
+        try {
+            await removeTrade(tradeId);
+            showToast('Trade excluído com sucesso!', 'success');
+        } catch (error) {
+            console.error('Error deleting trade:', error);
+            showToast('Erro ao excluir trade', 'error');
+        }
     };
 
     const handleDayClick = (date: string) => {
@@ -176,7 +196,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
     const tabs = [
         { id: 'novo', label: 'Novo Trade', icon: '➕' },
-        { id: 'lista', label: 'Lista', icon: '📋' },
+        { id: 'lista', label: 'Histórico', icon: '📋' },
         { id: 'calendario', label: 'Calendário', icon: '📅' },
         { id: 'playbook', label: 'Playbook', icon: '📖' },
         { id: 'relatorios', label: 'Relatórios', icon: '📊' },
@@ -437,7 +457,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                                         </div>
                                     </div>
                                 </div>
-
+                                
                                 {/* Row 2 */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                                     <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
@@ -514,7 +534,6 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 date={selectedDate}
                 trades={trades.filter(t => t.entryDate.split('T')[0] === selectedDate)}
                 accountId={accountId}
-                onEditTrade={handleEditTrade}
                 onDeleteTrade={handleDeleteTrade}
             />
 

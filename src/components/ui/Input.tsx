@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -11,6 +11,9 @@ export function Input({
     className = '',
     ...props
 }: InputProps) {
+    const generatedId = useId();
+    const id = props.id || generatedId;
+
     const inputClasses = `
         w-full px-4 py-2.5 bg-gray-800/50 border rounded-lg
         text-gray-100 placeholder-gray-500
@@ -24,8 +27,6 @@ export function Input({
         [&::-webkit-calendar-picker-indicator]:opacity-100
         [&::-webkit-calendar-picker-indicator]:filter-invert
     `;
-
-    const id = props.id || `input-${Date.now() + Math.floor(Math.random() * 1000)}`;
 
     return (
         <div className="flex flex-col gap-2">
@@ -55,7 +56,8 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export function Textarea({ label, error, className = '', ...props }: TextareaProps) {
-    const textareaId = props.id || `textarea-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const textareaId = props.id || generatedId;
 
     return (
         <div className="w-full">

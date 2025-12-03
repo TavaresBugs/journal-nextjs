@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Trade } from '@/types';
 import { groupTradesByDay, formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -9,6 +9,18 @@ import dayjs from 'dayjs';
 interface TradeCalendarProps {
     trades: Trade[];
     onDayClick?: (date: string, dayTrades: Trade[]) => void;
+}
+
+interface DayStatsResult {
+    totalPnL: number;
+    tradeCount: number;
+    wins: number;
+    losses: number;
+    breakeven: number;
+    statusText: string;
+    statusColor: string;
+    textClass: string;
+    bgClass: string;
 }
 
 export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
@@ -37,21 +49,90 @@ export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
     // Group trades by day
     const tradesByDay = groupTradesByDay(trades);
     
-    // Calculate day stats
-    const getDayStats = (date: dayjs.Dayjs) => {
-        const dateStr = date.format('YYYY-MM-DD');
-        const dayTrades = tradesByDay[dateStr] || [];
-        
-        const totalPnL = dayTrades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+    // Pure function to calculate day stats (not a hook)
+    const calculateDayStats = (dayTrades: Trade[]): DayStatsResult => {
+        const totalPnL = dayTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        const tradeCount = dayTrades.length;
         const wins = dayTrades.filter(t => t.outcome === 'win').length;
         const losses = dayTrades.filter(t => t.outcome === 'loss').length;
+        const breakeven = dayTrades.filter(t => t.outcome === 'breakeven').length;
         
-        // Check for journal entries for this specific date
-        // We only want to count STANDALONE entries (not linked to trades) for the "Diário (X)" indicator
-        const dayEntries = entries.filter(e => e.date === dateStr && !e.tradeId);
-        const journalCount = dayEntries.length;
+        let statusText = 'N/A';
+        let statusColor = 'text-gray-400';
+        let textClass = 'text-gray-400';
+        let bgClass = 'bg-gray-800/20 border-gray-800 hover:border-gray-700';
+
+        if (tradeCount > 0) {
+            if (totalPnL > 0) {
+                statusText = 'WIN';
+                statusColor = 'text-green-500';
+                textClass = 'text-green-400';
+                bgClass = 'bg-green-900/10 border-green-500/30 hover:border-green-500/50';
+            } else if (totalPnL < 0) {
+                statusText = 'LOSS';
+                statusColor = 'text-red-500';
+                textClass = 'text-red-400';
+                bgClass = 'bg-red-900/10 border-red-500/30 hover:border-red-500/50';
+            } else {
+                statusText = 'B/E';
+                statusColor = 'text-gray-400';
+                textClass = 'text-gray-400';
+                bgClass = 'bg-gray-800/20 border-gray-800 hover:border-gray-700';
+            }
+        }
         
-        return { dayTrades, totalPnL, wins, losses, count: dayTrades.length, journalCount };
+        return {
+            totalPnL,
+            tradeCount,
+            wins,
+            losses,
+            breakeven,
+            statusText,
+            statusColor,
+            textClass,
+            bgClass,
+        };
+    };
+    
+    // Pre-calculate stats for all days in calendar using useMemo
+    const dayStatsMap = useMemo(() => {
+        const statsMap: Record<string, DayStatsResult & { dayTrades: Trade[]; journalCount: number }> = {};
+        
+        // Calculate stats for days with trades
+        Object.keys(tradesByDay).forEach(dateStr => {
+            const dayTrades = tradesByDay[dateStr];
+            const stats = calculateDayStats(dayTrades);
+            const dayEntries = entries.filter(e => e.date === dateStr && !e.tradeId);
+            
+            statsMap[dateStr] = {
+                ...stats,
+                dayTrades,
+                journalCount: dayEntries.length
+            };
+        });
+        
+        // Also add stats for days with only journal entries
+        entries.forEach(entry => {
+            if (!entry.tradeId && !statsMap[entry.date]) {
+                statsMap[entry.date] = {
+                    ...calculateDayStats([]),
+                    dayTrades: [],
+                    journalCount: 1
+                };
+            }
+        });
+        
+        return statsMap;
+    }, [tradesByDay, entries]);
+    
+    // Get stats for a specific day
+    const getDayStats = (date: dayjs.Dayjs) => {
+        const dateStr = date.format('YYYY-MM-DD');
+        return dayStatsMap[dateStr] || {
+            ...calculateDayStats([]),
+            dayTrades: [],
+            journalCount: 0
+        };
     };
     
     const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -104,36 +185,16 @@ export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
                     const isCurrentMonth = date.month() === currentMonth;
                     const isToday = date.isSame(dayjs(), 'day');
                     const stats = getDayStats(date);
-                    const hasTrades = stats.count > 0;
+                    const hasTrades = stats.tradeCount > 0;
                     const hasJournal = stats.journalCount > 0;
                     
-                    // Determine cell style based on PnL
-                    let bgClass = 'bg-gray-900/30 border-gray-800';
-                    let textClass = 'text-gray-500';
-                    let statusText = '';
-                    let statusColor = '';
-
-                    if (hasTrades) {
-                        if (stats.totalPnL > 0) {
-                            bgClass = 'bg-green-900/20 border-green-500/30 hover:border-green-500/50';
-                            textClass = 'text-green-400';
-                            statusText = 'Win';
-                            statusColor = 'text-green-400';
-                        } else if (stats.totalPnL < 0) {
-                            bgClass = 'bg-red-900/20 border-red-500/30 hover:border-red-500/50';
-                            textClass = 'text-red-400';
-                            statusText = 'Loss';
-                            statusColor = 'text-red-400';
-                        } else {
-                            bgClass = 'bg-gray-800/50 border-gray-600/30 hover:border-gray-500/50';
-                            textClass = 'text-gray-300';
-                            statusText = 'BE';
-                            statusColor = 'text-gray-400';
-                        }
-                    } else if (hasJournal) {
+                    // Use styling from stats hook, with fallback for journal-only days
+                    let bgClass = stats.bgClass;
+                    
+                    if (!hasTrades && hasJournal) {
                         // Style for days with ONLY journal entries but no trades
                         bgClass = 'bg-cyan-900/10 border-cyan-500/30 hover:border-cyan-500/50';
-                    } else if (isCurrentMonth) {
+                    } else if (!hasTrades && !hasJournal && isCurrentMonth) {
                         bgClass = 'bg-gray-800/20 border-gray-800 hover:border-gray-700';
                     }
 
@@ -158,19 +219,19 @@ export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
                             {hasTrades ? (
                                 <div className="flex flex-col items-center gap-1 w-full my-auto">
                                     {/* Status (WIN/LOSS) */}
-                                    <div className={`text-sm font-bold tracking-wider ${statusColor}`}>
-                                        {statusText}
+                                    <div className={`text-sm font-bold tracking-wider ${stats.statusColor}`}>
+                                        {stats.statusText}
                                     </div>
                                     
                                     {/* P&L */}
-                                    <div className={`text-xs font-medium ${textClass}`}>
+                                    <div className={`text-xs font-medium ${stats.textClass}`}>
                                         {stats.totalPnL > 0 ? '+' : ''}
                                         {formatCurrency(stats.totalPnL)}
                                     </div>
                                     
                                     {/* Trade Count */}
                                     <div className="text-[10px] text-gray-500">
-                                        {stats.count} {stats.count === 1 ? 'Trade' : 'Trades'}
+                                        {stats.tradeCount} {stats.tradeCount === 1 ? 'Trade' : 'Trades'}
                                     </div>
 
                                     {/* Journal Indicator */}

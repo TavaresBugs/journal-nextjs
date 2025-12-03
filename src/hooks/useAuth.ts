@@ -17,6 +17,12 @@ import {
 } from '@/lib/auth';
 import type { User } from '@/types';
 
+/**
+ * Custom hook for managing authentication state and actions.
+ * Wraps Supabase auth functions and provides user state.
+ * 
+ * @returns Authentication state and methods (signIn, signUp, signOut)
+ */
 export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -71,8 +77,8 @@ export function useAuth() {
             // Aguardar logout ou timeout (o que vier primeiro)
             const result = await Promise.race([logoutPromise, timeoutPromise]);
             
-            if (result && (result as any).error) {
-                console.error('Erro ao fazer logout:', (result as any).error);
+            if (result && typeof result === 'object' && 'error' in result) {
+                console.error('Erro ao fazer logout:', (result as { error: unknown }).error);
             } else {
                 console.log('Logout bem-sucedido ou timeout alcançado');
             }
