@@ -50,6 +50,11 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
         const { trades } = get();
         await deleteTrade(id);
 
+        // Also remove from local journal store since backend deletes it via cascade
+        // We import here to avoid circular dependency issues if any
+        const { useJournalStore } = await import('./useJournalStore');
+        useJournalStore.getState().removeEntryByTradeId(id);
+
         const filteredTrades = trades.filter(t => t.id !== id);
         set({ trades: filteredTrades });
     },

@@ -25,6 +25,7 @@ export default function HomePage() {
   
   useEffect(() => {
     const init = async () => {
+      console.log('HomePage: init called. User:', user?.email);
       try {
         // Timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
@@ -37,14 +38,12 @@ export default function HomePage() {
         ]);
       } catch (error) {
         console.error('Error initializing home page:', error);
-        // We don't show a toast here to avoid spamming the user on minor network glitches,
-        // as the UI will just show empty states which is fine.
       } finally {
         setIsLoading(false);
       }
     };
     init();
-  }, [loadAccounts, loadSettings]);
+  }, [loadAccounts, loadSettings, user]);
   
   const handleCreateAccount = async (accountData: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     const newAccount: Account = {

@@ -25,12 +25,32 @@ import type {
 // ============================================
 
 async function getCurrentUserId(): Promise<string | null> {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error || !user) {
-        console.error('User not authenticated:', error);
+    try {
+        // Try to get the session first (faster, no network call if cached)
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+            console.error('Error getting session:', error);
+            return null;
+        }
+
+        if (session?.user) {
+            // console.log('Session found:', session.user.id);
+            return session.user.id;
+        }
+
+        // Fallback to getUser if no session (verifies with server)
+        // console.log('No session found, trying getUser...');
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+            // console.error('User not authenticated (getUser):', userError);
+            return null;
+        }
+        return user.id;
+    } catch (e) {
+        console.error('Unexpected error in getCurrentUserId:', e);
         return null;
     }
-    return user.id;
 }
 
 // ============================================
@@ -364,6 +384,21 @@ export async function deleteTrade(id: string): Promise<boolean> {
         return false;
     }
 
+    // 1. Find associated journal entries
+    const { data: entries } = await supabase
+        .from('journal_entries')
+        .select('id')
+        .eq('trade_id', id);
+
+    if (entries && entries.length > 0) {
+        // 2. For each entry, delete its images and the entry itself
+        // We can reuse deleteJournalEntry which handles image deletion
+        for (const entry of entries) {
+            await deleteJournalEntry(entry.id);
+        }
+    }
+
+    // 3. Delete the trade
     const { error } = await supabase
         .from('trades')
         .delete()

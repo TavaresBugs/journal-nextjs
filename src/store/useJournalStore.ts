@@ -19,6 +19,7 @@ interface JournalStore {
     addEntry: (entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
     updateEntry: (entry: JournalEntry) => Promise<void>;
     removeEntry: (id: string) => Promise<void>;
+    removeEntryByTradeId: (tradeId: string) => void;
     getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
 
     // Routine Actions
@@ -111,6 +112,12 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         } catch (error) {
             set({ error: (error as Error).message, isLoading: false });
         }
+    },
+
+    removeEntryByTradeId: (tradeId: string) => {
+        set(state => ({
+            entries: state.entries.filter(e => e.tradeId !== tradeId)
+        }));
     },
 
     getEntryByTradeId: (tradeId: string) => {
