@@ -78,11 +78,13 @@ projeto-nextjs/
 ## 📊 Funcionalidades
 
 ### Contas
+
 - Criar carteiras com nome, moeda, saldo inicial, alavancagem
 - Definir max drawdown permitido
 - Múltiplas contas simultâneas
 
 ### Trades
+
 - Registrar trades com ativo, direção (Long/Short)
 - Definir entry, stop loss, take profit
 - Especificar timeframes de análise e entrada
@@ -91,13 +93,38 @@ projeto-nextjs/
 - Cálculo automático de P&L
 
 ### Journal
+
 - Análise visual multi-timeframe (9 timeframes)
 - Upload de screenshots
 - Paste direto de clipboard (Ctrl+V)
 - Vincular trades
 - Estado emocional e review
 
+### 📖 Playbooks (Novo)
+
+- Criação de estratégias detalhadas
+- Regras organizadas por: Mercado, Entrada e Saída
+- Edição inline de regras
+- Vinculação de trades a playbooks específicos
+- Acompanhamento de performance por playbook
+
+### 🎨 UI/UX Premium
+
+- Tema inspirado no Zorin OS (Dark Mode)
+- Design responsivo otimizado para mobile
+- Botões com gradientes e efeitos visuais premium
+- Formulários inteligentes com cálculos automáticos
+- Layout adaptável (Estimativas e Timeframes)
+
+### 🔒 Segurança e Performance
+
+- Autenticação robusta com Supabase Auth
+- Row Level Security (RLS) para proteção de dados
+- Otimização de carregamento e tratamento de erros
+- Logs de console limpos para melhor debug
+
 ### Relatórios
+
 - P&L total e por período
 - Win rate e profit factor
 - Drawdown atual e máximo
@@ -155,6 +182,7 @@ npx vercel
 ## 🤖 Assistente IA (Roadmap)
 
 O assistente analisará automaticamente:
+
 - Padrões em trades vencedores/perdedores
 - Sugestões de melhoria
 - Alertas de risco
@@ -170,6 +198,7 @@ O assistente analisará automaticamente:
 ## 🐛 Issues
 
 Encontrou um bug? Abra uma issue com:
+
 - Descrição do problema
 - Passos para reproduzir
 - Comportamento esperado vs atual
