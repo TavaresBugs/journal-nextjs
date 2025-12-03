@@ -24,6 +24,7 @@ export function JournalEntryModal({ isOpen, onClose, trade: initialTrade, existi
     // State initialization
     const [trade, setTrade] = useState<Trade | null | undefined>(initialTrade);
     const [isEditing, setIsEditing] = useState(!existingEntry);
+    const [isSharingLoading, setIsSharingLoading] = useState(false);
     const [date, setDate] = useState(existingEntry?.date || (initialTrade ? initialTrade.entryDate.split('T')[0] : initialDate || dayjs().format('YYYY-MM-DD')));
     
     // Format default title: Journal - Ativo - DD/MM/YYYY
@@ -55,7 +56,6 @@ export function JournalEntryModal({ isOpen, onClose, trade: initialTrade, existi
     // Link Trade Modal State
     const [isLinkTradeModalOpen, setIsLinkTradeModalOpen] = useState(false);
 
-    // Images state
     // Images state
     const [images, setImages] = useState<Record<string, string[]>>(() => {
         if (!existingEntry?.images) return {};
@@ -140,25 +140,27 @@ export function JournalEntryModal({ isOpen, onClose, trade: initialTrade, existi
         }
     };
 
-    const handleLinkTrade = (selectedTrade: Trade) => {
-        setTrade(selectedTrade);
-        setAsset(selectedTrade.symbol);
-        setIsLinkTradeModalOpen(false);
-    };
-
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, timeframe: string) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64 = event.target?.result as string;
-                setImages(prev => ({ 
-                    ...prev, 
-                    [timeframe]: [...((prev[timeframe] as string[]) || []), base64] 
-                }));
+            reader.onload = (e) => {
+                const result = e.target?.result as string;
+                if (result) {
+                    setImages(prev => ({
+                        ...prev,
+                        [timeframe]: [...(prev[timeframe] || []), result]
+                    }));
+                }
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handleLinkTrade = (selectedTrade: Trade) => {
+        setTrade(selectedTrade);
+        setAsset(selectedTrade.symbol);
+        setIsLinkTradeModalOpen(false);
     };
 
     const triggerFileInput = (timeframe: string) => {
@@ -249,9 +251,35 @@ export function JournalEntryModal({ isOpen, onClose, trade: initialTrade, existi
                                     {dayjs(date).add(12, 'hour').format('DD/MM/YYYY')} • {trade?.symbol || existingEntry.asset || 'Diário'}
                                 </div>
                             </div>
-                            <Button onClick={() => setIsEditing(true)} variant="primary">
-                                ✏️ Editar
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button 
+                                    onClick={async () => {
+                                        if (!existingEntry?.id) return;
+                                        setIsSharingLoading(true);
+                                        try {
+                                            const { createShareLink, copyToClipboard } = await import('@/lib/shareUtils');
+                                            const shareUrl = await createShareLink(existingEntry.id);
+                                            if (shareUrl && await copyToClipboard(shareUrl)) {
+                                                alert('🔗 Link copiado! Válido por 3 dias');
+                                            } else {
+                                                alert('Erro ao gerar link de compartilhamento');
+                                            }
+                                        } catch (error) {
+                                            console.error('Error sharing:', error);
+                                            alert('Erro ao compartilhar');
+                                        } finally {
+                                            setIsSharingLoading(false);
+                                        }
+                                    }}
+                                    variant="info"
+                                    disabled={isSharingLoading}
+                                >
+                                    {isSharingLoading ? '⏳' : '📤'} Compartilhar
+                                </Button>
+                                <Button onClick={() => setIsEditing(true)} variant="gold">
+                                    ✏️ Editar
+                                </Button>
+                            </div>
                         </div>
 
                         {/* Trade Info */}
@@ -689,11 +717,11 @@ export function JournalEntryModal({ isOpen, onClose, trade: initialTrade, existi
                 {/* Footer Actions */}
                 <div className="flex gap-3 pt-4 border-t border-gray-800">
                     {existingEntry && (
-                        <Button type="button" variant="outline" onClick={() => setIsEditing(false)} className="flex-1">
+                        <Button type="button" variant="gradient-danger" onClick={() => setIsEditing(false)} className="flex-1 font-extrabold">
                             Cancelar
                         </Button>
                     )}
-                    <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white flex-1">
+                    <Button type="submit" variant="gradient-success" className="flex-1 font-extrabold">
                         Salvar Entrada
                     </Button>
                 </div>

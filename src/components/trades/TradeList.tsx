@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -143,9 +144,11 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                                     >
                                         {/* DIÁRIO */}
                                         <td className="px-3 py-3 text-center">
-                                            <button 
+                                            <Button 
+                                                variant="success"
+                                                size="icon"
                                                 onClick={() => handleJournalClick(trade)}
-                                                className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded transition-colors mx-auto text-cyan-400"
+                                                className="w-8 h-8 mx-auto"
                                             >
                                                 {journalEntry ? (
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -158,26 +161,30 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                                                         <path d="M12 5v14" />
                                                     </svg>
                                                 )}
-                                            </button>
+                                            </Button>
                                         </td>
 
                                         {/* AÇÕES */}
                                         <td className="px-3 py-3">
-                                            <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button 
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button 
+                                                    variant="gold"
+                                                    size="icon"
                                                     onClick={() => onEditTrade?.(trade)}
-                                                    className="w-8 h-8 flex items-center justify-center bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 rounded text-blue-400 transition-colors"
+                                                    className="w-8 h-8"
                                                     title="Editar"
                                                 >
                                                     ✏️
-                                                </button>
-                                                <button 
+                                                </Button>
+                                                <Button 
+                                                    variant="danger"
+                                                    size="icon"
                                                     onClick={() => onDeleteTrade?.(trade.id)}
-                                                    className="w-8 h-8 flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-red-400 transition-colors"
+                                                    className="w-8 h-8"
                                                     title="Excluir"
                                                 >
                                                     🗑️
-                                                </button>
+                                                </Button>
                                             </div>
                                         </td>
 

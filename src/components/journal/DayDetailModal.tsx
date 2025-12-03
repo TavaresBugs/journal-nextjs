@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal } from "@/components/ui";
+import { Modal, Button } from "@/components/ui";
 import type { Trade, DailyRoutine, JournalEntry } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
 import { formatCurrency } from "@/lib/calculations";
@@ -163,7 +163,7 @@ export function DayDetailModal({
                                         flex items-center gap-2 px-4 py-2 rounded-lg border transition-all
                                         ${
                                           isChecked
-                                            ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
+                                            ? "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                                             : "bg-gray-800/30 border-gray-700 text-gray-400 hover:border-gray-600"
                                         }
                                     `}
@@ -173,7 +173,7 @@ export function DayDetailModal({
                                         w-5 h-5 rounded flex items-center justify-center border
                                         ${
                                           isChecked
-                                            ? "bg-cyan-500 border-cyan-500 text-black"
+                                            ? "bg-emerald-500 border-emerald-500 text-black"
                                             : "border-gray-600"
                                         }
                                     `}
@@ -201,13 +201,13 @@ export function DayDetailModal({
               );
             })}
 
-            {/* Diário Button */}
-            <button
+            <Button
+              variant="ghost-success"
               onClick={handleStandaloneEntryClick}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-700 bg-gray-800/30 text-gray-400 hover:border-gray-600 hover:text-cyan-400 transition-colors"
+              className="h-[38px] flex"
             >
               <span className="text-sm font-medium">Diário 📓</span>
-            </button>
+            </Button>
           </div>
 
           {/* Stats Cards */}
@@ -256,9 +256,11 @@ export function DayDetailModal({
                     className="hover:bg-gray-800/30 transition-colors group"
                   >
                     <td className="px-4 py-3 text-center">
-                      <button
+                      <Button
+                        variant="success"
+                        size="icon"
                         onClick={() => handleEditEntry(entry)}
-                        className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded transition-colors mx-auto text-cyan-400"
+                        className="w-8 h-8 mx-auto"
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -274,24 +276,28 @@ export function DayDetailModal({
                           <path d="M12 20h9" />
                           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                         </svg>
-                      </button>
+                      </Button>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="gold"
+                          size="icon"
                           onClick={() => handleEditEntry(entry)}
-                          className="w-8 h-8 flex items-center justify-center bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 rounded text-blue-400 transition-colors"
+                          className="w-8 h-8"
                           title="Editar"
                         >
                           ✏️
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="icon"
                           onClick={() => handleDeleteEntry(entry.id)}
-                          className="w-8 h-8 flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-red-400 transition-colors"
+                          className="w-8 h-8"
                           title="Excluir"
                         >
                           🗑️
-                        </button>
+                        </Button>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -308,7 +314,9 @@ export function DayDetailModal({
                       -
                     </td>
                     <td className="px-4 py-3 text-center text-gray-300 font-medium">
-                      Diário
+                      <span className="font-bold text-gray-200 bg-gray-700/50 px-2 py-1 rounded">
+                        {entry.asset || 'Diário'}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-center text-gray-400">-</td>
                     <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs">
@@ -340,9 +348,11 @@ export function DayDetailModal({
                       className="hover:bg-gray-800/30 transition-colors group"
                     >
                       <td className="px-4 py-3 text-center">
-                        <button
+                        <Button
+                          variant="success"
+                          size="icon"
                           onClick={() => handleJournalClick(trade)}
-                          className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded transition-colors mx-auto text-cyan-400"
+                          className="w-8 h-8 mx-auto"
                         >
                           {journalEntry ? (
                             <svg
@@ -375,24 +385,28 @@ export function DayDetailModal({
                               <path d="M12 5v14" />
                             </svg>
                           )}
-                        </button>
+                        </Button>
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="gold"
+                            size="icon"
                             onClick={() => onEditTrade(trade)}
-                            className="w-8 h-8 flex items-center justify-center bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 rounded text-blue-400 transition-colors"
+                            className="w-8 h-8"
                             title="Editar"
                           >
                             ✏️
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="danger"
+                            size="icon"
                             onClick={() => onDeleteTrade(trade.id)}
-                            className="w-8 h-8 flex items-center justify-center bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 rounded text-red-400 transition-colors"
+                            className="w-8 h-8"
                             title="Excluir"
                           >
                             🗑️
-                          </button>
+                          </Button>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-center">
@@ -439,12 +453,13 @@ export function DayDetailModal({
           </div>
 
           {/* Footer Button */}
-          <button
+          <Button
+            variant="gradient-danger"
             onClick={onClose}
-            className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-500 rounded-lg transition-colors font-medium"
+            className="w-full py-3 font-extrabold"
           >
             Fechar
-          </button>
+          </Button>
         </div>
       </Modal>
 

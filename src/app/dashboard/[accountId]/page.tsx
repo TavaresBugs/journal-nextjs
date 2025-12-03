@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTradeStore } from '@/store/useTradeStore';
@@ -10,8 +10,10 @@ import { TradeList } from '@/components/trades/TradeList';
 import { TradeCalendar } from '@/components/trades/TradeCalendar';
 import { TradeForm } from '@/components/trades/TradeForm';
 import { SettingsModal } from '@/components/settings/SettingsModal';
+import { PlaybookGrid } from '@/components/playbook/PlaybookGrid';
+import { CreatePlaybookModal } from '@/components/playbook/CreatePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import type { Trade } from '@/types';
 import { formatCurrency, calculateTradeMetrics } from '@/lib/calculations';
@@ -33,6 +35,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDayDetailModalOpen, setIsDayDetailModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [isPlaybookModalOpen, setIsPlaybookModalOpen] = useState(false);
     const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [activeTab, setActiveTab] = useState('novo');
@@ -47,6 +50,36 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const paginatedTrades = trades.slice(startIndex, endIndex);
+
+    const streakMetrics = useMemo(() => {
+        const dates = Array.from(new Set(trades.map(t => t.entryDate.split('T')[0]))).sort();
+        const daysAccessed = dates.length;
+        
+        if (dates.length === 0) return { daysAccessed: 0, streak: 0 };
+
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const todayStr = today.toISOString().split('T')[0];
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const lastDate = dates[dates.length - 1];
+
+        // Se o último trade não foi hoje nem ontem, a sequência quebrou
+        if (lastDate !== todayStr && lastDate !== yesterdayStr) return { daysAccessed, streak: 0 };
+
+        let streak = 1;
+        for (let i = dates.length - 1; i > 0; i--) {
+            const current = new Date(dates[i]);
+            const prev = new Date(dates[i-1]);
+            const diffTime = Math.abs(current.getTime() - prev.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) streak++;
+            else break;
+        }
+        return { daysAccessed, streak };
+    }, [trades]);
 
     useEffect(() => {
         const init = async () => {
@@ -139,11 +172,13 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const pnlPercent = (pnl / currentAccount.initialBalance) * 100;
     const isProfit = pnl >= 0;
 
+
+
     const tabs = [
         { id: 'novo', label: 'Novo Trade', icon: '➕' },
         { id: 'lista', label: 'Lista', icon: '📋' },
         { id: 'calendario', label: 'Calendário', icon: '📅' },
-        { id: 'diario', label: 'Diário', icon: '📖' },
+        { id: 'playbook', label: 'Playbook', icon: '📖' },
         { id: 'relatorios', label: 'Relatórios', icon: '📊' },
     ];
 
@@ -156,13 +191,18 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 <div className="container mx-auto px-6 py-6" style={{ maxWidth: '1200px' }}>
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-4">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => router.push('/')}
-                                className="text-gray-400 hover:text-gray-200 transition-colors flex items-center gap-2 hover:bg-gray-800/50 px-3 py-2 rounded-lg"
+                                leftIcon={
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+                                        <path d="m12 19-7-7 7-7"/>
+                                        <path d="M19 12H5"/>
+                                    </svg>
+                                }
                             >
-                                <span>←</span>
-                                <span>Voltar</span>
-                            </button>
+                                Voltar
+                            </Button>
                             <div className="h-6 w-px bg-gray-700"></div>
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-100">{currentAccount.name}</h1>
@@ -170,49 +210,103 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                             </div>
                         </div>
                         
-                        {/* Settings Button */}
-                        <button
+                        {/* Settings Button - Minimalista */}
+                        {/* Settings Button - Minimalista */}
+                        <Button
+                            variant="primary"
+                            size="icon"
                             onClick={() => setIsSettingsModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-cyan-400 hover:border-cyan-500/50 transition-all duration-200"
                             title="Configurações"
+                            className="w-12 h-12 rounded-xl" // Override size to match original 12x12 and rounded-xl
                         >
-                            <span className="text-xl">⚙️</span>
-                            <span className="font-medium">Configurações</span>
-                        </button>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </Button>
                     </div>
 
                     {/* Métricas resumidas */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                        {/* Saldo Atual */}
+                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors">
+                            <div className="text-gray-500 mb-2 group-hover:text-emerald-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                                    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                                </svg>
+                            </div>
                             <div className="text-xs text-gray-400 mb-1">Saldo Atual</div>
                             <div className="text-lg font-bold text-gray-100">
                                 {formatCurrency(currentAccount.currentBalance, currentAccount.currency)}
                             </div>
                         </div>
-                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
+
+                        {/* P&L Total */}
+                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors">
+                            <div className={`mb-2 transition-colors ${isProfit ? 'text-green-500 group-hover:text-green-400' : 'text-red-500 group-hover:text-red-400'}`}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                    <polyline points="17 6 23 6 23 12" />
+                                </svg>
+                            </div>
                             <div className="text-xs text-gray-400 mb-1">P&L Total</div>
                             <div className={`text-lg font-bold ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
                                 {isProfit ? '+' : ''}{formatCurrency(pnl, currentAccount.currency)}
-                                <span className="text-sm ml-1">({isProfit ? '+' : ''}{pnlPercent.toFixed(2)}%)</span>
+                            </div>
+                            <div className={`text-xs ${isProfit ? 'text-green-500/70' : 'text-red-500/70'}`}>
+                                ({isProfit ? '+' : ''}{pnlPercent.toFixed(2)}%)
                             </div>
                         </div>
-                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
+
+                        {/* Win Rate */}
+                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors">
+                            <div className="text-gray-500 mb-2 group-hover:text-cyan-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="m9 12 2 2 4-4" />
+                                </svg>
+                            </div>
                             <div className="text-xs text-gray-400 mb-1">Win Rate</div>
                             <div className="text-lg font-bold text-cyan-400">
                                 {metrics.winRate.toFixed(1)}%
                             </div>
                         </div>
-                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm">
+
+                        {/* Total Trades */}
+                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors">
+                            <div className="text-gray-500 mb-2 group-hover:text-indigo-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M12 20v-6M6 20V10M18 20V4" />
+                                </svg>
+                            </div>
                             <div className="text-xs text-gray-400 mb-1">Total Trades</div>
                             <div className="text-lg font-bold text-gray-100">
                                 {metrics.totalTrades}
                             </div>
                         </div>
+                        
+                        {/* Sequência de Anotação */}
+                        <div className="bg-linear-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors">
+                            <div className="text-orange-500/80 mb-2 group-hover:text-orange-400 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3a9 9 0 0 0 3 3.3z"></path>
+                                </svg>
+                            </div>
+                            <div className="text-xs text-gray-400 mb-1">Sequência de Anotação</div>
+                            <div className="text-lg font-bold text-orange-400">
+                                {streakMetrics.streak}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Tabs */}
-                    <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
                 </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="container mx-auto px-6 mt-6" style={{ maxWidth: '1200px' }}>
+                <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
             </div>
 
             {/* Content */}
@@ -283,17 +377,20 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                     </Card>
                 </TabPanel>
 
-                <TabPanel value="diario" activeTab={activeTab}>
+                <TabPanel value="playbook" activeTab={activeTab}>
                     <Card>
-                        <CardHeader>
-                            <CardTitle>📖 Diário</CardTitle>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>📖 Playbook</CardTitle>
+                            <Button
+                                variant="ghost-success"
+                                onClick={() => setIsPlaybookModalOpen(true)}
+                                leftIcon={<span>+</span>}
+                            >
+                                Criar Playbook
+                            </Button>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-center py-16 text-gray-400">
-                                <div className="text-6xl mb-4">🚧</div>
-                                <p>Diário em desenvolvimento</p>
-                                <p className="text-sm mt-2">Será implementado no próximo sprint</p>
-                            </div>
+                           <PlaybookGrid trades={trades} currency={currentAccount.currency} />
                         </CardContent>
                     </Card>
                 </TabPanel>
@@ -428,6 +525,16 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 accountId={accountId}
                 currentBalance={currentAccount.currentBalance}
                 onUpdateBalance={handleUpdateBalance}
+            />
+
+            {/* Playbook Modal */}
+            <CreatePlaybookModal
+                isOpen={isPlaybookModalOpen}
+                onClose={() => setIsPlaybookModalOpen(false)}
+                accountId={accountId}
+                onCreatePlaybook={() => {
+                    setIsPlaybookModalOpen(false);
+                }}
             />
             </div>
         </div>

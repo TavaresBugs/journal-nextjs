@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import dayjs from 'dayjs';
-import { Input } from '@/components/ui';
+import { Input, Button } from '@/components/ui';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
 import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
@@ -154,12 +154,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         className={`
                             flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200
                             ${!isTradeOpen
-                                ? 'bg-linear-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+                                ? 'bg-linear-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30'
                                 : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:bg-gray-800'
                             }
                         `}
                     >
-                        ✅ Concluído
+                        🟢 Finalizado
                     </button>
                 </div>
             )}
@@ -502,13 +502,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             {/* Botões de Ação */}
             <div className="flex gap-3 pt-4">
                 {mode === 'edit' && onCancel && (
-                    <button
+                    <Button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 py-3 px-4 bg-transparent border border-gray-600 text-gray-300 font-medium rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+                        variant="gradient-danger"
+                        className="flex-1 font-extrabold"
                     >
                         Cancelar
-                    </button>
+                    </Button>
                 )}
                 
                 <button
@@ -527,8 +528,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         'Salvar Alterações'
                     ) : (
                         <>
-                            <span>✅</span>
-                            <span>Registrar Trade</span>
+                            <span>Registrar</span>
                         </>
                     )}
                 </button>

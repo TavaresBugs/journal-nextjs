@@ -120,10 +120,10 @@ export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateA
         </div>
         
         <div className="flex gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+          <Button type="button" variant="gradient-danger" onClick={onClose} className="flex-1 font-extrabold">
             Cancelar
           </Button>
-          <Button type="submit" variant="primary" className="flex-1">
+          <Button type="submit" variant="gradient-success" className="flex-1 font-extrabold">
             Criar Carteira
           </Button>
         </div>

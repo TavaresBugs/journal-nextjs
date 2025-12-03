@@ -12,10 +12,7 @@ interface SettingsModalProps {
     onUpdateBalance?: (newBalance: number) => void;
 }
 
-interface Asset {
-    symbol: string;
-    multiplier: number;
-}
+
 
 export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUpdateBalance }: SettingsModalProps) {
     const [newBalance, setNewBalance] = useState(currentBalance?.toString() || '');
@@ -133,7 +130,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                             <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
                                 💰 Moedas
                             </h3>
-                            <div className="flex gap-2 mb-3">
+                            <div className="flex gap-2 mb-2">
                                 <Input
                                     placeholder="NOVA MOEDA (EX: CAD)"
                                     value={newCurrency}
@@ -141,7 +138,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                     onKeyPress={(e) => e.key === 'Enter' && addCurrency()}
                                     className="uppercase"
                                 />
-                                <Button variant="success" onClick={addCurrency} size="sm">
+                                <Button variant="gradient-success" onClick={addCurrency} className="w-20 font-extrabold h-10">
                                     Add
                                 </Button>
                             </div>
@@ -152,12 +149,14 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                         className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
                                     >
                                         {currency}
-                                        <button
+                                        <Button
+                                            variant="danger"
+                                            size="icon"
                                             onClick={() => removeCurrency(currency)}
-                                            className="text-red-400 hover:text-red-300 transition-colors"
+                                            className="w-6 h-6 p-0"
                                         >
-                                            ×
-                                        </button>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </Button>
                                     </span>
                                 ))}
                             </div>
@@ -168,14 +167,14 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                             <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
                                 ⚖️ Alavancagem
                             </h3>
-                            <div className="flex gap-2 mb-3">
+                            <div className="flex gap-2 mb-2">
                                 <Input
                                     placeholder="Nova Alavancagem (ex: 1:300)"
                                     value={newLeverage}
                                     onChange={(e) => setNewLeverage(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && addLeverage()}
                                 />
-                                <Button variant="success" onClick={addLeverage} size="sm">
+                                <Button variant="gradient-success" onClick={addLeverage} className="w-20 font-extrabold h-10">
                                     Add
                                 </Button>
                             </div>
@@ -186,12 +185,14 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                         className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
                                     >
                                         {leverage}
-                                        <button
+                                        <Button
+                                            variant="danger"
+                                            size="icon"
                                             onClick={() => removeLeverage(leverage)}
-                                            className="text-red-400 hover:text-red-300 transition-colors"
+                                            className="w-6 h-6 p-0"
                                         >
-                                            ×
-                                        </button>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </Button>
                                     </span>
                                 ))}
                             </div>
@@ -208,114 +209,124 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                             </h3>
                             
                             {/* Add new asset */}
-                            <div className="flex gap-2 mb-3">
+                            {/* Add new asset */}
+                            <div className="grid grid-cols-3 gap-2 mb-2">
                                 <Input
                                     placeholder="Ativo (Ex: US30)"
                                     value={newAsset}
                                     onChange={(e) => setNewAsset(e.target.value)}
-                                    className="flex-1 uppercase"
+                                    className="w-full uppercase"
                                 />
                                 <Input
                                     type="number"
                                     placeholder="1"
                                     value={newMultiplier}
                                     onChange={(e) => setNewMultiplier(e.target.value)}
-                                    className="w-24"
+                                    className="w-full"
                                 />
-                                <Button variant="success" onClick={addAsset} size="sm">
+                                <Button variant="gradient-success" onClick={addAsset} className="w-full font-extrabold text-lg h-10">
                                     +
                                 </Button>
                             </div>
 
                             {/* Asset list */}
-                            <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
+                            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
                                 {assets.map((asset) => (
                                     <div
                                         key={asset.symbol}
-                                        className="bg-gray-800/50 rounded-lg p-3 border border-gray-700 flex items-center justify-between"
+                                        className="bg-gray-800/50 rounded-lg p-2 border border-gray-700 flex items-center justify-between"
                                     >
                                         <div>
                                             <div className="font-semibold text-gray-200">{asset.symbol}</div>
                                             <div className="text-xs text-gray-500">x{asset.multiplier}</div>
                                         </div>
-                                        <button
+                                        <Button
+                                            variant="danger"
+                                            size="icon"
                                             onClick={() => removeAsset(asset.symbol)}
-                                            className="text-red-400 hover:text-red-300 transition-colors"
+                                            className="w-8 h-8"
                                         >
                                             🗑️
-                                        </button>
+                                        </Button>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
-                        {/* Estratégias */}
-                        <section>
-                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                                🧠 Estratégias
-                            </h3>
-                            <div className="flex gap-2 mb-3">
-                                <Input
-                                    placeholder="Nova Estratégia"
-                                    value={newStrategy}
-                                    onChange={(e) => setNewStrategy(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && addStrategy()}
-                                />
-                                <Button variant="success" onClick={addStrategy} size="sm">
-                                    Add
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {strategies.map((strategy) => (
-                                    <span
-                                        key={strategy}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
-                                    >
-                                        {strategy}
-                                        <button
-                                            onClick={() => removeStrategy(strategy)}
-                                            className="text-red-400 hover:text-red-300 transition-colors"
+                        {/* Estratégias e Setups lado a lado */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Estratégias */}
+                            <section>
+                                <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                                    🧠 Estratégias
+                                </h3>
+                                <div className="flex gap-2 mb-2">
+                                    <Input
+                                        placeholder="Nova Estratégia"
+                                        value={newStrategy}
+                                        onChange={(e) => setNewStrategy(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addStrategy()}
+                                    />
+                                    <Button variant="gradient-success" onClick={addStrategy} className="w-20 font-extrabold h-10">
+                                        Add
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {strategies.map((strategy) => (
+                                        <span
+                                            key={strategy}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
                                         >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        </section>
+                                            {strategy}
+                                            <Button
+                                                variant="danger"
+                                                size="icon"
+                                                onClick={() => removeStrategy(strategy)}
+                                                className="w-6 h-6 p-0"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            </Button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </section>
 
-                        {/* Tipos de Entrada (Setups) */}
-                        <section>
-                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                                🎯 Tipos de Entrada (Setups)
-                            </h3>
-                            <div className="flex gap-2 mb-3">
-                                <Input
-                                    placeholder="Novo Setup"
-                                    value={newSetup}
-                                    onChange={(e) => setNewSetup(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && addSetup()}
-                                />
-                                <Button variant="success" onClick={addSetup} size="sm">
-                                    Add
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {setups.map((setup) => (
-                                    <span
-                                        key={setup}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
-                                    >
-                                        {setup}
-                                        <button
-                                            onClick={() => removeSetup(setup)}
-                                            className="text-red-400 hover:text-red-300 transition-colors"
+                            {/* Tipos de Entrada (Setups) */}
+                            <section>
+                                <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                                    🎯 Tipos de Entrada (Setups)
+                                </h3>
+                                <div className="flex gap-2 mb-2">
+                                    <Input
+                                        placeholder="Novo Setup"
+                                        value={newSetup}
+                                        onChange={(e) => setNewSetup(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && addSetup()}
+                                    />
+                                    <Button variant="gradient-success" onClick={addSetup} className="w-20 font-extrabold h-10">
+                                        Add
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {setups.map((setup) => (
+                                        <span
+                                            key={setup}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
                                         >
-                                            ×
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        </section>
+                                            {setup}
+                                            <Button
+                                                variant="danger"
+                                                size="icon"
+                                                onClick={() => removeSetup(setup)}
+                                                className="w-6 h-6 p-0"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            </Button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </section>
+                        </div>
 
                         {/* Ajuste de Saldo */}
                         {currentBalance !== undefined && (
@@ -330,7 +341,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                         value={newBalance}
                                         onChange={(e) => setNewBalance(e.target.value)}
                                     />
-                                    <Button variant="success" onClick={handleSaveBalance} className="w-full">
+                                    <Button variant="gradient-success" onClick={handleSaveBalance} className="w-full font-extrabold h-10">
                                         Salvar Saldo
                                     </Button>
                                 </div>
@@ -342,8 +353,8 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
             
             {/* Footer for Global Settings */}
             {isGlobalMode && (
-                <div className="mt-6 pt-4 border-t border-gray-700 flex justify-end">
-                    <Button variant="primary" onClick={onClose} className="w-32">
+                <div className="mt-6 pt-4 border-t border-gray-700">
+                    <Button variant="gradient-danger" onClick={onClose} className="w-full font-extrabold">
                         Fechar
                     </Button>
                 </div>

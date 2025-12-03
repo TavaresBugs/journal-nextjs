@@ -97,6 +97,35 @@ export interface DailyRoutine {
     updatedAt: string;
 }
 
+export interface RuleGroup {
+    id: string;
+    name: string;
+    rules: string[];
+}
+
+export interface Playbook {
+    id: string;
+    userId: string; // User ID from Supabase Auth
+    accountId: string;
+    name: string;
+    description?: string;
+    icon: string;
+    color: string;
+    ruleGroups: RuleGroup[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface SharedJournal {
+    id: string;
+    journalEntryId: string;
+    userId: string;
+    shareToken: string;
+    expiresAt: string;
+    createdAt: string;
+    viewCount: number;
+}
+
 export interface Settings {
     id: string;
     userId: string; // User ID from Supabase Auth
