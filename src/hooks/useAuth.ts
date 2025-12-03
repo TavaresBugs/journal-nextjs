@@ -88,7 +88,8 @@ export function useAuth() {
             // SEMPRE limpar estado e redirecionar, independente do resultado
             console.log('Limpando estado e redirecionando...');
             setUser(null);
-            router.push('/login');
+            // Force full reload to ensure cookies and state are completely cleared
+            window.location.href = '/login';
         }
     };
 

@@ -26,6 +26,13 @@ export default function HomePage() {
   useEffect(() => {
     const init = async () => {
       console.log('HomePage: init called. User:', user?.email);
+      
+      if (!user) {
+        console.log('HomePage: No user, skipping data load');
+        setIsLoading(false);
+        return;
+      }
+
       try {
         // Timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 

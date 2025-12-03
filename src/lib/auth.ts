@@ -15,10 +15,23 @@ import type { User, AuthProvider } from '@/types';
  */
 export async function getCurrentUser(): Promise<User | null> {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        // Try to get the session first (faster, no network call if cached)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error || !user) {
+        if (sessionError) {
+            console.error('Error getting session:', sessionError);
             return null;
+        }
+
+        let user = session?.user;
+
+        // Fallback to getUser if no session (verifies with server)
+        if (!user) {
+            const { data: { user: authUser }, error } = await supabase.auth.getUser();
+            if (error || !authUser) {
+                return null;
+            }
+            user = authUser;
         }
 
         return {

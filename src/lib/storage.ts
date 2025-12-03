@@ -960,7 +960,7 @@ export async function getUserSettings(): Promise<import('@/types').UserSettings 
     }
 
     const { data, error } = await supabase
-        .from('user_settings')
+        .from('settings')
         .select('*')
         .eq('user_id', userId)
         .single();
@@ -1000,7 +1000,7 @@ export async function saveUserSettings(settings: import('@/types').UserSettings)
     }
 
     const { error } = await supabase
-        .from('user_settings')
+        .from('settings')
         .upsert({
             user_id: userId,
             currencies: settings.currencies,
