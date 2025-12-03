@@ -65,16 +65,10 @@ export function ViewPlaybookModal({ isOpen, onClose, playbook, onEdit }: ViewPla
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                    >
-                        Fechar
-                    </Button>
-                    {onEdit && (
+                {onEdit && (
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
                         <Button
-                            variant="primary"
+                            variant="gold"
                             onClick={() => {
                                 onEdit(playbook);
                                 onClose();
@@ -83,8 +77,8 @@ export function ViewPlaybookModal({ isOpen, onClose, playbook, onEdit }: ViewPla
                         >
                             Editar Playbook
                         </Button>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </Modal>
     );

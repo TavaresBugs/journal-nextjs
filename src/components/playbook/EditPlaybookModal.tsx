@@ -30,9 +30,9 @@ const COLORS = [
 ];
 
 const DEFAULT_GROUPS = [
+    { id: 'market', name: 'Condições de mercado' },
     { id: 'entry', name: 'Critérios de entrada' },
     { id: 'exit', name: 'Critérios de saída' },
-    { id: 'market', name: 'Condições de mercado' },
 ];
 
 export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook }: EditPlaybookModalProps) {
@@ -44,6 +44,8 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
     const [selectedColor, setSelectedColor] = useState('#3B82F6');
     const [ruleGroups, setRuleGroups] = useState<RuleGroup[]>([]);
     const [newRuleInputs, setNewRuleInputs] = useState<Record<string, string>>({});
+    const [editingRule, setEditingRule] = useState<{groupId: string, index: number} | null>(null);
+    const [editingRuleText, setEditingRuleText] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -52,10 +54,29 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
             setDescription(playbook.description || '');
             setSelectedIcon(playbook.icon);
             setSelectedColor(playbook.color);
-            setRuleGroups(playbook.ruleGroups && playbook.ruleGroups.length > 0 
+            
+            // Reorder groups to match new order: market, entry, exit
+            const existingGroups = playbook.ruleGroups && playbook.ruleGroups.length > 0 
                 ? playbook.ruleGroups 
-                : DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] }))
-            );
+                : DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] }));
+            
+            // Define desired order
+            const desiredOrder = ['market', 'entry', 'exit'];
+            
+            // Reorder groups based on desired order
+            const reorderedGroups = desiredOrder.map(id => {
+                const existingGroup = existingGroups.find(g => g.id === id);
+                if (existingGroup) {
+                    return existingGroup;
+                }
+                // If group doesn't exist, create empty one
+                const defaultGroup = DEFAULT_GROUPS.find(g => g.id === id);
+                return defaultGroup 
+                    ? { id: defaultGroup.id, name: defaultGroup.name, rules: [] }
+                    : { id, name: id, rules: [] };
+            });
+            
+            setRuleGroups(reorderedGroups);
         }
     }, [playbook]);
 
@@ -77,6 +98,34 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
                 ? { ...group, rules: group.rules.filter((_, i) => i !== ruleIndex) }
                 : group
         ));
+    };
+
+    const startEditingRule = (groupId: string, ruleIndex: number, currentText: string) => {
+        setEditingRule({ groupId, index: ruleIndex });
+        setEditingRuleText(currentText);
+    };
+
+    const saveEditingRule = () => {
+        if (!editingRule || !editingRuleText.trim()) return;
+        
+        setRuleGroups(ruleGroups.map(group =>
+            group.id === editingRule.groupId
+                ? { 
+                    ...group, 
+                    rules: group.rules.map((rule, i) => 
+                        i === editingRule.index ? editingRuleText.trim() : rule
+                    )
+                  }
+                : group
+        ));
+        
+        setEditingRule(null);
+        setEditingRuleText('');
+    };
+
+    const cancelEditingRule = () => {
+        setEditingRule(null);
+        setEditingRuleText('');
     };
 
     const handleSubmit = async () => {
@@ -220,18 +269,66 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
                                     </h4>
                                 </div>
                                 <div className="space-y-2 mb-3">
-                                    {group.rules.map((rule, index) => (
-                                        <div key={index} className="flex items-center gap-2 bg-gray-900/50 p-2 rounded group/rule">
-                                            <span className="text-gray-500 text-xs">☰</span>
-                                            <span className="flex-1 text-sm text-gray-300">{rule}</span>
-                                            <button
-                                                onClick={() => removeRule(group.id, index)}
-                                                className="text-red-400 hover:text-red-300 text-sm opacity-0 group-hover/rule:opacity-100 transition-opacity"
-                                            >
-                                                🗑️ Deletar
-                                            </button>
-                                        </div>
-                                    ))}
+                                    {group.rules.map((rule, index) => {
+                                        const isEditing = editingRule?.groupId === group.id && editingRule?.index === index;
+                                        
+                                        return (
+                                            <div key={index} className="flex items-center gap-2 bg-gray-900/50 p-2 rounded group/rule">
+                                                <span className="text-gray-500 text-xs">☰</span>
+                                                
+                                                {isEditing ? (
+                                                    <>
+                                                        <input
+                                                            type="text"
+                                                            value={editingRuleText}
+                                                            onChange={(e) => setEditingRuleText(e.target.value)}
+                                                            onKeyPress={(e) => e.key === 'Enter' && saveEditingRule()}
+                                                            className="flex-1 px-2 py-1 text-sm bg-gray-800 border border-emerald-500 rounded text-gray-300 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                                            autoFocus
+                                                        />
+                                                        <Button
+                                                            variant="gradient-success"
+                                                            size="sm"
+                                                            onClick={saveEditingRule}
+                                                            className="text-xs px-3 py-1 font-semibold"
+                                                        >
+                                                            Salvar
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={cancelEditingRule}
+                                                            className="text-xs px-2 py-1"
+                                                        >
+                                                            ✕
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="flex-1 text-sm text-gray-300">{rule}</span>
+                                                        <Button
+                                                            variant="gold"
+                                                            size="icon"
+                                                            onClick={() => startEditingRule(group.id, index, rule)}
+                                                            className="w-6 h-6 text-xs"
+                                                            title="Editar"
+                                                        >
+                                                            ✏️
+                                                        </Button>
+                                                        <Button
+                                                            variant="danger"
+                                                            size="icon"
+                                                            onClick={() => removeRule(group.id, index)}
+                                                            className="w-6 h-6 text-xs"
+                                                            title="Deletar"
+                                                        >
+                                                            🗑️
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                                 <div className="flex gap-2">
                                     <input
@@ -242,7 +339,7 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
                                         onKeyPress={(e) => e.key === 'Enter' && addRuleToGroup(group.id)}
                                         className="flex-1 px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                     />
-                                    <Button variant="ghost-success" size="sm" onClick={() => addRuleToGroup(group.id)}>
+                                    <Button variant="gradient-success" size="sm" onClick={() => addRuleToGroup(group.id)}>
                                         + Criar nova regra
                                     </Button>
                                 </div>

@@ -249,8 +249,9 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     />
                 </div>
 
-                {/* Estimativas (meia largura esquerda) + Timeframes (direita) */}
-                <div className="grid grid-cols-2 gap-4">
+
+                {/* Estimativas (full width on mobile, half on desktop) + Timeframes (stacked on mobile, side-by-side on desktop) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Estimativas - Layout Horizontal (lado a lado) */}
                     <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
                         <h4 className="text-sm font-medium text-gray-400 mb-3">Estimativas</h4>
@@ -270,7 +271,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     </div>
 
-                    {/* Timeframes na direita */}
+                    {/* Timeframes na direita (desktop) ou abaixo (mobile) */}
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -425,8 +426,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     </div>
                 </div>
 
-                {/* Data e Hora Entrada - Moved Up */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Data e Hora Entrada - Responsive: stacks on mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
                         label="Data Entrada"
                         type="date"
@@ -508,8 +509,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             }
                         })()}
 
-                        {/* Data e Hora Saída */}
-                        <div className="grid grid-cols-2 gap-4">
+                        {/* Data e Hora Saída - Responsive */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <Input
                                 label="Data Saída"
                                 type="date"

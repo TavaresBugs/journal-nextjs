@@ -462,7 +462,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>📖 Playbook</CardTitle>
                             <Button
-                                variant="ghost-success"
+                                variant="gradient-success"
                                 onClick={() => setIsCreatePlaybookModalOpen(true)}
                                 leftIcon={<span>+</span>}
                             >

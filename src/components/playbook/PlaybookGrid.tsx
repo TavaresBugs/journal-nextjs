@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Trade, Playbook } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
+import { Button } from '@/components/ui';
 
 interface PlaybookGridProps {
     trades: Trade[];
@@ -118,12 +119,17 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                         } : {}}
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-3 flex-1">
                                 <div className="text-2xl bg-gray-900/50 p-2 rounded-lg">
                                     {icon}
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-lg text-gray-100 group-hover:text-cyan-400 transition-colors">
+                                <div className="flex-1">
+                                    <h3 
+                                        className={`font-bold text-lg text-gray-100 transition-colors ${
+                                            strategy.playbook ? 'cursor-pointer hover:text-cyan-400' : ''
+                                        }`}
+                                        onClick={() => strategy.playbook && onView?.(strategy.playbook)}
+                                    >
                                         {strategy.name}
                                     </h3>
                                     <div className="text-xs text-gray-400 font-medium mt-1">
@@ -132,41 +138,35 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                                 </div>
                             </div>
                             
-                            {/* Actions */}
+                            {/* Actions - Always visible, using Button components */}
                             {strategy.playbook && (
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onView?.(strategy.playbook!);
-                                        }}
-                                        className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-cyan-400" 
-                                        title="Ver Regras"
-                                    >
-                                        👁️
-                                    </button>
-                                    <button 
+                                <div className="flex gap-1">
+                                    <Button 
+                                        variant="gold"
+                                        size="icon"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onEdit?.(strategy.playbook!);
                                         }}
-                                        className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-white" 
+                                        className="w-8 h-8"
                                         title="Editar"
                                     >
                                         ✏️
-                                    </button>
-                                    <button 
+                                    </Button>
+                                    <Button 
+                                        variant="danger"
+                                        size="icon"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             if (confirm('Tem certeza que deseja excluir este playbook?')) {
                                                 onDelete?.(strategy.playbook!.id);
                                             }
                                         }}
-                                        className="p-1.5 hover:bg-gray-700 rounded text-gray-400 hover:text-red-400" 
+                                        className="w-8 h-8"
                                         title="Excluir"
                                     >
                                         🗑️
-                                    </button>
+                                    </Button>
                                 </div>
                             )}
                         </div>
