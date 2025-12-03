@@ -25,18 +25,24 @@ export default function HomePage() {
   
   useEffect(() => {
     const init = async () => {
-      // Wait for auth to initialize
-      if (authLoading) return;
-
-      console.log('HomePage: init called. User:', user?.email);
+      console.log('HomePage: init called. User:', user?.email, 'authLoading:', authLoading);
       
+      // If still loading auth, don't try to load data yet
+      if (authLoading) {
+        console.log('HomePage: Still loading auth, waiting...');
+        return;
+      }
+
+      // If no user after auth is done, we're not logged in
       if (!user) {
-        console.log('HomePage: No user, skipping data load');
+        console.log('HomePage: No user after auth loaded, skipping data load');
         setIsLoading(false);
         return;
       }
 
+      // User is authenticated, load their data
       try {
+        console.log('HomePage: Loading accounts and settings...');
         // Timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Timeout loading data')), 8000)
@@ -46,10 +52,11 @@ export default function HomePage() {
           Promise.all([loadAccounts(), loadSettings()]),
           timeoutPromise
         ]);
+        console.log('HomePage: Data loaded successfully');
       } catch (error) {
         console.error('Error initializing home page:', error);
       } finally {
-        setIsLoading(false);
+         setIsLoading(false);
       }
     };
     init();
@@ -81,12 +88,12 @@ export default function HomePage() {
     }
   };
   
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Carregando...</p>
+          <p className="text-gray-400">{authLoading ? 'Autenticando...' : 'Carregando...'}</p>
         </div>
       </div>
     );
