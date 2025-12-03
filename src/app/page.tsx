@@ -25,11 +25,23 @@ export default function HomePage() {
   
   useEffect(() => {
     const init = async () => {
-      await Promise.all([
-        loadAccounts(),
-        loadSettings() // Load user settings on app init
-      ]);
-      setIsLoading(false);
+      try {
+        // Timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout loading data')), 8000)
+        );
+
+        await Promise.race([
+          Promise.all([loadAccounts(), loadSettings()]),
+          timeoutPromise
+        ]);
+      } catch (error) {
+        console.error('Error initializing home page:', error);
+        // We don't show a toast here to avoid spamming the user on minor network glitches,
+        // as the UI will just show empty states which is fine.
+      } finally {
+        setIsLoading(false);
+      }
     };
     init();
   }, [loadAccounts, loadSettings]);
