@@ -18,13 +18,16 @@ export default function HomePage() {
   const { accounts, loadAccounts, addAccount, setCurrentAccount, removeAccount } = useAccountStore();
   const { loadSettings } = useSettingsStore();
   const { showToast } = useToast();
-  const { signOut, user } = useAuth();
+  const { signOut, user, loading: authLoading } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
     const init = async () => {
+      // Wait for auth to initialize
+      if (authLoading) return;
+
       console.log('HomePage: init called. User:', user?.email);
       
       if (!user) {
@@ -50,7 +53,7 @@ export default function HomePage() {
       }
     };
     init();
-  }, [loadAccounts, loadSettings, user]);
+  }, [loadAccounts, loadSettings, user, authLoading]);
   
   const handleCreateAccount = async (accountData: Omit<Account, 'id' | 'createdAt' | 'updatedAt' | 'userId'>) => {
     const newAccount: Account = {
