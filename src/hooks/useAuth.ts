@@ -29,17 +29,40 @@ export function useAuth() {
     const router = useRouter();
 
     useEffect(() => {
+        console.log('[useAuth] Initializing...');
+        
+        // Add timeout to prevent infinite loading
+        const initTimeout = setTimeout(() => {
+            console.error('[useAuth] Timeout! getCurrentUser took too long, forcing loading = false');
+            setLoading(false);
+        }, 5000);
+
         // Carregar usuário inicial
-        getCurrentUser().then(setUser).finally(() => setLoading(false));
+        getCurrentUser()
+            .then((userData) => {
+                console.log('[useAuth] getCurrentUser resolved:', userData?.email || 'null');
+                setUser(userData);
+            })
+            .catch((error) => {
+                console.error('[useAuth] getCurrentUser failed:', error);
+                setUser(null);
+            })
+            .finally(() => {
+                console.log('[useAuth] Setting loading = false');
+                clearTimeout(initTimeout);
+                setLoading(false);
+            });
 
         // Escutar mudanças de autenticação
         const subscription = onAuthStateChange((newUser) => {
+            console.log('[useAuth] Auth state changed:', newUser?.email || 'null');
             setUser(newUser);
             setLoading(false);
             // Middleware agora cuida de todos os redirecionamentos
         });
 
         return () => {
+            clearTimeout(initTimeout);
             subscription?.unsubscribe();
         };
     }, [router]);
