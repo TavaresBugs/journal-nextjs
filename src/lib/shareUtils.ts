@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * Creates a share link for a journal entry that expires in 3 days
+ * If a valid link already exists, it will be reused instead of creating a new one
  * @param journalEntryId - The ID of the journal entry to share
  * @returns The share URL or null if failed
  */
@@ -12,7 +13,24 @@ export async function createShareLink(journalEntryId: string): Promise<string | 
             throw new Error('User not authenticated');
         }
 
-        // Set expiration to 3 days from now
+        // Check if there's already a valid (non-expired) link for this entry
+        const { data: existingShare, error: fetchError } = await supabase
+            .from('shared_journals')
+            .select('share_token, expires_at')
+            .eq('journal_entry_id', journalEntryId)
+            .eq('user_id', user.id)
+            .gt('expires_at', new Date().toISOString())
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        // If valid link exists, reuse it
+        if (existingShare && !fetchError) {
+            const shareUrl = `${window.location.origin}/share/${existingShare.share_token}`;
+            return shareUrl;
+        }
+
+        // Create new link only if no valid link exists
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 3);
 

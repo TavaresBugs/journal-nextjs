@@ -5,6 +5,18 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { JournalEntry, JournalImage } from '@/types';
 
+// Mapeamento de timeframes para labels em português
+const TIMEFRAME_LABELS: Record<string, string> = {
+    'tfM': 'Mensal',
+    'tfW': 'Semanal',
+    'tfD': 'Diário',
+    'tfH4': '4H',
+    'tfH1': '1H',
+    'tfM15': 'M15',
+    'tfM5': 'M5',
+    'tfM3': 'M3/M1',
+};
+
 export default function SharePage() {
     const params = useParams();
     const token = params?.token as string;
@@ -13,6 +25,7 @@ export default function SharePage() {
     const [images, setImages] = useState<JournalImage[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     useEffect(() => {
         if (!token) return;
@@ -93,9 +106,18 @@ export default function SharePage() {
         loadSharedEntry();
     }, [token]);
 
+    // Parse notes JSON
+    const parsedNotes = entry?.notes ? (() => {
+        try {
+            return JSON.parse(entry.notes);
+        } catch {
+            return null;
+        }
+    })() : null;
+
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-emerald-400 text-xl">Carregando...</div>
             </div>
         );
@@ -103,7 +125,7 @@ export default function SharePage() {
 
     if (error || !entry) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+            <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
                 <div className="text-center">
                     <div className="text-6xl mb-4">🔗</div>
                     <h1 className="text-2xl font-bold text-gray-100 mb-2">{error || 'Entrada não encontrada'}</h1>
@@ -114,7 +136,7 @@ export default function SharePage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4">
+        <div className="min-h-screen bg-linear-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-8">
@@ -137,12 +159,15 @@ export default function SharePage() {
                             {images.map((img) => (
                                 <div key={img.id} className="bg-gray-800/50 rounded-lg overflow-hidden border border-gray-700">
                                     <div className="p-2 bg-gray-900/50 border-b border-gray-700">
-                                        <span className="text-xs font-medium text-gray-400">{img.timeframe}</span>
+                                        <span className="text-xs font-medium text-gray-400">
+                                            {TIMEFRAME_LABELS[img.timeframe] || img.timeframe}
+                                        </span>
                                     </div>
                                     <img
                                         src={img.url}
-                                        alt={img.timeframe}
-                                        className="w-full object-contain"
+                                        alt={TIMEFRAME_LABELS[img.timeframe] || img.timeframe}
+                                        className="w-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => setLightboxImage(img.url)}
                                     />
                                 </div>
                             ))}
@@ -154,7 +179,7 @@ export default function SharePage() {
                 <div className="space-y-6">
                     {entry.emotion && (
                         <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-200 mb-3">😊 Estado Emocional</h3>
+                            <h3 className="text-lg font-semibold text-gray-200 mb-3">🧠 Estado Emocional</h3>
                             <p className="text-gray-300">{entry.emotion}</p>
                         </div>
                     )}
@@ -166,10 +191,31 @@ export default function SharePage() {
                         </div>
                     )}
 
-                    {entry.notes && (
+                    {parsedNotes && (
                         <div className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-200 mb-3">📝 Notas</h3>
-                            <p className="text-gray-300 whitespace-pre-wrap">{entry.notes}</p>
+                            <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
+                                <span>📜</span> Review
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <h4 className="text-xs font-bold text-green-400 mb-2 uppercase">Acertos</h4>
+                                    <p className="text-sm text-gray-300 whitespace-pre-wrap">
+                                        {parsedNotes.technicalWins || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-bold text-yellow-400 mb-2 uppercase">Melhorias</h4>
+                                    <p className="text-sm text-gray-300 whitespace-pre-wrap">
+                                        {parsedNotes.improvements || '-'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="text-xs font-bold text-red-400 mb-2 uppercase">Erros</h4>
+                                    <p className="text-sm text-gray-300 whitespace-pre-wrap">
+                                        {parsedNotes.errors || '-'}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -179,6 +225,66 @@ export default function SharePage() {
                     <p>⏰ Este link expira em breve</p>
                 </div>
             </div>
+
+            {/* Lightbox for image preview */}
+            {lightboxImage && (
+                <div 
+                    className="fixed inset-0 z-60 bg-linear-to-br from-black/40 to-black/10 backdrop-blur-md flex items-center justify-center p-4"
+                    onClick={() => setLightboxImage(null)}
+                >
+                    <button 
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white p-2"
+                        onClick={() => setLightboxImage(null)}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+
+                    <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+                        {images.length > 1 && (
+                            <>
+                                <button 
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors z-50"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const currentIndex = images.findIndex(img => img.url === lightboxImage);
+                                        const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
+                                        setLightboxImage(images[prevIndex].url);
+                                    }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </button>
+                                <button 
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors z-50"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        const currentIndex = images.findIndex(img => img.url === lightboxImage);
+                                        const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
+                                        setLightboxImage(images[nextIndex].url);
+                                    }}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                </button>
+                            </>
+                        )}
+                        
+                        <div className="relative" onClick={e => e.stopPropagation()}>
+                            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm font-medium text-cyan-400 z-10 flex gap-2">
+                                <span>{TIMEFRAME_LABELS[images.find(img => img.url === lightboxImage)?.timeframe || ''] || images.find(img => img.url === lightboxImage)?.timeframe}</span>
+                                {images.length > 1 && (
+                                    <span className="text-gray-400">
+                                        ({images.findIndex(img => img.url === lightboxImage) + 1}/{images.length})
+                                    </span>
+                                )}
+                            </div>
+                            <img 
+                                src={lightboxImage} 
+                                alt="Preview" 
+                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
