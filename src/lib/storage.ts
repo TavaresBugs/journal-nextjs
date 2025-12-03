@@ -26,29 +26,31 @@ import type {
 
 async function getCurrentUserId(): Promise<string | null> {
     try {
+        console.log('[getCurrentUserId] Starting...');
         // Try to get the session first (faster, no network call if cached)
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-            console.error('Error getting session:', error);
+            console.error('[getCurrentUserId] Error getting session:', error);
             return null;
         }
 
         if (session?.user) {
-            // console.log('Session found:', session.user.id);
+            console.log('[getCurrentUserId] Session found:', session.user.id);
             return session.user.id;
         }
 
         // Fallback to getUser if no session (verifies with server)
-        // console.log('No session found, trying getUser...');
+        console.log('[getCurrentUserId] No session found, trying getUser...');
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) {
-            // console.error('User not authenticated (getUser):', userError);
+            console.error('[getCurrentUserId] User not authenticated (getUser):', userError);
             return null;
         }
+        console.log('[getCurrentUserId] User found via getUser:', user.id);
         return user.id;
     } catch (e) {
-        console.error('Unexpected error in getCurrentUserId:', e);
+        console.error('[getCurrentUserId] Unexpected error:', e);
         return null;
     }
 }
@@ -282,11 +284,15 @@ export async function getAccount(id: string): Promise<Account | null> {
 }
 
 export async function saveAccount(account: Account): Promise<boolean> {
+    console.log('[saveAccount] Starting...', { accountId: account.id, accountName: account.name });
+    
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        console.error('[saveAccount] User not authenticated - cannot save account');
         return false;
     }
+
+    console.log('[saveAccount] User ID obtained:', userId);
 
     // Ensure account has correct userId
     const accountWithUser = {
@@ -294,15 +300,19 @@ export async function saveAccount(account: Account): Promise<boolean> {
         userId
     };
 
+    console.log('[saveAccount] Attempting to upsert account:', { id: accountWithUser.id, userId: accountWithUser.userId });
+
     const { error } = await supabase
         .from('accounts')
         .upsert(mapAccountToDB(accountWithUser));
 
     if (error) {
-        console.error('Error saving account:', error);
+        console.error('[saveAccount] Error saving account:', error);
+        console.error('[saveAccount] Error details:', JSON.stringify(error, null, 2));
         return false;
     }
 
+    console.log('[saveAccount] Account saved successfully');
     return true;
 }
 
