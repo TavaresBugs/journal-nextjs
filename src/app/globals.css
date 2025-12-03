@@ -55,7 +55,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   min-height: 100vh;
-  background-color: #1e2529; /* Fallback/Overscroll color */
 }
 
 /* Background Image with Blur */
