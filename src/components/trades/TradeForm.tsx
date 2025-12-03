@@ -7,6 +7,7 @@ import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
 import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { useToast } from '@/contexts/ToastContext';
 
 interface TradeFormProps {
@@ -20,6 +21,7 @@ interface TradeFormProps {
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
     // Get settings from store
     const { assets, strategies, setups } = useSettingsStore();
+    const { playbooks } = usePlaybookStore();
     const { showToast } = useToast();
     
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
@@ -319,15 +321,31 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             Estratégia
                         </label>
-                        <input
-                            list="strategies-list"
-                            value={strategy}
-                            onChange={(e) => setStrategy(e.target.value)}
-                            placeholder="Selecione ou digite..."
-                            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                        />
+                        <div className="relative">
+                            <input
+                                list="strategies-list"
+                                value={strategy}
+                                onChange={(e) => setStrategy(e.target.value)}
+                                placeholder="Selecione ou digite..."
+                                className={`w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 ${
+                                    playbooks.find(p => p.name === strategy) ? 'pl-10' : ''
+                                }`}
+                            />
+                            {playbooks.find(p => p.name === strategy) && (
+                                <div 
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-lg"
+                                    style={{ color: playbooks.find(p => p.name === strategy)?.color }}
+                                >
+                                    {playbooks.find(p => p.name === strategy)?.icon}
+                                </div>
+                            )}
+                        </div>
                         <datalist id="strategies-list">
-                            {strategies.map((strat) => (
+                            {/* Combine Playbooks and Settings Strategies */}
+                            {Array.from(new Set([
+                                ...playbooks.map(p => p.name),
+                                ...strategies
+                            ])).sort().map((strat) => (
                                 <option key={strat} value={strat} />
                             ))}
                         </datalist>

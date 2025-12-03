@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTradeStore } from '@/store/useTradeStore';
 import { useJournalStore } from '@/store/useJournalStore';
+import { usePlaybookStore } from '@/store/usePlaybookStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { useToast } from '@/contexts/ToastContext';
 import { CreateTradeModal } from '@/components/trades/CreateTradeModal';
 import { EditTradeModal } from '@/components/trades/EditTradeModal';
@@ -14,10 +16,12 @@ import { TradeForm } from '@/components/trades/TradeForm';
 import { SettingsModal } from '@/components/settings/SettingsModal';
 import { PlaybookGrid } from '@/components/playbook/PlaybookGrid';
 import { CreatePlaybookModal } from '@/components/playbook/CreatePlaybookModal';
+import { EditPlaybookModal } from '@/components/playbook/EditPlaybookModal';
+import { ViewPlaybookModal } from '@/components/playbook/ViewPlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
-import type { Trade } from '@/types';
+import type { Trade, Playbook } from '@/types';
 import { formatCurrency, calculateTradeMetrics } from '@/lib/calculations';
 import dynamic from 'next/dynamic';
 
@@ -33,14 +37,18 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
     const { trades, loadTrades, addTrade, updateTrade, removeTrade } = useTradeStore();
-    const { entries: journalEntries, loadEntries } = useJournalStore();
+    const { entries, loadEntries } = useJournalStore();
+    const { playbooks, loadPlaybooks, removePlaybook } = usePlaybookStore();
+    const { loadSettings } = useSettingsStore();
     const { showToast } = useToast();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDayDetailModalOpen, setIsDayDetailModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [isPlaybookModalOpen, setIsPlaybookModalOpen] = useState(false);
+    const [isCreatePlaybookModalOpen, setIsCreatePlaybookModalOpen] = useState(false);
     const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+    const [editingPlaybook, setEditingPlaybook] = useState<Playbook | null>(null);
+    const [viewingPlaybook, setViewingPlaybook] = useState<Playbook | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [activeTab, setActiveTab] = useState('novo');
     const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +66,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const streakMetrics = useMemo(() => {
         // Combine dates from trades and journal entries
         const tradeDates = trades.map(t => t.entryDate.split('T')[0]);
-        const journalDates = journalEntries.map(e => e.date);
+        const journalDates = entries.map(e => e.date);
         
         // Create a unique sorted list of all activity dates
         const dates = Array.from(new Set([...tradeDates, ...journalDates])).sort();
@@ -88,26 +96,48 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             else break;
         }
         return { daysAccessed, streak };
-    }, [trades, journalEntries]);
+    }, [trades, entries]);
 
     useEffect(() => {
         const init = async () => {
-            // Find account by ID from URL
-            const account = accounts.find(acc => acc.id === accountId);
-            
-            if (!account) {
-                router.push('/');
-                return;
-            }
+            try {
+                // 1. Ensure accounts are loaded
+                let currentAccounts = accounts;
+                if (accounts.length === 0) {
+                    await useAccountStore.getState().loadAccounts();
+                    currentAccounts = useAccountStore.getState().accounts;
+                }
 
-            setCurrentAccount(accountId);
-            await loadTrades(accountId);
-            await loadEntries(accountId);
-            setIsLoading(false);
+                // 2. Find account
+                const account = currentAccounts.find(acc => acc.id === accountId);
+                
+                if (!account) {
+                    console.error('Account not found after loading:', accountId);
+                    router.push('/');
+                    return;
+                }
+
+                // 3. Load data
+                setCurrentAccount(accountId);
+                
+                // Load data in parallel
+                await Promise.all([
+                    loadTrades(accountId),
+                    loadEntries(accountId),
+                    loadPlaybooks(accountId),
+                    loadSettings()
+                ]);
+
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showToast('Erro ao carregar dados do dashboard', 'error');
+            } finally {
+                setIsLoading(false);
+            }
         };
 
         init();
-    }, [accountId, accounts, setCurrentAccount, loadTrades, loadEntries, router]);
+    }, [accountId, accounts.length, setCurrentAccount, loadTrades, loadEntries, loadPlaybooks, loadSettings, router, showToast]);
 
     // Update account balance when trades change - with debounce to prevent loops
     useEffect(() => {
@@ -164,6 +194,35 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         } catch (error) {
             console.error('Error deleting trade:', error);
             showToast('Erro ao excluir trade', 'error');
+        }
+    };
+
+    const handlePlaybookCreated = async () => {
+        await loadPlaybooks(accountId);
+        showToast('Playbook criado com sucesso!', 'success');
+    };
+
+    const handleEditPlaybook = (playbook: Playbook) => {
+        setEditingPlaybook(playbook);
+    };
+
+    const handleViewPlaybook = (playbook: Playbook) => {
+        setViewingPlaybook(playbook);
+    };
+
+    const handleUpdatePlaybook = async () => {
+        await loadPlaybooks(accountId);
+        showToast('Playbook atualizado com sucesso!', 'success');
+        setEditingPlaybook(null);
+    };
+
+    const handleDeletePlaybook = async (playbookId: string) => {
+        try {
+            await removePlaybook(playbookId);
+            showToast('Playbook excluído com sucesso!', 'success');
+        } catch (error) {
+            console.error('Error deleting playbook:', error);
+            showToast('Erro ao excluir playbook.', 'error');
         }
     };
 
@@ -404,14 +463,21 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                             <CardTitle>📖 Playbook</CardTitle>
                             <Button
                                 variant="ghost-success"
-                                onClick={() => setIsPlaybookModalOpen(true)}
+                                onClick={() => setIsCreatePlaybookModalOpen(true)}
                                 leftIcon={<span>+</span>}
                             >
                                 Criar Playbook
                             </Button>
                         </CardHeader>
                         <CardContent>
-                           <PlaybookGrid trades={trades} currency={currentAccount.currency} />
+                           <PlaybookGrid 
+                                trades={trades} 
+                                playbooks={playbooks} 
+                                currency={currentAccount?.currency || 'USD'} 
+                                onEdit={handleEditPlaybook}
+                                onDelete={handleDeletePlaybook}
+                                onView={handleViewPlaybook}
+                           />
                         </CardContent>
                     </Card>
                 </TabPanel>
@@ -549,11 +615,26 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
             {/* Playbook Modal */}
             <CreatePlaybookModal
-                isOpen={isPlaybookModalOpen}
-                onClose={() => setIsPlaybookModalOpen(false)}
+                isOpen={isCreatePlaybookModalOpen}
+                onClose={() => setIsCreatePlaybookModalOpen(false)}
                 accountId={accountId}
-                onCreatePlaybook={() => {
-                    setIsPlaybookModalOpen(false);
+                onCreatePlaybook={handlePlaybookCreated}
+            />
+
+            <EditPlaybookModal
+                isOpen={!!editingPlaybook}
+                onClose={() => setEditingPlaybook(null)}
+                playbook={editingPlaybook}
+                onUpdatePlaybook={handleUpdatePlaybook}
+            />
+
+            <ViewPlaybookModal
+                isOpen={!!viewingPlaybook}
+                onClose={() => setViewingPlaybook(null)}
+                playbook={viewingPlaybook}
+                onEdit={(playbook) => {
+                    setViewingPlaybook(null);
+                    setEditingPlaybook(playbook);
                 }}
             />
             </div>
