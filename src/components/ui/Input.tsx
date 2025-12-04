@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+import { cn } from '@/lib/utils';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
@@ -14,20 +15,6 @@ export function Input({
     const generatedId = useId();
     const id = props.id || generatedId;
 
-    const inputClasses = `
-        w-full px-4 py-2.5 bg-gray-800/50 border rounded-lg
-        text-gray-100 placeholder-gray-500
-        focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-        transition-all duration-200
-        ${error ? 'border-red-500' : 'border-gray-700'}
-        ${className}
-        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-        [color-scheme:dark]
-        [&::-webkit-calendar-picker-indicator]:cursor-pointer
-        [&::-webkit-calendar-picker-indicator]:opacity-100
-        [&::-webkit-calendar-picker-indicator]:filter-invert
-    `;
-
     return (
         <div className="flex flex-col gap-2">
             {label && (
@@ -40,7 +27,15 @@ export function Input({
             )}
             <input
                 id={id}
-                className={inputClasses}
+                className={cn(
+                    "w-full px-4 py-2.5 bg-gray-800/50 border rounded-lg text-gray-100 placeholder-gray-500",
+                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200",
+                    error ? 'border-red-500' : 'border-gray-700',
+                    "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                    "[color-scheme:dark]",
+                    "[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:filter-invert",
+                    className
+                )}
                 {...props}
             />
             {error && (
@@ -71,15 +66,12 @@ export function Textarea({ label, error, className = '', ...props }: TextareaPro
             )}
             <textarea
                 id={textareaId}
-                className={`
-          w-full px-4 py-2.5 
-          bg-gray-800/50 border border-gray-700 rounded-lg 
-          text-gray-100 placeholder-gray-500
-          focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-          transition-all duration-200 resize-vertical
-          ${error ? 'border-red-500 focus:ring-red-500' : ''}
-          ${className}
-        `}
+                className={cn(
+                    "w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500",
+                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 resize-vertical",
+                    error && "border-red-500 focus:ring-red-500",
+                    className
+                )}
                 {...props}
             />
             {error && (

@@ -1,5 +1,6 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { memo, useEffect, useState } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'loading';
@@ -72,9 +73,11 @@ const ToastComponent = ({ message, type = 'success', isVisible, onClose, duratio
 
     return (
         <div
-            className={`fixed top-4 right-4 z-100 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl text-white font-medium transition-all duration-300 transform min-h-[72px] ${
-                show ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-            } ${bgColors[type]}`}
+            className={cn(
+                "fixed top-4 right-4 z-100 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl text-white font-medium transition-all duration-300 transform min-h-[72px]",
+                show ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0',
+                bgColors[type]
+            )}
         >
             <span className="text-xl">{icons[type]}</span>
             {type === 'loading' && (

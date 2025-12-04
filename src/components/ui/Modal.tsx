@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
 interface ModalProps {
     isOpen: boolean;
@@ -57,13 +58,12 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'lg' }: Mod
             onClick={onClose}
         >
             <div
-                className={`
-          ${maxWidthClasses[maxWidth]} w-full
-          bg-linear-to-br from-gray-900 to-gray-800
-          border border-gray-700 rounded-2xl shadow-2xl
-          max-h-[90vh] flex flex-col
-          transform transition-all duration-200
-        `}
+                className={cn(
+                    maxWidthClasses[maxWidth],
+                    "w-full bg-linear-to-br from-gray-900 to-gray-800",
+                    "border border-gray-700 rounded-2xl shadow-2xl",
+                    "max-h-[90vh] flex flex-col transform transition-all duration-200"
+                )}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
