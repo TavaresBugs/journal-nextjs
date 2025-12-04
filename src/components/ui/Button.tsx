@@ -1,4 +1,5 @@
 import React, { ButtonHTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold';
@@ -70,13 +71,13 @@ export function Button({
 
     return (
         <button 
-            className={`
-                relative overflow-hidden group/btn
-                ${baseStyles}
-                ${variants[variant]}
-                ${size !== 'icon' || !className.includes('w-') ? sizes[size] : ''} 
-                ${className}
-            `}
+            className={cn(
+                "relative overflow-hidden group/btn",
+                baseStyles,
+                variants[variant],
+                (size !== 'icon' || !className.includes('w-')) && sizes[size],
+                className
+            )}
             disabled={disabled || isLoading}
             {...props}
         >

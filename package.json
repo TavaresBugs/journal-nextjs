@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.86.0",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.19",
     "lightweight-charts": "^5.0.9",
     "next": "16.0.7",
@@ -19,6 +20,7 @@
     "react-dom": "19.2.1",
     "react-plotly.js": "^2.6.0",
     "recharts": "^3.5.1",
+    "tailwind-merge": "^3.4.0",
     "zustand": "^5.0.9"
   },
   "devDependencies": {
