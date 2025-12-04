@@ -1,215 +1,196 @@
-# Plano de Testes Automatizados
+# 🧪 Plano de Testes
 
-## Por que Bun? ✅
+> Última atualização: Dezembro 2024
 
-**Sim, usar Bun é uma excelente escolha!**
+## Stack de Testes
 
-### Vantagens do Bun:
+| Ferramenta          | Uso                               |
+| ------------------- | --------------------------------- |
+| **Vitest**          | Test runner (compatível com Jest) |
+| **Testing Library** | Testes de componentes React       |
+| **Happy DOM**       | DOM environment                   |
 
-- ⚡ **20-100x mais rápido** que Jest
-- 🎯 **Suporte nativo** para TypeScript/TSX (sem configuração)
-- 🔋 **Built-in** (não precisa instalar bibliotecas extras)
-- 🎨 **API compatível** com Jest (fácil migração)
-- 📦 **Menor overhead** de dependências
+### Dependências Instaladas
 
-### Comparação:
-
-```
-Jest:     ~5-10s para rodar 50 testes
-Bun:      ~0.5-1s para rodar 50 testes
-Vitest:   ~2-3s para rodar 50 testes
-```
-
----
-
-## Setup Inicial
-
-### 1. Instalar Bun (se não tiver)
-
-```bash
-curl -fsSL https://bun.sh/install | bash
-```
-
-### 2. Inicializar Testes
-
-```bash
-bun add -d @testing-library/react @testing-library/jest-dom
-bun add -d @testing-library/user-event happy-dom
-```
-
-### 3. Criar arquivo de configuração
-
-Criar `bunfig.toml`:
-
-```toml
-[test]
-preload = ["./tests/setup.ts"]
-```
-
-Criar `tests/setup.ts`:
-
-```typescript
-import { expect } from "bun:test";
-import "@testing-library/jest-dom";
+```json
+{
+  "@testing-library/jest-dom": "^6.9.1",
+  "@testing-library/react": "^16.3.0",
+  "@testing-library/user-event": "^14.6.1",
+  "happy-dom": "^20.0.11"
+}
 ```
 
 ---
 
-## Estrutura de Testes
+## 📁 Estrutura de Testes
 
 ```
 tests/
-├── setup.ts                          # Configuração global
+├── setup.ts                    # Configuração global
 ├── unit/
+│   ├── lib/
+│   │   ├── calculations.test.ts
+│   │   ├── utils.test.ts
+│   │   └── storage.test.ts
 │   ├── components/
 │   │   ├── ui/
-│   │   │   ├── CircularProgress.test.tsx
 │   │   │   ├── Button.test.tsx
+│   │   │   ├── Modal.test.tsx
 │   │   │   └── Input.test.tsx
 │   │   ├── trades/
 │   │   │   ├── TradeForm.test.tsx
-│   │   │   ├── TradeCalendar.test.tsx
-│   │   │   └── DayTradesTable.test.tsx
-│   │   ├── playbook/
-│   │   │   └── PlaybookGrid.test.tsx
-│   │   └── reports/
-│   │       └── Charts.test.tsx
-│   ├── lib/
-│   │   ├── calculations.test.ts
-│   │   ├── storage.test.ts
-│   │   └── utils.test.ts
+│   │   │   └── TradeCalendar.test.tsx
+│   │   ├── journal/
+│   │   │   └── DayDetailModal.test.tsx
+│   │   ├── charts/
+│   │   │   ├── recharts/*.test.tsx
+│   │   │   └── lightweight/*.test.tsx
+│   │   └── playbook/
+│   │       └── PlaybookGrid.test.tsx
+│   ├── services/
+│   │   ├── accountService.test.ts
+│   │   ├── tradeService.test.ts
+│   │   ├── journalService.test.ts
+│   │   └── routineService.test.ts
 │   └── stores/
 │       ├── useAccountStore.test.ts
 │       └── useTradeStore.test.ts
 └── integration/
-    ├── trade-workflow.test.tsx       # Criar → Editar → Deletar
-    ├── journal-workflow.test.tsx     # Criar journal entry
-    ├── playbook-workflow.test.tsx    # CRUD de playbooks
-    └── reports-generation.test.tsx   # Gerar relatórios
+    ├── trade-workflow.test.tsx
+    ├── journal-workflow.test.tsx
+    └── playbook-workflow.test.tsx
 ```
 
 ---
 
-## Prioridades de Testes
+## 🎯 Prioridades
 
-### 🔴 **Prioridade ALTA** (Críticos)
+### 🔴 Alta (Críticos)
 
-#### 1. Cálculos Financeiros (`lib/calculations.test.ts`)
+| Módulo                | Meta Coverage | Descrição            |
+| --------------------- | ------------- | -------------------- |
+| `lib/calculations.ts` | 90%+          | Cálculos financeiros |
+| `services/*`          | 85%+          | Camada de dados      |
+| `stores/*`            | 85%+          | Estado global        |
+
+### 🟡 Média (Importantes)
+
+| Módulo                 | Meta Coverage | Descrição                |
+| ---------------------- | ------------- | ------------------------ |
+| `components/trades/*`  | 80%+          | Formulários e listagens  |
+| `components/charts/*`  | 70%+          | Renderização de gráficos |
+| `components/journal/*` | 75%+          | Modals e calendário      |
+
+### 🟢 Baixa (Nice to have)
+
+| Módulo                  | Meta Coverage | Descrição         |
+| ----------------------- | ------------- | ----------------- |
+| `components/ui/*`       | 60%+          | Componentes base  |
+| `components/playbook/*` | 65%+          | CRUD de playbooks |
+
+---
+
+## 📝 Exemplos de Testes
+
+### Cálculos Financeiros
 
 ```typescript
-import { describe, test, expect } from "bun:test";
-import { calculateMetrics, formatCurrency } from "@/lib/calculations";
+import { describe, test, expect } from "vitest";
+import { calculateMetrics } from "@/lib/calculations";
 
-describe("Calculations", () => {
+describe("calculateMetrics", () => {
   test("calculates profit factor correctly", () => {
     const trades = [{ pnl: 100 }, { pnl: -50 }, { pnl: 200 }];
-    // Profit Factor = Total Wins / Total Losses
-    // = 300 / 50 = 6.0
+    // Profit Factor = 300 / 50 = 6.0
     expect(calculateMetrics(trades).profitFactor).toBe(6.0);
   });
 
-  test("handles division by zero", () => {
-    const trades = [{ pnl: 100 }, { pnl: 200 }]; // Only wins
+  test("handles no losses (division by zero)", () => {
+    const trades = [{ pnl: 100 }, { pnl: 200 }];
     expect(calculateMetrics(trades).profitFactor).toBe(Infinity);
+  });
+
+  test("handles empty trades array", () => {
+    expect(calculateMetrics([]).winRate).toBe(0);
   });
 });
 ```
 
-#### 2. Trade Duration (`DayTradesTable.test.tsx`)
+### Componentes UI
 
 ```typescript
-test("calculates duration with date and time", () => {
-  const trade = {
-    entryDate: "2024-01-01",
-    entryTime: "09:00",
-    exitDate: "2024-01-01",
-    exitTime: "10:30",
-  };
+import { describe, test, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { Button } from "@/components/ui/Button";
 
-  const duration = calculateDuration(trade);
-  expect(duration).toBe("01:30:00");
+describe("Button", () => {
+  test("renders with correct text", () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByRole("button")).toHaveTextContent("Click me");
+  });
+
+  test("calls onClick when clicked", async () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click</Button>);
+
+    await userEvent.click(screen.getByRole("button"));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  test("applies variant classes", () => {
+    render(<Button variant="gradient-primary">Submit</Button>);
+    expect(screen.getByRole("button")).toHaveClass("bg-gradient-to-r");
+  });
 });
 ```
 
-#### 3. PlaybookGrid Metrics
+### Services
 
 ```typescript
-test("displays win rate with correct color", () => {
-  const { getByText } = render(<PlaybookGrid playbooks={mockPlaybooks} />);
+import { describe, test, expect, vi } from "vitest";
+import { getTrades, saveTrade } from "@/services/tradeService";
 
-  const winRate = getByText("75%");
-  expect(winRate).toHaveClass("text-green-400"); // >= 70%
-});
-```
+// Mock Supabase
+vi.mock("@/lib/supabase", () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+  },
+}));
 
----
-
-### 🟡 **Prioridade MÉDIA** (Importantes)
-
-#### 4. Chart Rendering
-
-```typescript
-test("renders all 9 charts", () => {
-  const { container } = render(<Charts trades={mockTrades} />);
-
-  expect(container.querySelectorAll(".recharts-wrapper")).toHaveLength(9);
-});
-```
-
-#### 5. Responsive Layouts
-
-```typescript
-test("calendar shows 3 columns on mobile", () => {
-  // Mock mobile viewport
-  global.innerWidth = 375;
-
-  const { container } = render(<TradeCalendar />);
-  expect(container.querySelector(".grid")).toHaveClass("grid-cols-3");
-});
-```
-
-#### 6. Form Validation
-
-```typescript
-test("validates required fields", async () => {
-  const { getByText, getByLabelText } = render(<TradeForm />);
-
-  const submitButton = getByText("Registrar Trade");
-  await userEvent.click(submitButton);
-
-  expect(getByText("Campo obrigatório")).toBeInTheDocument();
+describe("tradeService", () => {
+  test("getTrades returns array", async () => {
+    const trades = await getTrades("account-id");
+    expect(Array.isArray(trades)).toBe(true);
+  });
 });
 ```
 
 ---
 
-### 🟢 **Prioridade BAIXA** (Nice to have)
-
-#### 7. Tooltip Interactions
-
-#### 8. Animations
-
-#### 9. Accessibility (A11y)
-
----
-
-## Executando Testes
-
-### Rodar todos os testes
+## 🚀 Executando Testes
 
 ```bash
-bun test
+# Rodar todos os testes
+npm test
+
+# Watch mode
+npm test -- --watch
+
+# Coverage
+npm test -- --coverage
+
+# Arquivo específico
+npm test -- calculations
 ```
 
-### Rodar testes específicos
+---
 
-```bash
-bun test calculations
-bun test --watch          # Watch mode
-bun test --coverage       # Com cobertura
-```
-
-### CI/CD (GitHub Actions)
+## 🔄 CI/CD (GitHub Actions)
 
 ```yaml
 name: Tests
@@ -220,100 +201,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun test
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npm test -- --coverage
+      - uses: codecov/codecov-action@v3
 ```
 
 ---
 
-## Metas de Cobertura
-
-| Módulo                          | Meta | Prioridade |
-| ------------------------------- | ---- | ---------- |
-| `lib/calculations.ts`           | 90%+ | 🔴 Alta    |
-| `components/reports/Charts.tsx` | 70%+ | 🟡 Média   |
-| `components/trades/*`           | 80%+ | 🔴 Alta    |
-| `components/ui/*`               | 60%+ | 🟢 Baixa   |
-| `stores/*`                      | 85%+ | 🔴 Alta    |
-
----
-
-## Checklist de Implementação
+## ✅ Checklist de Implementação
 
 ### Fase 1: Setup
 
-- [ ] Instalar Bun
-- [ ] Adicionar dependências de teste
-- [ ] Criar arquivos de configuração (`bunfig.toml`, `tests/setup.ts`)
-- [ ] Criar estrutura de pastas
+- [ ] Configurar Vitest (`vitest.config.ts`)
+- [ ] Criar `tests/setup.ts`
+- [ ] Adicionar scripts no `package.json`
 
-### Fase 2: Testes Críticos (Prioridade Alta)
+### Fase 2: Testes Críticos
 
 - [ ] `lib/calculations.test.ts`
-- [ ] `components/journal/day-detail/DayTradesTable.test.tsx`
-- [ ] `components/playbook/PlaybookGrid.test.tsx`
+- [ ] `services/tradeService.test.ts`
+- [ ] `services/journalService.test.ts`
 - [ ] `stores/useTradeStore.test.ts`
 
-### Fase 3: Testes Importantes (Prioridade Média)
+### Fase 3: Testes de Componentes
 
-- [ ] `components/reports/Charts.test.tsx`
+- [ ] `components/ui/Button.test.tsx`
+- [ ] `components/ui/Modal.test.tsx`
 - [ ] `components/trades/TradeForm.test.tsx`
-- [ ] `components/trades/TradeCalendar.test.tsx`
-- [ ] Integration tests básicos
+- [ ] `components/journal/DayDetailModal.test.tsx`
 
-### Fase 4: Testes Complementares (Prioridade Baixa)
-
-- [ ] Testes de UI components
-- [ ] Testes de acessibilidade
-- [ ] Testes E2E completos
-
-### Fase 5: CI/CD
+### Fase 4: CI/CD
 
 - [ ] Configurar GitHub Actions
-- [ ] Adicionar badge de cobertura
-- [ ] Configurar pre-commit hooks
+- [ ] Adicionar badge de coverage
+- [ ] Setup Codecov
 
 ---
 
-## Exemplo Completo
+## 📚 Recursos
 
-```typescript
-// tests/unit/components/ui/CircularProgress.test.tsx
-import { describe, test, expect } from "bun:test";
-import { render } from "@testing-library/react";
-import { CircularProgress } from "@/components/ui/CircularProgress";
-
-describe("CircularProgress", () => {
-  test("renders with correct percentage", () => {
-    const { container } = render(<CircularProgress percentage={75} />);
-
-    expect(container.querySelector("text")).toHaveTextContent("75%");
-  });
-
-  test("applies custom colors", () => {
-    const { container } = render(
-      <CircularProgress percentage={50} color="#22c55e" />
-    );
-
-    const circle = container.querySelector("circle[stroke='#22c55e']");
-    expect(circle).toBeInTheDocument();
-  });
-
-  test("handles 0% and 100%", () => {
-    const { rerender, container } = render(<CircularProgress percentage={0} />);
-    expect(container.querySelector("text")).toHaveTextContent("0%");
-
-    rerender(<CircularProgress percentage={100} />);
-    expect(container.querySelector("text")).toHaveTextContent("100%");
-  });
-});
-```
-
----
-
-## Recursos
-
-- 📖 [Bun Test Docs](https://bun.sh/docs/cli/test)
-- 🧪 [Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-- 🎯 [Bun Examples](https://github.com/oven-sh/bun/tree/main/test)
+- [Vitest Docs](https://vitest.dev/)
+- [Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [Happy DOM](https://github.com/capricorn86/happy-dom)

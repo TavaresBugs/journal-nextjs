@@ -1,50 +1,112 @@
 # 🚧 Funcionalidades Pendentes e Roadmap
 
-Este documento consolida as funcionalidades planejadas, melhorias futuras e itens do sistema legado que ainda não foram totalmente migrados ou implementados.
+> Última atualização: Dezembro 2024
 
-## 1. 📖 Playbooks (Melhorias Futuras)
-
-Embora o CRUD e a integração básica estejam completos, as seguintes melhorias estão planejadas:
-
-- [ ] **Drag & Drop de Regras:** Permitir reordenar regras arrastando-as.
-- [ ] **Grupos Customizados:** Permitir criar grupos de regras além dos padrões (Mercado, Entrada, Saída).
-- [ ] **Templates:** Oferecer templates de playbooks prontos (ex: ICT, SMC, Price Action).
-- [ ] **Importar/Exportar:** Permitir compartilhar playbooks via arquivo JSON.
-- [ ] **Estatísticas Avançadas:** Dashboard dedicado com métricas de performance por playbook (Win Rate, Profit Factor, etc.).
-
-## 2. 📅 Calendário e Rotinas
-
-- [ ] **Resumo Visual no Calendário:** Indicação clara de dias de Profit (Verde) vs Loss (Vermelho) diretamente na célula do dia.
-- [ ] **Rotinas Diárias (Checklist):**
-  - Garantir persistência completa por data.
-  - Visualização integrada no modal de detalhes do dia.
-  - Relatório de adesão à rotina (quantos dias cumpriu o checklist).
-
-## 3. 📊 Dashboard e Métricas
-
-- [ ] **Trava de Ativo (Lock Asset):** Funcionalidade para "travar" um ativo no formulário de trade para evitar mudanças acidentais durante uma sessão.
-- [ ] **Gráficos Avançados:**
-  - Curva de capital (Equity Curve).
-  - Distribuição de trades por hora/dia da semana.
-  - Gráfico de dispersão (MFE/MAE).
-
-## 4. 🖼️ Journal e Mídia
-
-- [ ] **Carousel de Imagens:** Navegação facilitada entre múltiplas imagens de um mesmo trade/dia sem precisar fechar o modal.
-- [ ] **Anotações em Imagens:** Ferramenta básica de desenho/anotação sobre os screenshots carregados.
-
-## 5. 🤖 Agente IA (Roadmap)
-
-- [ ] **Análise de Padrões:** Identificar automaticamente comportamentos repetitivos em trades vencedores/perdedores.
-- [ ] **Alertas de Risco:** Avisar quando o usuário estiver desviando de suas regras ou excedendo limites de risco.
-- [ ] **Sugestões de Melhoria:** Dicas baseadas nos dados do próprio usuário.
-
-## 6. ⚙️ Configurações e Sistema
-
-- [ ] **Backup Automático:** Configurar backups periódicos automáticos para o Supabase Storage.
-- [ ] **Temas Customizados:** Permitir que o usuário crie seu próprio tema de cores além do Zorin/Dark padrão.
-- [ ] **Internacionalização (i18n):** Suporte completo para outros idiomas (Inglês, Espanhol).
+Este documento consolida as funcionalidades planejadas, melhorias futuras e itens pendentes de implementação.
 
 ---
 
-**Nota:** Este documento substitui os antigos `legacy-inventory.md` e `playbook-todo.md`.
+## ✅ Funcionalidades Implementadas
+
+### Core
+
+- [x] Multi-contas com gerenciamento de carteiras
+- [x] CRUD completo de trades
+- [x] Journal multi-timeframe (9 TFs)
+- [x] Upload de imagens + paste clipboard
+- [x] Calendário com visualização mensal
+- [x] Métricas básicas e avançadas
+- [x] Rotinas diárias (checklist)
+- [x] Backup/Restore de dados
+
+### Playbooks
+
+- [x] CRUD de playbooks
+- [x] Regras organizadas (Mercado, Entrada, Saída)
+- [x] Edição inline de regras
+- [x] Vinculação de trades a playbooks
+
+### Gráficos
+
+- [x] Recharts: Win Rate, Distribuição, Grid Mensal
+- [x] Lightweight Charts: Curva de Capital, Drawdown
+
+### Compartilhamento
+
+- [x] Páginas públicas de journal entries
+- [x] Preview de imagens com lightbox
+- [x] Formatação de notas (Acertos/Melhorias/Erros)
+
+### Segurança
+
+- [x] Google OAuth via Supabase
+- [x] Row Level Security (RLS)
+- [x] Middleware de proteção de rotas
+- [x] Tratamento robusto de erros
+
+### UI/UX
+
+- [x] Tema Zorin OS (Dark Mode)
+- [x] Design responsivo (Mobile-first)
+- [x] Gradientes e animações premium
+- [x] Glassmorphism com background blur
+
+---
+
+## 📋 Pendentes
+
+### 1. 📖 Playbooks (Melhorias)
+
+| Feature             | Descrição                        | Prioridade |
+| ------------------- | -------------------------------- | ---------- |
+| Drag & Drop         | Reordenar regras arrastando      | 🟡 Média   |
+| Grupos Customizados | Criar grupos além dos padrões    | 🟢 Baixa   |
+| Templates           | Playbooks prontos (ICT, SMC, PA) | 🟡 Média   |
+| Import/Export       | Compartilhar via JSON            | 🟢 Baixa   |
+| Dashboard Stats     | Métricas por playbook            | 🟡 Média   |
+
+### 2. 📊 Dashboard e Métricas
+
+| Feature              | Descrição                  | Prioridade |
+| -------------------- | -------------------------- | ---------- |
+| Lock Asset           | Travar ativo no formulário | 🟢 Baixa   |
+| Gráfico MFE/MAE      | Dispersão de trades        | 🟡 Média   |
+| Distribuição Horária | Trades por hora/dia        | 🟢 Baixa   |
+
+### 3. 🖼️ Journal e Mídia
+
+| Feature          | Descrição                        | Prioridade |
+| ---------------- | -------------------------------- | ---------- |
+| Carousel Imagens | Navegação entre imagens no modal | 🟡 Média   |
+| Anotações        | Desenhar sobre screenshots       | 🟢 Baixa   |
+
+### 4. 🤖 Agente IA (Roadmap)
+
+| Feature            | Descrição                              | Prioridade |
+| ------------------ | -------------------------------------- | ---------- |
+| Análise de Padrões | Identificar comportamentos repetitivos | 🔴 Alta    |
+| Alertas de Risco   | Avisar desvios de regras               | 🔴 Alta    |
+| Sugestões          | Dicas baseadas nos dados               | 🟡 Média   |
+
+### 5. ⚙️ Sistema
+
+| Feature            | Descrição                        | Prioridade |
+| ------------------ | -------------------------------- | ---------- |
+| Backup Automático  | Backups periódicos para Supabase | 🟡 Média   |
+| Temas Customizados | Criar paletas de cores           | 🟢 Baixa   |
+| i18n               | Suporte a EN/ES                  | 🟢 Baixa   |
+
+---
+
+## 🎯 Próximos Passos Sugeridos
+
+1. **Curto prazo:** Carousel de imagens, Lock Asset
+2. **Médio prazo:** Dashboard de Playbooks, Gráfico MFE/MAE
+3. **Longo prazo:** Agente IA, Internacionalização
+
+---
+
+## 📝 Notas
+
+- Prioridades podem mudar conforme feedback de uso
+- Features marcadas como 🔴 Alta são candidatas para próximos sprints
