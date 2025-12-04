@@ -1,18 +1,21 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
-import { AreaSeries } from 'lightweight-charts';
+import { AreaSeries, IChartApi, ISeriesApi } from 'lightweight-charts';
 
 interface DrawdownChartLightweightProps {
     trades: Trade[];
     initialBalance: number;
-    accountCreatedAt: string; // Added this prop as it's used in the new chartData logic
+    accountCreatedAt: string;
 }
 
 export function DrawdownChartLightweight({ trades, initialBalance, accountCreatedAt }: DrawdownChartLightweightProps) {
+    const chartRef = useRef<IChartApi | null>(null);
+    const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+
     const chartData = useMemo(() => {
         // 1. Aggregate PnL by day to calculate daily equity
         const dailyPnL = trades.reduce((acc, trade) => {
@@ -60,16 +63,18 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
         });
 
         return finalData.map(item => ({
-            time: item.time as any,
+            time: item.time,
             value: item.value
         }));
     }, [trades, initialBalance, accountCreatedAt]);
     
     const maxDrawdown = useMemo(() => {
+        if (chartData.length === 0) return 0;
         return Math.min(...chartData.map(d => d.value));
     }, [chartData]);
     
-    const setupChart = useCallback((chart: any) => {
+    const onChartReady = (chart: IChartApi) => {
+        chartRef.current = chart;
         const areaSeries = chart.addSeries(AreaSeries, {
             lineColor: '#ef4444',
             topColor: 'rgba(239, 68, 68, 0.0)',
@@ -80,8 +85,16 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
                 formatter: (price: number) => `${Math.abs(price).toFixed(2)}%`,
             },
         });
+        seriesRef.current = areaSeries;
+    };
+
+    useEffect(() => {
+        if (!seriesRef.current) return;
+        seriesRef.current.setData(chartData);
         
-        areaSeries.setData(chartData);
+        if (chartRef.current) {
+            chartRef.current.timeScale().fitContent();
+        }
     }, [chartData]);
     
     if (trades.length === 0) {
@@ -97,12 +110,6 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
         );
     }
     
-    const drawdownColor = 
-        maxDrawdown >= -5 ? 'text-green-400' :
-        maxDrawdown >= -10 ? 'text-amber-400' :
-        maxDrawdown >= -20 ? 'text-orange-400' :
-        'text-red-400';
-    
     return (
         <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
             <div className="flex items-center justify-between mb-8">
@@ -114,9 +121,10 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
                 </span>
             </div>
             
-            <LightweightChartWrapper height={400}>
-                {setupChart}
-            </LightweightChartWrapper>
+            <LightweightChartWrapper
+                height={400}
+                onChartReady={onChartReady}
+            />
             
             <div className="mt-4 grid grid-cols-4 gap-2 text-xs text-center">
                 <div className="bg-green-500/10 border border-green-500/30 rounded py-1">
