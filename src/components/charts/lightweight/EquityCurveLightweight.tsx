@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
-import { AreaSeries, LineSeries, LineStyle } from 'lightweight-charts';
+import { AreaSeries, LineSeries, LineStyle, IChartApi, ISeriesApi } from 'lightweight-charts';
 import { formatCurrency } from '@/lib/calculations';
 
 interface EquityCurveLightweightProps {
@@ -20,6 +20,10 @@ export function EquityCurveLightweight({
     currency,
     accountCreatedAt 
 }: EquityCurveLightweightProps) {
+    const chartRef = useRef<IChartApi | null>(null);
+    const areaSeriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+    const baselineSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+
     const chartData = useMemo(() => {
         // 1. Aggregate PnL by day
         const dailyPnL = trades.reduce((acc, trade) => {
@@ -75,20 +79,21 @@ export function EquityCurveLightweight({
             });
         });
 
+        // Use string dates for lightweight charts (Time can be string | number | object)
         return finalData.map(item => ({
-            time: item.time as any,
+            time: item.time,
             value: item.value
         }));
     }, [trades, initialBalance, accountCreatedAt]);
     
-    const isProfit = chartData[chartData.length - 1]?.value >= initialBalance;
+    const isProfit = chartData.length > 0 ? (chartData[chartData.length - 1].value >= initialBalance) : true;
     
-    const setupChart = useCallback((chart: any) => {
-        // v5 API: Pass series class as first param
+    // Initialize chart series
+    const onChartReady = (chart: IChartApi) => {
+        chartRef.current = chart;
+
+        // Create Area Series for Equity Curve
         const areaSeries = chart.addSeries(AreaSeries, {
-            lineColor: '#ef4444', // Red-500
-            topColor: 'rgba(239, 68, 68, 0.4)', // Red with opacity
-            bottomColor: 'rgba(239, 68, 68, 0.0)', // Transparent bottom
             lineWidth: 2,
             priceFormat: {
                 type: 'price',
@@ -96,23 +101,51 @@ export function EquityCurveLightweight({
                 minMove: 0.01,
             },
         });
+        areaSeriesRef.current = areaSeries;
         
-        areaSeries.setData(chartData);
-        
-        // Add baseline at initial balance
-        const lineSeries = chart.addSeries(LineSeries, {
+        // Create Baseline Series
+        const baselineSeries = chart.addSeries(LineSeries, {
             color: '#6b7280',
             lineWidth: 1,
             lineStyle: LineStyle.Dashed,
             priceLineVisible: false,
             lastValueVisible: false,
         });
+        baselineSeriesRef.current = baselineSeries;
+    };
+
+    // Update data and options when dependencies change
+    useEffect(() => {
+        if (!areaSeriesRef.current || !baselineSeriesRef.current) return;
+
+        // Update colors based on profit status
+        const color = isProfit ? '#22c55e' : '#ef4444'; // Green or Red
+        const topColor = isProfit ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
         
-        lineSeries.setData([
-            { time: chartData[0]?.time, value: initialBalance },
-            { time: chartData[chartData.length - 1]?.time, value: initialBalance },
-        ]);
-    }, [chartData, initialBalance, isProfit]);
+        areaSeriesRef.current.applyOptions({
+            lineColor: color,
+            topColor: topColor,
+            bottomColor: 'rgba(0, 0, 0, 0)', // Transparent bottom
+        });
+
+        // Set Data
+        areaSeriesRef.current.setData(chartData);
+
+        // Set Baseline Data
+        if (chartData.length > 0) {
+            baselineSeriesRef.current.setData([
+                { time: chartData[0].time, value: initialBalance },
+                { time: chartData[chartData.length - 1].time, value: initialBalance },
+            ]);
+        }
+
+        // Fit content if chart exists
+        if (chartRef.current) {
+            chartRef.current.timeScale().fitContent();
+        }
+
+    }, [chartData, isProfit, initialBalance]);
+
     
     if (trades.length === 0) {
         return (
@@ -129,7 +162,7 @@ export function EquityCurveLightweight({
     
     const currentEquity = chartData[chartData.length - 1]?.value || initialBalance;
     const pnl = currentEquity - initialBalance;
-    const pnlPercent = ((pnl / initialBalance) * 100).toFixed(2);
+    const pnlPercent = initialBalance !== 0 ? ((pnl / initialBalance) * 100).toFixed(2) : '0.00';
     
     return (
         <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
@@ -151,9 +184,10 @@ export function EquityCurveLightweight({
                 </div>
             </div>
             
-            <LightweightChartWrapper height={450}>
-                {setupChart}
-            </LightweightChartWrapper>
+            <LightweightChartWrapper
+                height={450}
+                onChartReady={onChartReady}
+            />
         </div>
     );
 }

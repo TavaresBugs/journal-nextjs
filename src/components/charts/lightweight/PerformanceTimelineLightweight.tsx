@@ -1,17 +1,20 @@
 'use client';
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
-import { HistogramSeries } from 'lightweight-charts';
+import { HistogramSeries, IChartApi, ISeriesApi } from 'lightweight-charts';
 
 interface PerformanceTimelineLightweightProps {
     trades: Trade[];
     currency: string;
 }
 
-export function PerformanceTimelineLightweight({ trades, currency }: PerformanceTimelineLightweightProps) {
+export function PerformanceTimelineLightweight({ trades }: PerformanceTimelineLightweightProps) {
+    const chartRef = useRef<IChartApi | null>(null);
+    const seriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
+
     const chartData = useMemo(() => {
         // 1. Aggregate PnL by day
         const dailyPnL = trades.reduce((acc, trade) => {
@@ -31,13 +34,14 @@ export function PerformanceTimelineLightweight({ trades, currency }: Performance
             
         // 3. Return formatted data
         return sortedData.map(item => ({
-            time: item.time as any,
+            time: item.time,
             value: item.value,
             color: item.color
         }));
     }, [trades]);
     
-    const setupChart = useCallback((chart: any) => {
+    const onChartReady = (chart: IChartApi) => {
+        chartRef.current = chart;
         const histogramSeries = chart.addSeries(HistogramSeries, {
             priceFormat: {
                 type: 'price',
@@ -45,8 +49,16 @@ export function PerformanceTimelineLightweight({ trades, currency }: Performance
                 minMove: 0.01,
             },
         });
+        seriesRef.current = histogramSeries;
+    };
+
+    useEffect(() => {
+        if (!seriesRef.current) return;
+        seriesRef.current.setData(chartData);
         
-        histogramSeries.setData(chartData);
+        if (chartRef.current) {
+            chartRef.current.timeScale().fitContent();
+        }
     }, [chartData]);
     
     if (trades.length === 0) {
@@ -73,9 +85,10 @@ export function PerformanceTimelineLightweight({ trades, currency }: Performance
                 </span>
             </div>
             
-            <LightweightChartWrapper height={400}>
-                {setupChart}
-            </LightweightChartWrapper>
+            <LightweightChartWrapper
+                height={400}
+                onChartReady={onChartReady}
+            />
         </div>
     );
 }

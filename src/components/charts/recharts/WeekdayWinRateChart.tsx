@@ -54,7 +54,7 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
                     <Tooltip
                         cursor={{ fill: '#374151', opacity: 0.2 }}
                         contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
-                        formatter={(value: number, name: string, props: any) => [
+                        formatter={(value: number, name: string, props: { payload: { wins: number; total: number } }) => [
                             `${value.toFixed(1)}%`, 
                             `Win Rate (${props.payload.wins}/${props.payload.total})`
                         ]}

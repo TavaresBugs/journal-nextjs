@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useRef, ReactNode } from 'react';
+import { useEffect, useRef } from 'react';
 import { createChart, IChartApi, ColorType, DeepPartial, ChartOptions } from 'lightweight-charts';
 
 interface LightweightChartWrapperProps {
-    children: (chart: IChartApi) => void;
+    onChartReady?: (chart: IChartApi) => void;
     height?: number;
     options?: DeepPartial<ChartOptions>;
 }
 
 export function LightweightChartWrapper({ 
-    children, 
+    onChartReady,
     height = 400,
     options = {}
 }: LightweightChartWrapperProps) {
@@ -18,6 +18,7 @@ export function LightweightChartWrapper({
     const chartRef = useRef<IChartApi | null>(null);
     const resizeObserverRef = useRef<ResizeObserver | null>(null);
     
+    // We only want to create the chart once
     useEffect(() => {
         if (!chartContainerRef.current) return;
         
@@ -62,16 +63,23 @@ export function LightweightChartWrapper({
         
         chartRef.current = chart;
         
-        // Call children to setup series
-        children(chart);
+        // Notify parent that chart is ready
+        if (onChartReady) {
+            onChartReady(chart);
+        }
         
         // Auto-fit content
-        chart.timeScale().fitContent();
+        // We delay this slightly to ensure data might be loaded by the parent in the callback
+        setTimeout(() => {
+            chart.timeScale().fitContent();
+        }, 0);
         
         // Responsive handling with ResizeObserver
         resizeObserverRef.current = new ResizeObserver(entries => {
-            const { width } = entries[0].contentRect;
-            chart.applyOptions({ width });
+            if (entries[0]?.contentRect) {
+                const { width } = entries[0].contentRect;
+                chart.applyOptions({ width });
+            }
         });
         
         resizeObserverRef.current.observe(chartContainerRef.current);
@@ -79,8 +87,20 @@ export function LightweightChartWrapper({
         return () => {
             resizeObserverRef.current?.disconnect();
             chart.remove();
+            chartRef.current = null;
         };
-    }, [children, height, options]);
-    
+        // We exclude options from dependency to avoid destroying chart on options change.
+        // Dynamic options should be applied via applyOptions in a separate effect if needed.
+        // However, if height changes, we might want to resize.
+        // For simplicity, we recreate if height changes, but ideally we should just resize.
+    }, [height]);
+
+    // Handle options updates without destroying chart
+    useEffect(() => {
+        if (chartRef.current && options) {
+            chartRef.current.applyOptions(options);
+        }
+    }, [options]);
+
     return <div ref={chartContainerRef} className="w-full" />;
 }
