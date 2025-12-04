@@ -119,6 +119,18 @@ Reviva trades históricos com controle de velocidade:
 - [ ] Sugestões personalizadas de melhoria
 - [ ] Integração com LLM (OpenAI/Claude)
 
+#### 🧮 Calculadora de Impostos Brasil
+
+Cálculo automático de IR para operações de trading:
+
+- [ ] Day Trade: 20% sobre lucro líquido (sem isenção)
+- [ ] Swing Trade: 15% sobre lucro (isenção até R$ 20k/mês em ações)
+- [ ] Cálculo de prejuízo acumulado para compensação
+- [ ] DARF mensal com código de barras
+- [ ] Relatório anual para declaração IRPF
+- [ ] Suporte: Ações, FIIs, ETFs, BDRs, Opções, Futuros, Crypto
+- [ ] Integração com B3 (CEI/Área do Investidor)
+
 ---
 
 ### Fase 3: Análises Avançadas (Q3 2025)
@@ -168,7 +180,6 @@ Reviva trades históricos com controle de velocidade:
 
 ### Autenticação
 
-- [ ] MFA com TOTP (Google Authenticator)
 - [ ] MFA com SMS (backup)
 - [ ] Políticas de senha forte
 - [ ] Bloqueio após tentativas falhas
