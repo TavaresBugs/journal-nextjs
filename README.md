@@ -209,6 +209,7 @@ Configure as variáveis de ambiente no dashboard do Vercel.
 | Documento                                      | Descrição                                         |
 | ---------------------------------------------- | ------------------------------------------------- |
 | [Arquitetura](docs/ARCHITECTURE.md)            | Estrutura do projeto, fluxo de dados, componentes |
+| [Roadmap](docs/ROADMAP.md)                     | Análise competitiva e plano de evolução           |
 | [Features Pendentes](docs/PENDING_FEATURES.md) | Roadmap e funcionalidades planejadas              |
 | [Plano de Testes](docs/TEST_PLAN.md)           | Estratégia de testes e exemplos                   |
 
