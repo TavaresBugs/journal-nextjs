@@ -54,28 +54,68 @@ export async function middleware(req: NextRequest) {
         }
     );
 
+    const pathname = req.nextUrl.pathname;
+
+    // Public routes - no auth required
+    const publicRoutes = ['/login', '/auth/callback', '/share', '/pending'];
+    const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+
+    // Admin routes - require admin role
+    const isAdminRoute = pathname.startsWith('/admin');
+
     // Check auth status
     const { data: { session } } = await supabase.auth.getSession();
 
-    console.log('Middleware: Path:', req.nextUrl.pathname);
-    console.log('Middleware: Session exists:', !!session);
-
-    // Public routes that don't require authentication
-    const publicRoutes = ['/login', '/auth/callback'];
-    const isPublicRoute = publicRoutes.some(route => req.nextUrl.pathname.startsWith(route));
-
-    // If not authenticated and trying to access protected route
+    // Not authenticated - redirect to login (except public routes)
     if (!session && !isPublicRoute) {
-        console.log('Middleware: Redirecting to /login');
         const redirectUrl = new URL('/login', req.url);
         return NextResponse.redirect(redirectUrl);
     }
 
-    // If authenticated and trying to access login page, redirect to home
-    if (session && req.nextUrl.pathname === '/login') {
-        console.log('Middleware: Redirecting to /');
-        const redirectUrl = new URL('/', req.url);
-        return NextResponse.redirect(redirectUrl);
+    // Authenticated - check user status and role
+    if (session) {
+        // Redirect from login to home
+        if (pathname === '/login') {
+            const redirectUrl = new URL('/', req.url);
+            return NextResponse.redirect(redirectUrl);
+        }
+
+        // Check user extended profile for status/role
+        const { data: userProfile } = await supabase
+            .from('users_extended')
+            .select('status, role')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
+        // If profile doesn't exist yet (race condition), allow through
+        if (userProfile) {
+            const { status, role } = userProfile;
+
+            // Pending users can only access /pending page
+            if (status === 'pending' && !pathname.startsWith('/pending') && !isPublicRoute) {
+                const redirectUrl = new URL('/pending', req.url);
+                return NextResponse.redirect(redirectUrl);
+            }
+
+            // Approved users shouldn't see /pending
+            if (status === 'approved' && pathname.startsWith('/pending')) {
+                const redirectUrl = new URL('/', req.url);
+                return NextResponse.redirect(redirectUrl);
+            }
+
+            // Suspended/banned users - logout and show message
+            if (status === 'suspended' || status === 'banned') {
+                // Clear session and redirect to login with error
+                const redirectUrl = new URL('/login?error=account_suspended', req.url);
+                return NextResponse.redirect(redirectUrl);
+            }
+
+            // Admin routes - require admin role
+            if (isAdminRoute && role !== 'admin') {
+                const redirectUrl = new URL('/', req.url);
+                return NextResponse.redirect(redirectUrl);
+            }
+        }
     }
 
     return response;

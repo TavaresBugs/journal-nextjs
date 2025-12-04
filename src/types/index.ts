@@ -241,3 +241,50 @@ export interface UserSettings {
     created_at?: string;
     updated_at?: string;
 }
+
+// ============================================
+// ADMIN TYPES
+// ============================================
+
+export type UserStatus = 'pending' | 'approved' | 'suspended' | 'banned';
+export type UserRole = 'admin' | 'user' | 'guest';
+
+export interface UserExtended {
+    id: string;
+    email: string;
+    name?: string;
+    avatarUrl?: string;
+    status: UserStatus;
+    role: UserRole;
+    approvedAt?: string;
+    approvedBy?: string;
+    notes?: string;
+    lastLoginAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface AuditLog {
+    id: string;
+    userId?: string;
+    userEmail?: string; // Para display
+    action: string;
+    resourceType?: string;
+    resourceId?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    metadata?: Record<string, unknown>;
+    createdAt: string;
+}
+
+export interface AdminStats {
+    totalUsers: number;
+    pendingUsers: number;
+    approvedUsers: number;
+    suspendedUsers: number;
+    bannedUsers: number;
+    adminUsers: number;
+    todayLogins: number;
+    todaySignups: number;
+}
+
