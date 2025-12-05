@@ -1,7 +1,13 @@
 # 🤖 Jules Tasks - Trading Journal Pro
 
-> Prompts prontos para ocupar o Jules enquanto você trabalha em outras coisas.
-> Copie e cole diretamente no Jules.
+## 💡 Como Usar (Dicas e Tutoriais)
+
+> **Dica Principal:** Copie uma task por vez. Espere o PR, revise, merge, e então envie a próxima!
+
+1. **Escolha uma Task:** Veja a tabela de Status Geral abaixo.
+2. **Copie o Contexto:** Copie o bloco de texto da task (começa com `## Contexto` e vai até `## Critérios de Sucesso`) e cole no chat para o Jules.
+3. **Revise:** O Jules vai executar a task. Valide o resultado.
+4. **Atualize:** Marque como Concluída aqui neste arquivo.
 
 ---
 
@@ -23,7 +29,6 @@
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 | 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
-| 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
 | 15  | Validação com Zod Schemas           | 📋 Pendente  | -         |
 | 16  | Database Seed Script                | 📋 Pendente  | -         |
 | 17  | Centralized Error Handling          | 📋 Pendente  | -         |
@@ -42,9 +47,9 @@
 
 ---
 
----
+## 🚀 Próximas Tasks (Lista Detalhada)
 
-## 📋 TASK 6: Fix Lint Warnings
+### 📋 TASK 6: Fix Lint Warnings
 
 **Prioridade:** 🟢 Baixa | **Tempo estimado:** ~20 min
 
@@ -89,7 +94,7 @@ npm run lint
 
 ---
 
-## 📋 TASK 7: Criar Componente StudentCalendarModal
+### 📋 TASK 7: Criar Componente StudentCalendarModal
 
 **Prioridade:** 🔴 Alta | **Tempo estimado:** ~40 min
 
@@ -137,7 +142,7 @@ Usar componente Modal de: src/components/ui/Modal.tsx
 
 ---
 
-## 📋 TASK 8: Auditoria de Segurança de URLs e Headers
+### 📋 TASK 8: Auditoria de Segurança de URLs e Headers
 
 **Prioridade:** 🔴 Alta | **Tempo estimado:** ~30 min
 
@@ -173,7 +178,7 @@ Auditar e corrigir potenciais vulnerabilidades.
 
 ---
 
-## 📋 TASK 9: Reorganização de Pastas e Documentação
+### 📋 TASK 9: Reorganização de Pastas e Documentação
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
 
@@ -221,7 +226,7 @@ IMPORTANTE: NÃO alterar supabase/migrations/ - apenas criar cópias organizadas
 
 ---
 
-## 📋 TASK 10: Import de Trades via CSV
+### 📋 TASK 10: Import de Trades via CSV
 
 **Prioridade:** 🔴 Alta | **Tempo estimado:** ~60 min
 
@@ -289,7 +294,7 @@ Campos opcionais:
 
 ---
 
-## 📋 TASK 11: Export Backup Local (Download)
+### 📋 TASK 11: Export Backup Local (Download)
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
 
@@ -342,7 +347,7 @@ Nomear arquivo: journal_backup_2024-12-05.json
 
 ---
 
-## 📋 TASK 12: Relatório Excel
+### 📋 TASK 12: Relatório Excel
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
 
@@ -401,7 +406,7 @@ Gerar arquivo .xlsx com múltiplas sheets formatadas.
 
 ---
 
-## 📋 TASK 13: Calculadora de Imposto (Day Trade BR)
+### 📋 TASK 13: Calculadora de Imposto (Day Trade BR)
 
 **Prioridade:** 🔴 Alta | **Tempo estimado:** ~90 min
 
@@ -479,43 +484,7 @@ dueDate: string;
 
 ---
 
-## 🚀 Ordem Sugerida de Execução
-
-### ✅ Concluídas
-
-1. ✅ **TASK 1** - Reorganizar componentes
-2. ✅ **TASK 2** - Migration SQL
-3. ✅ **TASK 3** - ReviewService
-4. ✅ **TASK 4** - JSDoc em Services
-
-### 🔴 Alta Prioridade (Features de Valor)
-
-5. 📋 **TASK 11** - Export Backup Local (rápido, útil)
-6. 📋 **TASK 10** - Import CSV (muito pedido)
-7. 📋 **TASK 12** - Relatório Excel (profissional)
-8. 📋 **TASK 13** - Calculadora IR (diferencial)
-
-### 🟡 Média Prioridade (Mentor System)
-
-9. 📋 **TASK 7** - StudentCalendarModal
-
-### 🟢 Baixa Prioridade (Manutenção)
-
-10. 📋 **TASK 14** - Test Plan + Vitest Config ⭐ NEW
-11. 📋 **TASK 9** - Reorganização de pastas
-
-12. 📋 **TASK 6** - Lint fixes
-13. 📋 **TASK 8** - Segurança
-
-### 🏗️ Foundation Steps (Preparação Técnica)
-
-15. 📋 **TASK 15** - Validação Zod (Schemas)
-16. 📋 **TASK 16** - Database Seed Script
-17. 📋 **TASK 17** - Error Handling Centralizado
-
----
-
-## 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
+### 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~60 min
 
@@ -550,57 +519,22 @@ Documento deve incluir:
 - calculateTradePnL(trade, multiplier)
 - determineTradeOutcome(trade)
 - filterTrades(trades, filters)
-- calculateTradeMetrics(trades)
-- groupTradesByDay(trades)
-- calculateTradeDuration(trade)
-- formatDuration(minutes)
-- formatCurrency(value, currency)
-- formatPercentage(value, decimals)
-- calculateSharpeRatio(trades, riskFreeRate)
-- calculateCalmarRatio(trades, initialBalance, periodDays)
-- calculateMaxDrawdownDecimal(trades, initialBalance)
-- calculateAverageHoldTime(trades)
-- calculateConsecutiveStreaks(trades)
-- formatTimeMinutes(minutes)
+  ... (lista completa)
 
 **password-validator.ts** (3 funções):
-
-- validatePassword(password) - retorna isValid, errors, strength, score
-- getStrengthColor(strength)
-- getStrengthLabel(strength)
+...
 
 **utils.ts** (3 funções):
-
-- cn(...inputs) - merge tailwind classes
-- getErrorMessage(error) - extract error message
-- base64ToBlob(base64) - convert base64 to blob
+...
 
 **shareUtils.ts** (2 funções - mock Supabase):
+...
 
-- createShareLink(journalEntryId)
-- copyToClipboard(text)
+#### 🟡 Média Prioridade - Services
 
-#### 🟡 Média Prioridade - Services (src/services/)
-
-Precisam de mocks do Supabase:
-
-- accountService.ts: getCurrentUserId, mapAccountFromDB, mapAccountToDB, getAccounts, getAccount, saveAccount, deleteAccount, getSettings, saveSettings
-- tradeService.ts: mapTradeFromDB, mapTradeToDB, getTrades, saveTrade, deleteTrade
-- journalService.ts: mapJournalFromDB, mapJournalToDB, CRUD operations
-- mentorService.ts: isMentor, inviteMentee, acceptInvite, rejectInvite, getMentors, getMentees
-- reviewService.ts: createReview, updateReview, deleteReview, getReviews
-- routineService.ts: getRoutine, saveRoutine, completeRoutineItem
-- communityService.ts: getLeaderboard, getPlaybooks, createPlaybook
-- adminService.ts: getUsers, updateUserRole, getStats
-
-#### 🟢 Baixa Prioridade - Hooks (src/hooks/)
-
-Precisam de testing-library/react-hooks:
-
-- useAuth.ts
-- useDayStats.ts
-- useImageUpload.ts
-- useJournalForm.ts
+- accountService.ts
+- tradeService.ts
+  ...
 
 ## PARTE 2: Configurar Vitest
 
@@ -611,27 +545,7 @@ npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-do
 ### Criar vitest.config.ts
 
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-
-export default defineConfig({
-plugins: [react()],
-test: {
-environment: 'jsdom',
-globals: true,
-setupFiles: ['./src/test/setup.ts'],
-include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-coverage: {
-provider: 'v8',
-reporter: ['text', 'html'],
-},
-},
-resolve: {
-alias: {
-'@': path.resolve(\_\_dirname, './src'),
-},
-},
-});
+...
 
 ### Criar src/test/setup.ts
 
@@ -640,30 +554,13 @@ import '@testing-library/jest-dom';
 ### Adicionar scripts no package.json
 
 "test": "vitest",
-"test:ui": "vitest --ui",
-"test:coverage": "vitest run --coverage"
+...
 
 ## PARTE 3: Criar Testes de Exemplo
 
 ### src/lib/**tests**/calculations.test.ts
 
-Testar funções puras de calculations.ts com casos:
-
-- calculateTradePnL: trade win, trade loss, zero
-- formatCurrency: USD, BRL, valores negativos
-- formatPercentage: decimais variados
-- formatDuration: minutos, horas, dias
-- calculateTradeMetrics: array vazio, 1 trade, múltiplos trades
-
-### src/lib/**tests**/password-validator.test.ts
-
-Testar validatePassword com:
-
-- Senha muito curta (< 8 chars)
-- Sem maiúscula
-- Sem número
-- Sem caractere especial
-- Senha válida fraca, média, forte
+...
 
 ## Critérios de Sucesso
 
@@ -678,9 +575,7 @@ Testar validatePassword com:
 
 ---
 
----
-
-## 📋 TASK 15: Camada de Validação Zod
+### 📋 TASK 15: Validação com Zod Schemas
 
 **Prioridade:** 🔴 Alta (Fundação) | **Tempo estimado:** ~40 min
 
@@ -711,7 +606,7 @@ Instalar Zod e criar schemas reutilizáveis para os modelos principais.
 
 ---
 
-## 📋 TASK 16: Database Seed Script (Dados Fake)
+### 📋 TASK 16: Database Seed Script (Dados Fake)
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
 
@@ -741,7 +636,7 @@ Criar script que popule o Supabase (local ou dev) com usuários, trades e diári
 
 ---
 
-## 📋 TASK 17: Centralized Error Handling
+### 📋 TASK 17: Centralized Error Handling
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
 
