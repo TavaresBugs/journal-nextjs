@@ -66,7 +66,16 @@ function mapReviewFromDB(db: DBMentorReview): MentorReview {
 // ============================================
 
 /**
- * Cria uma nova review (correção/comentário)
+ * Cria uma nova review (correção/comentário).
+ * @param {Omit<MentorReview, 'id' | 'createdAt' | 'updatedAt' | 'isRead'>} data - Dados da review.
+ * @returns {Promise<MentorReview | null>} A review criada ou null.
+ * @example
+ * const review = await createReview({
+ *   mentorId: 'mentor-id',
+ *   menteeId: 'mentee-id',
+ *   reviewType: 'correction',
+ *   content: 'Review content'
+ * });
  */
 export async function createReview(
     data: Omit<MentorReview, 'id' | 'createdAt' | 'updatedAt' | 'isRead'>
@@ -101,7 +110,12 @@ export async function createReview(
 }
 
 /**
- * Atualiza uma review existente
+ * Atualiza uma review existente.
+ * @param {string} id - O ID da review.
+ * @param {string} content - O novo conteúdo.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await updateReview('review-id', 'New content');
  */
 export async function updateReview(id: string, content: string): Promise<boolean> {
     const { error } = await supabase
@@ -121,7 +135,11 @@ export async function updateReview(id: string, content: string): Promise<boolean
 }
 
 /**
- * Deleta uma review
+ * Deleta uma review.
+ * @param {string} id - O ID da review.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await deleteReview('review-id');
  */
 export async function deleteReview(id: string): Promise<boolean> {
     const { error } = await supabase
@@ -138,7 +156,11 @@ export async function deleteReview(id: string): Promise<boolean> {
 }
 
 /**
- * Busca todas as reviews feitas para um mentorado específico
+ * Busca todas as reviews feitas para um mentorado específico.
+ * @param {string} menteeId - O ID do mentorado.
+ * @returns {Promise<MentorReview[]>} Lista de reviews.
+ * @example
+ * const reviews = await getReviewsForMentee('mentee-id');
  */
 export async function getReviewsForMentee(menteeId: string): Promise<MentorReview[]> {
     const { data, error } = await supabase
@@ -160,7 +182,10 @@ export async function getReviewsForMentee(menteeId: string): Promise<MentorRevie
 // ============================================
 
 /**
- * Busca todas as reviews recebidas pelo usuário logado
+ * Busca todas as reviews recebidas pelo usuário logado.
+ * @returns {Promise<MentorReview[]>} Lista de reviews.
+ * @example
+ * const reviews = await getMyReviews();
  */
 export async function getMyReviews(): Promise<MentorReview[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -184,7 +209,11 @@ export async function getMyReviews(): Promise<MentorReview[]> {
 }
 
 /**
- * Busca reviews específicas de um trade
+ * Busca reviews específicas de um trade.
+ * @param {string} tradeId - O ID do trade.
+ * @returns {Promise<MentorReview[]>} Lista de reviews.
+ * @example
+ * const reviews = await getReviewsForTrade('trade-id');
  */
 export async function getReviewsForTrade(tradeId: string): Promise<MentorReview[]> {
     const { data, error } = await supabase
@@ -202,7 +231,11 @@ export async function getReviewsForTrade(tradeId: string): Promise<MentorReview[
 }
 
 /**
- * Marca uma review como lida
+ * Marca uma review como lida.
+ * @param {string} id - O ID da review.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await markReviewAsRead('review-id');
  */
 export async function markReviewAsRead(id: string): Promise<boolean> {
     const { error } = await supabase
@@ -219,7 +252,10 @@ export async function markReviewAsRead(id: string): Promise<boolean> {
 }
 
 /**
- * Conta quantas reviews não lidas o usuário tem
+ * Conta quantas reviews não lidas o usuário tem.
+ * @returns {Promise<number>} Contagem de reviews não lidas.
+ * @example
+ * const count = await getUnreadReviewCount();
  */
 export async function getUnreadReviewCount(): Promise<number> {
     const { data: { user } } = await supabase.auth.getUser();
