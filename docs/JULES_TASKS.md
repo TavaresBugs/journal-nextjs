@@ -22,160 +22,18 @@
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
+| 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
 
 ---
 
-## ✅ TASK 1: Reorganizar Componentes de Notificação [CONCLUÍDA]
+## ✅ Tasks Concluídas (Histórico)
 
-**Status:** ✅ Concluída via PR #4 | **Feito por:** Jules
-
-- [x] Componentes movidos para `src/components/notifications/`
-- [x] Barrel exports criados
-- [x] Imports atualizados
-- [x] Build passando
-
----
-
-## ✅ TASK 2: Migration mentor_reviews [CONCLUÍDA]
-
-**Status:** ✅ Concluída via PR | **Feito por:** Jules
-
-- [x] Tabela `mentor_reviews` criada
-- [x] CHECK constraints para `review_type` e `rating`
-- [x] 4 índices criados
-- [x] RLS policies implementadas
-- [x] GRANTS e documentação
-
-**Arquivo:** `supabase/migrations/016_mentor_reviews.sql`
-
----
-
-## ✅ TASK 3: Criar Service para Reviews do Mentor [CONCLUÍDA]
-
-**Status:** ✅ Concluída via PR | **Feito por:** Jules
-
-- [x] Arquivo criado em `src/services/reviewService.ts`
-- [x] Interface `MentorReview` definida
-- [x] Funções do Mentor: `createReview`, `updateReview`, `deleteReview`, `getReviewsForMentee`
-- [x] Funções do Mentee: `getMyReviews`, `getReviewsForTrade`, `markReviewAsRead`, `getUnreadReviewCount`
-- [x] Mapeamento DB (snake_case) → TS (camelCase)
-- [x] TypeScript sem erros
-
-```markdown
-## Contexto
-
-Trading Journal Next.js + Supabase. Precisamos de um service para CRUD de correções/comentários.
-
-## Objetivo
-
-Criar `src/services/reviewService.ts` seguindo o padrão dos services existentes.
-
-## Arquivos de Referência
-
-- `src/services/mentorService.ts` (mesmo padrão de código)
-- `src/services/journalService.ts` (exemplo de CRUD)
-
-## Funções Necessárias
-
-### Tipos
-
-interface MentorReview {
-id: string;
-mentorId: string;
-menteeId: string;
-tradeId?: string;
-journalEntryId?: string;
-reviewType: 'correction' | 'comment' | 'suggestion';
-content: string;
-rating?: number;
-isRead: boolean;
-createdAt: string;
-updatedAt: string;
-}
-
-### Funções do Mentor
-
-- createReview(data): Promise<MentorReview | null>
-- updateReview(id, content): Promise<boolean>
-- deleteReview(id): Promise<boolean>
-- getReviewsForMentee(menteeId): Promise<MentorReview[]>
-
-### Funções do Mentee
-
-- getMyReviews(): Promise<MentorReview[]>
-- getReviewsForTrade(tradeId): Promise<MentorReview[]>
-- markReviewAsRead(id): Promise<boolean>
-- getUnreadReviewCount(): Promise<number>
-
-## Padrões a Seguir
-
-- Usar snake_case para campos do DB, camelCase para TypeScript
-- Funções de mapeamento DB -> TS
-- Tratamento de erros com console.error
-- Usar supabase.auth.getUser() para autenticação
-
-## Critérios de Sucesso
-
-- [ ] Arquivo criado em src/services/reviewService.ts
-- [ ] Todos os tipos definidos
-- [ ] Todas as funções implementadas
-- [ ] TypeScript sem erros
-```
-
----
-
-## ✅ TASK 4: Adicionar JSDoc em Todos os Services [CONCLUÍDA]
-
-**Status:** ✅ Concluída via PR | **Feito por:** Jules
-
-- [x] `accountService.ts` documentado
-- [x] `adminService.ts` documentado
-- [x] `communityService.ts` documentado
-- [x] `journalService.ts` documentado
-- [x] `mentorService.ts` documentado
-- [x] `routineService.ts` documentado
-- [x] `tradeService.ts` documentado
-- [x] Todas as funções exportadas com JSDoc
-- [x] Build passando
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~25 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js. Os services precisam de documentação JSDoc.
-
-## Objetivo
-
-Adicionar JSDoc completo para todas as funções exportadas em src/services/
-
-## Arquivos para Documentar
-
-- src/services/accountService.ts
-- src/services/adminService.ts
-- src/services/communityService.ts
-- src/services/journalService.ts
-- src/services/mentorService.ts
-- src/services/routineService.ts
-- src/services/tradeService.ts
-
-## Formato JSDoc
-
-/\*\*
-
-- Descrição breve da função
-- @param {tipo} nomeParam - Descrição do parâmetro
-- @returns {Promise<tipo>} Descrição do retorno
-- @example
-- const result = await nomeFuncao(param);
-  \*/
-
-## Critérios de Sucesso
-
-- [ ] Todas as funções exportadas documentadas
-- [ ] Parâmetros e retornos descritos
-- [ ] TypeScript sem erros
-```
+| Task       | Descrição                           | Arquivos Criados/Modificados                 |
+| ---------- | ----------------------------------- | -------------------------------------------- |
+| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`              |
+| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql` |
+| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`              |
+| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`         |
 
 ---
 
@@ -668,25 +526,189 @@ dueDate: string;
 1. ✅ **TASK 1** - Reorganizar componentes
 2. ✅ **TASK 2** - Migration SQL
 3. ✅ **TASK 3** - ReviewService
+4. ✅ **TASK 4** - JSDoc em Services
 
 ### 🔴 Alta Prioridade (Features de Valor)
 
-4. 📋 **TASK 11** - Export Backup Local (rápido, útil)
-5. 📋 **TASK 10** - Import CSV (muito pedido)
-6. 📋 **TASK 12** - Relatório Excel (profissional)
-7. 📋 **TASK 13** - Calculadora IR (diferencial)
+5. 📋 **TASK 11** - Export Backup Local (rápido, útil)
+6. 📋 **TASK 10** - Import CSV (muito pedido)
+7. 📋 **TASK 12** - Relatório Excel (profissional)
+8. 📋 **TASK 13** - Calculadora IR (diferencial)
 
 ### 🟡 Média Prioridade (Mentor System)
 
-8. 📋 **TASK 7** - StudentCalendarModal
+9. 📋 **TASK 7** - StudentCalendarModal
 
 ### 🟢 Baixa Prioridade (Manutenção)
 
-9. 📋 **TASK 9** - Reorganização de pastas
-10. 📋 **TASK 4** - JSDoc
-11. 📋 **TASK 5** - Testes
-12. 📋 **TASK 6** - Lint fixes
-13. 📋 **TASK 8** - Segurança
+10. 📋 **TASK 14** - Test Plan + Vitest Config ⭐ NEW
+11. 📋 **TASK 9** - Reorganização de pastas
+12. 📋 **TASK 5** - Testes MentorService
+13. 📋 **TASK 6** - Lint fixes
+14. 📋 **TASK 8** - Segurança
+
+---
+
+## 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~60 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js + Supabase. O projeto atualmente não tem nenhum teste automatizado.
+Precisamos de uma estratégia de testes e configuração inicial.
+
+## Objetivo
+
+1. Criar documento docs/TEST_PLAN.md com estratégia de testes
+2. Configurar Vitest no projeto
+3. Criar testes unitários de exemplo para funções puras
+
+## PARTE 1: Criar docs/TEST_PLAN.md
+
+Documento deve incluir:
+
+### Estratégia Geral
+
+- Tipos de teste: Unit, Integration, E2E
+- Ferramentas: Vitest (unit), futuro Playwright (E2E)
+- Convenções: \*.test.ts, **tests**/, describe/it
+
+### Módulos a Testar (Prioridade)
+
+#### 🔴 Alta Prioridade - Funções Puras (src/lib/)
+
+**calculations.ts** (18 funções):
+
+- calculateTradePnL(trade, multiplier)
+- determineTradeOutcome(trade)
+- filterTrades(trades, filters)
+- calculateTradeMetrics(trades)
+- groupTradesByDay(trades)
+- calculateTradeDuration(trade)
+- formatDuration(minutes)
+- formatCurrency(value, currency)
+- formatPercentage(value, decimals)
+- calculateSharpeRatio(trades, riskFreeRate)
+- calculateCalmarRatio(trades, initialBalance, periodDays)
+- calculateMaxDrawdownDecimal(trades, initialBalance)
+- calculateAverageHoldTime(trades)
+- calculateConsecutiveStreaks(trades)
+- formatTimeMinutes(minutes)
+
+**password-validator.ts** (3 funções):
+
+- validatePassword(password) - retorna isValid, errors, strength, score
+- getStrengthColor(strength)
+- getStrengthLabel(strength)
+
+**utils.ts** (3 funções):
+
+- cn(...inputs) - merge tailwind classes
+- getErrorMessage(error) - extract error message
+- base64ToBlob(base64) - convert base64 to blob
+
+**shareUtils.ts** (2 funções - mock Supabase):
+
+- createShareLink(journalEntryId)
+- copyToClipboard(text)
+
+#### 🟡 Média Prioridade - Services (src/services/)
+
+Precisam de mocks do Supabase:
+
+- accountService.ts: getCurrentUserId, mapAccountFromDB, mapAccountToDB, getAccounts, getAccount, saveAccount, deleteAccount, getSettings, saveSettings
+- tradeService.ts: mapTradeFromDB, mapTradeToDB, getTrades, saveTrade, deleteTrade
+- journalService.ts: mapJournalFromDB, mapJournalToDB, CRUD operations
+- mentorService.ts: isMentor, inviteMentee, acceptInvite, rejectInvite, getMentors, getMentees
+- reviewService.ts: createReview, updateReview, deleteReview, getReviews
+- routineService.ts: getRoutine, saveRoutine, completeRoutineItem
+- communityService.ts: getLeaderboard, getPlaybooks, createPlaybook
+- adminService.ts: getUsers, updateUserRole, getStats
+
+#### 🟢 Baixa Prioridade - Hooks (src/hooks/)
+
+Precisam de testing-library/react-hooks:
+
+- useAuth.ts
+- useDayStats.ts
+- useImageUpload.ts
+- useJournalForm.ts
+
+## PARTE 2: Configurar Vitest
+
+### Instalar dependências
+
+npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
+
+### Criar vitest.config.ts
+
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+plugins: [react()],
+test: {
+environment: 'jsdom',
+globals: true,
+setupFiles: ['./src/test/setup.ts'],
+include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+coverage: {
+provider: 'v8',
+reporter: ['text', 'html'],
+},
+},
+resolve: {
+alias: {
+'@': path.resolve(\_\_dirname, './src'),
+},
+},
+});
+
+### Criar src/test/setup.ts
+
+import '@testing-library/jest-dom';
+
+### Adicionar scripts no package.json
+
+"test": "vitest",
+"test:ui": "vitest --ui",
+"test:coverage": "vitest run --coverage"
+
+## PARTE 3: Criar Testes de Exemplo
+
+### src/lib/**tests**/calculations.test.ts
+
+Testar funções puras de calculations.ts com casos:
+
+- calculateTradePnL: trade win, trade loss, zero
+- formatCurrency: USD, BRL, valores negativos
+- formatPercentage: decimais variados
+- formatDuration: minutos, horas, dias
+- calculateTradeMetrics: array vazio, 1 trade, múltiplos trades
+
+### src/lib/**tests**/password-validator.test.ts
+
+Testar validatePassword com:
+
+- Senha muito curta (< 8 chars)
+- Sem maiúscula
+- Sem número
+- Sem caractere especial
+- Senha válida fraca, média, forte
+
+## Critérios de Sucesso
+
+- [ ] docs/TEST_PLAN.md criado com estratégia completa
+- [ ] vitest.config.ts configurado
+- [ ] Dependências instaladas
+- [ ] Scripts de teste no package.json
+- [ ] Pelo menos 10 testes passando para calculations.ts
+- [ ] Pelo menos 5 testes passando para password-validator.ts
+- [ ] npm run test passa sem erros
+```
 
 ---
 
