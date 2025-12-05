@@ -8,6 +8,13 @@ import { getCurrentUserId } from './accountService';
 // MAPPERS
 // ============================================
 
+/**
+ * Mapeia uma entrada de journal do banco de dados para o tipo da aplicação.
+ * @param {DBJournalEntry} db - Objeto de journal entry do banco de dados.
+ * @returns {JournalEntry} Objeto de journal entry da aplicação.
+ * @example
+ * const entry = mapJournalEntryFromDB(dbEntry);
+ */
 export const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
     id: db.id,
     userId: db.user_id,
@@ -33,6 +40,13 @@ export const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
     updatedAt: db.updated_at,
 });
 
+/**
+ * Mapeia uma entrada de journal da aplicação para o tipo do banco de dados (sem imagens).
+ * @param {JournalEntry} app - Objeto de journal entry da aplicação.
+ * @returns {Omit<DBJournalEntry, 'journal_images'>} Objeto de journal entry do banco de dados.
+ * @example
+ * const dbEntry = mapJournalEntryToDB(entry);
+ */
 export const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'journal_images'> => ({
     id: app.id,
     user_id: app.userId,
@@ -53,6 +67,13 @@ export const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'jo
 // JOURNAL ENTRIES
 // ============================================
 
+/**
+ * Obtém as entradas de journal de uma conta específica.
+ * @param {string} accountId - O ID da conta.
+ * @returns {Promise<JournalEntry[]>} Lista de entradas de journal.
+ * @example
+ * const entries = await getJournalEntries('account-id');
+ */
 export async function getJournalEntries(accountId: string): Promise<JournalEntry[]> {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -75,6 +96,13 @@ export async function getJournalEntries(accountId: string): Promise<JournalEntry
     return data ? data.map(mapJournalEntryFromDB) : [];
 }
 
+/**
+ * Salva ou atualiza uma entrada de journal, incluindo o upload e gerenciamento de imagens.
+ * @param {JournalEntry} entry - A entrada de journal a ser salva.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await saveJournalEntry(entry);
+ */
 export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -256,6 +284,13 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
     return true;
 }
 
+/**
+ * Exclui uma entrada de journal e suas imagens associadas.
+ * @param {string} id - O ID da entrada de journal.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await deleteJournalEntry('entry-id');
+ */
 export async function deleteJournalEntry(id: string): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {

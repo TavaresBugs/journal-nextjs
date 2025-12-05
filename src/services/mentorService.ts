@@ -75,9 +75,10 @@ function mapCommentFromDB(db: DBTradeComment): TradeComment {
 // ============================================
 
 /**
- * Verifica se o usuário atual é mentor:
- * 1. Tem role 'mentor' em users_extended, OU
- * 2. Tem pelo menos um mentorado aceito em mentor_invites
+ * Verifica se o usuário atual é mentor.
+ * @returns {Promise<boolean>} True se for mentor, False caso contrário.
+ * @example
+ * const isUserMentor = await isMentor();
  */
 export async function isMentor(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -115,8 +116,12 @@ export async function isMentor(): Promise<boolean> {
 // ============================================
 
 /**
- * MENTOR convida MENTORADO para ser acompanhado
- * Fluxo: Mentor envia convite → Mentorado aceita → Mentor pode ver trades
+ * Envia um convite de mentoria para um aluno.
+ * @param {string} menteeEmail - Email do aluno.
+ * @param {MentorPermission} [permission='view'] - Permissão inicial (padrão: 'view').
+ * @returns {Promise<MentorInvite | null>} O convite criado ou null.
+ * @example
+ * const invite = await inviteMentee('aluno@example.com', 'comment');
  */
 export async function inviteMentee(
     menteeEmail: string, 
@@ -193,7 +198,11 @@ export async function inviteMentor(
 }
 
 /**
- * Aceita um convite de mentoria usando o token (MENTORADO aceita)
+ * Aceita um convite de mentoria usando o token.
+ * @param {string} token - O token do convite.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await acceptInvite('token-uuid');
  */
 export async function acceptInvite(token: string): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -219,7 +228,11 @@ export async function acceptInvite(token: string): Promise<boolean> {
 }
 
 /**
- * Rejeita um convite de mentoria
+ * Rejeita um convite de mentoria.
+ * @param {string} inviteId - O ID do convite.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await rejectInvite('invite-id');
  */
 export async function rejectInvite(inviteId: string): Promise<boolean> {
     const { error } = await supabase
@@ -237,7 +250,11 @@ export async function rejectInvite(inviteId: string): Promise<boolean> {
 }
 
 /**
- * Revoga um convite aceito
+ * Revoga um convite de mentoria aceito.
+ * @param {string} inviteId - O ID do convite.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await revokeInvite('invite-id');
  */
 export async function revokeInvite(inviteId: string): Promise<boolean> {
     const { error } = await supabase
@@ -254,7 +271,10 @@ export async function revokeInvite(inviteId: string): Promise<boolean> {
 }
 
 /**
- * Lista convites enviados pelo usuário COMO MENTOR
+ * Lista os convites enviados pelo usuário logado (como mentor).
+ * @returns {Promise<MentorInvite[]>} Lista de convites enviados.
+ * @example
+ * const invites = await getSentInvites();
  */
 export async function getSentInvites(): Promise<MentorInvite[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -282,7 +302,10 @@ export async function getSentInvites(): Promise<MentorInvite[]> {
 }
 
 /**
- * Lista convites recebidos COMO MENTORADO (mentores querendo te acompanhar)
+ * Lista os convites recebidos pelo usuário logado (como mentorado).
+ * @returns {Promise<MentorInvite[]>} Lista de convites recebidos.
+ * @example
+ * const invites = await getReceivedInvites();
  */
 export async function getReceivedInvites(): Promise<MentorInvite[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -330,7 +353,10 @@ export async function getReceivedInvites(): Promise<MentorInvite[]> {
 }
 
 /**
- * Lista mentores do usuário (convites aceitos onde usuário é mentee)
+ * Lista os mentores do usuário logado (convites aceitos onde sou mentorado).
+ * @returns {Promise<MentorInvite[]>} Lista de mentores.
+ * @example
+ * const mentors = await getMentors();
  */
 export async function getMentors(): Promise<MentorInvite[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -352,7 +378,10 @@ export async function getMentors(): Promise<MentorInvite[]> {
 }
 
 /**
- * Lista alunos do usuário (convites aceitos onde usuário é mentor)
+ * Lista os alunos do usuário logado (convites aceitos onde sou mentor).
+ * @returns {Promise<MenteeOverview[]>} Lista de alunos com resumo.
+ * @example
+ * const mentees = await getMentees();
  */
 export async function getMentees(): Promise<MenteeOverview[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -417,7 +446,11 @@ export async function getMentees(): Promise<MenteeOverview[]> {
 }
 
 /**
- * Busca trades de um aluno específico (como mentor)
+ * Busca os trades de um aluno específico.
+ * @param {string} menteeId - O ID do aluno.
+ * @returns {Promise<Trade[]>} Lista de trades do aluno.
+ * @example
+ * const trades = await getMenteeTrades('mentee-id');
  */
 export async function getMenteeTrades(menteeId: string): Promise<Trade[]> {
     const { data, error } = await supabase
@@ -440,7 +473,12 @@ export async function getMenteeTrades(menteeId: string): Promise<Trade[]> {
 // ============================================
 
 /**
- * Adiciona comentário em um trade
+ * Adiciona um comentário em um trade.
+ * @param {string} tradeId - O ID do trade.
+ * @param {string} content - O conteúdo do comentário.
+ * @returns {Promise<TradeComment | null>} O comentário criado ou null.
+ * @example
+ * const comment = await addTradeComment('trade-id', 'Bom trade!');
  */
 export async function addTradeComment(
     tradeId: string, 
@@ -468,7 +506,11 @@ export async function addTradeComment(
 }
 
 /**
- * Busca comentários de um trade
+ * Busca todos os comentários de um trade.
+ * @param {string} tradeId - O ID do trade.
+ * @returns {Promise<TradeComment[]>} Lista de comentários.
+ * @example
+ * const comments = await getTradeComments('trade-id');
  */
 export async function getTradeComments(tradeId: string): Promise<TradeComment[]> {
     const { data, error } = await supabase
@@ -490,7 +532,11 @@ export async function getTradeComments(tradeId: string): Promise<TradeComment[]>
 }
 
 /**
- * Deleta um comentário (apenas o autor pode deletar)
+ * Exclui um comentário pelo ID.
+ * @param {string} commentId - O ID do comentário.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await deleteTradeComment('comment-id');
  */
 export async function deleteTradeComment(commentId: string): Promise<boolean> {
     const { error } = await supabase
@@ -507,7 +553,11 @@ export async function deleteTradeComment(commentId: string): Promise<boolean> {
 }
 
 /**
- * Verifica se o usuário tem permissão de comentar em um trade
+ * Verifica se o usuário atual pode comentar em um trade específico.
+ * @param {string} tradeId - O ID do trade.
+ * @returns {Promise<boolean>} True se tiver permissão, False caso contrário.
+ * @example
+ * const canComment = await canCommentOnTrade('trade-id');
  */
 export async function canCommentOnTrade(tradeId: string): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
