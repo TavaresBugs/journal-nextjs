@@ -20,7 +20,7 @@
 
 **Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~45 min
 
-````markdown
+`````markdown
 ## Contexto
 
 Trading Journal Next.js. A estrutura de pastas precisa de organização para escalar.
@@ -59,46 +59,66 @@ Dividir em:
 - Mover `mentorService.ts` para `src/services/mentor/inviteService.ts`
 - Criar `src/services/mentor/index.ts`
 
-## PARTE 3: Documentar Migrations
+## PARTE 3: Organizar SQL por Domínio
 
-Criar `supabase/migrations/README.md`:
+Criar pasta `supabase/sql/` organizada por domínio (referência visual):
 
-```markdown
-# Database Migrations
-
-## Estrutura
-
-| #       | Nome            | Domínio   | Descrição                               |
-| ------- | --------------- | --------- | --------------------------------------- |
-| 000     | init_schema     | Core      | Tabelas base: trades, accounts, journal |
-| 001     | storage_setup   | Core      | Configuração de storage para imagens    |
-| 002     | playbooks       | Feature   | Sistema de playbooks                    |
-| 003     | shared_journals | Feature   | Compartilhamento de journals            |
-| 004     | admin_system    | Admin     | users_extended, audit_logs, RBAC        |
-| 005     | mentor_mode     | Mentor    | Sistema de mentoria inicial             |
-| 006     | community       | Community | Playbooks compartilhados, leaderboard   |
-| 007-015 | fixes           | Fixes     | Correções de RLS e schema               |
-| 016     | mentor_reviews  | Mentor    | Correções/comentários de mentores       |
-
-## Regras
-
-- NUNCA renomear migrations já aplicadas
-- Consolidar fixes antes de aplicar
-- Usar prefixos descritivos para novas features
 ```
-````
+supabase/sql/
+├── README.md              # Documentação geral
+├── core/
+│   ├── 000_init_schema.sql
+│   └── 001_storage_setup.sql
+├── features/
+│   ├── 002_playbooks.sql
+│   ├── 003_shared_journals.sql
+│   └── 010_global_playbooks.sql
+├── admin/
+│   └── 004_admin_system.sql
+├── mentor/
+│   ├── 005_mentor_mode.sql
+│   ├── 012_add_mentor_role.sql
+│   └── 016_mentor_reviews.sql
+├── community/
+│   ├── 006_community.sql
+│   ├── 009_community_stats.sql
+│   └── 011_fix_streak_calculation.sql
+└── fixes/
+    ├── 007_fix_mentor_schema.sql
+    ├── 008_fix_rls_permissions.sql
+    ├── 013_fix_mentee_rls.sql
+    ├── 014_fix_rls_using_jwt.sql
+    └── 015_allow_public_user_names.sql
+```
+
+### Ações:
+
+1. Criar estrutura de pastas acima
+2. COPIAR (não mover) os arquivos de `migrations/` para as pastas correspondentes
+3. Criar `supabase/sql/README.md` com:
+   - Explicação de que `migrations/` é usado pelo Supabase CLI
+   - Explicação de que `sql/` é para referência organizada
+   - Tabela mapeando cada migration ao seu domínio
+
+### IMPORTANTE:
+
+- NÃO alterar nada em `supabase/migrations/`
+- A pasta `sql/` é apenas para referência e organização visual
+- Futuras migrations devem ser criadas em `migrations/` E copiadas para `sql/`
+
+```
 
 ## Critérios de Sucesso
 
 - [ ] ClientProviders movido para layout/
 - [ ] Pasta mentor/ criada em components
-- [ ] communityService dividido
+- [ ] communityService dividido em community/
 - [ ] mentorService movido para mentor/
-- [ ] README de migrations criado
+- [ ] Pasta supabase/sql/ criada com estrutura organizada
+- [ ] README de sql/ criado
 - [ ] Build passa
 - [ ] Todos os imports atualizados
-
-`````
+```
 
 ---
 
@@ -156,6 +176,8 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=()",
   },
 ];
+```
+````
 `````
 
 ```
