@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Trade } from '@/types';
+import type { Trade, JournalEntry } from '@/types';
 import { groupTradesByDay, formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
 import dayjs from 'dayjs';
 
 interface TradeCalendarProps {
     trades: Trade[];
+    entries?: JournalEntry[];
     onDayClick?: (date: string, dayTrades: Trade[]) => void;
 }
 
@@ -23,9 +24,10 @@ interface DayStatsResult {
     bgClass: string;
 }
 
-export function TradeCalendar({ trades, onDayClick }: TradeCalendarProps) {
+export function TradeCalendar({ trades, entries: propEntries, onDayClick }: TradeCalendarProps) {
     const [currentDate, setCurrentDate] = useState(dayjs());
-    const { entries } = useJournalStore();
+    const { entries: storeEntries } = useJournalStore();
+    const entries = propEntries || storeEntries;
     
     const currentMonth = currentDate.month();
     const currentYear = currentDate.year();
