@@ -21,9 +21,8 @@ export function NotificationsModal({
     notifications,
     onAcceptInvite,
     onRejectInvite,
-    onMarkRead,
     onReviewAnnouncements
-}: NotificationsModalProps) {
+}: Omit<NotificationsModalProps, 'onMarkRead'>) {
     // Filter notifications
     const invites = notifications.filter(n => n.type === 'invite');
     const announcements = notifications.filter(n => n.type === 'announcement');
