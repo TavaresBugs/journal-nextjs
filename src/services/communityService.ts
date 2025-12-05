@@ -74,7 +74,12 @@ function mapLeaderboardOptInFromDB(db: DBLeaderboardOptIn): LeaderboardOptIn {
 // ============================================
 
 /**
- * Compartilha um playbook publicamente
+ * Compartilha um playbook publicamente ou atualiza um compartilhamento existente.
+ * @param {string} playbookId - O ID do playbook.
+ * @param {string} [description] - Descrição opcional.
+ * @returns {Promise<SharedPlaybook | null>} O playbook compartilhado ou null.
+ * @example
+ * const shared = await sharePlaybook('playbook-id', 'Minha estratégia');
  */
 export async function sharePlaybook(
     playbookId: string, 
@@ -132,7 +137,11 @@ export async function sharePlaybook(
 }
 
 /**
- * Remove compartilhamento de um playbook
+ * Remove o compartilhamento de um playbook (torna privado).
+ * @param {string} playbookId - O ID do playbook.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await unsharePlaybook('playbook-id');
  */
 export async function unsharePlaybook(playbookId: string): Promise<boolean> {
     const { error } = await supabase
@@ -149,7 +158,10 @@ export async function unsharePlaybook(playbookId: string): Promise<boolean> {
 }
 
 /**
- * Lista playbooks públicos
+ * Lista todos os playbooks públicos, incluindo estatísticas e detalhes do autor.
+ * @returns {Promise<SharedPlaybook[]>} Lista de playbooks compartilhados.
+ * @example
+ * const playbooks = await getPublicPlaybooks();
  */
 export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -373,7 +385,10 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
 }
 
 /**
- * Busca playbooks compartilhados pelo usuário
+ * Busca os playbooks compartilhados pelo usuário atual.
+ * @returns {Promise<SharedPlaybook[]>} Lista de playbooks compartilhados.
+ * @example
+ * const myPlaybooks = await getMySharedPlaybooks();
  */
 export async function getMySharedPlaybooks(): Promise<SharedPlaybook[]> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -400,7 +415,11 @@ export async function getMySharedPlaybooks(): Promise<SharedPlaybook[]> {
 }
 
 /**
- * Toggle star em um playbook
+ * Alterna (adiciona/remove) o "star" em um playbook compartilhado.
+ * @param {string} sharedPlaybookId - O ID do playbook compartilhado.
+ * @returns {Promise<boolean>} True se tiver star (adicionado), False se não tiver (removido).
+ * @example
+ * const isStarred = await togglePlaybookStar('shared-id');
  */
 export async function togglePlaybookStar(sharedPlaybookId: string): Promise<boolean> {
     const { data, error } = await supabase.rpc('toggle_playbook_star', {
@@ -416,7 +435,11 @@ export async function togglePlaybookStar(sharedPlaybookId: string): Promise<bool
 }
 
 /**
- * Incrementa contador de downloads
+ * Incrementa o contador de downloads de um playbook.
+ * @param {string} sharedPlaybookId - O ID do playbook compartilhado.
+ * @returns {Promise<void>}
+ * @example
+ * await incrementPlaybookDownloads('shared-id');
  */
 export async function incrementPlaybookDownloads(sharedPlaybookId: string): Promise<void> {
     await supabase
@@ -430,7 +453,10 @@ export async function incrementPlaybookDownloads(sharedPlaybookId: string): Prom
 // ... (existing code)
 
 /**
- * Busca nome de exibição atual do usuário (para auto-preenchimento)
+ * Busca o nome de exibição atual do usuário (para auto-preenchimento).
+ * @returns {Promise<string | null>} O nome de exibição ou null.
+ * @example
+ * const name = await getCurrentUserDisplayName();
  */
 export async function getCurrentUserDisplayName(): Promise<string | null> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -453,7 +479,16 @@ export async function getCurrentUserDisplayName(): Promise<string | null> {
 }
 
 /**
- * Opt-in no leaderboard
+ * Inscreve o usuário no leaderboard com as preferências selecionadas.
+ * @param {string} displayName - Nome de exibição público.
+ * @param {object} [options] - Opções de privacidade.
+ * @param {boolean} [options.showWinRate] - Mostrar Win Rate.
+ * @param {boolean} [options.showProfitFactor] - Mostrar Fator de Lucro.
+ * @param {boolean} [options.showTotalTrades] - Mostrar Total de Trades.
+ * @param {boolean} [options.showPnl] - Mostrar PnL (Lucro/Prejuízo).
+ * @returns {Promise<LeaderboardOptIn | null>} Dados da inscrição ou null.
+ * @example
+ * const entry = await joinLeaderboard('TraderPRO', { showWinRate: true });
  */
 export async function joinLeaderboard(
     displayName: string,
@@ -490,7 +525,10 @@ export async function joinLeaderboard(
 }
 
 /**
- * Opt-out do leaderboard
+ * Remove o usuário do leaderboard (Opt-out).
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await leaveLeaderboard();
  */
 export async function leaveLeaderboard(): Promise<boolean> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -510,7 +548,10 @@ export async function leaveLeaderboard(): Promise<boolean> {
 }
 
 /**
- * Verifica se o usuário está no leaderboard
+ * Verifica se o usuário já está no leaderboard e retorna seus dados.
+ * @returns {Promise<LeaderboardOptIn | null>} Dados da inscrição ou null se não inscrito.
+ * @example
+ * const status = await getMyLeaderboardStatus();
  */
 export async function getMyLeaderboardStatus(): Promise<LeaderboardOptIn | null> {
     const { data: { user } } = await supabase.auth.getUser();
@@ -528,7 +569,10 @@ export async function getMyLeaderboardStatus(): Promise<LeaderboardOptIn | null>
 }
 
 /**
- * Busca o leaderboard completo
+ * Busca a lista completa do leaderboard ordenada por rank.
+ * @returns {Promise<LeaderboardEntry[]>} Lista de entradas do leaderboard.
+ * @example
+ * const leaderboard = await getLeaderboard();
  */
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     // Usar a view que já calcula as estatísticas
@@ -559,7 +603,16 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
 }
 
 /**
- * Atualiza preferências do leaderboard
+ * Atualiza as preferências de exibição do usuário no leaderboard.
+ * @param {object} options - As opções a serem atualizadas.
+ * @param {string} [options.displayName] - Nome de exibição.
+ * @param {boolean} [options.showWinRate] - Mostrar Win Rate.
+ * @param {boolean} [options.showProfitFactor] - Mostrar Fator de Lucro.
+ * @param {boolean} [options.showTotalTrades] - Mostrar Total de Trades.
+ * @param {boolean} [options.showPnl] - Mostrar PnL.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await updateLeaderboardPreferences({ showPnl: true });
  */
 export async function updateLeaderboardPreferences(
     options: Partial<{

@@ -7,6 +7,13 @@ import { getCurrentUserId } from './accountService';
 // MAPPERS
 // ============================================
 
+/**
+ * Mapeia uma rotina diária do banco de dados para o tipo da aplicação.
+ * @param {DBDailyRoutine} db - Objeto de rotina diária do banco de dados.
+ * @returns {DailyRoutine} Objeto de rotina diária da aplicação.
+ * @example
+ * const routine = mapDailyRoutineFromDB(dbRoutine);
+ */
 export const mapDailyRoutineFromDB = (db: DBDailyRoutine): DailyRoutine => ({
     id: db.id,
     userId: db.user_id,
@@ -22,6 +29,13 @@ export const mapDailyRoutineFromDB = (db: DBDailyRoutine): DailyRoutine => ({
     updatedAt: db.updated_at,
 });
 
+/**
+ * Mapeia uma rotina diária da aplicação para o tipo do banco de dados.
+ * @param {DailyRoutine} app - Objeto de rotina diária da aplicação.
+ * @returns {DBDailyRoutine} Objeto de rotina diária do banco de dados.
+ * @example
+ * const dbRoutine = mapDailyRoutineToDB(routine);
+ */
 export const mapDailyRoutineToDB = (app: DailyRoutine): DBDailyRoutine => ({
     id: app.id,
     user_id: app.userId,
@@ -41,6 +55,13 @@ export const mapDailyRoutineToDB = (app: DailyRoutine): DBDailyRoutine => ({
 // DAILY ROUTINES
 // ============================================
 
+/**
+ * Obtém as rotinas diárias de uma conta específica.
+ * @param {string} accountId - O ID da conta.
+ * @returns {Promise<DailyRoutine[]>} Lista de rotinas diárias.
+ * @example
+ * const routines = await getDailyRoutines('account-id');
+ */
 export async function getDailyRoutines(accountId: string): Promise<DailyRoutine[]> {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -63,6 +84,13 @@ export async function getDailyRoutines(accountId: string): Promise<DailyRoutine[
     return data ? data.map(mapDailyRoutineFromDB) : [];
 }
 
+/**
+ * Salva ou atualiza uma rotina diária.
+ * @param {DailyRoutine} routine - O objeto da rotina diária a ser salvo.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await saveDailyRoutine(myRoutine);
+ */
 export async function saveDailyRoutine(routine: DailyRoutine): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -87,6 +115,13 @@ export async function saveDailyRoutine(routine: DailyRoutine): Promise<boolean> 
     return true;
 }
 
+/**
+ * Exclui uma rotina diária pelo ID.
+ * @param {string} id - O ID da rotina diária.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await deleteDailyRoutine('routine-id');
+ */
 export async function deleteDailyRoutine(id: string): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {

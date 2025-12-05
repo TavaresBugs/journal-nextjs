@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentorService';
 import { MentorInvite, Notification } from '@/types';
-import { NotificationsModal } from '@/components/NotificationsModal';
+import { NotificationsModal } from './NotificationsModal';
 
 // Anúncios do projeto (podem vir de um CMS ou banco futuramente)
 const PROJECT_ANNOUNCEMENTS = [
@@ -23,7 +22,6 @@ const PROJECT_ANNOUNCEMENTS = [
 ];
 
 export function NotificationBell() {
-    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [showFullModal, setShowFullModal] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -69,7 +67,12 @@ export function NotificationBell() {
     }, []);
 
     useEffect(() => {
-        loadNotifications();
+        let mounted = true;
+        const load = async () => {
+            if (mounted) await loadNotifications();
+        };
+        load();
+        return () => { mounted = false; };
     }, [loadNotifications]);
 
     // Fechar dropdown ao clicar fora
@@ -308,9 +311,16 @@ export function useNotifications() {
     }, []);
 
     useEffect(() => {
-        refreshCount();
+        let mounted = true;
+        const load = async () => {
+            if (mounted) await refreshCount();
+        };
+        load();
         const interval = setInterval(refreshCount, 30000);
-        return () => clearInterval(interval);
+        return () => {
+            mounted = false;
+            clearInterval(interval);
+        };
     }, [refreshCount]);
 
     return { unreadCount, refreshCount };
