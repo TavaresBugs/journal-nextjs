@@ -12,7 +12,7 @@
 | 1   | Reorganizar Componentes Notificação | ✅ Concluída | Jules     |
 | 2   | Migration mentor_reviews            | ✅ Concluída | Jules     |
 | 3   | ReviewService CRUD                  | ✅ Concluída | Jules     |
-| 4   | JSDoc em Services                   | 📋 Pendente  | -         |
+| 4   | JSDoc em Services                   | ✅ Concluída | Jules     |
 | 5   | Testes MentorService                | 📋 Pendente  | -         |
 | 6   | Fix Lint Warnings                   | 📋 Pendente  | -         |
 | 7   | StudentCalendarModal                | 📋 Pendente  | -         |
@@ -124,7 +124,19 @@ updatedAt: string;
 
 ---
 
-## 📋 TASK 4: Adicionar JSDoc em Todos os Services
+## ✅ TASK 4: Adicionar JSDoc em Todos os Services [CONCLUÍDA]
+
+**Status:** ✅ Concluída via PR | **Feito por:** Jules
+
+- [x] `accountService.ts` documentado
+- [x] `adminService.ts` documentado
+- [x] `communityService.ts` documentado
+- [x] `journalService.ts` documentado
+- [x] `mentorService.ts` documentado
+- [x] `routineService.ts` documentado
+- [x] `tradeService.ts` documentado
+- [x] Todas as funções exportadas com JSDoc
+- [x] Build passando
 
 **Prioridade:** 🟡 Média | **Tempo estimado:** ~25 min
 

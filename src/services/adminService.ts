@@ -69,7 +69,10 @@ const mapAuditLogFromDB = (db: DBAuditLog): AuditLog => ({
 // ============================================
 
 /**
- * Busca o perfil estendido do usuário logado
+ * Busca o perfil estendido do usuário logado.
+ * @returns {Promise<UserExtended | null>} O perfil do usuário ou null.
+ * @example
+ * const user = await getCurrentUserExtended();
  */
 export async function getCurrentUserExtended(): Promise<UserExtended | null> {
     const userId = await getCurrentUserId();
@@ -90,7 +93,10 @@ export async function getCurrentUserExtended(): Promise<UserExtended | null> {
 }
 
 /**
- * Verifica se o usuário logado é admin
+ * Verifica se o usuário logado é admin.
+ * @returns {Promise<boolean>} True se for admin, False caso contrário.
+ * @example
+ * const isAdminUser = await isAdmin();
  */
 export async function isAdmin(): Promise<boolean> {
     const user = await getCurrentUserExtended();
@@ -98,7 +104,10 @@ export async function isAdmin(): Promise<boolean> {
 }
 
 /**
- * Verifica se o usuário está aprovado
+ * Verifica se o usuário está aprovado.
+ * @returns {Promise<boolean>} True se aprovado, False caso contrário.
+ * @example
+ * const approved = await isApproved();
  */
 export async function isApproved(): Promise<boolean> {
     const user = await getCurrentUserExtended();
@@ -106,7 +115,10 @@ export async function isApproved(): Promise<boolean> {
 }
 
 /**
- * Atualiza o último login do usuário
+ * Atualiza o último login do usuário.
+ * @returns {Promise<void>}
+ * @example
+ * await updateLastLogin();
  */
 export async function updateLastLogin(): Promise<void> {
     const userId = await getCurrentUserId();
@@ -123,7 +135,10 @@ export async function updateLastLogin(): Promise<void> {
 // ============================================
 
 /**
- * Lista todos os usuários (admin only)
+ * Lista todos os usuários (admin only).
+ * @returns {Promise<UserExtended[]>} Lista de usuários.
+ * @example
+ * const users = await getAllUsers();
  */
 export async function getAllUsers(): Promise<UserExtended[]> {
     const admin = await isAdmin();
@@ -146,7 +161,11 @@ export async function getAllUsers(): Promise<UserExtended[]> {
 }
 
 /**
- * Busca usuário por ID (admin only)
+ * Busca usuário por ID (admin only).
+ * @param {string} id - O ID do usuário.
+ * @returns {Promise<UserExtended | null>} O usuário ou null.
+ * @example
+ * const user = await getUserById('user-id');
  */
 export async function getUserById(id: string): Promise<UserExtended | null> {
     const admin = await isAdmin();
@@ -170,7 +189,13 @@ export async function getUserById(id: string): Promise<UserExtended | null> {
 }
 
 /**
- * Atualiza status do usuário (admin only)
+ * Atualiza status do usuário (admin only).
+ * @param {string} id - O ID do usuário.
+ * @param {UserStatus} status - O novo status.
+ * @param {string} [notes] - Notas opcionais.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await updateUserStatus('user-id', 'approved', 'User approved manually');
  */
 export async function updateUserStatus(
     id: string, 
@@ -219,7 +244,12 @@ export async function updateUserStatus(
 }
 
 /**
- * Atualiza role do usuário (admin only)
+ * Atualiza role do usuário (admin only).
+ * @param {string} id - O ID do usuário.
+ * @param {UserRole} role - O novo role.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ * @example
+ * const success = await updateUserRole('user-id', 'admin');
  */
 export async function updateUserRole(id: string, role: UserRole): Promise<boolean> {
     const admin = await isAdmin();
@@ -251,7 +281,10 @@ export async function updateUserRole(id: string, role: UserRole): Promise<boolea
 // ============================================
 
 /**
- * Busca estatísticas para o dashboard admin
+ * Busca estatísticas para o dashboard admin.
+ * @returns {Promise<AdminStats | null>} As estatísticas ou null.
+ * @example
+ * const stats = await getAdminStats();
  */
 export async function getAdminStats(): Promise<AdminStats | null> {
     const admin = await isAdmin();
@@ -294,7 +327,14 @@ export async function getAdminStats(): Promise<AdminStats | null> {
 // ============================================
 
 /**
- * Registra uma ação no audit log
+ * Registra uma ação no audit log.
+ * @param {string} action - A ação realizada.
+ * @param {string} [resourceType] - Tipo do recurso afetado.
+ * @param {string} [resourceId] - ID do recurso afetado.
+ * @param {Record<string, unknown>} [metadata] - Metadados adicionais.
+ * @returns {Promise<string | null>} O ID do log ou null.
+ * @example
+ * await logAction('create_user', 'user', 'user-id', { role: 'admin' });
  */
 export async function logAction(
     action: string,
@@ -325,7 +365,16 @@ export async function logAction(
 }
 
 /**
- * Lista audit logs (admin only)
+ * Lista audit logs (admin only).
+ * @param {object} [options] - Opções de filtro e paginação.
+ * @param {string} [options.userId] - Filtrar por usuário.
+ * @param {string} [options.action] - Filtrar por ação.
+ * @param {string} [options.resourceType] - Filtrar por tipo de recurso.
+ * @param {number} [options.limit] - Limite de registros.
+ * @param {number} [options.offset] - Deslocamento para paginação.
+ * @returns {Promise<AuditLog[]>} Lista de logs.
+ * @example
+ * const logs = await getAuditLogs({ limit: 10 });
  */
 export async function getAuditLogs(options?: {
     userId?: string;
@@ -376,7 +425,10 @@ export async function getAuditLogs(options?: {
 }
 
 /**
- * Lista ações únicas para filtro
+ * Lista ações únicas para filtro.
+ * @returns {Promise<string[]>} Lista de ações únicas.
+ * @example
+ * const actions = await getUniqueActions();
  */
 export async function getUniqueActions(): Promise<string[]> {
     const admin = await isAdmin();
