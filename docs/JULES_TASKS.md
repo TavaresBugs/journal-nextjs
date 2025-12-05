@@ -20,7 +20,7 @@
 | 3   | ReviewService CRUD                  | ✅ Concluída | Jules     |
 | 4   | JSDoc em Services                   | ✅ Concluída | Jules     |
 | 5   | Testes MentorService                | ✅ Concluída | Jules     |
-| 6   | Fix Lint Warnings                   | 📋 Pendente  | -         |
+| 6   | Fix Lint Warnings                   | ✅ Concluída | Jules     |
 | 7   | StudentCalendarModal                | 📋 Pendente  | -         |
 | 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
 | 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
@@ -44,55 +44,11 @@
 | **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`                |
 | **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`           |
 | **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts` |
+| **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)         |
 
 ---
 
 ## 🚀 Próximas Tasks (Lista Detalhada)
-
-### 📋 TASK 6: Fix Lint Warnings
-
-**Prioridade:** 🟢 Baixa | **Tempo estimado:** ~20 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js. Existem alguns warnings de lint.
-
-## Objetivo
-
-Corrigir TODOS os warnings de lint sem quebrar funcionalidade.
-
-## Comando
-
-npm run lint
-
-## Warnings Conhecidos
-
-### src/app/admin/page.tsx
-
-1. Linhas 124, 303, 354: Usando <img> ao invés de next/image
-2. Linhas 419, 424: setState dentro de useEffect
-
-## Tipos Comuns de Fixes
-
-1. Variáveis não utilizadas - remover ou prefixar com \_
-2. Imports não utilizados - remover
-3. <img> → <Image /> - usar next/image
-4. setState em useEffect - refatorar
-
-## Regras
-
-- NÃO usar eslint-disable comments
-- NÃO mudar lógica de negócio
-- APENAS corrigir warnings
-
-## Critérios de Sucesso
-
-- [ ] npm run lint passa sem warnings
-- [ ] npm run build passa
-```
-
----
 
 ### 📋 TASK 7: Criar Componente StudentCalendarModal
 
