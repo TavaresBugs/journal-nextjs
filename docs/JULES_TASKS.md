@@ -13,7 +13,7 @@
 | 2   | Migration mentor_reviews            | ✅ Concluída | Jules     |
 | 3   | ReviewService CRUD                  | ✅ Concluída | Jules     |
 | 4   | JSDoc em Services                   | ✅ Concluída | Jules     |
-| 5   | Testes MentorService                | 📋 Pendente  | -         |
+| 5   | Testes MentorService                | ✅ Concluída | Jules     |
 | 6   | Fix Lint Warnings                   | 📋 Pendente  | -         |
 | 7   | StudentCalendarModal                | 📋 Pendente  | -         |
 | 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
@@ -28,59 +28,15 @@
 
 ## ✅ Tasks Concluídas (Histórico)
 
-| Task       | Descrição                           | Arquivos Criados/Modificados                 |
-| ---------- | ----------------------------------- | -------------------------------------------- |
-| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`              |
-| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql` |
-| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`              |
-| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`         |
+| Task       | Descrição                           | Arquivos Criados/Modificados                   |
+| ---------- | ----------------------------------- | ---------------------------------------------- |
+| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`                |
+| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`   |
+| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`                |
+| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`           |
+| **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts` |
 
 ---
-
-## 📋 TASK 5: Criar Testes Unitários para MentorService
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js + Supabase. Precisamos de testes para garantir qualidade.
-
-## Objetivo
-
-Criar testes unitários com Vitest para src/services/mentorService.ts
-
-## Arquivo a Criar
-
-src/services/**tests**/mentorService.test.ts
-
-## Funções para Testar
-
-- sendMentorInvite
-- getReceivedInvites
-- getSentInvites
-- acceptInvite
-- rejectInvite
-- cancelInvite
-- revokeMentorship
-- getMentees
-- getMentors
-
-## Casos de Teste
-
-Para cada função:
-
-1. Caso de sucesso
-2. Caso de usuário não autenticado
-3. Caso de erro do Supabase
-
-## Critérios de Sucesso
-
-- [ ] Arquivo de teste criado
-- [ ] Mocks configurados
-- [ ] Testes para todas as funções
-- [ ] Testes passando
-```
 
 ---
 
@@ -543,9 +499,9 @@ dueDate: string;
 
 10. 📋 **TASK 14** - Test Plan + Vitest Config ⭐ NEW
 11. 📋 **TASK 9** - Reorganização de pastas
-12. 📋 **TASK 5** - Testes MentorService
-13. 📋 **TASK 6** - Lint fixes
-14. 📋 **TASK 8** - Segurança
+
+12. 📋 **TASK 6** - Lint fixes
+13. 📋 **TASK 8** - Segurança
 
 ---
 
