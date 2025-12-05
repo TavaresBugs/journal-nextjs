@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { getErrorMessage } from '@/lib/utils';
+import { validatePassword, getStrengthColor, getStrengthLabel } from '@/lib/password-validator';
 
 export default function LoginPage() {
     const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithGithub, loading } = useAuth();
@@ -14,6 +15,14 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    // Validação de senha em tempo real (apenas para signup)
+    const passwordValidation = useMemo(() => {
+        if (mode === 'signup' && password) {
+            return validatePassword(password);
+        }
+        return null;
+    }, [password, mode]);
 
     const handleEmailAuth = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,9 +38,13 @@ export default function LoginPage() {
             return;
         }
 
-        if (password.length < 6) {
-            setError('A senha deve ter pelo menos 6 caracteres');
-            return;
+        // Validação robusta de senha para signup
+        if (mode === 'signup') {
+            const validation = validatePassword(password);
+            if (!validation.isValid) {
+                setError(validation.errors.join(', '));
+                return;
+            }
         }
 
         setIsLoading(true);
@@ -48,6 +61,7 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
+
 
     const handleGoogleAuth = async () => {
         setError('');
@@ -171,6 +185,38 @@ export default function LoginPage() {
                                     )}
                                 </button>
                             </div>
+                            
+                            {/* Password Strength Indicator - Only shows in signup mode */}
+                            {mode === 'signup' && password && passwordValidation && (
+                                <div className="mt-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full transition-all duration-300 rounded-full"
+                                                style={{
+                                                    width: `${passwordValidation.score}%`,
+                                                    backgroundColor: getStrengthColor(passwordValidation.strength)
+                                                }}
+                                            />
+                                        </div>
+                                        <span 
+                                            className="text-xs font-medium min-w-[50px] text-right"
+                                            style={{ color: getStrengthColor(passwordValidation.strength) }}
+                                        >
+                                            {getStrengthLabel(passwordValidation.strength)}
+                                        </span>
+                                    </div>
+                                    {passwordValidation.errors.length > 0 && (
+                                        <ul className="text-xs text-gray-400 space-y-0.5">
+                                            {passwordValidation.errors.map((err, i) => (
+                                                <li key={i} className="flex items-center gap-1">
+                                                    <span className="text-red-400">•</span> {err}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {mode === 'signup' && (

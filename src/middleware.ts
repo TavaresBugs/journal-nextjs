@@ -1,6 +1,82 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// ============================================
+// RATE LIMITING
+// ============================================
+
+// In-memory rate limiter (resets on server restart)
+// For production at scale, consider Redis/Upstash
+interface RateLimitEntry {
+    count: number;
+    firstAttempt: number;
+}
+
+const rateLimitMap = new Map<string, RateLimitEntry>();
+
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
+const MAX_ATTEMPTS = 5;
+
+function getClientIP(req: NextRequest): string {
+    // Try various headers for client IP
+    const forwarded = req.headers.get('x-forwarded-for');
+    if (forwarded) {
+        return forwarded.split(',')[0].trim();
+    }
+    const realIP = req.headers.get('x-real-ip');
+    if (realIP) {
+        return realIP;
+    }
+    // Fallback - in production this should be more robust
+    return 'unknown';
+}
+
+function checkRateLimit(ip: string): { allowed: boolean; remainingAttempts: number; retryAfterMs?: number } {
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip);
+    
+    // No previous attempts
+    if (!entry) {
+        rateLimitMap.set(ip, { count: 1, firstAttempt: now });
+        return { allowed: true, remainingAttempts: MAX_ATTEMPTS - 1 };
+    }
+    
+    // Window expired - reset
+    if (now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
+        rateLimitMap.set(ip, { count: 1, firstAttempt: now });
+        return { allowed: true, remainingAttempts: MAX_ATTEMPTS - 1 };
+    }
+    
+    // Still within window
+    if (entry.count >= MAX_ATTEMPTS) {
+        const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - entry.firstAttempt);
+        return { allowed: false, remainingAttempts: 0, retryAfterMs };
+    }
+    
+    // Increment counter
+    entry.count++;
+    rateLimitMap.set(ip, entry);
+    return { allowed: true, remainingAttempts: MAX_ATTEMPTS - entry.count };
+}
+
+function resetRateLimit(ip: string): void {
+    rateLimitMap.delete(ip);
+}
+
+// Cleanup old entries periodically (every 5 minutes)
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of rateLimitMap.entries()) {
+        if (now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
+            rateLimitMap.delete(ip);
+        }
+    }
+}, 5 * 60 * 1000);
+
+// ============================================
+// MIDDLEWARE
+// ============================================
+
 export async function middleware(req: NextRequest) {
     let response = NextResponse.next({
         request: {
@@ -55,9 +131,27 @@ export async function middleware(req: NextRequest) {
     );
 
     const pathname = req.nextUrl.pathname;
+    const clientIP = getClientIP(req);
+
+    // ============================================
+    // RATE LIMITING (apenas para login POST)
+    // ============================================
+    
+    // Check if this is a login attempt (form submission)
+    if (pathname === '/login' && req.method === 'POST') {
+        const rateLimit = checkRateLimit(clientIP);
+        
+        if (!rateLimit.allowed) {
+            const retryMinutes = Math.ceil((rateLimit.retryAfterMs || 0) / 60000);
+            const errorUrl = new URL('/login', req.url);
+            errorUrl.searchParams.set('error', `rate_limited`);
+            errorUrl.searchParams.set('retry_after', retryMinutes.toString());
+            return NextResponse.redirect(errorUrl);
+        }
+    }
 
     // Public routes - no auth required
-    const publicRoutes = ['/login', '/auth/callback', '/share', '/pending'];
+    const publicRoutes = ['/login', '/auth/callback', '/share', '/pending', '/termos', '/privacidade', '/comunidade'];
     const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
 
     // Admin routes - require admin role
@@ -65,6 +159,27 @@ export async function middleware(req: NextRequest) {
 
     // Check auth status
     const { data: { session } } = await supabase.auth.getSession();
+
+    // ============================================
+    // SESSION MANAGEMENT
+    // ============================================
+    
+    if (session) {
+        // Check if session is close to expiring (within 10 minutes)
+        const expiresAt = session.expires_at;
+        if (expiresAt) {
+            const expiresInMs = expiresAt * 1000 - Date.now();
+            const TEN_MINUTES = 10 * 60 * 1000;
+            
+            // Refresh session if it expires in less than 10 minutes
+            if (expiresInMs < TEN_MINUTES && expiresInMs > 0) {
+                await supabase.auth.refreshSession();
+            }
+        }
+        
+        // Reset rate limit on successful auth
+        resetRateLimit(clientIP);
+    }
 
     // Not authenticated - redirect to login (except public routes)
     if (!session && !isPublicRoute) {
@@ -134,3 +249,4 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 };
+

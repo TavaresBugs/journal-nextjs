@@ -39,18 +39,20 @@
 
 #### 🔐 Painel de Administrador
 
-| Item                | Descrição                                          | Prioridade |
-| ------------------- | -------------------------------------------------- | ---------- |
-| Dashboard Admin     | Visão geral de usuários, métricas do sistema, logs | 🔴 Alta    |
-| Gestão de Usuários  | CRUD de usuários, ativação/desativação             | 🔴 Alta    |
-| Aprovação de Contas | Fluxo de whitelist para novos registros            | 🔴 Alta    |
-| Roles & Permissões  | Admin, User, Guest com RBAC                        | 🔴 Alta    |
-| Audit Logs          | Registro de ações críticas                         | 🔴 Alta    |
+| Item                | Descrição                                          | Status       |
+| ------------------- | -------------------------------------------------- | ------------ |
+| Dashboard Admin     | Visão geral de usuários, métricas do sistema, logs | ✅ Concluído |
+| Gestão de Usuários  | CRUD de usuários, ativação/desativação             | ✅ Concluído |
+| Aprovação de Contas | Fluxo de whitelist para novos registros            | ✅ Concluído |
+| Roles & Permissões  | Admin, User, Guest com RBAC                        | ✅ Concluído |
+| Audit Logs          | Registro de ações críticas                         | ✅ Concluído |
 
-##### Tabelas Supabase necessárias:
+##### Tabelas Supabase necessárias: ✅ Implementadas
+
+> Ver `supabase/migrations/004_admin_system.sql` para detalhes completos.
 
 ```sql
--- users_extended (complementa auth.users)
+-- users_extended (complementa auth.users) ✅
 CREATE TABLE users_extended (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
   status TEXT DEFAULT 'pending', -- pending, approved, suspended, banned
@@ -61,7 +63,7 @@ CREATE TABLE users_extended (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- audit_logs
+-- audit_logs ✅
 CREATE TABLE audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id),
@@ -77,14 +79,14 @@ CREATE TABLE audit_logs (
 
 #### 🛡️ Segurança
 
-| Item               | Descrição                         | Status       |
-| ------------------ | --------------------------------- | ------------ |
-| MFA (2FA)          | Autenticação multi-fator via TOTP | ⬜ Planejado |
-| Session Management | Timeout, revogação de sessões     | ⬜ Planejado |
-| Rate Limiting      | Proteção contra brute force       | ⬜ Planejado |
-| IP Whitelisting    | Opcional para admin               | ⬜ Planejado |
-| Password Policies  | Força mínima, expiração           | ⬜ Planejado |
-| WAF/Headers        | CSP, CORS, segurança HTTP         | ⬜ Planejado |
+| Item                | Descrição                      | Status       |
+| ------------------- | ------------------------------ | ------------ |
+| Session Management  | Timeout, refresh automático    | ✅ Concluído |
+| Rate Limiting       | Proteção contra brute force    | ✅ Concluído |
+| Password Policies   | Força mínima, validação visual | ✅ Concluído |
+| WAF/Headers         | CSP, CORS, segurança HTTP      | ✅ Concluído |
+| ~~MFA (2FA)~~       | ~~Removido do escopo~~         | —            |
+| ~~IP Whitelisting~~ | ~~Removido do escopo~~         | —            |
 
 ---
 
@@ -156,23 +158,71 @@ Cálculo automático de IR para operações de trading:
 
 ---
 
-### Fase 4: Social & Colaboração (Q4 2025)
+### Fase 4: Social & Colaboração (Q4 2025) 🚧 EM PROGRESSO
 
-**Objetivo:** Features de comunidade e mentoria.
+**Objetivo:** Features de comunidade e mentoria completa.
 
 #### 👥 Mentor Mode
 
-- [ ] Convidar mentores para visualizar journals
-- [ ] Comentários e feedback em trades
-- [ ] Permissões granulares (view-only, can comment)
-- [ ] Dashboard do mentor com visão consolidada
+##### Sistema de Convites ✅
+
+- [x] Mentor pode convidar mentorados por email
+- [x] Mentorado recebe notificação de convite
+- [x] Aceitar/Rejeitar convites
+- [x] Tabela de convites enviados/recebidos
+- [x] Cancelar/Revogar convites
+
+##### Visualização do Mentor 📋 PRÓXIMO
+
+| Feature                   | Descrição                                      | Status      |
+| ------------------------- | ---------------------------------------------- | ----------- |
+| **StudentCalendarModal**  | Mentor visualiza calendário completo do aluno  | 🔴 Pendente |
+| **Seletor de Aluno**      | Dropdown para alternar entre mentorados        | 🔴 Pendente |
+| **Trade Detail View**     | Mentor pode clicar em trades para ver detalhes | 🔴 Pendente |
+| **Permissões Granulares** | Níveis: view-only, can-comment, full-analysis  | 🟡 Parcial  |
+
+##### Sistema de Correções/Comentários 📋 PRÓXIMO
+
+| Feature              | Descrição                           | Status      |
+| -------------------- | ----------------------------------- | ----------- |
+| **TradeReviewModal** | Modal para mentor escrever correção | 🔴 Pendente |
+| **CommentThread**    | Thread de comentários por trade     | 🔴 Pendente |
+| **Tipos de Review**  | Correção, Sugestão, Comentário      | 🔴 Pendente |
+| **Rating por Trade** | Opcional: 1-5 estrelas              | 🟢 Futuro   |
+
+##### Visualização do Aluno 📋 PRÓXIMO
+
+| Feature                    | Descrição                          | Status      |
+| -------------------------- | ---------------------------------- | ----------- |
+| **Tab "Correções"**        | Nova aba no NotificationsModal     | 🔴 Pendente |
+| **Badge em Trades**        | Indicador de trades com correções  | 🔴 Pendente |
+| **Thread no Trade Detail** | Ver correções no contexto do trade | 🔴 Pendente |
+| **Marcar como Lido**       | Sistema de read/unread             | 🔴 Pendente |
+
+##### Tabelas Supabase necessárias:
+
+```sql
+-- mentor_reviews (correções e comentários)
+CREATE TABLE mentor_reviews (
+    id UUID PRIMARY KEY,
+    mentor_id UUID REFERENCES auth.users(id),
+    mentee_id UUID REFERENCES auth.users(id),
+    trade_id UUID REFERENCES trades(id),
+    review_type TEXT,  -- 'correction' | 'comment' | 'suggestion'
+    content TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ
+);
+```
 
 #### 🌐 Comunidade
 
-- [ ] Perfis públicos opcionais
-- [ ] Compartilhamento de playbooks
-- [ ] Leaderboard (opt-in)
-- [ ] Fórum de discussão
+- [x] Compartilhamento de playbooks
+- [x] Leaderboard (opt-in)
+- [x] Cards com estatísticas do autor
+- [ ] Filtros de playbooks (por ativo, win rate, etc)
+- ~~[ ] Perfis públicos opcionais~~ - Removido
+- ~~[ ] Fórum de discussão~~ - Removido
 
 ---
 
@@ -180,17 +230,17 @@ Cálculo automático de IR para operações de trading:
 
 ### Autenticação
 
-- [ ] MFA com SMS (backup)
-- [ ] Políticas de senha forte
-- [ ] Bloqueio após tentativas falhas
+- ~~[ ] MFA com SMS (backup)~~ - Removido do escopo
+- [x] Políticas de senha forte
+- [x] Bloqueio após tentativas falhas (Rate Limiting)
 - [ ] Recuperação de conta segura
 
 ### Autorização
 
-- [ ] RBAC implementado
-- [ ] Princípio do menor privilégio
+- [x] RBAC implementado
+- [x] Princípio do menor privilégio
 - [ ] Revisão periódica de acessos
-- [ ] Segregação admin/user
+- [x] Segregação admin/user
 
 ### Dados
 
@@ -201,18 +251,18 @@ Cálculo automático de IR para operações de trading:
 
 ### Aplicação
 
-- [ ] Headers de segurança (CSP, HSTS)
-- [ ] Proteção CSRF
-- [ ] Sanitização de inputs
-- [ ] Rate limiting em APIs
-- [ ] Logs de auditoria
+- [x] Headers de segurança (CSP, HSTS)
+- [x] Proteção CSRF (Next.js built-in)
+- [x] Sanitização de inputs
+- [x] Rate limiting em APIs
+- [x] Logs de auditoria
 
 ### Compliance
 
-- [ ] LGPD (Brasil)
-- [ ] Termos de uso
-- [ ] Política de privacidade
-- [ ] Consentimento de cookies
+- [x] LGPD (Brasil) - Página de privacidade
+- [x] Termos de uso
+- [x] Política de privacidade
+- [x] Consentimento de cookies
 
 ---
 
@@ -258,6 +308,30 @@ Q4 2025 ────────────────────────
 - [ ] Relatórios PDF automatizados
 - [ ] Dark/Light mode toggle
 - [ ] Internacionalização (EN, ES)
+
+---
+
+## ✅ Já Implementadas (Bônus)
+
+Estas funcionalidades foram desenvolvidas além do roadmap original:
+
+| Feature                   | Status       | Arquivo/Local                           |
+| ------------------------- | ------------ | --------------------------------------- |
+| Google OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook       |
+| GitHub OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook       |
+| Sistema de Playbooks      | ✅ Concluído | `src/components/playbook/*`             |
+| Gráficos Recharts         | ✅ Concluído | `src/components/charts/recharts/*`      |
+| Lightweight Charts        | ✅ Concluído | `src/components/charts/lightweight/*`   |
+| Compartilhamento Journals | ✅ Concluído | `src/app/share/*`, migration 003        |
+| Dark Mode                 | ✅ Concluído | CSS com tema Zorin                      |
+| Página de Pendentes       | ✅ Concluído | `src/app/pending/page.tsx`              |
+| Middleware de Auth        | ✅ Concluído | `src/middleware.ts`                     |
+| **Mentor Invites**        | ✅ Concluído | `src/services/mentorService.ts`         |
+| **Painel do Mentor**      | ✅ Concluído | `src/app/mentor/page.tsx`               |
+| **NotificationBell**      | ✅ Concluído | `src/components/NotificationBell.tsx`   |
+| **NotificationsModal**    | ✅ Concluído | `src/components/NotificationsModal.tsx` |
+| **Comunidade/Playbooks**  | ✅ Concluído | `src/app/comunidade/page.tsx`           |
+| **Leaderboard**           | ✅ Concluído | `src/services/communityService.ts`      |
 
 ---
 

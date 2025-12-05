@@ -8,6 +8,7 @@ import { useJournalStore } from '@/store/useJournalStore';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { isAdmin } from '@/services/adminService';
+import { isMentor } from '@/services/mentorService';
 import { useToast } from '@/contexts/ToastContext';
 import { CreateTradeModal } from '@/components/trades/CreateTradeModal';
 import { EditTradeModal } from '@/components/trades/EditTradeModal';
@@ -19,9 +20,11 @@ import { PlaybookGrid } from '@/components/playbook/PlaybookGrid';
 import { CreatePlaybookModal } from '@/components/playbook/CreatePlaybookModal';
 import { EditPlaybookModal } from '@/components/playbook/EditPlaybookModal';
 import { ViewPlaybookModal } from '@/components/playbook/ViewPlaybookModal';
+import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
+import { NotificationBell } from '@/components/NotificationBell';
 import type { Trade, Playbook } from '@/types';
 import { 
     formatCurrency, 
@@ -58,10 +61,12 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
     const [editingPlaybook, setEditingPlaybook] = useState<Playbook | null>(null);
     const [viewingPlaybook, setViewingPlaybook] = useState<Playbook | null>(null);
+    const [sharingPlaybook, setSharingPlaybook] = useState<Playbook | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [activeTab, setActiveTab] = useState('novo');
     const [isLoading, setIsLoading] = useState(true);
     const [isAdminUser, setIsAdminUser] = useState(false);
+    const [isMentorUser, setIsMentorUser] = useState(false);
     
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -134,13 +139,17 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 await Promise.all([
                     loadTrades(accountId),
                     loadEntries(accountId),
-                    loadPlaybooks(accountId),
+                    loadPlaybooks(),
                     loadSettings()
                 ]);
 
-                // Check if user is admin
-                const adminStatus = await isAdmin();
+                // Check if user is admin or mentor
+                const [adminStatus, mentorStatus] = await Promise.all([
+                    isAdmin(),
+                    isMentor()
+                ]);
                 setIsAdminUser(adminStatus);
+                setIsMentorUser(mentorStatus);
 
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
@@ -212,7 +221,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     };
 
     const handlePlaybookCreated = async () => {
-        await loadPlaybooks(accountId);
+        await loadPlaybooks();
         showToast('Playbook criado com sucesso!', 'success');
     };
 
@@ -225,7 +234,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     };
 
     const handleUpdatePlaybook = async () => {
-        await loadPlaybooks(accountId);
+        await loadPlaybooks();
         showToast('Playbook atualizado com sucesso!', 'success');
         setEditingPlaybook(null);
     };
@@ -238,6 +247,14 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             console.error('Error deleting playbook:', error);
             showToast('Erro ao excluir playbook.', 'error');
         }
+    };
+
+    const handleSharePlaybook = (playbook: Playbook) => {
+        setSharingPlaybook(playbook);
+    };
+
+    const handleShareSuccess = () => {
+        showToast('Playbook compartilhado com sucesso!', 'success');
     };
 
     const handleDayClick = (date: string) => {
@@ -314,7 +331,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                             </div>
                         </div>
                         
-                        {/* Admin & Settings Buttons */}
+                        {/* Action Buttons */}
                         <div className="flex items-center gap-2">
                             {/* Admin Button - Only visible for admins */}
                             {isAdminUser && (
@@ -331,6 +348,42 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                                     </svg>
                                 </Button>
                             )}
+
+                            {/* Mentor Button - Only visible for mentors or admins */}
+                            {(isMentorUser || isAdminUser) && (
+                                <Button
+                                    variant="primary"
+                                    size="icon"
+                                    onClick={() => router.push('/mentor')}
+                                    title="Mentoria"
+                                    className="w-12 h-12 rounded-xl"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="9" cy="7" r="4"/>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                </Button>
+                            )}
+
+                            {/* Community Button - Visible to all */}
+                            <Button
+                                variant="primary"
+                                size="icon"
+                                onClick={() => router.push('/comunidade')}
+                                title="Comunidade"
+                                className="w-12 h-12 rounded-xl"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M2 12h20"/>
+                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                </svg>
+                            </Button>
+
+                            {/* Notification Bell */}
+                            <NotificationBell />
                             
                             {/* Settings Button */}
                             <Button
@@ -519,6 +572,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                                 onEdit={handleEditPlaybook}
                                 onDelete={handleDeletePlaybook}
                                 onView={handleViewPlaybook}
+                                onShare={handleSharePlaybook}
                            />
                         </CardContent>
                     </Card>
@@ -703,10 +757,10 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             <CreatePlaybookModal
                 isOpen={isCreatePlaybookModalOpen}
                 onClose={() => setIsCreatePlaybookModalOpen(false)}
-                accountId={accountId}
-                onCreatePlaybook={handlePlaybookCreated}
+                onCreatePlaybook={() => {
+                    loadPlaybooks();
+                }}
             />
-
             <EditPlaybookModal
                 isOpen={!!editingPlaybook}
                 onClose={() => setEditingPlaybook(null)}
@@ -723,6 +777,15 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                     setEditingPlaybook(playbook);
                 }}
             />
+
+            {sharingPlaybook && (
+                <SharePlaybookModal
+                    playbook={sharingPlaybook}
+                    isOpen={!!sharingPlaybook}
+                    onClose={() => setSharingPlaybook(null)}
+                    onSuccess={handleShareSuccess}
+                />
+            )}
             </div>
         </div>
     );

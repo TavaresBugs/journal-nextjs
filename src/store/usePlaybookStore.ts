@@ -8,7 +8,7 @@ interface PlaybookStore {
     error: string | null;
 
     // Actions
-    loadPlaybooks: (accountId: string) => Promise<void>;
+    loadPlaybooks: () => Promise<void>;
     addPlaybook: (playbook: Omit<Playbook, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
     updatePlaybook: (playbook: Playbook) => Promise<void>;
     removePlaybook: (id: string) => Promise<void>;
@@ -19,7 +19,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
     isLoading: false,
     error: null,
 
-    loadPlaybooks: async (accountId: string) => {
+    loadPlaybooks: async () => {
         set({ isLoading: true, error: null });
 
         try {
@@ -29,7 +29,6 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
             const { data, error } = await supabase
                 .from('playbooks')
                 .select('*')
-                .eq('account_id', accountId)
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false });
 
@@ -38,7 +37,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
             const playbooks: Playbook[] = (data || []).map((row) => ({
                 id: row.id,
                 userId: row.user_id,
-                accountId: row.account_id,
+                accountId: row.account_id || '', // Maintain compatibility but allow empty
                 name: row.name,
                 description: row.description,
                 icon: row.icon || '📈',
@@ -67,7 +66,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
                 .from('playbooks')
                 .insert({
                     user_id: user.id,
-                    account_id: playbookData.accountId,
+                    account_id: null, // Global for user
                     name: playbookData.name,
                     description: playbookData.description,
                     icon: playbookData.icon,
@@ -82,7 +81,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
             const newPlaybook: Playbook = {
                 id: data.id,
                 userId: data.user_id,
-                accountId: data.account_id,
+                accountId: '', // Global
                 name: data.name,
                 description: data.description,
                 icon: data.icon,

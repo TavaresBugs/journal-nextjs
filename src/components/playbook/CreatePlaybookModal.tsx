@@ -8,7 +8,6 @@ import type { RuleGroup } from '@/types';
 interface CreatePlaybookModalProps {
     isOpen: boolean;
     onClose: () => void;
-    accountId: string;
     onCreatePlaybook: () => void;
 }
 
@@ -35,7 +34,7 @@ const DEFAULT_GROUPS = [
     { id: 'exit', name: 'Critérios de saída' },
 ];
 
-export function CreatePlaybookModal({ isOpen, onClose, accountId, onCreatePlaybook }: CreatePlaybookModalProps) {
+export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: CreatePlaybookModalProps) {
     const { addPlaybook } = usePlaybookStore();
     const [activeTab, setActiveTab] = useState<'general' | 'rules'>('general');
     const [name, setName] = useState('');
@@ -102,7 +101,6 @@ export function CreatePlaybookModal({ isOpen, onClose, accountId, onCreatePlaybo
         setIsSaving(true);
         try {
             await addPlaybook({
-                accountId,
                 userId: '', // Will be set by the store
                 name,
                 description,

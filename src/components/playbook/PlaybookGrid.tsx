@@ -10,6 +10,7 @@ interface PlaybookGridProps {
     onEdit?: (playbook: Playbook) => void;
     onDelete?: (playbookId: string) => void;
     onView?: (playbook: Playbook) => void;
+    onShare?: (playbook: Playbook) => void;
 }
 
 interface StrategyMetrics {
@@ -27,7 +28,7 @@ interface StrategyMetrics {
     expectancy: number;
 }
 
-export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, onView }: PlaybookGridProps) {
+export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, onView, onShare }: PlaybookGridProps) {
     const strategies = useMemo(() => {
         const stats = new Map<string, StrategyMetrics>();
 
@@ -184,6 +185,18 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                                             title="Editar"
                                         >
                                             ✏️
+                                        </Button>
+                                        <Button 
+                                            variant="info"
+                                            size="icon"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onShare?.(strategy.playbook!);
+                                            }}
+                                            className="w-8 h-8"
+                                            title="Compartilhar"
+                                        >
+                                            🌐
                                         </Button>
                                         <Button 
                                             variant="danger"

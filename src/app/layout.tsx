@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { ToastProvider } from "@/contexts/ToastContext";
+import { ClientProviders } from "@/components/ClientProviders";
 
 export default function RootLayout({
   children,
@@ -20,9 +21,12 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
         <ToastProvider>
-          {children}
+          <ClientProviders>
+            {children}
+          </ClientProviders>
         </ToastProvider>
       </body>
     </html>
   );
 }
+

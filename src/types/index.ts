@@ -106,7 +106,7 @@ export interface RuleGroup {
 export interface Playbook {
     id: string;
     userId: string; // User ID from Supabase Auth
-    accountId: string;
+    accountId?: string;
     name: string;
     description?: string;
     icon: string;
@@ -247,7 +247,7 @@ export interface UserSettings {
 // ============================================
 
 export type UserStatus = 'pending' | 'approved' | 'suspended' | 'banned';
-export type UserRole = 'admin' | 'user' | 'guest';
+export type UserRole = 'admin' | 'user' | 'guest' | 'mentor';
 
 export interface UserExtended {
     id: string;
@@ -288,3 +288,120 @@ export interface AdminStats {
     todaySignups: number;
 }
 
+// ============================================
+// MENTOR MODE TYPES
+// ============================================
+
+export type MentorPermission = 'view' | 'comment';
+export type InviteStatus = 'pending' | 'accepted' | 'rejected' | 'revoked';
+
+export interface MentorInvite {
+    id: string;
+    // Mentor que enviou o convite (sempre presente)
+    mentorId: string;
+    mentorEmail: string;
+    mentorName?: string;
+    // Mentorado que recebe o convite (preenchido quando aceita)
+    menteeId?: string;
+    menteeEmail: string;
+    menteeName?: string;
+    // Configurações
+    permission: MentorPermission;
+    status: InviteStatus;
+    inviteToken: string;
+    createdAt: string;
+    acceptedAt?: string;
+    expiresAt: string;
+}
+
+export interface TradeComment {
+    id: string;
+    tradeId: string;
+    userId: string;
+    userName?: string;
+    userAvatar?: string;
+    content: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface MenteeOverview {
+    menteeId: string;
+    menteeName: string;
+    menteeEmail: string;
+    menteeAvatar?: string;
+    permission: MentorPermission;
+    totalTrades: number;
+    winRate: number;
+    recentTradesCount: number; // trades nos últimos 7 dias
+    lastTradeDate?: string;
+}
+
+// ============================================
+// COMMUNITY TYPES
+// ============================================
+
+export interface SharedPlaybook {
+    id: string;
+    playbookId: string;
+    playbook?: Playbook; // Join com playbooks
+    userId: string;
+    userName?: string;
+    userAvatar?: string;
+    isPublic: boolean;
+    description?: string;
+    stars: number;
+    downloads: number;
+    hasUserStarred?: boolean; // Se o usuário atual deu star
+    // Author's performance with this playbook
+    authorStats?: {
+        totalTrades: number;
+        winRate: number;
+        profitFactor: number;
+        netPnl: number;
+        avgRR: number; // Average Risk:Reward ratio
+        maxWinStreak: number; // Longest winning streak
+        avgDuration?: string; // e.g., "2h 15m"
+        preferredSymbol?: string; // e.g., "EURUSD"
+        preferredSession?: string; // e.g., "London"
+    };
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface LeaderboardEntry {
+    userId: string;
+    displayName: string;
+    showWinRate: boolean;
+    showProfitFactor: boolean;
+    showTotalTrades: boolean;
+    showPnl: boolean;
+    totalTrades?: number;
+    winRate?: number;
+    profitFactor?: number;
+    avgRR?: number; // Average Risk:Reward
+    totalPnl?: number;
+    streak?: number; // Journal streak
+    rank?: number;
+}
+
+export interface LeaderboardOptIn {
+    userId: string;
+    displayName: string;
+    showWinRate: boolean;
+    showProfitFactor: boolean;
+    showTotalTrades: boolean;
+    showPnl: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface Notification {
+    id: string;
+    type: 'invite' | 'update' | 'announcement';
+    title: string;
+    message: string;
+    timestamp: Date;
+    read: boolean;
+    data?: MentorInvite;
+}

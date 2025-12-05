@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { useJournalStore } from '@/store/useJournalStore';
+import { useTradeStore } from '@/store/useTradeStore';
 import { useToast } from '@/contexts/ToastContext';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
@@ -43,9 +44,16 @@ export function JournalEntryModal({
   startEditing = false
 }: JournalEntryModalProps) {
   const { addEntry, updateEntry } = useJournalStore();
+  const { trades: allTrades } = useTradeStore();
   const { showToast } = useToast();
   
-  const [trade] = useState<Trade | null | undefined>(initialTrade);
+  const [trade] = useState<Trade | null | undefined>(() => {
+    if (initialTrade) return initialTrade;
+    if (existingEntry?.tradeId) {
+      return allTrades.find(t => t.id === existingEntry.tradeId) || null;
+    }
+    return null;
+  });
   const [isEditing, setIsEditing] = useState(startEditing || !existingEntry);
   const [isSharingLoading, setIsSharingLoading] = useState(false);
 
