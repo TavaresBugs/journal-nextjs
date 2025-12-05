@@ -299,6 +299,17 @@ Corrigir TODOS os warnings de lint sem quebrar funcionalidade.
 npm run lint
 ````
 
+## Warnings Conhecidos
+
+### src/app/admin/page.tsx
+
+1. **Linhas 124, 303, 354:** Usando `<img>` ao invés de `next/image`
+   - Substituir `<img>` por `<Image />` de `next/image`
+   - Adicionar width/height ou fill prop
+2. **Linhas 419, 424:** setState dentro de useEffect (react-hooks/set-state-in-effect)
+   - Refatorar para usar padrão correto
+   - Considerar usar useCallback ou mover lógica para fora do effect
+
 ## Tipos Comuns de Fixes
 
 1. Variáveis não utilizadas - remover ou prefixar com \_
@@ -306,6 +317,8 @@ npm run lint
 3. any types - adicionar tipos específicos
 4. React hooks dependencies - adicionar deps faltando
 5. Acessibilidade (a11y) - adicionar aria-labels
+6. **`<img>` → `<Image />`** - usar next/image component
+7. **setState em useEffect** - refatorar para evitar cascading renders
 
 ## Regras
 
