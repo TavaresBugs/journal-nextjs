@@ -92,58 +92,25 @@ const securityHeaders = [
 - [ ] Mensagens de erro genéricas
 - [ ] Relatório de auditoria criado em docs/SECURITY_AUDIT.md
 
-````
+`````
 
 ---
 
-## 📋 TASK 2: Criar Migration para Sistema de Correções do Mentor
-**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~20 min
+## ✅ TASK 2: Criar Migration para Sistema de Correções do Mentor [CONCLUÍDA]
 
-```markdown
-## Contexto
-Trading Journal com sistema de mentoria. Precisamos de uma tabela para armazenar correções/comentários que mentores fazem nos trades dos alunos.
+**Status:** ✅ Concluída via PR | **Feito por:** Jules
 
-## Objetivo
-Criar migration SQL para a tabela `mentor_reviews` com RLS policies apropriadas.
+- [x] Tabela `mentor_reviews` criada com todos os campos
+- [x] CHECK constraints para `review_type` e `rating`
+- [x] 4 índices criados
+- [x] RLS policies implementadas:
+  - Mentor cria reviews (verifica `mentor_invites.status = 'accepted'`)
+  - Mentor gerencia suas reviews
+  - Mentee visualiza reviews dele
+  - Mentee marca como lido
+- [x] GRANTS e documentação
 
-## Ações Necessárias
-Criar arquivo `supabase/migrations/016_mentor_reviews.sql` com:
-
-1. **Tabela mentor_reviews:**
-   - id (UUID, PK)
-   - mentor_id (UUID, FK auth.users)
-   - mentee_id (UUID, FK auth.users)
-   - trade_id (UUID, FK trades, nullable)
-   - journal_entry_id (UUID, FK journal_entries, nullable)
-   - review_type (TEXT: 'correction', 'comment', 'suggestion')
-   - content (TEXT, NOT NULL)
-   - rating (INTEGER, 1-5, nullable)
-   - is_read (BOOLEAN, default FALSE)
-   - created_at (TIMESTAMPTZ)
-   - updated_at (TIMESTAMPTZ)
-
-2. **Índices:**
-   - idx_mentor_reviews_mentor_id
-   - idx_mentor_reviews_mentee_id
-   - idx_mentor_reviews_trade_id
-   - idx_mentor_reviews_is_read
-
-3. **RLS Policies:**
-   - Mentor pode criar reviews para seus mentees (verificar mentor_invites.status = 'accepted')
-   - Mentor pode ver/editar suas próprias reviews
-   - Mentee pode ver reviews direcionadas a ele
-   - Mentee pode marcar como lido (update is_read)
-
-## Referência de Estilo
-Ver arquivo existente: `supabase/migrations/011_mentor_system.sql`
-
-## Critérios de Sucesso
-- [ ] Arquivo SQL criado
-- [ ] Tabela com todos os campos
-- [ ] Índices criados
-- [ ] RLS policies funcionais
-- [ ] Comentários explicativos no SQL
-````
+**Arquivo:** `supabase/migrations/016_mentor_reviews.sql`
 
 ---
 
@@ -194,8 +161,9 @@ getMyReviews(): Promise<MentorReview[]>
 getReviewsForTrade(tradeId: string): Promise<MentorReview[]>
 markReviewAsRead(id: string): Promise<boolean>
 getUnreadReviewCount(): Promise<number>
+`````
+
 ```
-````
 
 ## Padrões a Seguir
 
@@ -212,21 +180,25 @@ getUnreadReviewCount(): Promise<number>
 - [ ] Mapeamento DB <-> TS correto
 - [ ] TypeScript sem erros
 
-````
+```
 
 ---
 
 ## 📋 TASK 4: Adicionar JSDoc em Todos os Services
+
 **Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~25 min
 
-```markdown
+````markdown
 ## Contexto
+
 Trading Journal Next.js. Os services precisam de documentação JSDoc para facilitar manutenção.
 
 ## Objetivo
+
 Adicionar JSDoc completo para todas as funções exportadas em src/services/
 
 ## Arquivos para Documentar
+
 - src/services/accountService.ts
 - src/services/adminService.ts
 - src/services/communityService.ts
@@ -236,6 +208,7 @@ Adicionar JSDoc completo para todas as funções exportadas em src/services/
 - src/services/tradeService.ts
 
 ## Formato JSDoc
+
 ```typescript
 /**
  * Descrição breve da função
@@ -248,6 +221,7 @@ Adicionar JSDoc completo para todas as funções exportadas em src/services/
  * @example
  * const result = await nomeFuncao(param);
  */
+```
 ````
 
 ## Critérios de Sucesso
