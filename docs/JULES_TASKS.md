@@ -5,6 +5,22 @@
 
 ---
 
+## 📊 Status Geral
+
+| #   | Task                                | Status       | Feito por |
+| --- | ----------------------------------- | ------------ | --------- |
+| 1   | Reorganizar Componentes Notificação | ✅ Concluída | Jules     |
+| 2   | Migration mentor_reviews            | ✅ Concluída | Jules     |
+| 3   | ReviewService CRUD                  | 📋 Pendente  | -         |
+| 4   | JSDoc em Services                   | 📋 Pendente  | -         |
+| 5   | Testes MentorService                | 📋 Pendente  | -         |
+| 6   | Fix Lint Warnings                   | 📋 Pendente  | -         |
+| 7   | StudentCalendarModal                | 📋 Pendente  | -         |
+| 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
+| 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
+
+---
+
 ## ✅ TASK 1: Reorganizar Componentes de Notificação [CONCLUÍDA]
 
 **Status:** ✅ Concluída via PR #4 | **Feito por:** Jules
@@ -16,207 +32,14 @@
 
 ---
 
-## 📋 TASK 9: Reorganização de Pastas e Documentação
-
-**Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~45 min
-
-`````markdown
-## Contexto
-
-Trading Journal Next.js. A estrutura de pastas precisa de organização para escalar.
-
-## Objetivo
-
-Reorganizar components, services, e documentar migrations.
-
-## PARTE 1: Components
-
-### 1.1 Mover ClientProviders
-
-- Mover `src/components/ClientProviders.tsx` para `src/components/layout/ClientProviders.tsx`
-- Criar `src/components/layout/index.ts`
-- Atualizar imports
-
-### 1.2 Criar pasta mentor
-
-- Criar `src/components/mentor/`
-- Criar `src/components/mentor/index.ts` (vazio por enquanto)
-- Esta pasta receberá: StudentCalendarModal, TradeReviewModal, etc.
-
-## PARTE 2: Services
-
-### 2.1 Dividir communityService.ts (19KB - muito grande)
-
-Dividir em:
-
-- `src/services/community/playbookService.ts` - funções de playbook sharing
-- `src/services/community/leaderboardService.ts` - funções de leaderboard
-- `src/services/community/index.ts` - re-exporta tudo
-
-### 2.2 Criar estrutura para mentor
-
-- Criar `src/services/mentor/`
-- Mover `mentorService.ts` para `src/services/mentor/inviteService.ts`
-- Criar `src/services/mentor/index.ts`
-
-## PARTE 3: Organizar SQL por Domínio
-
-Criar pasta `supabase/sql/` organizada por domínio (referência visual):
-
-```
-supabase/sql/
-├── README.md              # Documentação geral
-├── core/
-│   ├── 000_init_schema.sql
-│   └── 001_storage_setup.sql
-├── features/
-│   ├── 002_playbooks.sql
-│   ├── 003_shared_journals.sql
-│   └── 010_global_playbooks.sql
-├── admin/
-│   └── 004_admin_system.sql
-├── mentor/
-│   ├── 005_mentor_mode.sql
-│   ├── 012_add_mentor_role.sql
-│   └── 016_mentor_reviews.sql
-├── community/
-│   ├── 006_community.sql
-│   ├── 009_community_stats.sql
-│   └── 011_fix_streak_calculation.sql
-└── fixes/
-    ├── 007_fix_mentor_schema.sql
-    ├── 008_fix_rls_permissions.sql
-    ├── 013_fix_mentee_rls.sql
-    ├── 014_fix_rls_using_jwt.sql
-    └── 015_allow_public_user_names.sql
-```
-
-### Ações:
-
-1. Criar estrutura de pastas acima
-2. COPIAR (não mover) os arquivos de `migrations/` para as pastas correspondentes
-3. Criar `supabase/sql/README.md` com:
-   - Explicação de que `migrations/` é usado pelo Supabase CLI
-   - Explicação de que `sql/` é para referência organizada
-   - Tabela mapeando cada migration ao seu domínio
-
-### IMPORTANTE:
-
-- NÃO alterar nada em `supabase/migrations/`
-- A pasta `sql/` é apenas para referência e organização visual
-- Futuras migrations devem ser criadas em `migrations/` E copiadas para `sql/`
-
-```
-
-## Critérios de Sucesso
-
-- [ ] ClientProviders movido para layout/
-- [ ] Pasta mentor/ criada em components
-- [ ] communityService dividido em community/
-- [ ] mentorService movido para mentor/
-- [ ] Pasta supabase/sql/ criada com estrutura organizada
-- [ ] README de sql/ criado
-- [ ] Build passa
-- [ ] Todos os imports atualizados
-```
-
----
-
-## 📋 TASK 8: Auditoria de Segurança de URLs e Headers
-
-**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~30 min
-
-````markdown
-## Contexto
-
-Trading Journal Next.js 15 + Supabase. Precisamos garantir que não estamos expondo informações sensíveis em URLs e que os headers de segurança estão configurados.
-
-## Objetivo
-
-Auditar e corrigir potenciais vulnerabilidades de exposição de dados em URLs e configurar headers de segurança.
-
-## Arquivos para Analisar
-
-- src/middleware.ts
-- src/app/dashboard/[accountId]/page.tsx
-- src/app/share/[token]/page.tsx
-- src/app/login/page.tsx
-- next.config.ts
-
-## Verificações Necessárias
-
-### 1. URLs
-
-- [ ] Verificar se IDs na URL são UUIDs (não sequenciais)
-- [ ] Verificar se tokens de compartilhamento são suficientemente aleatórios
-- [ ] Verificar se mensagens de erro na URL não expõem lógica interna
-
-### 2. Query Parameters
-
-- [ ] Verificar se `/login?error=` não expõe detalhes técnicos
-- [ ] Considerar usar códigos de erro genéricos ao invés de específicos
-
-### 3. Headers de Segurança (next.config.ts)
-
-Adicionar/verificar estes headers:
-
-```javascript
-const securityHeaders = [
-  { key: "X-DNS-Prefetch-Control", value: "on" },
-  {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "DENY" },
-  { key: "X-XSS-Protection", value: "1; mode=block" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  {
-    key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=()",
-  },
-];
-```
-````
-`````
-
-```
-
-### 4. Supabase Keys
-
-- [ ] Verificar se ANON_KEY está sendo usada (não SERVICE_ROLE)
-- [ ] Verificar se SERVICE_ROLE_KEY não está exposta no client
-
-## Ações Corretivas
-
-1. Se encontrar IDs sequenciais, migrar para UUIDs
-2. Se encontrar mensagens de erro detalhadas, substituir por códigos genéricos
-3. Adicionar headers de segurança no next.config.ts
-4. Documentar qualquer risco aceito
-
-## Critérios de Sucesso
-
-- [ ] Nenhum ID sequencial exposto em URLs
-- [ ] Headers de segurança configurados
-- [ ] Mensagens de erro genéricas
-- [ ] Relatório de auditoria criado em docs/SECURITY_AUDIT.md
-
-```
-
----
-
-## ✅ TASK 2: Criar Migration para Sistema de Correções do Mentor [CONCLUÍDA]
+## ✅ TASK 2: Migration mentor_reviews [CONCLUÍDA]
 
 **Status:** ✅ Concluída via PR | **Feito por:** Jules
 
-- [x] Tabela `mentor_reviews` criada com todos os campos
+- [x] Tabela `mentor_reviews` criada
 - [x] CHECK constraints para `review_type` e `rating`
 - [x] 4 índices criados
-- [x] RLS policies implementadas:
-  - Mentor cria reviews (verifica `mentor_invites.status = 'accepted'`)
-  - Mentor gerencia suas reviews
-  - Mentee visualiza reviews dele
-  - Mentee marca como lido
+- [x] RLS policies implementadas
 - [x] GRANTS e documentação
 
 **Arquivo:** `supabase/migrations/016_mentor_reviews.sql`
@@ -225,9 +48,9 @@ const securityHeaders = [
 
 ## 📋 TASK 3: Criar Service para Reviews do Mentor
 
-**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~30 min
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~30 min
 
-````markdown
+```markdown
 ## Contexto
 
 Trading Journal Next.js + Supabase. Precisamos de um service para CRUD de correções/comentários.
@@ -243,42 +66,40 @@ Criar `src/services/reviewService.ts` seguindo o padrão dos services existentes
 
 ## Funções Necessárias
 
-```typescript
-// Tipos
+### Tipos
+
 interface MentorReview {
-  id: string;
-  mentorId: string;
-  menteeId: string;
-  tradeId?: string;
-  journalEntryId?: string;
-  reviewType: 'correction' | 'comment' | 'suggestion';
-  content: string;
-  rating?: number;
-  isRead: boolean;
-  createdAt: string;
-  updatedAt: string;
+id: string;
+mentorId: string;
+menteeId: string;
+tradeId?: string;
+journalEntryId?: string;
+reviewType: 'correction' | 'comment' | 'suggestion';
+content: string;
+rating?: number;
+isRead: boolean;
+createdAt: string;
+updatedAt: string;
 }
 
-// Funções do Mentor
-createReview(data: Omit<MentorReview, 'id' | 'createdAt' | 'updatedAt'>): Promise<MentorReview | null>
-updateReview(id: string, content: string): Promise<boolean>
-deleteReview(id: string): Promise<boolean>
-getReviewsForMentee(menteeId: string): Promise<MentorReview[]>
+### Funções do Mentor
 
-// Funções do Mentee
-getMyReviews(): Promise<MentorReview[]>
-getReviewsForTrade(tradeId: string): Promise<MentorReview[]>
-markReviewAsRead(id: string): Promise<boolean>
-getUnreadReviewCount(): Promise<number>
-```
-````
+- createReview(data): Promise<MentorReview | null>
+- updateReview(id, content): Promise<boolean>
+- deleteReview(id): Promise<boolean>
+- getReviewsForMentee(menteeId): Promise<MentorReview[]>
 
-```
+### Funções do Mentee
+
+- getMyReviews(): Promise<MentorReview[]>
+- getReviewsForTrade(tradeId): Promise<MentorReview[]>
+- markReviewAsRead(id): Promise<boolean>
+- getUnreadReviewCount(): Promise<number>
 
 ## Padrões a Seguir
 
 - Usar snake_case para campos do DB, camelCase para TypeScript
-- Funções de mapeamento DB -> TS (ver mapMentorInviteFromDB em mentorService)
+- Funções de mapeamento DB -> TS
 - Tratamento de erros com console.error
 - Usar supabase.auth.getUser() para autenticação
 
@@ -287,21 +108,19 @@ getUnreadReviewCount(): Promise<number>
 - [ ] Arquivo criado em src/services/reviewService.ts
 - [ ] Todos os tipos definidos
 - [ ] Todas as funções implementadas
-- [ ] Mapeamento DB <-> TS correto
 - [ ] TypeScript sem erros
-
 ```
 
 ---
 
 ## 📋 TASK 4: Adicionar JSDoc em Todos os Services
 
-**Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~25 min
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~25 min
 
-````markdown
+```markdown
 ## Contexto
 
-Trading Journal Next.js. Os services precisam de documentação JSDoc para facilitar manutenção.
+Trading Journal Next.js. Os services precisam de documentação JSDoc.
 
 ## Objetivo
 
@@ -319,51 +138,43 @@ Adicionar JSDoc completo para todas as funções exportadas em src/services/
 
 ## Formato JSDoc
 
-```typescript
-/**
- * Descrição breve da função
- *
- * @description Descrição mais detalhada se necessário
- * @param {tipo} nomeParam - Descrição do parâmetro
- * @returns {Promise<tipo>} Descrição do retorno
- * @throws {Error} Quando/se pode lançar erro
- *
- * @example
- * const result = await nomeFuncao(param);
- */
-```
-````
+/\*\*
+
+- Descrição breve da função
+- @param {tipo} nomeParam - Descrição do parâmetro
+- @returns {Promise<tipo>} Descrição do retorno
+- @example
+- const result = await nomeFuncao(param);
+  \*/
 
 ## Critérios de Sucesso
 
 - [ ] Todas as funções exportadas documentadas
 - [ ] Parâmetros e retornos descritos
-- [ ] Exemplos de uso quando apropriado
 - [ ] TypeScript sem erros
-
-````
+```
 
 ---
 
 ## 📋 TASK 5: Criar Testes Unitários para MentorService
-**Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~45 min
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
 
 ```markdown
 ## Contexto
+
 Trading Journal Next.js + Supabase. Precisamos de testes para garantir qualidade.
 
 ## Objetivo
+
 Criar testes unitários com Vitest para src/services/mentorService.ts
 
-## Setup
-O projeto usa:
-- Vitest para testes
-- @testing-library/react para componentes
-
 ## Arquivo a Criar
-`src/services/__tests__/mentorService.test.ts`
+
+src/services/**tests**/mentorService.test.ts
 
 ## Funções para Testar
+
 - sendMentorInvite
 - getReceivedInvites
 - getSentInvites
@@ -374,26 +185,6 @@ O projeto usa:
 - getMentees
 - getMentors
 
-## Mock do Supabase
-```typescript
-vi.mock('@/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      getUser: vi.fn()
-    },
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-      maybeSingle: vi.fn()
-    }))
-  }
-}));
-````
-
 ## Casos de Teste
 
 Para cada função:
@@ -401,142 +192,206 @@ Para cada função:
 1. Caso de sucesso
 2. Caso de usuário não autenticado
 3. Caso de erro do Supabase
-4. Casos edge (dados faltando, etc)
 
 ## Critérios de Sucesso
 
 - [ ] Arquivo de teste criado
 - [ ] Mocks configurados
 - [ ] Testes para todas as funções
-- [ ] Testes passando (`npm run test`)
-- [ ] Cobertura > 80%
-
-````
+- [ ] Testes passando
+```
 
 ---
 
-## 📋 TASK 6: Fix Lint Warnings em Todo o Projeto
-**Prioridade:** 🟢 Baixa | **Tempo estimado Jules:** ~20 min
+## 📋 TASK 6: Fix Lint Warnings
+
+**Prioridade:** 🟢 Baixa | **Tempo estimado:** ~20 min
 
 ```markdown
 ## Contexto
-Trading Journal Next.js. Existem alguns warnings de lint que precisam ser corrigidos.
+
+Trading Journal Next.js. Existem alguns warnings de lint.
 
 ## Objetivo
+
 Corrigir TODOS os warnings de lint sem quebrar funcionalidade.
 
 ## Comando
-```bash
+
 npm run lint
-````
 
 ## Warnings Conhecidos
 
 ### src/app/admin/page.tsx
 
-1. **Linhas 124, 303, 354:** Usando `<img>` ao invés de `next/image`
-   - Substituir `<img>` por `<Image />` de `next/image`
-   - Adicionar width/height ou fill prop
-2. **Linhas 419, 424:** setState dentro de useEffect (react-hooks/set-state-in-effect)
-   - Refatorar para usar padrão correto
-   - Considerar usar useCallback ou mover lógica para fora do effect
+1. Linhas 124, 303, 354: Usando <img> ao invés de next/image
+2. Linhas 419, 424: setState dentro de useEffect
 
 ## Tipos Comuns de Fixes
 
 1. Variáveis não utilizadas - remover ou prefixar com \_
 2. Imports não utilizados - remover
-3. any types - adicionar tipos específicos
-4. React hooks dependencies - adicionar deps faltando
-5. Acessibilidade (a11y) - adicionar aria-labels
-6. **`<img>` → `<Image />`** - usar next/image component
-7. **setState em useEffect** - refatorar para evitar cascading renders
+3. <img> → <Image /> - usar next/image
+4. setState em useEffect - refatorar
 
 ## Regras
 
 - NÃO usar eslint-disable comments
 - NÃO mudar lógica de negócio
 - APENAS corrigir warnings
-- Se não souber corrigir algo, deixar comentário // TODO:
 
 ## Critérios de Sucesso
 
-- [ ] `npm run lint` passa sem warnings
-- [ ] `npm run build` passa
-- [ ] Funcionalidade não alterada
-
-````
+- [ ] npm run lint passa sem warnings
+- [ ] npm run build passa
+```
 
 ---
 
 ## 📋 TASK 7: Criar Componente StudentCalendarModal
-**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~40 min
+
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~40 min
 
 ```markdown
 ## Contexto
-Trading Journal com sistema de mentoria. O mentor precisa visualizar o calendário de trades do seu mentorado.
+
+Trading Journal com sistema de mentoria. O mentor precisa visualizar o calendário do aluno.
 
 ## Objetivo
-Criar componente StudentCalendarModal que mostra o calendário do aluno para o mentor.
+
+Criar componente StudentCalendarModal.
 
 ## Arquivo a Criar
-`src/components/mentor/StudentCalendarModal.tsx`
+
+src/components/mentor/StudentCalendarModal.tsx
 
 ## Props
-```typescript
+
 interface StudentCalendarModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  menteeId: string;
-  menteeName: string;
+isOpen: boolean;
+onClose: () => void;
+menteeId: string;
+menteeName: string;
 }
-````
 
 ## Referência de Design
 
-Copiar estilo de: `src/components/journal/DayDetailModal.tsx`
-Usar componente Modal de: `src/components/ui/Modal.tsx`
+Copiar estilo de: src/components/journal/DayDetailModal.tsx
+Usar componente Modal de: src/components/ui/Modal.tsx
 
 ## Funcionalidades
 
 1. Header com nome do aluno e botão fechar
 2. Navegação de mês (< Dezembro 2024 >)
 3. Grid de calendário (Dom-Sáb)
-4. Cada dia mostra:
-   - Cor verde/vermelho baseado em P/L
-   - Número de trades
-   - Total P/L do dia
-5. Clicar em dia abre detalhes (futuro - por enquanto só mostra toast)
-
-## Busca de Dados
-
-```typescript
-// Usar função existente ou criar nova em mentorService
-const trades = await getStudentTrades(menteeId, startDate, endDate);
-```
+4. Cada dia mostra cor verde/vermelho baseado em P/L
 
 ## Critérios de Sucesso
 
 - [ ] Componente criado
 - [ ] Responsivo (mobile-first)
-- [ ] Mesma estética do projeto (tema Zorin)
+- [ ] Mesma estética do projeto
 - [ ] TypeScript sem erros
-- [ ] Usa componente Modal existente
+```
 
+---
+
+## 📋 TASK 8: Auditoria de Segurança de URLs e Headers
+
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~30 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js 15 + Supabase. Verificar exposição de dados em URLs.
+
+## Objetivo
+
+Auditar e corrigir potenciais vulnerabilidades.
+
+## Arquivos para Analisar
+
+- src/middleware.ts
+- src/app/dashboard/[accountId]/page.tsx
+- src/app/share/[token]/page.tsx
+- next.config.ts
+
+## Verificações
+
+1. IDs na URL são UUIDs (não sequenciais)
+2. Mensagens de erro não expõem lógica interna
+3. Headers de segurança configurados (HSTS, X-Frame-Options, etc)
+4. Supabase ANON_KEY usada (não SERVICE_ROLE)
+
+## Critérios de Sucesso
+
+- [ ] Nenhum ID sequencial exposto
+- [ ] Headers de segurança configurados
+- [ ] Relatório criado em docs/SECURITY_AUDIT.md
+```
+
+---
+
+## 📋 TASK 9: Reorganização de Pastas e Documentação
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js. A estrutura de pastas precisa de organização para escalar.
+
+## Objetivo
+
+Reorganizar components, services, e documentar migrations.
+
+## PARTE 1: Components
+
+- Mover ClientProviders.tsx para src/components/layout/
+- Criar pasta src/components/mentor/
+
+## PARTE 2: Services
+
+- Dividir communityService.ts (19KB) em:
+  - src/services/community/playbookService.ts
+  - src/services/community/leaderboardService.ts
+- Mover mentorService.ts para src/services/mentor/inviteService.ts
+
+## PARTE 3: Organizar SQL
+
+Criar pasta supabase/sql/ organizada por domínio:
+
+- core/ (000, 001)
+- features/ (002, 003, 010)
+- admin/ (004)
+- mentor/ (005, 012, 016)
+- community/ (006, 009, 011)
+- fixes/ (007, 008, 013, 014, 015)
+
+IMPORTANTE: NÃO alterar supabase/migrations/ - apenas criar cópias organizadas
+
+## Critérios de Sucesso
+
+- [ ] ClientProviders movido para layout/
+- [ ] communityService dividido
+- [ ] Pasta supabase/sql/ criada
+- [ ] Build passa
 ```
 
 ---
 
 ## 🚀 Ordem Sugerida de Execução
 
-1. **TASK 1** - Reorganizar componentes (base para outras tasks)
-2. **TASK 2** - Migration SQL (precisa estar no DB)
-3. **TASK 3** - ReviewService (usa a migration)
-4. **TASK 7** - StudentCalendarModal (feature visível)
-5. **TASK 4** - JSDoc (melhoria incremental)
-6. **TASK 5** - Testes (qualidade)
-7. **TASK 6** - Lint fixes (polish)
+1. ✅ **TASK 1** - Reorganizar componentes (FEITA)
+2. ✅ **TASK 2** - Migration SQL (FEITA)
+3. 📋 **TASK 3** - ReviewService (usa a migration)
+4. 📋 **TASK 7** - StudentCalendarModal (feature visível)
+5. 📋 **TASK 9** - Reorganização de pastas (estrutura)
+6. 📋 **TASK 4** - JSDoc (documentação)
+7. 📋 **TASK 5** - Testes (qualidade)
+8. 📋 **TASK 6** - Lint fixes (polish)
+9. 📋 **TASK 8** - Segurança (auditoria)
 
 ---
 
 **Dica:** Copie uma task por vez. Espere o PR, revise, merge, e então envie a próxima!
-```
