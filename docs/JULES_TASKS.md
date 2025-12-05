@@ -21,7 +21,7 @@
 | 4   | JSDoc em Services                   | ✅ Concluída | Jules     |
 | 5   | Testes MentorService                | ✅ Concluída | Jules     |
 | 6   | Fix Lint Warnings                   | ✅ Concluída | Jules     |
-| 7   | StudentCalendarModal                | 📋 Pendente  | -         |
+| 7   | StudentCalendarModal                | ✅ Concluída | Jules     |
 | 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
 | 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
 | 10  | Import de Trades (CSV)              | 📋 Pendente  | -         |
@@ -37,64 +37,19 @@
 
 ## ✅ Tasks Concluídas (Histórico)
 
-| Task       | Descrição                           | Arquivos Criados/Modificados                   |
-| ---------- | ----------------------------------- | ---------------------------------------------- |
-| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`                |
-| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`   |
-| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`                |
-| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`           |
-| **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts` |
-| **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)         |
+| Task       | Descrição                           | Arquivos Criados/Modificados                     |
+| ---------- | ----------------------------------- | ------------------------------------------------ |
+| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`                  |
+| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`     |
+| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`                  |
+| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`             |
+| **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`   |
+| **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
+| **TASK 7** | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx` |
 
 ---
 
 ## 🚀 Próximas Tasks (Lista Detalhada)
-
-### 📋 TASK 7: Criar Componente StudentCalendarModal
-
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~40 min
-
-```markdown
-## Contexto
-
-Trading Journal com sistema de mentoria. O mentor precisa visualizar o calendário do aluno.
-
-## Objetivo
-
-Criar componente StudentCalendarModal.
-
-## Arquivo a Criar
-
-src/components/mentor/StudentCalendarModal.tsx
-
-## Props
-
-interface StudentCalendarModalProps {
-isOpen: boolean;
-onClose: () => void;
-menteeId: string;
-menteeName: string;
-}
-
-## Referência de Design
-
-Copiar estilo de: src/components/journal/DayDetailModal.tsx
-Usar componente Modal de: src/components/ui/Modal.tsx
-
-## Funcionalidades
-
-1. Header com nome do aluno e botão fechar
-2. Navegação de mês (< Dezembro 2024 >)
-3. Grid de calendário (Dom-Sáb)
-4. Cada dia mostra cor verde/vermelho baseado em P/L
-
-## Critérios de Sucesso
-
-- [ ] Componente criado
-- [ ] Responsivo (mobile-first)
-- [ ] Mesma estética do projeto
-- [ ] TypeScript sem erros
-```
 
 ---
 
