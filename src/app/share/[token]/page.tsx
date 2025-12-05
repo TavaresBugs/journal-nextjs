@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import type { JournalEntry, JournalImage } from '@/types';
 
@@ -163,12 +164,18 @@ export default function SharePage() {
                                             {TIMEFRAME_LABELS[img.timeframe] || img.timeframe}
                                         </span>
                                     </div>
-                                    <img
-                                        src={img.url}
-                                        alt={TIMEFRAME_LABELS[img.timeframe] || img.timeframe}
-                                        className="w-full object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                    <div
+                                        className="relative w-full aspect-video cursor-pointer hover:opacity-90 transition-opacity"
                                         onClick={() => setLightboxImage(img.url)}
-                                    />
+                                    >
+                                        <Image
+                                            src={img.url}
+                                            alt={TIMEFRAME_LABELS[img.timeframe] || img.timeframe}
+                                            fill
+                                            className="object-contain"
+                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        />
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -276,11 +283,15 @@ export default function SharePage() {
                                     </span>
                                 )}
                             </div>
-                            <img 
-                                src={lightboxImage} 
-                                alt="Preview" 
-                                className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-                            />
+                            <div className="relative w-full h-[85vh]">
+                                <Image
+                                    src={lightboxImage}
+                                    alt="Preview"
+                                    fill
+                                    className="object-contain rounded-lg shadow-2xl"
+                                    quality={100}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

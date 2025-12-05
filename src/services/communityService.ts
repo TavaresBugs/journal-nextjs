@@ -208,7 +208,7 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
     }
 
     // Buscar stats do autor para cada playbook
-    const playbookNames = (data || []).map(item => item.playbook?.name).filter(Boolean);
+    // const playbookNames = (data || []).map(item => item.playbook?.name).filter(Boolean);
     const authorStats: Map<string, { 
         totalTrades: number; 
         wins: number; 
@@ -248,7 +248,18 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
         
         if (trades && trades.length > 0) {
             // Conversão forçada de tipo para evitar erros de linter nos aliases
-            const typedTrades = trades as any[];
+            const typedTrades = trades as unknown as {
+                outcome: string;
+                pnl: number;
+                entryDate: string;
+                entryTime: string;
+                exitDate: string;
+                exitTime: string;
+                entryPrice: number;
+                exitPrice: number;
+                stopLoss: number;
+                symbol: string;
+            }[];
 
             const wins = typedTrades.filter(t => t.outcome === 'win').length;
             const losses = typedTrades.filter(t => t.outcome === 'loss').length;

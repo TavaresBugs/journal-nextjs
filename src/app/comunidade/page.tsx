@@ -11,7 +11,6 @@ import {
     getMyLeaderboardStatus,
     joinLeaderboard,
     leaveLeaderboard,
-    updateLeaderboardPreferences,
     getCurrentUserDisplayName
 } from '@/services/communityService';
 import { SharedPlaybook, LeaderboardEntry, LeaderboardOptIn } from '@/types';
@@ -414,19 +413,28 @@ export default function ComunidadePage() {
 
     const loadData = useCallback(async () => {
         setLoading(true);
-        const [playbooksData, leaderboardData, optIn] = await Promise.all([
-            getPublicPlaybooks(),
-            getLeaderboard(),
-            getMyLeaderboardStatus(),
-        ]);
-        setPlaybooks(playbooksData);
-        setLeaderboard(leaderboardData);
-        setOptInStatus(optIn);
-        setLoading(false);
+        try {
+            const [playbooksData, leaderboardData, optIn] = await Promise.all([
+                getPublicPlaybooks(),
+                getLeaderboard(),
+                getMyLeaderboardStatus(),
+            ]);
+            setPlaybooks(playbooksData);
+            setLeaderboard(leaderboardData);
+            setOptInStatus(optIn);
+        } catch (error) {
+            console.error('Error loading community data:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
-        loadData();
+        // Wrap loadData call in a function to avoid direct promise return
+        const fetchData = async () => {
+             await loadData();
+        };
+        fetchData();
     }, [loadData]);
 
     const handleStar = async (playbookId: string) => {

@@ -23,15 +23,23 @@ export function CookieConsent({ className = '' }: CookieConsentProps) {
 
     // Only run on client after mount
     useEffect(() => {
-        setMounted(true);
+        const timer = setTimeout(() => {
+            setMounted(true);
+        }, 0);
+        return () => clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
         const saved = getStoredConsent();
         if (saved) {
-            setStatus(saved);
+            // Delay state update to next tick
+            setTimeout(() => setStatus(saved), 0);
         } else {
             const timer = setTimeout(() => setIsVisible(true), 1000);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [mounted]);
 
     const handleAccept = useCallback(() => {
         localStorage.setItem(COOKIE_CONSENT_KEY, 'accepted');
@@ -105,7 +113,12 @@ export function useCookieConsent(): boolean {
     const [hasConsent, setHasConsent] = useState(false);
 
     useEffect(() => {
-        setHasConsent(getStoredConsent() === 'accepted');
+        if (typeof window !== 'undefined') {
+            const timer = setTimeout(() => {
+                setHasConsent(getStoredConsent() === 'accepted');
+            }, 0);
+            return () => clearTimeout(timer);
+        }
     }, []);
 
     return hasConsent;

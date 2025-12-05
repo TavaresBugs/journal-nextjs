@@ -54,10 +54,13 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
                     <Tooltip
                         cursor={{ fill: '#374151', opacity: 0.2 }}
                         contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
-                        formatter={(value: number, name: string, props: any) => [
-                            `${value.toFixed(1)}%`, 
-                            `Win Rate (${props.payload.wins}/${props.payload.total})`
-                        ]}
+                        formatter={(value: number, name: string, props: unknown) => {
+                            const payload = (props as { payload: { wins: number; total: number } }).payload;
+                            return [
+                                `${value.toFixed(1)}%`,
+                                `Win Rate (${payload.wins}/${payload.total})`
+                            ];
+                        }}
                     />
                     <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>
                         {data.map((entry, index) => (

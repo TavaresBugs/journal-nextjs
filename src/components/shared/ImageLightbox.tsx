@@ -1,6 +1,7 @@
 'use client';
 
 import { createPortal } from 'react-dom';
+import Image from 'next/image';
 
 interface ImageData {
   key: string;
@@ -119,11 +120,15 @@ export function ImageLightbox({
           </div>
 
           {/* Main Image */}
-          <img
-            src={currentImage.url}
-            alt="Preview"
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
-          />
+          <div className="relative w-full h-[85vh]">
+            <Image
+              src={currentImage.url}
+              alt="Preview"
+              fill
+              className="object-contain rounded-lg shadow-2xl"
+              quality={100}
+            />
+          </div>
         </div>
       </div>
     </div>,
