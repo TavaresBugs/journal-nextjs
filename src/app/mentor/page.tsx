@@ -290,17 +290,25 @@ export default function MentoriaPage() {
 
     const loadData = useCallback(async () => {
         setLoading(true);
-        const [menteesData, sentData] = await Promise.all([
-            getMentees(),
-            getSentInvites(),
-        ]);
-        setMentees(menteesData);
-        setSentInvites(sentData);
-        setLoading(false);
+        try {
+            const [menteesData, sentData] = await Promise.all([
+                getMentees(),
+                getSentInvites(),
+            ]);
+            setMentees(menteesData);
+            setSentInvites(sentData);
+        } catch (error) {
+            console.error('Error loading mentor data:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
-        loadData();
+        const fetchData = async () => {
+             await loadData();
+        };
+        fetchData();
     }, [loadData]);
 
     const handleSendInvite = async () => {

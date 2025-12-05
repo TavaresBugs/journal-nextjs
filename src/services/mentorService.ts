@@ -319,7 +319,7 @@ export async function getReceivedInvites(): Promise<MentorInvite[]> {
     console.log('[getReceivedInvites] Current time (ISO):', new Date().toISOString());
 
     // First, let's check ALL pending invites for this email (without expires filter)
-    const { data: allPending, error: debugError } = await supabase
+    const { data: allPending } = await supabase
         .from('mentor_invites')
         .select('*')
         .eq('mentee_email', userEmail)

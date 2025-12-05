@@ -117,8 +117,9 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         const init = async () => {
             try {
                 // 1. Ensure accounts are loaded
-                let currentAccounts = accounts;
-                if (accounts.length === 0) {
+                // Use getState to avoid dependency cycle if we just want to check current state
+                let currentAccounts = useAccountStore.getState().accounts;
+                if (currentAccounts.length === 0) {
                     await useAccountStore.getState().loadAccounts();
                     currentAccounts = useAccountStore.getState().accounts;
                 }
@@ -160,6 +161,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         };
 
         init();
+        // accounts.length is stable enough for this initialization effect
     }, [accountId, accounts.length, setCurrentAccount, loadTrades, loadEntries, loadPlaybooks, loadSettings, router, showToast]);
 
     // Update account balance when trades change - with debounce to prevent loops
@@ -175,13 +177,20 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         if (Math.abs(currentAccount.currentBalance - expectedBalance) > 0.001) {
             updateAccountBalance(accountId, totalPnL);
         }
-    }, [trades.length]); // Only depend on trades.length to prevent infinite loops
+    }, [trades.length, accountId, currentAccount, isLoading, trades, updateAccountBalance]);
+
+    // Reset to page 1 when trades change
+    // Store previous trades length to avoid effect loop or unneeded renders
+    const prevTradesLength = useMemo(() => trades.length, [trades.length]);
 
     // Reset to page 1 when trades change
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        setCurrentPage(1);
-    }, [trades.length]);
+        // Only run if trades length actually changed (which is guaranteed by dependency array,
+        // but this effect body is cleaner and safer)
+        if (prevTradesLength !== undefined) {
+            setCurrentPage(1);
+        }
+    }, [prevTradesLength]);
 
     const handleCreateTrade = async (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => {
         const newTrade: Trade = {
@@ -220,10 +229,10 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         }
     };
 
-    const handlePlaybookCreated = async () => {
-        await loadPlaybooks();
-        showToast('Playbook criado com sucesso!', 'success');
-    };
+    // const _handlePlaybookCreated = async () => {
+    //    await loadPlaybooks();
+    //    showToast('Playbook criado com sucesso!', 'success');
+    // };
 
     const handleEditPlaybook = (playbook: Playbook) => {
         setEditingPlaybook(playbook);

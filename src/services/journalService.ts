@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { base64ToBlob } from '@/lib/utils';
-import { JournalEntry, JournalImage } from '@/types';
+import { JournalEntry } from '@/types';
 import { DBJournalEntry, DBJournalImage } from '@/types/database';
 import { getCurrentUserId } from './accountService';
 

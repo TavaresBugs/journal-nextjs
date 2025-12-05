@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { 
     getAllUsers, 
@@ -121,11 +122,14 @@ function UserTable({
                             <td className="py-4 px-6">
                                 <div className="flex items-center gap-3">
                                     {user.avatarUrl ? (
-                                        <img 
-                                            src={user.avatarUrl} 
-                                            alt="" 
-                                            className="w-10 h-10 rounded-full border border-gray-700"
-                                        />
+                                        <div className="relative w-10 h-10 rounded-full border border-gray-700 overflow-hidden">
+                                            <Image
+                                                src={user.avatarUrl}
+                                                alt=""
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 font-medium">
                                             {user.email?.charAt(0).toUpperCase()}
@@ -300,11 +304,14 @@ function MentorTable({
                             <div key={user.id} className="bg-gray-800/50 border border-cyan-500/30 rounded-xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     {user.avatarUrl ? (
-                                        <img 
-                                            src={user.avatarUrl} 
-                                            alt="" 
-                                            className="w-10 h-10 rounded-full border border-cyan-500/30"
-                                        />
+                                        <div className="relative w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden">
+                                            <Image
+                                                src={user.avatarUrl}
+                                                alt=""
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
                                             {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
@@ -351,11 +358,14 @@ function MentorTable({
                                         <td className="py-3 px-4">
                                             <div className="flex items-center gap-3">
                                                 {user.avatarUrl ? (
-                                                    <img 
-                                                        src={user.avatarUrl} 
-                                                        alt="" 
-                                                        className="w-8 h-8 rounded-full border border-gray-700"
-                                                    />
+                                                    <div className="relative w-8 h-8 rounded-full border border-gray-700 overflow-hidden">
+                                                        <Image
+                                                            src={user.avatarUrl}
+                                                            alt=""
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
                                                 ) : (
                                                     <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 text-sm font-medium">
                                                         {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
@@ -416,12 +426,18 @@ export default function AdminPage() {
     }, []);
 
     useEffect(() => {
-        loadData();
+        const fetchData = async () => {
+             await loadData();
+        };
+        fetchData();
     }, [loadData]);
 
     useEffect(() => {
         if (activeTab === 'logs' && logs.length === 0) {
-            loadLogs();
+            const fetchLogs = async () => {
+                 await loadLogs();
+            };
+            fetchLogs();
         }
     }, [activeTab, logs.length, loadLogs]);
 

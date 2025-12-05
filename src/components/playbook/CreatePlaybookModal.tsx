@@ -345,9 +345,9 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                     variant="gradient-success"
                     onClick={handleSubmit}
                     className="flex-1 font-extrabold"
-                    disabled={!name.trim()}
+                    disabled={!name.trim() || isSaving}
                 >
-                    Salvar Playbook
+                    {isSaving ? 'Salvando...' : 'Salvar Playbook'}
                 </Button>
             </div>
         </Modal>

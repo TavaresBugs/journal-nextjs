@@ -1,10 +1,25 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 
 // Use vi.hoisted to ensure the mock is created before vi.mock calls and imports
 const { queryMock } = vi.hoisted(() => {
+    // Define explicit mock structure using Mock type
+    type MockSupabaseClient = {
+        select: Mock;
+        insert: Mock;
+        update: Mock;
+        delete: Mock;
+        eq: Mock;
+        order: Mock;
+        single: Mock;
+        maybeSingle: Mock;
+        limit: Mock;
+        gt: Mock;
+        then?: unknown;
+    };
+
     // Helper to create a chainable mock object
     const createSupabaseMock = () => {
-        const mockData: any = {
+        const mockData = {
             select: vi.fn(),
             insert: vi.fn(),
             update: vi.fn(),
@@ -15,7 +30,7 @@ const { queryMock } = vi.hoisted(() => {
             maybeSingle: vi.fn(),
             limit: vi.fn(),
             gt: vi.fn(),
-        };
+        } as unknown as MockSupabaseClient;
 
         // Chain methods return the mockData itself to allow chaining
         mockData.select.mockReturnValue(mockData);
@@ -56,12 +71,16 @@ describe('MentorService', () => {
     const mockUser = { id: 'user-123', email: 'mentor@example.com' };
 
     // Helper to set the 'then' behavior of the chain
-    const setQueryReturn = (data: any, error: any = null) => {
-        queryMock.then = (resolve: any) => resolve({ data, error });
+    const setQueryReturn = (data: unknown, error: unknown = null) => {
+        // We cast to any here just for the dynamic 'then' property which isn't on the MockSupabaseClient type officially but needed for await emulation
+        // This is safe in tests
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (queryMock as any).then = (resolve: any) => resolve({ data, error });
     };
 
-    const setQueryError = (error: any) => {
-        queryMock.then = (resolve: any) => resolve({ data: null, error });
+    const setQueryError = (error: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (queryMock as any).then = (resolve: any) => resolve({ data: null, error });
     };
 
     beforeEach(() => {
@@ -82,10 +101,12 @@ describe('MentorService', () => {
 
         setQueryReturn([]);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.from as any).mockImplementation(() => queryMock);
     });
 
     const setupAuth = (user = mockUser) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.auth.getUser as any).mockResolvedValue({
             data: { user },
             error: null,
@@ -93,6 +114,7 @@ describe('MentorService', () => {
     };
 
     const setupAuthError = () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (supabase.auth.getUser as any).mockResolvedValue({
             data: { user: null },
             error: new Error('Auth error'),
@@ -197,7 +219,8 @@ describe('MentorService', () => {
             ];
 
             let callCount = 0;
-            queryMock.then = (resolve: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (queryMock as any).then = (resolve: any) => {
                 const result = resultsQueue[callCount] || { data: [], error: null };
                 if (callCount < resultsQueue.length - 1) callCount++;
                 resolve(result);
@@ -229,7 +252,8 @@ describe('MentorService', () => {
             ];
 
             let callCount = 0;
-            queryMock.then = (resolve: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (queryMock as any).then = (resolve: any) => {
                 const result = resultsQueue[callCount] || { data: [], error: null };
                 if (callCount < resultsQueue.length - 1) callCount++;
                 resolve(result);
@@ -312,6 +336,7 @@ describe('MentorService', () => {
             setupAuth();
 
             const createLocalMock = () => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const mock: any = { then: null };
                 ['select', 'insert', 'update', 'delete', 'eq', 'order', 'single', 'maybeSingle', 'limit', 'gt'].forEach(method => {
                     mock[method] = vi.fn().mockReturnValue(mock);
@@ -319,18 +344,23 @@ describe('MentorService', () => {
                 return mock;
             };
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const invitesMock: any = createLocalMock();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             invitesMock.then = (resolve: any) => resolve({
                 data: [{ id: 'inv-1', mentee_id: 'm1', mentee_email: 'm@t.com', status: 'accepted' }],
                 error: null
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tradesMock: any = createLocalMock();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tradesMock.then = (resolve: any) => resolve({
                 data: [{ id: 't1', outcome: 'win', entry_date: '2023-01-01' }],
                 error: null
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (supabase.from as any).mockImplementation((table: string) => {
                 if (table === 'mentor_invites') return invitesMock;
                 if (table === 'trades') return tradesMock;

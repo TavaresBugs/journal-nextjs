@@ -33,10 +33,11 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
 
     // Load entries on mount
     useEffect(() => {
-        if (trades.length > 0) {
-            loadEntries(trades[0].accountId);
+        const accountId = trades[0]?.accountId;
+        if (accountId) {
+            loadEntries(accountId);
         }
-    }, [trades.length, loadEntries]);
+    }, [trades, loadEntries]);
 
     // Get unique assets for filter
     const uniqueAssets = Array.from(new Set(trades.map(t => t.symbol)));
