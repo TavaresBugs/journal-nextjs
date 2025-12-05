@@ -21,8 +21,9 @@ export function NotificationsModal({
     notifications,
     onAcceptInvite,
     onRejectInvite,
+    onMarkRead,
     onReviewAnnouncements
-}: Omit<NotificationsModalProps, 'onMarkRead'>) {
+}: NotificationsModalProps) {
     // Filter notifications
     const invites = notifications.filter(n => n.type === 'invite');
     const announcements = notifications.filter(n => n.type === 'announcement');
@@ -150,11 +151,12 @@ export function NotificationsModal({
                             {announcements.map(notif => (
                                 <div 
                                     key={notif.id} 
-                                    className={`border rounded-xl p-4 flex gap-4 transition-colors ${
+                                    className={`border rounded-xl p-4 flex gap-4 transition-colors cursor-pointer ${
                                         notif.read 
                                             ? 'bg-transparent border-gray-700 text-gray-400' 
-                                            : 'bg-cyan-500/5 border-cyan-500/20 text-white'
+                                            : 'bg-cyan-500/5 border-cyan-500/20 text-white hover:bg-cyan-500/10'
                                     }`}
+                                    onClick={() => !notif.read && onMarkRead(notif.id)}
                                 >
                                     <div className={`h-10 w-10 shrink-0 rounded-full flex items-center justify-center ${
                                         notif.read 

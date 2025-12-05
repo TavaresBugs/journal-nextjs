@@ -11,13 +11,17 @@
 | --- | ----------------------------------- | ------------ | --------- |
 | 1   | Reorganizar Componentes Notificação | ✅ Concluída | Jules     |
 | 2   | Migration mentor_reviews            | ✅ Concluída | Jules     |
-| 3   | ReviewService CRUD                  | 📋 Pendente  | -         |
+| 3   | ReviewService CRUD                  | ✅ Concluída | Jules     |
 | 4   | JSDoc em Services                   | 📋 Pendente  | -         |
 | 5   | Testes MentorService                | 📋 Pendente  | -         |
 | 6   | Fix Lint Warnings                   | 📋 Pendente  | -         |
 | 7   | StudentCalendarModal                | 📋 Pendente  | -         |
 | 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
 | 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
+| 10  | Import de Trades (CSV)              | 📋 Pendente  | -         |
+| 11  | Export Backup Local                 | 📋 Pendente  | -         |
+| 12  | Relatório Excel                     | 📋 Pendente  | -         |
+| 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 
 ---
 
@@ -46,9 +50,16 @@
 
 ---
 
-## 📋 TASK 3: Criar Service para Reviews do Mentor
+## ✅ TASK 3: Criar Service para Reviews do Mentor [CONCLUÍDA]
 
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~30 min
+**Status:** ✅ Concluída via PR | **Feito por:** Jules
+
+- [x] Arquivo criado em `src/services/reviewService.ts`
+- [x] Interface `MentorReview` definida
+- [x] Funções do Mentor: `createReview`, `updateReview`, `deleteReview`, `getReviewsForMentee`
+- [x] Funções do Mentee: `getMyReviews`, `getReviewsForTrade`, `markReviewAsRead`, `getUnreadReviewCount`
+- [x] Mapeamento DB (snake_case) → TS (camelCase)
+- [x] TypeScript sem erros
 
 ```markdown
 ## Contexto
@@ -380,17 +391,290 @@ IMPORTANTE: NÃO alterar supabase/migrations/ - apenas criar cópias organizadas
 
 ---
 
+## 📋 TASK 10: Import de Trades via CSV
+
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~60 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js + Supabase. Usuários querem importar trades de outras plataformas.
+
+## Objetivo
+
+Criar sistema de importação de trades via arquivo CSV.
+
+## Arquivos a Criar
+
+- src/services/importService.ts
+- src/components/import/ImportModal.tsx
+- src/components/import/ColumnMapper.tsx
+
+## Bibliotecas
+
+- papaparse (já popular, bem documentado)
+
+## Funcionalidades
+
+### importService.ts
+
+- parseCSV(file: File): Promise<RawRow[]>
+- validateTrades(rows: RawRow[], mapping: ColumnMapping): ValidationResult
+- importTrades(trades: Trade[]): Promise<ImportResult>
+
+### ImportModal.tsx
+
+1. Upload de arquivo CSV
+2. Preview das primeiras 5 linhas
+3. Mapeamento de colunas (qual coluna = qual campo)
+4. Botão "Importar" com confirmação
+5. Resultado: X trades importados, Y erros
+
+### Mapeamento de Colunas
+
+Campos obrigatórios:
+
+- Data/Hora entrada
+- Ativo (symbol)
+- Direção (long/short)
+- Preço entrada
+- Quantidade
+
+Campos opcionais:
+
+- Data/Hora saída
+- Preço saída
+- Stop Loss
+- Take Profit
+- Resultado (P/L)
+
+## Critérios de Sucesso
+
+- [ ] Parser CSV funcionando
+- [ ] Modal de mapeamento intuitivo
+- [ ] Validação antes de importar
+- [ ] Trades importados corretamente no Supabase
+- [ ] Tratamento de erros (linhas inválidas)
+```
+
+---
+
+## 📋 TASK 11: Export Backup Local (Download)
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js. Usuários querem baixar backup local dos dados.
+
+## Objetivo
+
+Criar botão para download de backup completo em JSON.
+
+## Arquivo a Criar
+
+- src/services/exportService.ts
+
+## Funções
+
+### exportService.ts
+
+- exportAllData(): Promise<ExportData>
+- downloadAsJSON(data: ExportData): void
+- downloadAsZIP(data: ExportData): void // opcional
+
+### Dados a Exportar
+
+interface ExportData {
+exportedAt: string;
+version: string;
+accounts: Account[];
+trades: Trade[];
+journalEntries: JournalEntry[];
+playbooks: Playbook[];
+routines: Routine[];
+settings: UserSettings;
+}
+
+## Integração
+
+Adicionar botão "📥 Baixar Backup" no SettingsModal.tsx
+Nomear arquivo: journal_backup_2024-12-05.json
+
+## Critérios de Sucesso
+
+- [ ] Função exportAllData busca todos os dados do usuário
+- [ ] Download funciona em todos os browsers
+- [ ] Arquivo JSON válido e legível
+- [ ] Nome do arquivo inclui data
+```
+
+---
+
+## 📋 TASK 12: Relatório Excel
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js. Usuários querem exportar relatórios para Excel.
+
+## Objetivo
+
+Gerar arquivo .xlsx com múltiplas sheets formatadas.
+
+## Arquivo a Criar
+
+- src/services/reportService.ts
+
+## Biblioteca
+
+- exceljs (melhor formatação) ou xlsx (mais leve)
+
+## Estrutura do Excel
+
+### Sheet 1: Resumo
+
+- Período do relatório
+- Total de trades
+- Win Rate
+- Profit Factor
+- Lucro/Prejuízo Total
+- Melhor trade
+- Pior trade
+
+### Sheet 2: Trades
+
+- Tabela com todos os trades
+- Colunas: Data, Ativo, Direção, Entrada, Saída, Resultado, %
+- Formatação condicional: verde (lucro), vermelho (prejuízo)
+
+### Sheet 3: Mensal
+
+- Resumo por mês
+- Colunas: Mês, Trades, Wins, Losses, P/L, Win Rate
+
+## Funções
+
+- generateReport(startDate, endDate): Promise<Blob>
+- downloadExcel(blob, filename): void
+
+## Critérios de Sucesso
+
+- [ ] Excel gerado com 3 sheets
+- [ ] Formatação profissional
+- [ ] Cores condicionais funcionando
+- [ ] Download funciona
+```
+
+---
+
+## 📋 TASK 13: Calculadora de Imposto (Day Trade BR)
+
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~90 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js. Usuários brasileiros precisam calcular imposto sobre day trade.
+
+## Objetivo
+
+Criar calculadora de IR para day trade seguindo regras da Receita Federal.
+
+## Arquivos a Criar
+
+- src/services/taxService.ts
+- src/components/tax/TaxCalculatorModal.tsx
+- src/components/tax/TaxReport.tsx
+
+## Regras Fiscais (Day Trade Brasil)
+
+### Alíquota
+
+- Day Trade: 20% sobre lucro líquido
+- Swing Trade: 15% sobre lucro (isenção se vendas < R$20k/mês)
+
+### Compensação de Prejuízo
+
+- Prejuízos podem ser compensados em meses futuros
+- Day trade compensa só com day trade
+- Swing trade compensa só com swing trade
+
+### DARF
+
+- Código 6015 (Day Trade)
+- Vencimento: último dia útil do mês seguinte
+
+## Funções do taxService.ts
+
+interface TaxCalculation {
+month: string;
+grossProfit: number;
+previousLosses: number;
+taxableProfit: number;
+taxDue: number; // 20%
+darfCode: string;
+dueDate: string;
+}
+
+- calculateMonthlyTax(month: Date): Promise<TaxCalculation>
+- getAccumulatedLosses(): Promise<number>
+- generateDARFReport(month: Date): Promise<DARFReport>
+
+## UI
+
+### TaxCalculatorModal.tsx
+
+1. Seletor de mês
+2. Resumo: Lucro bruto, Prejuízo acumulado, Base de cálculo, IR devido
+3. Botão "Gerar Relatório"
+
+### TaxReport.tsx
+
+- Relatório mensal formatado
+- Informações para preencher DARF
+- Opção de imprimir/PDF
+
+## Critérios de Sucesso
+
+- [ ] Cálculo correto de 20% sobre lucro
+- [ ] Compensação de prejuízos funcionando
+- [ ] Separação Day Trade vs Swing Trade
+- [ ] Relatório com dados para DARF
+- [ ] UI intuitiva
+```
+
+---
+
 ## 🚀 Ordem Sugerida de Execução
 
-1. ✅ **TASK 1** - Reorganizar componentes (FEITA)
-2. ✅ **TASK 2** - Migration SQL (FEITA)
-3. 📋 **TASK 3** - ReviewService (usa a migration)
-4. 📋 **TASK 7** - StudentCalendarModal (feature visível)
-5. 📋 **TASK 9** - Reorganização de pastas (estrutura)
-6. 📋 **TASK 4** - JSDoc (documentação)
-7. 📋 **TASK 5** - Testes (qualidade)
-8. 📋 **TASK 6** - Lint fixes (polish)
-9. 📋 **TASK 8** - Segurança (auditoria)
+### ✅ Concluídas
+
+1. ✅ **TASK 1** - Reorganizar componentes
+2. ✅ **TASK 2** - Migration SQL
+3. ✅ **TASK 3** - ReviewService
+
+### 🔴 Alta Prioridade (Features de Valor)
+
+4. 📋 **TASK 11** - Export Backup Local (rápido, útil)
+5. 📋 **TASK 10** - Import CSV (muito pedido)
+6. 📋 **TASK 12** - Relatório Excel (profissional)
+7. 📋 **TASK 13** - Calculadora IR (diferencial)
+
+### 🟡 Média Prioridade (Mentor System)
+
+8. 📋 **TASK 7** - StudentCalendarModal
+
+### 🟢 Baixa Prioridade (Manutenção)
+
+9. 📋 **TASK 9** - Reorganização de pastas
+10. 📋 **TASK 4** - JSDoc
+11. 📋 **TASK 5** - Testes
+12. 📋 **TASK 6** - Lint fixes
+13. 📋 **TASK 8** - Segurança
 
 ---
 

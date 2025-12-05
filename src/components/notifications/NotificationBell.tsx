@@ -290,6 +290,7 @@ export function NotificationBell() {
                 notifications={notifications}
                 onAcceptInvite={handleAcceptInvite}
                 onRejectInvite={handleRejectInvite}
+                onMarkRead={markAnnouncementRead}
                 onReviewAnnouncements={markAllAnnouncementsRead}
             />
         </>
