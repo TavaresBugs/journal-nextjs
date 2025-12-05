@@ -24,7 +24,7 @@ import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
-import { NotificationBell } from '@/components/NotificationBell';
+import { NotificationBell } from '@/components/notifications';
 import type { Trade, Playbook } from '@/types';
 import { 
     formatCurrency, 
