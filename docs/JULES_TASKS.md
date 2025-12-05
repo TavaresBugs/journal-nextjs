@@ -668,22 +668,22 @@ dueDate: string;
 1. ✅ **TASK 1** - Reorganizar componentes
 2. ✅ **TASK 2** - Migration SQL
 3. ✅ **TASK 3** - ReviewService
+4. ✅ **TASK 4** - JSDoc em Services
 
 ### 🔴 Alta Prioridade (Features de Valor)
 
-4. 📋 **TASK 11** - Export Backup Local (rápido, útil)
-5. 📋 **TASK 10** - Import CSV (muito pedido)
-6. 📋 **TASK 12** - Relatório Excel (profissional)
-7. 📋 **TASK 13** - Calculadora IR (diferencial)
+5. 📋 **TASK 11** - Export Backup Local (rápido, útil)
+6. 📋 **TASK 10** - Import CSV (muito pedido)
+7. 📋 **TASK 12** - Relatório Excel (profissional)
+8. 📋 **TASK 13** - Calculadora IR (diferencial)
 
 ### 🟡 Média Prioridade (Mentor System)
 
-8. 📋 **TASK 7** - StudentCalendarModal
+9. 📋 **TASK 7** - StudentCalendarModal
 
 ### 🟢 Baixa Prioridade (Manutenção)
 
-9. 📋 **TASK 9** - Reorganização de pastas
-10. 📋 **TASK 4** - JSDoc
+10. 📋 **TASK 9** - Reorganização de pastas
 11. 📋 **TASK 5** - Testes
 12. 📋 **TASK 6** - Lint fixes
 13. 📋 **TASK 8** - Segurança
