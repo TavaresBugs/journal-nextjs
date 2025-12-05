@@ -23,6 +23,10 @@
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 | 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
+| 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
+| 15  | Validação com Zod Schemas           | 📋 Pendente  | -         |
+| 16  | Database Seed Script                | 📋 Pendente  | -         |
+| 17  | Centralized Error Handling          | 📋 Pendente  | -         |
 
 ---
 
@@ -503,6 +507,12 @@ dueDate: string;
 12. 📋 **TASK 6** - Lint fixes
 13. 📋 **TASK 8** - Segurança
 
+### 🏗️ Foundation Steps (Preparação Técnica)
+
+15. 📋 **TASK 15** - Validação Zod (Schemas)
+16. 📋 **TASK 16** - Database Seed Script
+17. 📋 **TASK 17** - Error Handling Centralizado
+
 ---
 
 ## 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
@@ -668,4 +678,90 @@ Testar validatePassword com:
 
 ---
 
-**Dica:** Copie uma task por vez. Espere o PR, revise, merge, e então envie a próxima!
+---
+
+## 📋 TASK 15: Camada de Validação Zod
+
+**Prioridade:** 🔴 Alta (Fundação) | **Tempo estimado:** ~40 min
+
+```markdown
+## Contexto
+
+Precisamos validar dados no frontend (forms) e backend (API). Zod é o padrão da indústria.
+
+## Objetivo
+
+Instalar Zod e criar schemas reutilizáveis para os modelos principais.
+
+## Instalação
+
+`npm install zod`
+
+## Arquivos
+
+- src/schemas/authSchema.ts
+- src/schemas/tradeSchema.ts
+- src/schemas/journalSchema.ts
+
+## Critérios
+
+- [ ] Schemas criados exportando tipos (z.infer)
+- [ ] Validação de campos obrigatórios e formatos (email, senhas fortes)
+```
+
+---
+
+## 📋 TASK 16: Database Seed Script (Dados Fake)
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
+
+```markdown
+## Contexto
+
+Desenvolver com banco vazio é lento. Precisamos de massa de dados para testar paginação, gráficos e performance.
+
+## Objetivo
+
+Criar script que popule o Supabase (local ou dev) com usuários, trades e diários fictícios.
+
+## Bibliotecas
+
+`npm install -D @faker-js/faker`
+
+## Arquivo
+
+`scripts/seed.ts` (rodar com tsx ou bun)
+
+## Critérios
+
+- [ ] Gerar 5 usuários
+- [ ] Gerar 50 trades para cada usuário (win/loss variados)
+- [ ] Gerar dados realistas (preços, datas coerentes)
+```
+
+---
+
+## 📋 TASK 17: Centralized Error Handling
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
+
+```markdown
+## Contexto
+
+Tratamento de erros hoje é ad-hoc (try/catch isolados).
+
+## Objetivo
+
+Padronizar erros para facilitar debugging e UX consistente.
+
+## Arquivos
+
+- src/lib/errors.ts (class AppError)
+- src/hooks/useError.ts
+
+## Critérios
+
+- [ ] Classe AppError com statusCode e message
+- [ ] Helper function para extrair mensagem segura de erro desconhecido
+- [ ] Integração com Toast notification
+```
