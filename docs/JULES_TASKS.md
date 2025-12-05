@@ -16,6 +16,92 @@
 
 ---
 
+## 📋 TASK 9: Reorganização de Pastas e Documentação
+
+**Prioridade:** 🟡 Média | **Tempo estimado Jules:** ~45 min
+
+````markdown
+## Contexto
+
+Trading Journal Next.js. A estrutura de pastas precisa de organização para escalar.
+
+## Objetivo
+
+Reorganizar components, services, e documentar migrations.
+
+## PARTE 1: Components
+
+### 1.1 Mover ClientProviders
+
+- Mover `src/components/ClientProviders.tsx` para `src/components/layout/ClientProviders.tsx`
+- Criar `src/components/layout/index.ts`
+- Atualizar imports
+
+### 1.2 Criar pasta mentor
+
+- Criar `src/components/mentor/`
+- Criar `src/components/mentor/index.ts` (vazio por enquanto)
+- Esta pasta receberá: StudentCalendarModal, TradeReviewModal, etc.
+
+## PARTE 2: Services
+
+### 2.1 Dividir communityService.ts (19KB - muito grande)
+
+Dividir em:
+
+- `src/services/community/playbookService.ts` - funções de playbook sharing
+- `src/services/community/leaderboardService.ts` - funções de leaderboard
+- `src/services/community/index.ts` - re-exporta tudo
+
+### 2.2 Criar estrutura para mentor
+
+- Criar `src/services/mentor/`
+- Mover `mentorService.ts` para `src/services/mentor/inviteService.ts`
+- Criar `src/services/mentor/index.ts`
+
+## PARTE 3: Documentar Migrations
+
+Criar `supabase/migrations/README.md`:
+
+```markdown
+# Database Migrations
+
+## Estrutura
+
+| #       | Nome            | Domínio   | Descrição                               |
+| ------- | --------------- | --------- | --------------------------------------- |
+| 000     | init_schema     | Core      | Tabelas base: trades, accounts, journal |
+| 001     | storage_setup   | Core      | Configuração de storage para imagens    |
+| 002     | playbooks       | Feature   | Sistema de playbooks                    |
+| 003     | shared_journals | Feature   | Compartilhamento de journals            |
+| 004     | admin_system    | Admin     | users_extended, audit_logs, RBAC        |
+| 005     | mentor_mode     | Mentor    | Sistema de mentoria inicial             |
+| 006     | community       | Community | Playbooks compartilhados, leaderboard   |
+| 007-015 | fixes           | Fixes     | Correções de RLS e schema               |
+| 016     | mentor_reviews  | Mentor    | Correções/comentários de mentores       |
+
+## Regras
+
+- NUNCA renomear migrations já aplicadas
+- Consolidar fixes antes de aplicar
+- Usar prefixos descritivos para novas features
+```
+````
+
+## Critérios de Sucesso
+
+- [ ] ClientProviders movido para layout/
+- [ ] Pasta mentor/ criada em components
+- [ ] communityService dividido
+- [ ] mentorService movido para mentor/
+- [ ] README de migrations criado
+- [ ] Build passa
+- [ ] Todos os imports atualizados
+
+`````
+
+---
+
 ## 📋 TASK 8: Auditoria de Segurança de URLs e Headers
 
 **Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~30 min
@@ -70,8 +156,9 @@ const securityHeaders = [
     value: "camera=(), microphone=(), geolocation=()",
   },
 ];
+`````
+
 ```
-````
 
 ### 4. Supabase Keys
 
@@ -92,7 +179,7 @@ const securityHeaders = [
 - [ ] Mensagens de erro genéricas
 - [ ] Relatório de auditoria criado em docs/SECURITY_AUDIT.md
 
-`````
+```
 
 ---
 
@@ -161,7 +248,8 @@ getMyReviews(): Promise<MentorReview[]>
 getReviewsForTrade(tradeId: string): Promise<MentorReview[]>
 markReviewAsRead(id: string): Promise<boolean>
 getUnreadReviewCount(): Promise<number>
-`````
+```
+````
 
 ```
 
