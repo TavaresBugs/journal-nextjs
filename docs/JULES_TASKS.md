@@ -22,6 +22,7 @@
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
+| 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
 
 ---
 
@@ -683,10 +684,174 @@ dueDate: string;
 
 ### 🟢 Baixa Prioridade (Manutenção)
 
-10. 📋 **TASK 9** - Reorganização de pastas
-11. 📋 **TASK 5** - Testes
-12. 📋 **TASK 6** - Lint fixes
-13. 📋 **TASK 8** - Segurança
+10. 📋 **TASK 14** - Test Plan + Vitest Config ⭐ NEW
+11. 📋 **TASK 9** - Reorganização de pastas
+12. 📋 **TASK 5** - Testes MentorService
+13. 📋 **TASK 6** - Lint fixes
+14. 📋 **TASK 8** - Segurança
+
+---
+
+## 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
+
+**Prioridade:** 🟡 Média | **Tempo estimado:** ~60 min
+
+```markdown
+## Contexto
+
+Trading Journal Next.js + Supabase. O projeto atualmente não tem nenhum teste automatizado.
+Precisamos de uma estratégia de testes e configuração inicial.
+
+## Objetivo
+
+1. Criar documento docs/TEST_PLAN.md com estratégia de testes
+2. Configurar Vitest no projeto
+3. Criar testes unitários de exemplo para funções puras
+
+## PARTE 1: Criar docs/TEST_PLAN.md
+
+Documento deve incluir:
+
+### Estratégia Geral
+
+- Tipos de teste: Unit, Integration, E2E
+- Ferramentas: Vitest (unit), futuro Playwright (E2E)
+- Convenções: \*.test.ts, **tests**/, describe/it
+
+### Módulos a Testar (Prioridade)
+
+#### 🔴 Alta Prioridade - Funções Puras (src/lib/)
+
+**calculations.ts** (18 funções):
+
+- calculateTradePnL(trade, multiplier)
+- determineTradeOutcome(trade)
+- filterTrades(trades, filters)
+- calculateTradeMetrics(trades)
+- groupTradesByDay(trades)
+- calculateTradeDuration(trade)
+- formatDuration(minutes)
+- formatCurrency(value, currency)
+- formatPercentage(value, decimals)
+- calculateSharpeRatio(trades, riskFreeRate)
+- calculateCalmarRatio(trades, initialBalance, periodDays)
+- calculateMaxDrawdownDecimal(trades, initialBalance)
+- calculateAverageHoldTime(trades)
+- calculateConsecutiveStreaks(trades)
+- formatTimeMinutes(minutes)
+
+**password-validator.ts** (3 funções):
+
+- validatePassword(password) - retorna isValid, errors, strength, score
+- getStrengthColor(strength)
+- getStrengthLabel(strength)
+
+**utils.ts** (3 funções):
+
+- cn(...inputs) - merge tailwind classes
+- getErrorMessage(error) - extract error message
+- base64ToBlob(base64) - convert base64 to blob
+
+**shareUtils.ts** (2 funções - mock Supabase):
+
+- createShareLink(journalEntryId)
+- copyToClipboard(text)
+
+#### 🟡 Média Prioridade - Services (src/services/)
+
+Precisam de mocks do Supabase:
+
+- accountService.ts: getCurrentUserId, mapAccountFromDB, mapAccountToDB, getAccounts, getAccount, saveAccount, deleteAccount, getSettings, saveSettings
+- tradeService.ts: mapTradeFromDB, mapTradeToDB, getTrades, saveTrade, deleteTrade
+- journalService.ts: mapJournalFromDB, mapJournalToDB, CRUD operations
+- mentorService.ts: isMentor, inviteMentee, acceptInvite, rejectInvite, getMentors, getMentees
+- reviewService.ts: createReview, updateReview, deleteReview, getReviews
+- routineService.ts: getRoutine, saveRoutine, completeRoutineItem
+- communityService.ts: getLeaderboard, getPlaybooks, createPlaybook
+- adminService.ts: getUsers, updateUserRole, getStats
+
+#### 🟢 Baixa Prioridade - Hooks (src/hooks/)
+
+Precisam de testing-library/react-hooks:
+
+- useAuth.ts
+- useDayStats.ts
+- useImageUpload.ts
+- useJournalForm.ts
+
+## PARTE 2: Configurar Vitest
+
+### Instalar dependências
+
+npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
+
+### Criar vitest.config.ts
+
+import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+plugins: [react()],
+test: {
+environment: 'jsdom',
+globals: true,
+setupFiles: ['./src/test/setup.ts'],
+include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+coverage: {
+provider: 'v8',
+reporter: ['text', 'html'],
+},
+},
+resolve: {
+alias: {
+'@': path.resolve(\_\_dirname, './src'),
+},
+},
+});
+
+### Criar src/test/setup.ts
+
+import '@testing-library/jest-dom';
+
+### Adicionar scripts no package.json
+
+"test": "vitest",
+"test:ui": "vitest --ui",
+"test:coverage": "vitest run --coverage"
+
+## PARTE 3: Criar Testes de Exemplo
+
+### src/lib/**tests**/calculations.test.ts
+
+Testar funções puras de calculations.ts com casos:
+
+- calculateTradePnL: trade win, trade loss, zero
+- formatCurrency: USD, BRL, valores negativos
+- formatPercentage: decimais variados
+- formatDuration: minutos, horas, dias
+- calculateTradeMetrics: array vazio, 1 trade, múltiplos trades
+
+### src/lib/**tests**/password-validator.test.ts
+
+Testar validatePassword com:
+
+- Senha muito curta (< 8 chars)
+- Sem maiúscula
+- Sem número
+- Sem caractere especial
+- Senha válida fraca, média, forte
+
+## Critérios de Sucesso
+
+- [ ] docs/TEST_PLAN.md criado com estratégia completa
+- [ ] vitest.config.ts configurado
+- [ ] Dependências instaladas
+- [ ] Scripts de teste no package.json
+- [ ] Pelo menos 10 testes passando para calculations.ts
+- [ ] Pelo menos 5 testes passando para password-validator.ts
+- [ ] npm run test passa sem erros
+```
 
 ---
 
