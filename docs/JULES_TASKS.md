@@ -5,45 +5,92 @@
 
 ---
 
-## 📋 TASK 1: Reorganizar Componentes de Notificação
+## ✅ TASK 1: Reorganizar Componentes de Notificação [CONCLUÍDA]
 
-**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~15 min
+**Status:** ✅ Concluída via PR #4 | **Feito por:** Jules
+
+- [x] Componentes movidos para `src/components/notifications/`
+- [x] Barrel exports criados
+- [x] Imports atualizados
+- [x] Build passando
+
+---
+
+## 📋 TASK 8: Auditoria de Segurança de URLs e Headers
+
+**Prioridade:** 🔴 Alta | **Tempo estimado Jules:** ~30 min
 
 ````markdown
 ## Contexto
 
-Este é um Trading Journal em Next.js 15 + Supabase. Os componentes de notificação estão soltos na raiz de /components e precisam ser organizados.
+Trading Journal Next.js 15 + Supabase. Precisamos garantir que não estamos expondo informações sensíveis em URLs e que os headers de segurança estão configurados.
 
 ## Objetivo
 
-Mover os componentes de notificação para uma pasta dedicada e criar barrel exports.
+Auditar e corrigir potenciais vulnerabilidades de exposição de dados em URLs e configurar headers de segurança.
 
-## Ações Necessárias
+## Arquivos para Analisar
 
-1. Criar pasta `src/components/notifications/`
-2. Mover `src/components/NotificationBell.tsx` para `src/components/notifications/NotificationBell.tsx`
-3. Mover `src/components/NotificationsModal.tsx` para `src/components/notifications/NotificationsModal.tsx`
-4. Criar `src/components/notifications/index.ts` com exports:
-   ```typescript
-   export { NotificationBell } from "./NotificationBell";
-   export { NotificationsModal } from "./NotificationsModal";
-   ```
+- src/middleware.ts
+- src/app/dashboard/[accountId]/page.tsx
+- src/app/share/[token]/page.tsx
+- src/app/login/page.tsx
+- next.config.ts
+
+## Verificações Necessárias
+
+### 1. URLs
+
+- [ ] Verificar se IDs na URL são UUIDs (não sequenciais)
+- [ ] Verificar se tokens de compartilhamento são suficientemente aleatórios
+- [ ] Verificar se mensagens de erro na URL não expõem lógica interna
+
+### 2. Query Parameters
+
+- [ ] Verificar se `/login?error=` não expõe detalhes técnicos
+- [ ] Considerar usar códigos de erro genéricos ao invés de específicos
+
+### 3. Headers de Segurança (next.config.ts)
+
+Adicionar/verificar estes headers:
+
+```javascript
+const securityHeaders = [
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
+  },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-XSS-Protection", value: "1; mode=block" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+];
+```
 ````
 
-5. Atualizar TODOS os imports no projeto que referenciam esses componentes
+### 4. Supabase Keys
 
-## Arquivos para Atualizar
+- [ ] Verificar se ANON_KEY está sendo usada (não SERVICE_ROLE)
+- [ ] Verificar se SERVICE_ROLE_KEY não está exposta no client
 
-- src/app/dashboard/[accountId]/page.tsx (usa NotificationBell)
-- Qualquer outro arquivo que importe esses componentes
+## Ações Corretivas
+
+1. Se encontrar IDs sequenciais, migrar para UUIDs
+2. Se encontrar mensagens de erro detalhadas, substituir por códigos genéricos
+3. Adicionar headers de segurança no next.config.ts
+4. Documentar qualquer risco aceito
 
 ## Critérios de Sucesso
 
-- [ ] Componentes movidos para nova pasta
-- [ ] Barrel export funcionando
-- [ ] Todos os imports atualizados
-- [ ] Build passa sem erros (`npm run build`)
-- [ ] Lint passa (`npm run lint`)
+- [ ] Nenhum ID sequencial exposto em URLs
+- [ ] Headers de segurança configurados
+- [ ] Mensagens de erro genéricas
+- [ ] Relatório de auditoria criado em docs/SECURITY_AUDIT.md
 
 ````
 
