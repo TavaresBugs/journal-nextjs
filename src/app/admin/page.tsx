@@ -121,18 +121,22 @@ function UserTable({
                         <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-900/30 transition-colors">
                             <td className="py-4 px-6">
                                 <div className="flex items-center gap-3">
-                                    {user.avatarUrl ? (
+                                    {user.avatarUrl && user.avatarUrl.length > 0 ? (
                                         <div className="relative w-10 h-10 rounded-full border border-gray-700 overflow-hidden">
                                             <Image
                                                 src={user.avatarUrl}
                                                 alt=""
                                                 fill
                                                 className="object-cover"
+                                                onError={(e) => {
+                                                    // Hide broken image, show fallback
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
                                             />
                                         </div>
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 font-medium">
-                                            {user.email?.charAt(0).toUpperCase()}
+                                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                                         </div>
                                     )}
                                     <div>
@@ -303,18 +307,21 @@ function MentorTable({
                         {mentors.map(user => (
                             <div key={user.id} className="bg-gray-800/50 border border-cyan-500/30 rounded-xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    {user.avatarUrl ? (
+                                    {user.avatarUrl && user.avatarUrl.length > 0 ? (
                                         <div className="relative w-10 h-10 rounded-full border border-cyan-500/30 overflow-hidden">
                                             <Image
                                                 src={user.avatarUrl}
                                                 alt=""
                                                 fill
                                                 className="object-cover"
+                                                onError={(e) => {
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
                                             />
                                         </div>
                                     ) : (
                                         <div className="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
-                                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                                         </div>
                                     )}
                                     <div>
@@ -357,18 +364,21 @@ function MentorTable({
                                     <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-900/30 transition-colors">
                                         <td className="py-3 px-4">
                                             <div className="flex items-center gap-3">
-                                                {user.avatarUrl ? (
+                                                {user.avatarUrl && user.avatarUrl.length > 0 ? (
                                                     <div className="relative w-8 h-8 rounded-full border border-gray-700 overflow-hidden">
                                                         <Image
                                                             src={user.avatarUrl}
                                                             alt=""
                                                             fill
                                                             className="object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                            }}
                                                         />
                                                     </div>
                                                 ) : (
                                                     <div className="w-8 h-8 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center text-gray-400 text-sm font-medium">
-                                                        {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                                                        {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
                                                     </div>
                                                 )}
                                                 <div>
