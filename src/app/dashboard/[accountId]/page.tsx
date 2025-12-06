@@ -46,6 +46,20 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const router = useRouter();
     // Unwrap params Promise using React.use()
     const { accountId } = use(params);
+
+    // Validate if accountId is a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    useEffect(() => {
+        if (!uuidRegex.test(accountId)) {
+            // Redirect if invalid UUID format to prevent processing
+            router.push('/');
+        }
+    }, [accountId, router]);
+
+    if (!uuidRegex.test(accountId)) {
+        return null;
+    }
     
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
     const { trades, loadTrades, addTrade, updateTrade, removeTrade } = useTradeStore();
