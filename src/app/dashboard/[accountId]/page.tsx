@@ -25,6 +25,7 @@ import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
+import { ImportModal } from '@/components/import/ImportModal';
 import type { Trade, Playbook } from '@/types';
 import { 
     formatCurrency, 
@@ -68,6 +69,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const { loadSettings } = useSettingsStore();
     const { showToast } = useToast();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDayDetailModalOpen, setIsDayDetailModalOpen] = useState(false);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -525,6 +527,22 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
                 <TabPanel value="lista" activeTab={activeTab}>
                     <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Histórico de Trades</CardTitle>
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsImportModalOpen(true)}
+                                leftIcon={
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                }
+                            >
+                                Importar
+                            </Button>
+                        </CardHeader>
                         <CardContent>
                             <TradeList 
                                 trades={paginatedTrades}
@@ -745,6 +763,16 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 onClose={() => setIsCreateModalOpen(false)}
                 accountId={accountId}
                 onCreateTrade={handleCreateTrade}
+            />
+
+            <ImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                defaultAccountId={accountId}
+                onImportComplete={() => {
+                   loadTrades(accountId);
+                   showToast('Importação concluída!', 'success');
+                }}
             />
 
             <EditTradeModal
