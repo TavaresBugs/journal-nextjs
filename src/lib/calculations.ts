@@ -19,7 +19,14 @@ export function calculateTradePnL(trade: Trade, assetMultiplier: number = 1): nu
         pips = entryPrice - exitPrice;
     }
 
-    return pips * lot * assetMultiplier;
+    const grossPnL = pips * lot * assetMultiplier;
+
+    // Add Commission (usually negative) and Swap (can be pos/neg)
+    // We strictly ADD them. It is expected that costs are stored as negative numbers.
+    // However, if we want to be foolproof against positive inputs for commission (which are clearly costs),
+    // we could check logic, but standardizing storage as "signed value" is better.
+    // Let's assume storage is "Value to add to PnL".
+    return grossPnL + (trade.commission || 0) + (trade.swap || 0);
 }
 
 /**

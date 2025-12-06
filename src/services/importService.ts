@@ -338,22 +338,213 @@ export const parseTradeDate = (dateStr: string | number): Date | null => {
 
 /**
  * Normalizes trade type to 'Long' or 'Short'
+ * Supports: MetaTrader (buy/sell), NinjaTrader (Comprada/Venda)
  */
 export const normalizeTradeType = (type: string): 'Long' | 'Short' | null => {
     const lower = type.toLowerCase().trim();
+    // MetaTrader
     if (lower.includes('buy')) return 'Long';
     if (lower.includes('sell')) return 'Short';
+    // NinjaTrader (Portuguese)
+    if (lower.includes('comprada') || lower === 'long') return 'Long';
+    if (lower.includes('venda') || lower === 'short') return 'Short';
     return null;
 };
 
 /**
- * Cleans up symbol names (e.g. "EURUSD.cash" -> "EURUSD")
+ * Cleans up symbol names
+ * - MetaTrader: "EURUSD.cash" -> "EURUSD"
+ * - NinjaTrader: "MNQ 12-25" -> "MNQ" (removes contract month-year)
  */
 export const cleanSymbol = (symbol: string): string => {
-    // Remove suffixes like .cash, +, etc if needed.
-    // The prompt says: "Remove sufixos do Symbol (ex: "EURUSD.cash" -> "EURUSD")."
-    // We can assume suffixes start with a dot or maybe special chars?
-    // A simple regex to take the alphanumeric start.
-    // Or split by dot.
-    return symbol.split('.')[0];
+    if (!symbol) return '';
+    
+    let cleaned = symbol.trim();
+    
+    // Remove suffix after dot (e.g., EURUSD.cash -> EURUSD)
+    cleaned = cleaned.split('.')[0];
+    
+    // Remove NinjaTrader contract date (e.g., "MNQ 12-25" -> "MNQ")
+    // Pattern: space followed by MM-YY or similar contract notation
+    cleaned = cleaned.replace(/\s+\d{1,2}-\d{2,4}$/, '');
+    
+    // Also handle "ES 03-25" format
+    cleaned = cleaned.trim();
+    
+    return cleaned;
 };
+
+// ============================================
+// NINJATRADER CSV PARSING FUNCTIONS
+// ============================================
+
+/**
+ * NinjaTrader column mapping interface
+ */
+export interface NinjaTraderColumnMapping {
+    tradeNumber: string;       // Núm. Neg.
+    symbol: string;            // Ativo
+    account: string;           // Conta
+    strategy: string;          // Estratégia
+    position: string;          // Pos mercado.
+    quantity: string;          // Qtd
+    entryPrice: string;        // Preço entrada
+    exitPrice: string;         // Preço saída
+    entryTime: string;         // Hora entrada
+    exitTime: string;          // Hora saída
+    entryLabel: string;        // Entrada
+    exitLabel: string;         // Sáída (typo in original)
+    profit: string;            // Profit
+    accumulatedProfit: string; // Acu lucro líquido
+    commission: string;        // Corretagem
+    mae: string;               // MAE
+    mfe: string;               // MFE
+    etd: string;               // ETD
+    bars: string;              // Barras
+}
+
+/**
+ * Parses NinjaTrader CSV file with semicolon separator.
+ * @param file - CSV file from NinjaTrader Grid
+ * @returns Promise<RawTradeData[]>
+ */
+export const parseNinjaTraderCSV = async (file: File): Promise<RawTradeData[]> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                if (!content) throw new Error('File is empty');
+
+                // Split by lines and filter empty lines
+                const lines = content.split(/\r?\n/).filter(line => line.trim().length > 0);
+                
+                if (lines.length < 2) {
+                    throw new Error('CSV file must have at least a header and one data row');
+                }
+
+                // First line is headers
+                const headerLine = lines[0];
+                const headers = headerLine.split(';').map(h => h.trim());
+
+                // Parse data rows
+                const rawData: RawTradeData[] = [];
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i];
+                    const values = line.split(';');
+                    
+                    // Skip if not enough values
+                    if (values.length < 3) continue;
+
+                    const rowData: RawTradeData = {};
+                    headers.forEach((header, index) => {
+                        if (index < values.length && header) {
+                            rowData[header] = values[index]?.trim() || '';
+                        }
+                    });
+
+                    // Only add rows that look like trade data (have a trade number)
+                    const tradeNum = rowData['Núm. Neg.'];
+                    if (tradeNum && !isNaN(Number(tradeNum))) {
+                        rawData.push(rowData);
+                    }
+                }
+
+                resolve(rawData);
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        reader.onerror = (error) => reject(error);
+        reader.readAsText(file, 'UTF-8');
+    });
+};
+
+/**
+ * Parses NinjaTrader money format: "$ 19,00" or "-$ 14,00" -> number
+ */
+export const parseNinjaTraderMoney = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (!value || typeof value !== 'string') return 0;
+
+    // Remove $ and spaces, handle negative sign
+    let str = value.trim();
+    const isNegative = str.startsWith('-');
+    
+    // Remove -$ or $ prefix
+    str = str.replace(/^-?\s*\$\s*/, '');
+    
+    // Replace comma with dot for decimal
+    str = str.replace(',', '.');
+    
+    // Remove any remaining spaces
+    str = str.replace(/\s/g, '');
+    
+    const num = parseFloat(str);
+    if (isNaN(num)) return 0;
+    
+    return isNegative ? -num : num;
+};
+
+/**
+ * Parses NinjaTrader price format: "25370,25" -> 25370.25
+ */
+export const parseNinjaTraderPrice = (value: string | number): number => {
+    if (typeof value === 'number') return value;
+    if (!value || typeof value !== 'string') return 0;
+
+    // Replace comma with dot for decimal
+    const str = value.trim().replace(',', '.');
+    const num = parseFloat(str);
+    
+    return isNaN(num) ? 0 : num;
+};
+
+/**
+ * Parses NinjaTrader date format: "dd/MM/yyyy HH:mm:ss" -> Date
+ */
+export const parseNinjaTraderDate = (dateStr: string | number): Date | null => {
+    if (!dateStr) return null;
+    if (typeof dateStr === 'number') return null; // NinjaTrader uses string dates
+
+    const str = String(dateStr).trim();
+    if (!str) return null;
+
+    try {
+        // Format: dd/MM/yyyy HH:mm:ss
+        const referenceDate = new Date();
+        referenceDate.setSeconds(0, 0);
+
+        // Try parsing with date-fns
+        const date = parse(str, 'dd/MM/yyyy HH:mm:ss', referenceDate);
+        if (isValid(date)) return date;
+
+        // Also try without seconds
+        const dateNoSec = parse(str, 'dd/MM/yyyy HH:mm', referenceDate);
+        if (isValid(dateNoSec)) return dateNoSec;
+
+        return null;
+    } catch (e) {
+        console.warn('NinjaTrader date parse error:', e);
+        return null;
+    }
+};
+
+/**
+ * Gets the auto-mapping for NinjaTrader columns
+ */
+export const getNinjaTraderAutoMapping = () => ({
+    entryDate: 'Hora entrada',
+    symbol: 'Ativo',
+    direction: 'Pos mercado.',
+    volume: 'Qtd',
+    entryPrice: 'Preço entrada',
+    exitDate: 'Hora saída',
+    exitPrice: 'Preço saída',
+    profit: 'Profit',
+    commission: 'Corretagem',
+    swap: '', // NinjaTrader doesn't have swap
+});

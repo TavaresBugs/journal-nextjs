@@ -74,6 +74,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [takeProfit, setTakeProfit] = useState(initialData?.takeProfit?.toString() || '');
     const [exitPrice, setExitPrice] = useState(initialData?.exitPrice?.toString() || '');
     const [lot, setLot] = useState(initialData?.lot?.toString() || '');
+    const [commission, setCommission] = useState(initialData?.commission ? Math.abs(initialData.commission).toString() : '');
+    const [swap, setSwap] = useState(initialData?.swap?.toString() || '');
     
     // State stores NY Local Date/Time strings for the Inputs
     const [entryDate, setEntryDate] = useState(nyEntry.date);
@@ -144,6 +146,10 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
             lot: parseFloat(lot),
             
+            // Costs: Commission is usually a cost, so we store as negative
+            commission: commission ? -Math.abs(parseFloat(commission)) : 0, 
+            swap: swap ? parseFloat(swap) : 0,
+            
             // Use converted UTC values
             entryDate: utcEntry.date || entryDate, // Fallback to raw if conversion failed
             entryTime: utcEntry.time,
@@ -162,9 +168,10 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
 
         // Calculate P&L if exit price is provided
         if (exitPrice) {
-            const pnl = calculateTradePnL({ ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade, assetMultiplier);
+            const tempTrade = { ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade;
+            const pnl = calculateTradePnL(tempTrade, assetMultiplier);
             tradeData.pnl = pnl;
-            tradeData.outcome = determineTradeOutcome({ ...tradeData, pnl } as Trade);
+            tradeData.outcome = determineTradeOutcome({ ...tempTrade, pnl } as Trade);
         }
 
         onSubmit(tradeData);
@@ -178,6 +185,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
         setTakeProfit('');
         setExitPrice('');
         setLot('');
+        setCommission('');
+        setSwap('');
         setEntryDate(dayjs().format('YYYY-MM-DD'));
         setEntryTime('');
         setExitDate('');
@@ -479,6 +488,20 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     </div>
                 </div>
 
+                {/* Notas - Opcional */}
+                <div>
+                     <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Notas
+                    </label>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                        rows={3}
+                        placeholder="Observações sobre o trade..."
+                    />
+                </div>
+
                 {/* Data e Hora Entrada - Responsive: stacks on mobile */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input
@@ -513,6 +536,27 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             placeholder={isTradeOpen ? "Deixe vazio se ainda em aberto" : ""}
                         />
 
+                         {/* Custos (Corretagem e Swap) - Opcionais */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <Input
+                                label="Corretagem ($)"
+                                type="number"
+                                step="0.01"
+                                min="0" 
+                                value={commission}
+                                onChange={(e) => setCommission(e.target.value)}
+                                placeholder="0.00"
+                            />
+                            <Input
+                                label="Swap ($)"
+                                type="number"
+                                step="0.01"
+                                value={swap}
+                                onChange={(e) => setSwap(e.target.value)}
+                                placeholder="-1.50 ou 2.00"
+                            />
+                        </div>
+
                         {/* Indicador de Resultado */}
                         {(() => {
                             if (!exitPrice || !entryPrice || !lot) {
@@ -536,6 +580,11 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             } else {
                                 pnl = (entry - exit) * lotSize * assetMultiplier;
                             }
+
+                            // Aplicar custos
+                            const commValue = commission ? -Math.abs(parseFloat(commission)) : 0;
+                            const swapValue = swap ? parseFloat(swap) : 0;
+                            pnl = pnl + commValue + swapValue;
 
                             // Determinar resultado
                             if (pnl > 0) {

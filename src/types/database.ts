@@ -22,9 +22,13 @@ export interface DBTrade {
   take_profit: number | string;
   exit_price?: number | string | null;
   lot: number | string;
+  // Costs
+  commission?: number | string | null;
+  swap?: number | string | null;
+  // Analysis
   tf_analise?: string;
   tf_entrada?: string;
-  tags?: string; // Changed to string to match App type
+  tags?: string;
   strategy?: string;
   setup?: string;
   notes?: string;
@@ -33,7 +37,7 @@ export interface DBTrade {
   exit_date?: string;
   exit_time?: string;
   pnl?: number | string | null;
-  outcome?: 'win' | 'loss' | 'breakeven' | 'pending'; // Changed to match App type
+  outcome?: 'win' | 'loss' | 'breakeven' | 'pending';
   created_at: string;
   updated_at: string;
 }

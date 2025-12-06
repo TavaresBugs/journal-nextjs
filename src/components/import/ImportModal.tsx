@@ -3,7 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { ColumnMapper, ColumnMapping } from './ColumnMapper';
-import { RawTradeData, processImportFile, parseTradeDate, normalizeTradeType, cleanSymbol } from '@/services/importService';
+import { 
+  RawTradeData, 
+  processImportFile, 
+  parseTradeDate, 
+  normalizeTradeType, 
+  cleanSymbol,
+  parseNinjaTraderCSV,
+  parseNinjaTraderDate,
+  parseNinjaTraderMoney,
+  parseNinjaTraderPrice,
+  getNinjaTraderAutoMapping
+} from '@/services/importService';
 import { getAccounts } from '@/services/accountService';
 import { saveTrade } from '@/services/tradeService';
 import { Account, Trade } from '@/types';
@@ -17,10 +28,12 @@ interface ImportModalProps {
   defaultAccountId?: string;
 }
 
-type ImportStep = 'source_selection' | 'upload' | 'mapping' | 'importing' | 'complete';
+type ImportStep = 'source_selection' | 'upload' | 'upload_ninjatrader' | 'mapping' | 'importing' | 'complete';
+type DataSource = 'metatrader' | 'ninjatrader' | null;
 
 export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImportComplete, defaultAccountId }) => {
   const [step, setStep] = useState<ImportStep>('source_selection');
+  const [dataSource, setDataSource] = useState<DataSource>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -72,7 +85,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
   const resetState = () => {
     setStep('source_selection');
-
+    setDataSource(null);
     setError(null);
     setRawData([]);
     setHeaders([]);
@@ -110,9 +123,58 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     }
   };
 
+  // Handle NinjaTrader CSV upload
+  const handleNinjaTraderFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    setError(null);
+
+    if (!selectedFile.name.endsWith('.csv')) {
+      setError('NinjaTrader aceita apenas arquivos .csv do Grid de Negociações.');
+      return;
+    }
+
+    try {
+      const data = await parseNinjaTraderCSV(selectedFile);
+      if (data.length === 0) {
+        throw new Error('Nenhum dado encontrado no arquivo.');
+      }
+
+      const detectedHeaders = Object.keys(data[0]);
+      setHeaders(detectedHeaders);
+      setRawData(data);
+      
+      // Auto-map NinjaTrader columns
+      const autoMapping = getNinjaTraderAutoMapping();
+      setMapping(autoMapping);
+      
+      // Set default timezone for NinjaTrader - São Paulo (user's local time)
+      // System converts to UTC for storage, then displays in NY time
+      setBrokerTimezone('America/Sao_Paulo');
+      
+      setStep('mapping');
+    } catch (err) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Falha ao processar arquivo');
+    }
+  };
+
   const convertToUtc = (date: Date, timezone: string): Date => {
       const isoString = format(date, 'yyyy-MM-dd HH:mm:ss');
       return fromZonedTime(isoString, timezone);
+  };
+
+  // Convert from source timezone to NY timezone for NinjaTrader
+  // CSV is in Brasília time, but we want to store in NY time
+  const convertToNYTime = (date: Date, sourceTimezone: string): Date => {
+      // First convert to UTC
+      const isoString = format(date, 'yyyy-MM-dd HH:mm:ss');
+      const utcDate = fromZonedTime(isoString, sourceTimezone);
+      
+      // Then convert UTC to NY time and return as if it were a local date
+      const nyDate = toZonedTime(utcDate, 'America/New_York');
+      return nyDate;
   };
 
   const handleImport = async () => {
@@ -150,14 +212,25 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
         for (const row of rawData) {
             try {
-                let entryDate = parseTradeDate(row[mapping.entryDate]);
+                // Use appropriate parser based on data source
+                let entryDate: Date | null;
+                if (dataSource === 'ninjatrader') {
+                    entryDate = parseNinjaTraderDate(row[mapping.entryDate]);
+                } else {
+                    entryDate = parseTradeDate(row[mapping.entryDate]);
+                }
+                
                 if (!entryDate) {
                     failedCount++;
                     continue;
                 }
 
-                // Apply DST-Aware Timezone Conversion
-                if (brokerTimezone && brokerTimezone !== 'UTC') {
+                // Apply Timezone Conversion based on data source
+                if (dataSource === 'ninjatrader' && brokerTimezone) {
+                    // NinjaTrader: Convert from source timezone (Brasília) to NY time
+                    entryDate = convertToNYTime(entryDate, brokerTimezone);
+                } else if (brokerTimezone && brokerTimezone !== 'UTC') {
+                    // MetaTrader: Convert to UTC
                     entryDate = convertToUtc(entryDate, brokerTimezone);
                 }
 
@@ -169,9 +242,17 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     continue;
                 }
 
-                const entryDateStr = entryDate.toISOString().split('T')[0];
-                const entryTimeStr = entryDate.toTimeString().split(' ')[0];
-                const entryPrice = Number(row[mapping.entryPrice]) || 0;
+                // Format date/time for storage
+                const entryDateStr = format(entryDate, 'yyyy-MM-dd');
+                const entryTimeStr = format(entryDate, 'HH:mm:ss');
+                
+                // Use appropriate price parser based on data source
+                let entryPrice: number;
+                if (dataSource === 'ninjatrader') {
+                    entryPrice = parseNinjaTraderPrice(row[mapping.entryPrice]);
+                } else {
+                    entryPrice = Number(row[mapping.entryPrice]) || 0;
+                }
 
                 const signature = `${entryDateStr}|${entryTimeStr}|${symbol}|${type}|${entryPrice}`;
                 
@@ -179,6 +260,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 if (existingSignatures.has(signature)) {
                      skippedCount++;
                      continue;
+                }
+
+                // Parse volume/quantity
+                let volume: number;
+                if (dataSource === 'ninjatrader') {
+                    volume = parseNinjaTraderPrice(row[mapping.volume]); // Uses same format
+                } else {
+                    volume = Number(row[mapping.volume]) || 0;
                 }
 
                 const trade: Trade = {
@@ -190,45 +279,82 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     entryDate: entryDateStr,
                     entryTime: entryTimeStr,
                     entryPrice: entryPrice,
-                    lot: Number(row[mapping.volume]) || 0,
+                    lot: volume,
                     stopLoss: 0, 
                     takeProfit: 0, 
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                 };
 
-                // ... (Exit Date/Price logic - keep as is) ...
+                // Exit Date/Price logic - adapted for NinjaTrader
                 if (mapping.exitDate && row[mapping.exitDate]) {
-                     let exitDate = parseTradeDate(row[mapping.exitDate]);
+                     let exitDate: Date | null;
+                     if (dataSource === 'ninjatrader') {
+                         exitDate = parseNinjaTraderDate(row[mapping.exitDate]);
+                     } else {
+                         exitDate = parseTradeDate(row[mapping.exitDate]);
+                     }
                      if (exitDate) {
-                         if (brokerTimezone && brokerTimezone !== 'UTC') {
+                         // Apply Timezone Conversion based on data source
+                         if (dataSource === 'ninjatrader' && brokerTimezone) {
+                             exitDate = convertToNYTime(exitDate, brokerTimezone);
+                         } else if (brokerTimezone && brokerTimezone !== 'UTC') {
                              exitDate = convertToUtc(exitDate, brokerTimezone);
                          }
-                         trade.exitDate = exitDate.toISOString().split('T')[0];
-                         trade.exitTime = exitDate.toTimeString().split(' ')[0];
+                         trade.exitDate = format(exitDate, 'yyyy-MM-dd');
+                         trade.exitTime = format(exitDate, 'HH:mm:ss');
                      }
                 }
 
                 if (mapping.exitPrice && row[mapping.exitPrice]) {
-                    trade.exitPrice = Number(row[mapping.exitPrice]);
+                    if (dataSource === 'ninjatrader') {
+                        trade.exitPrice = parseNinjaTraderPrice(row[mapping.exitPrice]);
+                    } else {
+                        trade.exitPrice = Number(row[mapping.exitPrice]);
+                    }
                 }
 
                 if (mapping.profit && row[mapping.profit]) {
-                    trade.pnl = Number(row[mapping.profit]);
+                    if (dataSource === 'ninjatrader') {
+                        trade.pnl = parseNinjaTraderMoney(row[mapping.profit]);
+                    } else {
+                        trade.pnl = Number(row[mapping.profit]);
+                    }
                     if (trade.pnl > 0) trade.outcome = 'win';
                     else if (trade.pnl < 0) trade.outcome = 'loss';
                     else trade.outcome = 'breakeven';
                 }
 
-                const notesParts = [];
+                const notesParts: string[] = [];
+                // Only add other things to notes if needed.
+                /* 
                 if (mapping.commission && row[mapping.commission]) {
                     notesParts.push(`Comm: ${row[mapping.commission]}`);
                 }
                 if (mapping.swap && row[mapping.swap]) {
                     notesParts.push(`Swap: ${row[mapping.swap]}`);
                 }
+                */
                 if (notesParts.length > 0) {
                     trade.notes = notesParts.join(', ');
+                }
+
+                // Map Commission and Swap directly
+                if (mapping.commission && row[mapping.commission]) {
+                     let commVal: number;
+                     if (dataSource === 'ninjatrader') {
+                         commVal = parseNinjaTraderMoney(row[mapping.commission]);
+                         // NinjaTrader reports commission as positive, but we store as negative (cost)
+                         if (commVal > 0) commVal = -commVal;
+                     } else {
+                         commVal = Number(row[mapping.commission]);
+                     }
+                     if (!isNaN(commVal)) trade.commission = commVal;
+                }
+                
+                if (mapping.swap && row[mapping.swap]) {
+                     const swapVal = Number(row[mapping.swap]);
+                     if (!isNaN(swapVal)) trade.swap = swapVal;
                 }
 
                 const saved = await saveTrade(trade);
@@ -278,7 +404,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto px-4">
                     {/* MetaTrader Option */}
                      <button
-                        onClick={() => setStep('upload')}
+                        onClick={() => { setDataSource('metatrader'); setStep('upload'); }}
                         className="flex flex-col items-center justify-center p-8 bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 hover:border-green-500/50 transition-all group"
                     >
                         <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -290,16 +416,36 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                         <p className="text-sm text-gray-400 text-center">Relatórios HTML ou Excel exportados do MT4/MT5.</p>
                     </button>
 
-                    {/* API Option (Disabled) */}
-                    <div className="flex flex-col items-center justify-center p-8 bg-gray-900/50 border border-gray-800 rounded-xl opacity-60 cursor-not-allowed relative overflow-hidden">
-                        <div className="absolute top-3 right-3 bg-gray-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded text-gray-400">Em Breve</div>
-                        <div className="w-16 h-16 rounded-full bg-gray-700/30 flex items-center justify-center mb-4">
-                            <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    {/* NinjaTrader Option */}
+                    <button
+                        onClick={() => { setDataSource('ninjatrader'); setStep('upload_ninjatrader'); }}
+                        className="flex flex-col items-center justify-center p-8 bg-gray-800 border border-gray-700 rounded-xl hover:bg-gray-750 hover:border-orange-500/50 transition-all group"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                             <svg className="w-8 h-8 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                         </div>
-                        <h4 className="text-lg font-semibold text-gray-400 mb-2">Conexão via API</h4>
-                        <p className="text-sm text-gray-500 text-center">Binance, Bybit e outras exchanges automaticamente.</p>
+                        <h4 className="text-lg font-semibold text-white mb-2">NinjaTrader</h4>
+                        <p className="text-sm text-gray-400 text-center">Arquivo CSV do Grid de Negociações.</p>
+                    </button>
+                </div>
+
+                {/* API Option (Disabled) - Full Width */}
+                <div className="max-w-2xl mx-auto px-4 mt-4">
+                    <div className="flex flex-col items-center justify-center p-6 bg-gray-900/50 border border-gray-800 rounded-xl opacity-60 cursor-not-allowed relative overflow-hidden">
+                        <div className="absolute top-3 right-3 bg-gray-800 text-[10px] uppercase font-bold px-2 py-0.5 rounded text-gray-400">Em Breve</div>
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-gray-700/30 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                            </div>
+                            <div className="text-left">
+                                <h4 className="text-base font-semibold text-gray-400">Conexão via API</h4>
+                                <p className="text-xs text-gray-500">Binance, Bybit e outras exchanges automaticamente.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -341,6 +487,65 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 />
             </div>
             {error && <p className="mt-4 text-red-500 text-sm bg-red-500/10 px-3 py-1 rounded">{error}</p>}
+          </div>
+        );
+
+      case 'upload_ninjatrader':
+        return (
+          <div className="space-y-6">
+            {/* Instructions Box */}
+            <div className="bg-orange-500/5 border border-orange-500/20 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-orange-400 mb-2 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Como exportar do NinjaTrader
+              </h4>
+              <ol className="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+                <li>Abra a janela <span className="text-orange-300 font-medium">Trade Performance</span> ou <span className="text-orange-300 font-medium">Account Performance</span></li>
+                <li>Vá na aba <span className="text-orange-300 font-medium">Grid</span> (Trades/Executions)</li>
+                <li>Clique com o botão direito → <span className="text-orange-300 font-medium">Export</span></li>
+                <li>Salve como arquivo <span className="text-orange-300 font-medium">.csv</span></li>
+              </ol>
+            </div>
+
+            {/* Upload Area */}
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-gray-700 hover:border-orange-500/50 rounded-lg bg-gray-900/50 hover:bg-gray-800/50 transition-all duration-300 group">
+              <div className="p-4 rounded-full bg-orange-500/10 mb-4 group-hover:scale-110 transition-transform duration-300">
+                <svg className="w-10 h-10 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p className="mb-2 text-gray-200 font-medium">Arraste e solte ou clique para enviar</p>
+              <p className="mb-6 text-sm text-gray-500">Apenas arquivos <span className="text-orange-400 font-medium">.csv</span> do NinjaTrader Grid</p>
+              
+              <div className="relative">
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleNinjaTraderFileUpload}
+                  className="block w-full text-sm text-gray-400
+                      file:mr-4 file:py-2.5 file:px-6
+                      file:rounded-lg file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-orange-600 file:text-white
+                      hover:file:bg-orange-500
+                      file:cursor-pointer file:transition-colors
+                      cursor-pointer"
+                />
+              </div>
+              {error && <p className="mt-4 text-red-500 text-sm bg-red-500/10 px-3 py-1 rounded">{error}</p>}
+            </div>
+
+            {/* Back Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={resetState}
+                className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                ← Voltar para seleção
+              </button>
+            </div>
           </div>
         );
 

@@ -27,6 +27,10 @@ export interface Trade {
     exitPrice?: number;
     lot: number;
 
+    // Costs
+    commission?: number;
+    swap?: number;
+
     // Análise
     tfAnalise?: string; // HTF (ex: 4H)
     tfEntrada?: string; // LTF (ex: M5)
