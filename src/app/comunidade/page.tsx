@@ -6,13 +6,15 @@ import { Button } from '@/components/ui/Button';
 import { useAccountStore } from '@/store/useAccountStore';
 import { 
     getPublicPlaybooks,
-    togglePlaybookStar,
+    togglePlaybookStar
+} from '@/services/community/playbookService';
+import {
     getLeaderboard,
     getMyLeaderboardStatus,
     joinLeaderboard,
     leaveLeaderboard,
     getCurrentUserDisplayName
-} from '@/services/communityService';
+} from '@/services/community/leaderboardService';
 import { SharedPlaybook, LeaderboardEntry, LeaderboardOptIn } from '@/types';
 
 // ============================================

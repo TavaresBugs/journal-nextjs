@@ -64,7 +64,7 @@ vi.mock('@/lib/supabase', () => {
 });
 
 // Imports must be after mock setup
-import * as mentorService from '../mentorService';
+import * as mentorService from '../inviteService';
 import { supabase } from '@/lib/supabase';
 
 describe('MentorService', () => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentorService';
+import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentor/inviteService';
 import { MentorInvite, Notification } from '@/types';
 import { NotificationsModal } from './NotificationsModal';
 

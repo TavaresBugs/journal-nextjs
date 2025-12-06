@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { ToastProvider } from "@/contexts/ToastContext";
-import { ClientProviders } from "@/components/ClientProviders";
+import { ClientProviders } from "@/components/layout/ClientProviders";
 
 export default function RootLayout({
   children,
