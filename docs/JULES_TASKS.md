@@ -23,13 +23,13 @@
 | 6   | Fix Lint Warnings                   | ✅ Concluída | Jules     |
 | 7   | StudentCalendarModal                | ✅ Concluída | Jules     |
 | 8   | Auditoria de Segurança              | ✅ Concluída | Jules     |
-| 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
+| 9   | Reorganização de Pastas             | ✅ Concluída | Jules     |
 | 10  | Import de Trades (CSV)              | 📋 Pendente  | -         |
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 | 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
-| 15  | Validação com Zod Schemas           | 📋 Pendente  | -         |
+| 15  | Validação com Zod Schemas           | � Pendente   | -         |
 | 16  | Database Seed Script                | 📋 Pendente  | -         |
 | 17  | Centralized Error Handling          | 📋 Pendente  | -         |
 
@@ -47,6 +47,7 @@
 | **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
 | **TASK 7** | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx` |
 | **TASK 8** | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`       |
+| **TASK 9** | Reorganização de Pastas             | Services, Components, e SQL Docs                 |
 
 ---
 
