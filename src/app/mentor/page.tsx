@@ -9,7 +9,7 @@ import {
     getSentInvites, 
     inviteMentee,
     revokeInvite 
-} from '@/services/mentorService';
+} from '@/services/mentor/inviteService';
 import { MentorInvite, MenteeOverview, MentorPermission } from '@/types';
 
 // ============================================

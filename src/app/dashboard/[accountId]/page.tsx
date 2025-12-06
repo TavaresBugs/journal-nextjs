@@ -8,7 +8,7 @@ import { useJournalStore } from '@/store/useJournalStore';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { isAdmin } from '@/services/adminService';
-import { isMentor } from '@/services/mentorService';
+import { isMentor } from '@/services/mentor/inviteService';
 import { useToast } from '@/contexts/ToastContext';
 import { CreateTradeModal } from '@/components/trades/CreateTradeModal';
 import { EditTradeModal } from '@/components/trades/EditTradeModal';

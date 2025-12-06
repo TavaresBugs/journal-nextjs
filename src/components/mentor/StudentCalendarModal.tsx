@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { TradeCalendar } from "@/components/trades/TradeCalendar";
-import { getMenteeTrades } from "@/services/mentorService";
+import { getMenteeTrades } from "@/services/mentor/inviteService";
 import { Trade } from "@/types";
 
 interface StudentCalendarModalProps {

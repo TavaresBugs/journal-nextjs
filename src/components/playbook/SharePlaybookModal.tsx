@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Playbook } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { sharePlaybook } from '@/services/communityService';
+import { sharePlaybook } from '@/services/community/playbookService';
 
 interface SharePlaybookModalProps {
     playbook: Playbook;
