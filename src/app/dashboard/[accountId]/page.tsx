@@ -43,13 +43,15 @@ const Charts = dynamic(() => import('@/components/reports/Charts').then(mod => m
     loading: () => <div className="text-center py-10 text-gray-500">Carregando gráficos...</div>
 });
 
+// Validate if accountId is a valid UUID
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function DashboardPage({ params }: { params: Promise<{ accountId: string }> }) {
     const router = useRouter();
     // Unwrap params Promise using React.use()
     const { accountId } = use(params);
 
-    // Validate if accountId is a valid UUID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    // uuidRegex definition removed from here
 
     useEffect(() => {
         if (!uuidRegex.test(accountId)) {
@@ -58,9 +60,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         }
     }, [accountId, router]);
 
-    if (!uuidRegex.test(accountId)) {
-        return null;
-    }
+
     
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
     const { trades, loadTrades, addTrade, updateTrade, removeTrade } = useTradeStore();
@@ -84,15 +84,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     const [isAdminUser, setIsAdminUser] = useState(false);
     const [isMentorUser, setIsMentorUser] = useState(false);
     
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-    
-    // Calculate pagination
-    const totalPages = Math.ceil(trades.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedTrades = trades.slice(startIndex, endIndex);
+
 
     const streakMetrics = useMemo(() => {
         // Combine dates from trades and journal entries
@@ -195,18 +187,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         }
     }, [trades.length, accountId, currentAccount, isLoading, trades, updateAccountBalance]);
 
-    // Reset to page 1 when trades change
-    // Store previous trades length to avoid effect loop or unneeded renders
-    const prevTradesLength = useMemo(() => trades.length, [trades.length]);
 
-    // Reset to page 1 when trades change
-    useEffect(() => {
-        // Only run if trades length actually changed (which is guaranteed by dependency array,
-        // but this effect body is cleaner and safer)
-        if (prevTradesLength !== undefined) {
-            setCurrentPage(1);
-        }
-    }, [prevTradesLength]);
 
     const handleCreateTrade = async (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => {
         const newTrade: Trade = {
@@ -303,6 +284,10 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             streaks: calculateConsecutiveStreaks(trades)
         };
     }, [trades, currentAccount?.initialBalance]);
+
+    if (!uuidRegex.test(accountId)) {
+        return null;
+    }
 
     if (isLoading || !currentAccount) {
         return (
@@ -545,36 +530,11 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                         </CardHeader>
                         <CardContent>
                             <TradeList 
-                                trades={paginatedTrades}
+                                trades={trades}
                                 currency={currentAccount.currency}
                                 onEditTrade={handleEditTrade}
                                 onDeleteTrade={handleDeleteTrade}
                             />
-                            
-                            {/* Pagination Controls */}
-                            {trades.length > 0 && (
-                                <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-gray-700">
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                        disabled={currentPage === 1}
-                                        className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Anterior
-                                    </button>
-                                    
-                                    <span className="text-sm text-gray-400">
-                                        Página {currentPage} de {totalPages} ({trades.length} trades)
-                                    </span>
-                                    
-                                    <button
-                                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                        disabled={currentPage === totalPages}
-                                        className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                    >
-                                        Próxima
-                                    </button>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 </TabPanel>

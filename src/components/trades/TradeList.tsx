@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
@@ -29,15 +29,8 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
     // Journal Modal State
     const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
     const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
-    const { entries, loadEntries } = useJournalStore();
+    const { entries } = useJournalStore(); // loadEntries removed
 
-    // Load entries on mount
-    useEffect(() => {
-        const accountId = trades[0]?.accountId;
-        if (accountId) {
-            loadEntries(accountId);
-        }
-    }, [trades, loadEntries]);
 
     // Get unique assets for filter
     const uniqueAssets = useMemo(() => {
