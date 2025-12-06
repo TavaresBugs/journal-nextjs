@@ -137,18 +137,25 @@ IMPORTANTE: NÃO alterar supabase/migrations/ - apenas criar cópias organizadas
 
 ---
 
-### 📋 TASK 10: Import de Trades via CSV
+### 📋 TASK 10: Import de Trades (Excel/CSV)
 
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~60 min
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~120 min
 
 ```markdown
 ## Contexto
 
-Trading Journal Next.js + Supabase. Usuários querem importar trades de outras plataformas.
+Trading Journal Next.js. O usuário exporta dados do MetaTrader (ou similares) geralmente em .xlsx ou .csv.
+A estrutura é complexa: possui cabeçalho de metadados (6 linhas) e múltiplas seções (Positions, Orders, Deals).
+Focaremos na seção **"Positions"** (trades completos).
 
 ## Objetivo
 
-Criar sistema de importação de trades via arquivo CSV.
+Criar sistema robusto de importação capaz de ler XLSX/CSV, pular metadados, identificar a tabela correta e mapear colunas duplicadas.
+
+## Bibliotecas
+
+- `npm install xlsx` (SheetJS) - Para ler .xlsx e .csv robustamente.
+- `npm install date-fns` - Para parsing de datas customizadas ("yyyy.MM.dd HH:mm:ss").
 
 ## Arquivos a Criar
 
@@ -156,51 +163,54 @@ Criar sistema de importação de trades via arquivo CSV.
 - src/components/import/ImportModal.tsx
 - src/components/import/ColumnMapper.tsx
 
-## Bibliotecas
+## Funcionalidades Chave
 
-- papaparse (já popular, bem documentado)
+### 1. Parser Inteligente (importService.ts)
 
-## Funcionalidades
+- **Leitura:** Usar `XLSX.read` com `file.arrayBuffer()`.
+- **Navegação:** Identificar a sheet correta.
+- **Header Skip:** Ignorar as primeiras 6-7 linhas de metadados (Conta, Nome, Moeda...).
+- **Detecção de Seção:** Buscar a linha que contém o cabeçalho "Positions" ou "Time, Position, Symbol...".
+- **Formato de Dados:** Tratar separadores decimais (ponto vs vírgula) e data ("2025.09.23 20:58:41").
 
-### importService.ts
+### 2. Mapeamento Flexível
 
-- parseCSV(file: File): Promise<RawRow[]>
-- validateTrades(rows: RawRow[], mapping: ColumnMapping): ValidationResult
-- importTrades(trades: Trade[]): Promise<ImportResult>
+Interface para o Mapper:
+interface ColumnMapping {
+entryDate: string; // "Time" (1ª ocorrência)
+symbol: string; // "Symbol"
+direction: string; // "Type" (buy/sell -> converter para long/short)
+volume: string; // "Volume"
+entryPrice: string; // "Price" (1ª ocorrência)
+exitDate?: string; // "Time" (2ª ocorrência ou "Time_2")
+exitPrice?: string; // "Price" (2ª ocorrência ou "Price_2")
+profit?: string; // "Profit"
+commission?: string; // "Commission" + "Swap"
+}
 
-### ImportModal.tsx
+O sistema deve:
 
-1. Upload de arquivo CSV
-2. Preview das primeiras 5 linhas
-3. Mapeamento de colunas (qual coluna = qual campo)
-4. Botão "Importar" com confirmação
-5. Resultado: X trades importados, Y erros
+- Detectar colunas com mesmo nome (Time, Price) e renomear internamente para (Time_1, Time_2) para permitir distinção no select box.
+- Converter automaticamente:
+  - `buy` -> `long`
+  - `sell` -> `short`
+  - Remove sufixos do Symbol (ex: "EURUSD.cash" -> "EURUSD").
 
-### Mapeamento de Colunas
+### 3. ImportModal.tsx UX
 
-Campos obrigatórios:
-
-- Data/Hora entrada
-- Ativo (symbol)
-- Direção (long/short)
-- Preço entrada
-- Quantidade
-
-Campos opcionais:
-
-- Data/Hora saída
-- Preço saída
-- Stop Loss
-- Take Profit
-- Resultado (P/L)
+1. **Upload Area:** Aceita .csv, .xlsx, .xls.
+2. **Preview:** Mostra tabela bruta das 5 primeiras linhas DA SEÇÃO DE DADOS (não do cabeçalho do arquivo).
+3. **Mapeamento:** Dropdowns para selecionar qual coluna do Excel corresponde a qual campo do sistema.
+   - _Inteligência:_ Tentar auto-selecionar se o nome for parecido ("Profit" -> "profit").
+4. **Confirmação:** "Importar 50 trades detectados".
 
 ## Critérios de Sucesso
 
-- [ ] Parser CSV funcionando
-- [ ] Modal de mapeamento intuitivo
-- [ ] Validação antes de importar
-- [ ] Trades importados corretamente no Supabase
-- [ ] Tratamento de erros (linhas inválidas)
+- [ ] Lê arquivo XLSX complexo (com cabeçalho de metadados).
+- [ ] Identifica corretamente a seção "Positions".
+- [ ] Permite mapear Data Entrada vs Data Saída (colunas com mesmo nome "Time").
+- [ ] Salva corretamente no Supabase convertendo tipos (String date -> ISO, String price -> Number).
+- [ ] Ignora linhas de rodapé ou totalizadores.
 ```
 
 ---
