@@ -89,6 +89,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
     setError(null);
 
+    if (selectedFile.name.endsWith('.csv')) {
+        setError('Arquivos CSV não são suportados para MetaTrader. Use HTML ou Excel.');
+        return;
+    }
+
     try {
       const data = await processImportFile(selectedFile);
       if (data.length === 0) {
@@ -318,12 +323,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 </svg>
             </div>
             <p className="mb-2 text-gray-200 font-medium">Arraste e solte ou clique para enviar</p>
-            <p className="mb-6 text-sm text-gray-500">Suporta arquivos .xlsx, .csv e .html (MetaTrader)</p>
+            <p className="mb-6 text-sm text-gray-500">Suporta arquivos .xlsx e .html (MetaTrader)</p>
             
             <div className="relative">
                 <input
                     type="file"
-                    accept=".xlsx,.xls,.csv,.html,.htm"
+                    accept=".xlsx,.xls,.html,.htm"
                     onChange={handleFileUpload}
                     className="block w-full text-sm text-gray-400
                         file:mr-4 file:py-2.5 file:px-6
