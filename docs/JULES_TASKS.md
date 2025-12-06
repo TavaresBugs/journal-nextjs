@@ -31,7 +31,7 @@
 | 14  | Test Plan + Vitest Config           | ✅ Concluída | Jules     |
 | 15  | Validação com Zod Schemas           | ✅ Concluída | Jules     |
 | 16  | Database Seed Script                | ✅ Concluída | Jules     |
-| 17  | Centralized Error Handling          | 📋 Pendente  | -         |
+| 17  | Centralized Error Handling          | ✅ Concluída | Jules     |
 
 ---
 
@@ -56,6 +56,7 @@
 | **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`         |
 | **TASK 15** | Validação com Zod Schemas           | `src/schemas/`, `package.json`                   |
 | **TASK 16** | Database Seed Script                | `scripts/seed.ts`, `package.json`                |
+| **TASK 17** | Centralized Error Handling          | `src/lib/errors.ts`, `src/hooks/useError.ts`     |
 
 ---
 
@@ -368,28 +369,3 @@ taxDue: number; // (taxableBasis \* 0.20) - irrfDeduction
 ---
 
 ---
-
-### 📋 TASK 17: Centralized Error Handling
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
-
-```markdown
-## Contexto
-
-Tratamento de erros hoje é ad-hoc (try/catch isolados).
-
-## Objetivo
-
-Padronizar erros para facilitar debugging e UX consistente.
-
-## Arquivos
-
-- src/lib/errors.ts (class AppError)
-- src/hooks/useError.ts
-
-## Critérios
-
-- [ ] Classe AppError com statusCode e message
-- [ ] Helper function para extrair mensagem segura de erro desconhecido
-- [ ] Integração com Toast notification
-```
