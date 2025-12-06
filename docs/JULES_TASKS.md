@@ -29,7 +29,7 @@
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 | 14  | Test Plan + Vitest Config           | ✅ Concluída | Jules     |
-| 15  | Validação com Zod Schemas           | 📋 Pendente  | -         |
+| 15  | Validação com Zod Schemas           | ✅ Concluída | Jules     |
 | 16  | Database Seed Script                | 📋 Pendente  | -         |
 | 17  | Centralized Error Handling          | 📋 Pendente  | -         |
 
@@ -42,6 +42,11 @@
 | **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                  |
 | **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`     |
 | **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                  |
+| Task        | Descrição                           | Arquivos Criados/Modificados                     |
+| ---         | ----------------------------------- | ------------------------------------------------ |
+| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                  |
+| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`     |
+| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                  |
 | **TASK 4**  | JSDoc em Services                   | Todos os arquivos em `src/services/`             |
 | **TASK 5**  | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`   |
 | **TASK 6**  | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
@@ -49,6 +54,7 @@
 | **TASK 8**  | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`       |
 | **TASK 9**  | Reorganização de Pastas             | Services, Components, e SQL Docs                 |
 | **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`         |
+| **TASK 15** | Validação com Zod Schemas           | `src/schemas/`, `package.json`                   |
 
 ---
 
@@ -357,35 +363,6 @@ taxDue: number; // (taxableBasis \* 0.20) - irrfDeduction
 ---
 
 ---
-
-### 📋 TASK 15: Validação com Zod Schemas
-
-**Prioridade:** 🔴 Alta (Fundação) | **Tempo estimado:** ~40 min
-
-```markdown
-## Contexto
-
-Precisamos validar dados no frontend (forms) e backend (API). Zod é o padrão da indústria.
-
-## Objetivo
-
-Instalar Zod e criar schemas reutilizáveis para os modelos principais.
-
-## Instalação
-
-`npm install zod`
-
-## Arquivos
-
-- src/schemas/authSchema.ts
-- src/schemas/tradeSchema.ts
-- src/schemas/journalSchema.ts
-
-## Critérios
-
-- [ ] Schemas criados exportando tipos (z.infer)
-- [ ] Validação de campos obrigatórios e formatos (email, senhas fortes)
-```
 
 ---
 
