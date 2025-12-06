@@ -42,11 +42,6 @@
 | **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                                                 |
 | **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`                                    |
 | **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                                                 |
-| Task        | Descrição                           | Arquivos Criados/Modificados                                                    |
-| ---         | ----------------------------------- | ------------------------------------------------                                |
-| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                                                 |
-| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`                                    |
-| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                                                 |
 | **TASK 4**  | JSDoc em Services                   | Todos os arquivos em `src/services/`                                            |
 | **TASK 5**  | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`                                  |
 | **TASK 6**  | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)                                          |
