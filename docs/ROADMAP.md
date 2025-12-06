@@ -336,6 +336,7 @@ Estas funcionalidades foram desenvolvidas além do roadmap original:
 | **Validação Zod**         | ✅ Concluído | `src/schemas/*`                                       |
 | **Testes Unitários**      | ✅ Concluído | `src/**/*.test.ts`, `vitest.config.mts`               |
 | **Security Audit**        | ✅ Concluído | `docs/SECURITY_AUDIT.md`                              |
+| **Export Backup Local**   | ✅ Concluído | `src/services/exportService.ts`                       |
 
 ---
 
