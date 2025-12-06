@@ -22,7 +22,7 @@
 | 5   | Testes MentorService                | ✅ Concluída | Jules     |
 | 6   | Fix Lint Warnings                   | ✅ Concluída | Jules     |
 | 7   | StudentCalendarModal                | ✅ Concluída | Jules     |
-| 8   | Auditoria de Segurança              | 📋 Pendente  | -         |
+| 8   | Auditoria de Segurança              | ✅ Concluída | Jules     |
 | 9   | Reorganização de Pastas             | 📋 Pendente  | -         |
 | 10  | Import de Trades (CSV)              | 📋 Pendente  | -         |
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
@@ -46,46 +46,13 @@
 | **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`   |
 | **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
 | **TASK 7** | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx` |
+| **TASK 8** | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`       |
 
 ---
 
 ## 🚀 Próximas Tasks (Lista Detalhada)
 
 ---
-
-### 📋 TASK 8: Auditoria de Segurança de URLs e Headers
-
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~30 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js 15 + Supabase. Verificar exposição de dados em URLs.
-
-## Objetivo
-
-Auditar e corrigir potenciais vulnerabilidades.
-
-## Arquivos para Analisar
-
-- src/middleware.ts
-- src/app/dashboard/[accountId]/page.tsx
-- src/app/share/[token]/page.tsx
-- next.config.ts
-
-## Verificações
-
-1. IDs na URL são UUIDs (não sequenciais)
-2. Mensagens de erro não expõem lógica interna
-3. Headers de segurança configurados (HSTS, X-Frame-Options, etc)
-4. Supabase ANON_KEY usada (não SERVICE_ROLE)
-
-## Critérios de Sucesso
-
-- [ ] Nenhum ID sequencial exposto
-- [ ] Headers de segurança configurados
-- [ ] Relatório criado em docs/SECURITY_AUDIT.md
-```
 
 ---
 
