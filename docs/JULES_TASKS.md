@@ -28,8 +28,8 @@
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
-| 14  | Test Plan + Vitest Config           | 📋 Pendente  | -         |
-| 15  | Validação com Zod Schemas           | � Pendente   | -         |
+| 14  | Test Plan + Vitest Config           | ✅ Concluída | Jules     |
+| 15  | Validação com Zod Schemas           | 📋 Pendente  | -         |
 | 16  | Database Seed Script                | 📋 Pendente  | -         |
 | 17  | Centralized Error Handling          | 📋 Pendente  | -         |
 
@@ -37,73 +37,22 @@
 
 ## ✅ Tasks Concluídas (Histórico)
 
-| Task       | Descrição                           | Arquivos Criados/Modificados                     |
-| ---------- | ----------------------------------- | ------------------------------------------------ |
-| **TASK 1** | Reorganizar Componentes Notificação | `src/components/notifications/`                  |
-| **TASK 2** | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`     |
-| **TASK 3** | ReviewService CRUD                  | `src/services/reviewService.ts`                  |
-| **TASK 4** | JSDoc em Services                   | Todos os arquivos em `src/services/`             |
-| **TASK 5** | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`   |
-| **TASK 6** | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
-| **TASK 7** | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx` |
-| **TASK 8** | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`       |
-| **TASK 9** | Reorganização de Pastas             | Services, Components, e SQL Docs                 |
+| Task        | Descrição                           | Arquivos Criados/Modificados                     |
+| ----------- | ----------------------------------- | ------------------------------------------------ |
+| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                  |
+| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`     |
+| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                  |
+| **TASK 4**  | JSDoc em Services                   | Todos os arquivos em `src/services/`             |
+| **TASK 5**  | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`   |
+| **TASK 6**  | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)           |
+| **TASK 7**  | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx` |
+| **TASK 8**  | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`       |
+| **TASK 9**  | Reorganização de Pastas             | Services, Components, e SQL Docs                 |
+| **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`         |
 
 ---
 
 ## 🚀 Próximas Tasks (Lista Detalhada)
-
----
-
----
-
-### 📋 TASK 9: Reorganização de Pastas e Documentação
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js. A estrutura de pastas precisa de organização para escalar.
-
-## Objetivo
-
-Reorganizar components, services, e documentar migrations.
-
-## PARTE 1: Components
-
-- Mover ClientProviders.tsx para src/components/layout/
-- Criar pasta src/components/mentor/
-
-## PARTE 2: Services
-
-- Dividir communityService.ts (19KB) em:
-  - src/services/community/playbookService.ts
-  - src/services/community/leaderboardService.ts
-- Mover mentorService.ts para src/services/mentor/inviteService.ts
-
-## PARTE 3: Organizar SQL
-
-Criar pasta supabase/sql/ organizada por domínio:
-
-- core/ (000, 001)
-- features/ (002, 003, 010)
-- admin/ (004)
-- mentor/ (005, 012, 016)
-- community/ (006, 009, 011)
-- fixes/ (007, 008, 013, 014, 015)
-
-IMPORTANTE: NÃO alterar supabase/migrations/ - apenas criar cópias organizadas
-
-## Critérios de Sucesso
-
-- [ ] ClientProviders movido para layout/
-- [ ] communityService dividido
-- [ ] Pasta supabase/sql/ criada
-- [ ] Build passa
-```
-
----
 
 ### 📋 TASK 10: Import de Trades (Excel/CSV)
 
@@ -406,95 +355,6 @@ taxDue: number; // (taxableBasis \* 0.20) - irrfDeduction
 ```
 
 ---
-
-### 📋 TASK 14: Criar Test Plan e Configurar Framework de Testes
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~60 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js + Supabase. O projeto atualmente não tem nenhum teste automatizado.
-Precisamos de uma estratégia de testes e configuração inicial.
-
-## Objetivo
-
-1. Criar documento docs/TEST_PLAN.md com estratégia de testes
-2. Configurar Vitest no projeto
-3. Criar testes unitários de exemplo para funções puras
-
-## PARTE 1: Criar docs/TEST_PLAN.md
-
-Documento deve incluir:
-
-### Estratégia Geral
-
-- Tipos de teste: Unit, Integration, E2E
-- Ferramentas: Vitest (unit), futuro Playwright (E2E)
-- Convenções: \*.test.ts, **tests**/, describe/it
-
-### Módulos a Testar (Prioridade)
-
-#### 🔴 Alta Prioridade - Funções Puras (src/lib/)
-
-**calculations.ts** (18 funções):
-
-- calculateTradePnL(trade, multiplier)
-- determineTradeOutcome(trade)
-- filterTrades(trades, filters)
-  ... (lista completa)
-
-**password-validator.ts** (3 funções):
-...
-
-**utils.ts** (3 funções):
-...
-
-**shareUtils.ts** (2 funções - mock Supabase):
-...
-
-#### 🟡 Média Prioridade - Services
-
-- accountService.ts
-- tradeService.ts
-  ...
-
-## PARTE 2: Configurar Vitest
-
-### Instalar dependências
-
-npm install -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom
-
-### Criar vitest.config.ts
-
-import { defineConfig } from 'vitest/config';
-...
-
-### Criar src/test/setup.ts
-
-import '@testing-library/jest-dom';
-
-### Adicionar scripts no package.json
-
-"test": "vitest",
-...
-
-## PARTE 3: Criar Testes de Exemplo
-
-### src/lib/**tests**/calculations.test.ts
-
-...
-
-## Critérios de Sucesso
-
-- [ ] docs/TEST_PLAN.md criado com estratégia completa
-- [ ] vitest.config.ts configurado
-- [ ] Dependências instaladas
-- [ ] Scripts de teste no package.json
-- [ ] Pelo menos 10 testes passando para calculations.ts
-- [ ] Pelo menos 5 testes passando para password-validator.ts
-- [ ] npm run test passa sem erros
-```
 
 ---
 
