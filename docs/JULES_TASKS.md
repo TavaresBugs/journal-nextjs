@@ -30,7 +30,7 @@
 | 13  | Calculadora de Imposto BR           | 📋 Pendente  | -         |
 | 14  | Test Plan + Vitest Config           | ✅ Concluída | Jules     |
 | 15  | Validação com Zod Schemas           | ✅ Concluída | Jules     |
-| 16  | Database Seed Script                | 📋 Pendente  | -         |
+| 16  | Database Seed Script                | ✅ Concluída | Jules     |
 | 17  | Centralized Error Handling          | 📋 Pendente  | -         |
 
 ---
@@ -55,6 +55,7 @@
 | **TASK 9**  | Reorganização de Pastas             | Services, Components, e SQL Docs                 |
 | **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`         |
 | **TASK 15** | Validação com Zod Schemas           | `src/schemas/`, `package.json`                   |
+| **TASK 16** | Database Seed Script                | `scripts/seed.ts`, `package.json`                |
 
 ---
 
@@ -365,34 +366,6 @@ taxDue: number; // (taxableBasis \* 0.20) - irrfDeduction
 ---
 
 ---
-
-### 📋 TASK 16: Database Seed Script (Dados Fake)
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~30 min
-
-```markdown
-## Contexto
-
-Desenvolver com banco vazio é lento. Precisamos de massa de dados para testar paginação, gráficos e performance.
-
-## Objetivo
-
-Criar script que popule o Supabase (local ou dev) com usuários, trades e diários fictícios.
-
-## Bibliotecas
-
-`npm install -D @faker-js/faker`
-
-## Arquivo
-
-`scripts/seed.ts` (rodar com tsx ou bun)
-
-## Critérios
-
-- [ ] Gerar 5 usuários
-- [ ] Gerar 50 trades para cada usuário (win/loss variados)
-- [ ] Gerar dados realistas (preços, datas coerentes)
-```
 
 ---
 
