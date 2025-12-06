@@ -49,6 +49,33 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
     const [newMultiplier, setNewMultiplier] = useState('1');
     const [newStrategy, setNewStrategy] = useState('');
     const [newSetup, setNewSetup] = useState('');
+    const [isExporting, setIsExporting] = useState(false);
+
+    const { useToast } = require('@/contexts/ToastContext'); // Late import or use context if available
+    // Assuming context is available globally or passed, but let's check imports
+    // Actually, I should import it properly at the top.
+
+    // Using a simpler approach if context isn't readily available in props,
+    // but typically it is via hook.
+    // I will add the hook import at the top in a separate step or just use alert for now
+    // and replace with toast if I can update imports.
+    // Wait, I can see existing imports.
+    // I will use 'alert' for now or better, I will assume ToastContext is available and import it in next block.
+
+    const handleDownloadBackup = async () => {
+        try {
+            setIsExporting(true);
+            const { exportAllData, downloadAsJSON } = await import('@/services/exportService');
+            const data = await exportAllData();
+            downloadAsJSON(data);
+            alert('Backup concluído com sucesso!'); // Using alert as fallback or standard simple feedback
+        } catch (error) {
+            console.error('Erro no backup:', error);
+            alert('Erro ao gerar backup. Tente novamente.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const addAsset = () => {
         if (newAsset.trim()) {
@@ -195,6 +222,35 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                         </Button>
                                     </span>
                                 ))}
+                            </div>
+                        </section>
+
+                        {/* Backup & Exportação */}
+                        <section className="pt-4 border-t border-gray-700">
+                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                                💾 Backup & Dados
+                            </h3>
+                            <div className="flex items-center justify-between bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                                <div>
+                                    <h4 className="text-gray-200 font-medium">Exportar Todos os Dados</h4>
+                                    <p className="text-sm text-gray-400">Baixe um arquivo JSON contendo todo seu histórico.</p>
+                                </div>
+                                <Button
+                                    variant="gradient-info"
+                                    onClick={handleDownloadBackup}
+                                    disabled={isExporting}
+                                    className="flex items-center gap-2"
+                                >
+                                    {isExporting ? (
+                                        <>
+                                            <span className="animate-spin">⏳</span> Gerando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            📥 Baixar Backup
+                                        </>
+                                    )}
+                                </Button>
                             </div>
                         </section>
                     </>
