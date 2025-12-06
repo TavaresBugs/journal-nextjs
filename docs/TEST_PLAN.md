@@ -1,248 +1,81 @@
-# 🧪 Plano de Testes
+# Test Plan - Trading Journal
 
-> Última atualização: Dezembro 2024
+Este documento define a estratégia de testes para o projeto Trading Journal Next.js + Supabase.
 
-## Stack de Testes
+## Estratégia Geral
 
-| Ferramenta          | Uso                               |
-| ------------------- | --------------------------------- |
-| **Vitest**          | Test runner (compatível com Jest) |
-| **Testing Library** | Testes de componentes React       |
-| **Happy DOM**       | DOM environment                   |
+### Tipos de Teste
 
-### Dependências Instaladas
+1.  **Unit Tests (Testes Unitários)**
+    *   **Foco**: Testar funções isoladas, lógica de negócios pura, e componentes UI simples.
+    *   **Ferramenta**: Vitest
+    *   **Localização**: Arquivos `*.test.ts` ou `*.test.tsx` dentro de diretórios `__tests__/` próximos ao código fonte.
 
-```json
-{
-  "@testing-library/jest-dom": "^6.9.1",
-  "@testing-library/react": "^16.3.0",
-  "@testing-library/user-event": "^14.6.1",
-  "happy-dom": "^20.0.11"
-}
-```
+2.  **Integration Tests (Testes de Integração)**
+    *   **Foco**: Testar interação entre módulos, services, e componentes mais complexos.
+    *   **Ferramenta**: Vitest
+    *   **Mocking**: Mockar chamadas externas (Supabase) quando necessário, mas preferir lógica real onde possível.
 
----
+3.  **E2E Tests (Testes Ponta-a-Ponta) - Futuro**
+    *   **Foco**: Fluxos completos de usuário no navegador real.
+    *   **Ferramenta**: Playwright (planejado para fase futura).
 
-## 📁 Estrutura de Testes
+### Ferramentas
 
-```
-tests/
-├── setup.ts                    # Configuração global
-├── unit/
-│   ├── lib/
-│   │   ├── calculations.test.ts
-│   │   ├── utils.test.ts
-│   │   └── storage.test.ts
-│   ├── components/
-│   │   ├── ui/
-│   │   │   ├── Button.test.tsx
-│   │   │   ├── Modal.test.tsx
-│   │   │   └── Input.test.tsx
-│   │   ├── trades/
-│   │   │   ├── TradeForm.test.tsx
-│   │   │   └── TradeCalendar.test.tsx
-│   │   ├── journal/
-│   │   │   └── DayDetailModal.test.tsx
-│   │   ├── charts/
-│   │   │   ├── recharts/*.test.tsx
-│   │   │   └── lightweight/*.test.tsx
-│   │   └── playbook/
-│   │       └── PlaybookGrid.test.tsx
-│   ├── services/
-│   │   ├── accountService.test.ts
-│   │   ├── tradeService.test.ts
-│   │   ├── journalService.test.ts
-│   │   └── routineService.test.ts
-│   └── stores/
-│       ├── useAccountStore.test.ts
-│       └── useTradeStore.test.ts
-└── integration/
-    ├── trade-workflow.test.tsx
-    ├── journal-workflow.test.tsx
-    └── playbook-workflow.test.tsx
-```
+*   **Runner**: Vitest (compatível com Jest, mas mais rápido para Vite/Next.js).
+*   **Assertions**: Vitest built-in (Chai based) + `@testing-library/jest-dom`.
+*   **UI Testing**: `@testing-library/react`.
 
----
+### Convenções
 
-## 🎯 Prioridades
+*   Arquivos de teste devem ter sufixo `.test.ts` ou `.test.tsx`.
+*   Testes devem ser agrupados usando `describe` para o módulo/função e `it` ou `test` para os casos de teste.
+*   Nomes de testes devem ser descritivos: `it('should calculate PnL correctly for Long trade', ...)`
 
-### 🔴 Alta (Críticos)
+## Módulos a Testar (Prioridade)
 
-| Módulo                | Meta Coverage | Descrição            |
-| --------------------- | ------------- | -------------------- |
-| `lib/calculations.ts` | 90%+          | Cálculos financeiros |
-| `services/*`          | 85%+          | Camada de dados      |
-| `stores/*`            | 85%+          | Estado global        |
+### 🔴 Alta Prioridade - Funções Puras (src/lib/)
 
-### 🟡 Média (Importantes)
+Estas funções contêm a lógica core de negócios e não dependem de serviços externos, facilitando testes robustos.
 
-| Módulo                 | Meta Coverage | Descrição                |
-| ---------------------- | ------------- | ------------------------ |
-| `components/trades/*`  | 80%+          | Formulários e listagens  |
-| `components/charts/*`  | 70%+          | Renderização de gráficos |
-| `components/journal/*` | 75%+          | Modals e calendário      |
+**calculations.ts** (14 funções):
+*   `calculateTradePnL`: Cálculo de lucro/prejuízo.
+*   `determineTradeOutcome`: Win, Loss, BreakEven ou Pending.
+*   `filterTrades`: Filtragem de lista de trades.
+*   `calculateTradeMetrics`: Métricas agregadas (Win Rate, Profit Factor, etc).
+*   `groupTradesByDay`: Agrupamento para calendário/gráficos.
+*   `calculateTradeDuration`: Tempo de duração do trade.
+*   `formatDuration`: Formatação legível de tempo.
+*   `formatCurrency`: Formatação monetária.
+*   `formatPercentage`: Formatação de percentuais.
+*   `calculateSharpeRatio`: Índice Sharpe.
+*   `calculateCalmarRatio`: Índice Calmar.
+*   `calculateAverageHoldTime`: Tempo médio de retenção.
+*   `calculateConsecutiveStreaks`: Sequências de vitórias/derrotas.
+*   `formatTimeMinutes`: Formatação de minutos.
 
-### 🟢 Baixa (Nice to have)
+**password-validator.ts** (3 funções):
+*   `validatePassword`: Validação de regras de senha.
+*   `getStrengthColor`: Cor UI baseada na força.
+*   `getStrengthLabel`: Label UI baseada na força.
 
-| Módulo                  | Meta Coverage | Descrição         |
-| ----------------------- | ------------- | ----------------- |
-| `components/ui/*`       | 60%+          | Componentes base  |
-| `components/playbook/*` | 65%+          | CRUD de playbooks |
+**utils.ts**:
+*   Funções utilitárias gerais.
 
----
+**shareUtils.ts**:
+*   Geradores de URLs e lógica de compartilhamento.
 
-## 📝 Exemplos de Testes
+### 🟡 Média Prioridade - Services
 
-### Cálculos Financeiros
+Estes módulos interagem com Supabase e requerem mocking apropriado.
 
-```typescript
-import { describe, test, expect } from "vitest";
-import { calculateMetrics } from "@/lib/calculations";
+*   `accountService.ts`
+*   `tradeService.ts`
+*   `journalService.ts`
 
-describe("calculateMetrics", () => {
-  test("calculates profit factor correctly", () => {
-    const trades = [{ pnl: 100 }, { pnl: -50 }, { pnl: 200 }];
-    // Profit Factor = 300 / 50 = 6.0
-    expect(calculateMetrics(trades).profitFactor).toBe(6.0);
-  });
+### 🟢 Baixa Prioridade - Componentes UI
 
-  test("handles no losses (division by zero)", () => {
-    const trades = [{ pnl: 100 }, { pnl: 200 }];
-    expect(calculateMetrics(trades).profitFactor).toBe(Infinity);
-  });
+Componentes visuais, focando primeiro nos que têm lógica complexa interna.
 
-  test("handles empty trades array", () => {
-    expect(calculateMetrics([]).winRate).toBe(0);
-  });
-});
-```
-
-### Componentes UI
-
-```typescript
-import { describe, test, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { Button } from "@/components/ui/Button";
-
-describe("Button", () => {
-  test("renders with correct text", () => {
-    render(<Button>Click me</Button>);
-    expect(screen.getByRole("button")).toHaveTextContent("Click me");
-  });
-
-  test("calls onClick when clicked", async () => {
-    const handleClick = vi.fn();
-    render(<Button onClick={handleClick}>Click</Button>);
-
-    await userEvent.click(screen.getByRole("button"));
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
-
-  test("applies variant classes", () => {
-    render(<Button variant="gradient-primary">Submit</Button>);
-    expect(screen.getByRole("button")).toHaveClass("bg-gradient-to-r");
-  });
-});
-```
-
-### Services
-
-```typescript
-import { describe, test, expect, vi } from "vitest";
-import { getTrades, saveTrade } from "@/services/tradeService";
-
-// Mock Supabase
-vi.mock("@/lib/supabase", () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockResolvedValue({ data: [], error: null }),
-      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
-    })),
-  },
-}));
-
-describe("tradeService", () => {
-  test("getTrades returns array", async () => {
-    const trades = await getTrades("account-id");
-    expect(Array.isArray(trades)).toBe(true);
-  });
-});
-```
-
----
-
-## 🚀 Executando Testes
-
-```bash
-# Rodar todos os testes
-npm test
-
-# Watch mode
-npm test -- --watch
-
-# Coverage
-npm test -- --coverage
-
-# Arquivo específico
-npm test -- calculations
-```
-
----
-
-## 🔄 CI/CD (GitHub Actions)
-
-```yaml
-name: Tests
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npm ci
-      - run: npm test -- --coverage
-      - uses: codecov/codecov-action@v3
-```
-
----
-
-## ✅ Checklist de Implementação
-
-### Fase 1: Setup
-
-- [ ] Configurar Vitest (`vitest.config.ts`)
-- [ ] Criar `tests/setup.ts`
-- [ ] Adicionar scripts no `package.json`
-
-### Fase 2: Testes Críticos
-
-- [ ] `lib/calculations.test.ts`
-- [ ] `services/tradeService.test.ts`
-- [ ] `services/journalService.test.ts`
-- [ ] `stores/useTradeStore.test.ts`
-
-### Fase 3: Testes de Componentes
-
-- [ ] `components/ui/Button.test.tsx`
-- [ ] `components/ui/Modal.test.tsx`
-- [ ] `components/trades/TradeForm.test.tsx`
-- [ ] `components/journal/DayDetailModal.test.tsx`
-
-### Fase 4: CI/CD
-
-- [ ] Configurar GitHub Actions
-- [ ] Adicionar badge de coverage
-- [ ] Setup Codecov
-
----
-
-## 📚 Recursos
-
-- [Vitest Docs](https://vitest.dev/)
-- [Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
-- [Happy DOM](https://github.com/capricorn86/happy-dom)
+*   `TradeForm`
+*   `DashboardWidgets`
