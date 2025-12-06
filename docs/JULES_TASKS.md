@@ -319,16 +319,16 @@ Gerar arquivo .xlsx com múltiplas sheets formatadas.
 
 ### 📋 TASK 13: Calculadora de Imposto (Day Trade BR)
 
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~90 min
+**Prioridade:** 🔴 Alta | **Tempo estimado:** ~120 min
 
 ```markdown
 ## Contexto
 
-Trading Journal Next.js. Usuários brasileiros precisam calcular imposto sobre day trade.
+Trading Journal Next.js. Usuários brasileiros precisam calcular imposto sobre day trade. A legislação é específica e não permite isenção para Day Trade.
 
 ## Objetivo
 
-Criar calculadora de IR para day trade seguindo regras da Receita Federal.
+Criar calculadora de IR para day trade seguindo regras estritas da Receita Federal do Brasil.
 
 ## Arquivos a Criar
 
@@ -336,61 +336,88 @@ Criar calculadora de IR para day trade seguindo regras da Receita Federal.
 - src/components/tax/TaxCalculatorModal.tsx
 - src/components/tax/TaxReport.tsx
 
-## Regras Fiscais (Day Trade Brasil)
+## Regras Fiscais (Day Trade Brasil - Lei 11.033/2004)
 
-### Alíquota
+### 1. Alíquota e Isenção
 
-- Day Trade: 20% sobre lucro líquido
-- Swing Trade: 15% sobre lucro (isenção se vendas < R$20k/mês)
+- **Alíquota:** 20% sobre o LUCRO LÍQUIDO mensal.
+- **Isenção:** **NÃO EXISTE** isenção para Day Trade (diferente de Swing Trade que isenta até R$ 20k de vendas/mês).
 
-### Compensação de Prejuízo
+### 2. Base de Cálculo (Lucro Líquido)
 
-- Prejuízos podem ser compensados em meses futuros
-- Day trade compensa só com day trade
-- Swing trade compensa só com swing trade
+O sistema deve calcular: `Resultado Bruto - Custos Dedutíveis`.
 
-### DARF
+**Custos Dedutíveis permitidos:**
 
-- Código 6015 (Day Trade)
-- Vencimento: último dia útil do mês seguinte
+- Taxa de corretagem (fixa/variável por corretora).
+- Emolumentos B3 (aprox. 0,030% PF, ou 0,0110%-0,0230% para alto volume).
+- Taxa de liquidação (aprox. 0,0125%).
+- ISS (sobre corretagem).
+- IRRF (Antecipação "Dedo-duro").
 
-## Funções do taxService.ts
+### 3. O "Dedo-duro" (IRRF)
+
+- A corretora retém **1%** sobre o lucro positivo de cada operação.
+- **Regra:** Este 1% retido deve ser **deduzido** do imposto final a pagar (Calculado 20% - Retido 1%).
+
+### 4. Compensação de Prejuízos
+
+- Prejuízo de Day Trade só compensa com lucro de Day Trade.
+- Prejuízos são carregados para os meses seguintes **eternamente** (sem prescrição).
+- Compensação é progressiva (Mês atual -> Meses seguintes). Nunca retroativa.
+
+### 5. DARF
+
+- Código da Receita: **6015**
+- Vencimento: Último dia útil do mês subsequente ao da apuração.
+
+## Funcionalidades do taxService.ts
 
 interface TaxCalculation {
-month: string;
-grossProfit: number;
-previousLosses: number;
-taxableProfit: number;
-taxDue: number; // 20%
-darfCode: string;
-dueDate: string;
+month: string; // '2024-12'
+grossProfit: number; // Resultado bruto das operações
+costs: number; // Soma de todas as taxas
+netResult: number; // grossProfit - costs
+accumulatedLoss: number; // Prejuízo trazido de meses anteriores
+taxableBasis: number; // netResult - accumulatedLoss (se > 0)
+irrfDeduction: number; // Soma dos 1% retidos
+taxDue: number; // (taxableBasis \* 0.20) - irrfDeduction
 }
 
-- calculateMonthlyTax(month: Date): Promise<TaxCalculation>
-- getAccumulatedLosses(): Promise<number>
-- generateDARFReport(month: Date): Promise<DARFReport>
+### Funções Requeridas
 
-## UI
+1. `identifyDayTrades(trades: Trade[]): Trade[]`
 
-### TaxCalculatorModal.tsx
+   - Critério: Compra e venda do mesmo ativo, na mesma corretora, no mesmo dia.
+   - Todo trade deve ter campos de custos: `brokerageFee`, `exchangeFee`, `taxes`.
 
-1. Seletor de mês
-2. Resumo: Lucro bruto, Prejuízo acumulado, Base de cálculo, IR devido
-3. Botão "Gerar Relatório"
+2. `calculateMonthlyTax(month: Date, trades: Trade[], previousLoss: number): TaxCalculation`
 
-### TaxReport.tsx
+   - Logar alertas se misturar Day Trade com Swing Trade.
 
-- Relatório mensal formatado
-- Informações para preencher DARF
-- Opção de imprimir/PDF
+3. `generateDARFData(calculation: TaxCalculation): DARFModel`
+   - Preparar dados para impressão.
+
+## UI (TaxCalculatorModal)
+
+1. **Input de Custos:** Permitir que o usuário configure taxas padrão ou edite taxas por trade se importou via CSV.
+2. **Resumo Mensal:**
+   - Lucro Bruto: R$ X
+   - (-) Custos: R$ Y
+   - (-) Prejuízo Anterior: R$ Z
+   - (=) Base de Cálculo: R$ K
+   - IR (20%): R$ W
+   - (-) IRRF já pago: R$ J
+   - **DARF A PAGAR:** R$ FINAL
+3. **Alertas:** "Atenção: Day Trade não tem isenção de R$ 20k".
 
 ## Critérios de Sucesso
 
-- [ ] Cálculo correto de 20% sobre lucro
-- [ ] Compensação de prejuízos funcionando
-- [ ] Separação Day Trade vs Swing Trade
-- [ ] Relatório com dados para DARF
-- [ ] UI intuitiva
+- [ ] Lógica separa estritamente Day Trade de Swing Trade.
+- [ ] Deduz custos operacionais corretamente antes de aplicar 20%.
+- [ ] Abate o IRRF (1%) do valor final.
+- [ ] Carrega prejuízo acumulado para o mês seguinte.
+- [ ] Gera valor correto para DARF 6015.
 ```
 
 ---
