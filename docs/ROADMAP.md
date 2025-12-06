@@ -174,12 +174,12 @@ Cálculo automático de IR para operações de trading:
 
 ##### Visualização do Mentor 📋 PRÓXIMO
 
-| Feature                   | Descrição                                      | Status      |
-| ------------------------- | ---------------------------------------------- | ----------- |
-| **StudentCalendarModal**  | Mentor visualiza calendário completo do aluno  | 🔴 Pendente |
-| **Seletor de Aluno**      | Dropdown para alternar entre mentorados        | 🔴 Pendente |
-| **Trade Detail View**     | Mentor pode clicar em trades para ver detalhes | 🔴 Pendente |
-| **Permissões Granulares** | Níveis: view-only, can-comment, full-analysis  | 🟡 Parcial  |
+| Feature                   | Descrição                                      | Status       |
+| ------------------------- | ---------------------------------------------- | ------------ |
+| **StudentCalendarModal**  | Mentor visualiza calendário completo do aluno  | ✅ Concluído |
+| **Seletor de Aluno**      | Dropdown para alternar entre mentorados        | 🔴 Pendente  |
+| **Trade Detail View**     | Mentor pode clicar em trades para ver detalhes | 🔴 Pendente  |
+| **Permissões Granulares** | Níveis: view-only, can-comment, full-analysis  | 🟡 Parcial   |
 
 ##### Sistema de Correções/Comentários 📋 PRÓXIMO
 
@@ -315,23 +315,27 @@ Q4 2025 ────────────────────────
 
 Estas funcionalidades foram desenvolvidas além do roadmap original:
 
-| Feature                   | Status       | Arquivo/Local                           |
-| ------------------------- | ------------ | --------------------------------------- |
-| Google OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook       |
-| GitHub OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook       |
-| Sistema de Playbooks      | ✅ Concluído | `src/components/playbook/*`             |
-| Gráficos Recharts         | ✅ Concluído | `src/components/charts/recharts/*`      |
-| Lightweight Charts        | ✅ Concluído | `src/components/charts/lightweight/*`   |
-| Compartilhamento Journals | ✅ Concluído | `src/app/share/*`, migration 003        |
-| Dark Mode                 | ✅ Concluído | CSS com tema Zorin                      |
-| Página de Pendentes       | ✅ Concluído | `src/app/pending/page.tsx`              |
-| Middleware de Auth        | ✅ Concluído | `src/middleware.ts`                     |
-| **Mentor Invites**        | ✅ Concluído | `src/services/mentorService.ts`         |
-| **Painel do Mentor**      | ✅ Concluído | `src/app/mentor/page.tsx`               |
-| **NotificationBell**      | ✅ Concluído | `src/components/NotificationBell.tsx`   |
-| **NotificationsModal**    | ✅ Concluído | `src/components/NotificationsModal.tsx` |
-| **Comunidade/Playbooks**  | ✅ Concluído | `src/app/comunidade/page.tsx`           |
-| **Leaderboard**           | ✅ Concluído | `src/services/communityService.ts`      |
+| Feature                   | Status       | Arquivo/Local                                         |
+| ------------------------- | ------------ | ----------------------------------------------------- |
+| Google OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
+| GitHub OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
+| Sistema de Playbooks      | ✅ Concluído | `src/components/playbook/*`                           |
+| Gráficos Recharts         | ✅ Concluído | `src/components/charts/recharts/*`                    |
+| Lightweight Charts        | ✅ Concluído | `src/components/charts/lightweight/*`                 |
+| Compartilhamento Journals | ✅ Concluído | `src/app/share/*`, migration 003                      |
+| Dark Mode                 | ✅ Concluído | CSS com tema Zorin                                    |
+| Page de Pendentes         | ✅ Concluído | `src/app/pending/page.tsx`                            |
+| Middleware de Auth        | ✅ Concluído | `src/middleware.ts`                                   |
+| **Mentor Invites**        | ✅ Concluído | `src/services/mentor/inviteService.ts`                |
+| **Painel do Mentor**      | ✅ Concluído | `src/app/mentor/page.tsx`                             |
+| **StudentCalendarModal**  | ✅ Concluído | `src/components/mentor/StudentCalendarModal.tsx`      |
+| **NotificationBell**      | ✅ Concluído | `src/components/notifications/NotificationBell.tsx`   |
+| **NotificationsModal**    | ✅ Concluído | `src/components/notifications/NotificationsModal.tsx` |
+| **Comunidade/Playbooks**  | ✅ Concluído | `src/app/comunidade/page.tsx`                         |
+| **Leaderboard**           | ✅ Concluído | `src/services/community/leaderboardService.ts`        |
+| **Validação Zod**         | ✅ Concluído | `src/schemas/*`                                       |
+| **Testes Unitários**      | ✅ Concluído | `src/**/*.test.ts`, `vitest.config.mts`               |
+| **Security Audit**        | ✅ Concluído | `docs/SECURITY_AUDIT.md`                              |
 
 ---
 

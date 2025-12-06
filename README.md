@@ -83,21 +83,29 @@ src/
 │   ├── auth/              # Callback OAuth
 │   ├── dashboard/         # Página principal
 │   ├── login/             # Autenticação
+│   ├── mentor/            # Painel do Mentor
+│   ├── comunidade/        # Playbooks globais e Leaderboard
 │   └── share/             # Páginas públicas
 ├── components/
-│   ├── ui/                # Button, Modal, Input, Card, Tabs, Toast
-│   ├── trades/            # TradeForm, TradeList, TradeDetails
+│   ├── ui/                # Componentes base (shadcn-like)
+│   ├── trades/            # Formulários e listas de trade
+│   ├── mentor/            # StudentCalendar, Invites
+│   ├── notifications/     # Bell e Modal de Notificações
 │   ├── journal/           # JournalModal, DayDetailModal, Calendar
 │   ├── charts/            # Recharts + Lightweight Charts
 │   ├── playbook/          # Gestão de playbooks
 │   ├── accounts/          # Seletor de contas
 │   └── shared/            # Páginas de compartilhamento
-├── services/              # Camada de dados
+├── services/              # Lógica de Negócios e API
+│   ├── mentor/            # inviteService.ts, reviewService.ts
+│   ├── community/         # playbookService.ts, leaderboardService.ts
 │   ├── accountService.ts  # CRUD de contas
 │   ├── tradeService.ts    # CRUD de trades
-│   ├── journalService.ts  # CRUD de journal entries
-│   ├── routineService.ts  # Rotinas diárias
-│   └── migrationService.ts # Migração de dados
+│   └── journalService.ts  # CRUD de journal entries
+├── schemas/               # Zod Schemas (New)
+│   ├── tradeSchema.ts
+│   ├── journalSchema.ts
+│   └── authSchema.ts
 ├── store/                 # Zustand stores
 ├── hooks/                 # Custom React hooks
 ├── lib/                   # Utilitários e config
@@ -160,6 +168,8 @@ npm run dev      # Desenvolvimento
 npm run build    # Build de produção
 npm run start    # Executar produção
 npm run lint     # ESLint
+npm test         # Executar testes (Vitest)
+npm run seed     # Rodar seed (futuro)
 ```
 
 ---
