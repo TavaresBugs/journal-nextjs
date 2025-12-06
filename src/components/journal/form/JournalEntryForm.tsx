@@ -9,6 +9,8 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { TimeframeImageGrid } from '@/components/shared';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
+import { toZonedTime, format as formatTz } from 'date-fns-tz';
+
 
 interface JournalEntryFormProps {
   isOpen: boolean;
@@ -181,7 +183,13 @@ export function JournalEntryForm({
               <h3 className="text-cyan-400 text-sm font-medium mb-1">Trade Vinculado</h3>
               {trade ? (
                 <p className="text-gray-300 text-sm">
-                  {dayjs(trade.entryDate).add(12, 'hour').format('DD/MM/YYYY')} - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
+                  {(() => {
+                    let dateTimeStr = trade.entryDate;
+                    if (!dateTimeStr.includes('T') && trade.entryTime) {
+                      dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
+                    }
+                    return formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
+                  })()} NY - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
                   {trade.pnl !== undefined && (
                     <span className={`ml-1 ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {formatCurrency(trade.pnl)}
@@ -347,7 +355,7 @@ export function JournalEntryForm({
                           <span className={t.type === 'Long' ? 'text-green-400' : 'text-red-400'}>{t.type}</span> @ {t.entryPrice}
                         </span>
                         <span>
-                          {dayjs(t.entryDate).add(12, 'hour').format('HH:mm')}
+                          {formatTz(toZonedTime(t.entryDate, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)
                         </span>
                       </div>
                     </button>

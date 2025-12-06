@@ -169,6 +169,7 @@ export async function getTradesPaginated(accountId: string, page: number = 1, pa
 /**
  * Mapeia um trade parcial do banco para TradeLite.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapTradeLiteFromDB = (db: any): TradeLite => ({
     id: db.id,
     entryDate: db.entry_date,
@@ -260,13 +261,6 @@ export async function deleteTrade(id: string): Promise<boolean> {
         return false;
     }
 
-    // Note: Circular dependency if we import deleteJournalEntry here.
-    // Ideally, we should handle this via cascade delete in DB or a separate cleanup service.
-    // For now, let's assume cascade or handle in `storage.ts` aggregation.
-    // But since I am refactoring, I should probably handle this properly.
-    // The original code imported deleteJournalEntry.
-    // I will return to this.
-
     // 3. Delete the trade
     const { error } = await supabase
         .from('trades')
@@ -279,5 +273,27 @@ export async function deleteTrade(id: string): Promise<boolean> {
         return false;
     }
 
+    return true;
+}
+
+/**
+ * Exclui todos os trades de uma conta específica.
+ * @param {string} accountId - O ID da conta.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ */
+export async function deleteTradesByAccount(accountId: string): Promise<boolean> {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
+
+    const { error } = await supabase
+        .from('trades')
+        .delete()
+        .eq('account_id', accountId)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error deleting trades by account:', error);
+        return false;
+    }
     return true;
 }

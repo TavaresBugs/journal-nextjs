@@ -37,6 +37,7 @@ export function TaxCalculatorModal({ isOpen, onClose, fetchTradesForMonth }: Tax
     // Carregar trades quando mês muda
     useEffect(() => {
         if (isOpen && fetchTradesForMonth) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setIsLoading(true);
             fetchTradesForMonth(selectedMonth)
                 .then(trades => {

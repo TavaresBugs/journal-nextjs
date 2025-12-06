@@ -7,6 +7,7 @@ import { JournalEntryModal } from '@/components/journal/JournalEntryModal';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { toZonedTime, format as formatTz } from 'date-fns-tz';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -268,10 +269,16 @@ export function TradeList({
                                         {/* DATA */}
                                         <td className="px-3 py-3 whitespace-nowrap text-center">
                                             <div className="text-sm text-gray-300 font-medium">
-                                                {dayjs(trade.entryDate).add(12, 'hour').format('DD/MM/YYYY')}
+                                                {formatTz(toZonedTime(trade.entryDate, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' })}
                                             </div>
-                                            <div className="text-xs text-gray-500">
-                                                {trade.entryTime || '--:--'}
+                                            <div className="text-[10px] text-cyan-500/80 font-mono">
+                                                {(() => {
+                                                    let dateTimeStr = trade.entryDate;
+                                                    if (!dateTimeStr.includes('T') && trade.entryTime) {
+                                                        dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
+                                                    }
+                                                    return `${formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'HH:mm:ss', { timeZone: 'America/New_York' })} NY`;
+                                                })()}
                                             </div>
                                         </td>
 

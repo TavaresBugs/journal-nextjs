@@ -585,7 +585,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                         </CardHeader>
                         <CardContent>
                            <PlaybookGrid 
-                                trades={trades} 
+                                trades={allHistory as unknown as Trade[]} 
                                 playbooks={playbooks} 
                                 currency={currentAccount?.currency || 'USD'} 
                                 onEdit={handleEditPlaybook}

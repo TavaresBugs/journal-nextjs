@@ -137,8 +137,8 @@ export function calculateMonthlyTax(
     const netResult = grossProfit - totalCosts;
 
     // Compensação de prejuízos
+    // Compensação de prejuízos
     let taxableBasis = 0;
-    let currentLoss = 0;
     let accumulatedLoss = previousLoss;
 
     if (netResult > 0) {

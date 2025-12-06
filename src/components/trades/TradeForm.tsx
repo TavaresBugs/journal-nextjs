@@ -18,12 +18,55 @@ interface TradeFormProps {
     mode?: 'create' | 'edit';
 }
 
+import { toZonedTime, fromZonedTime, format as formatTz } from 'date-fns-tz';
+
+// Helper to get formatted date/time in NY timezone
+const getNYDateTime = (dateStr?: string, timeStr?: string) => {
+    if (!dateStr) return { date: formatTz(toZonedTime(new Date(), 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }), time: '' };
+    
+    // Construct ISO string
+    // If dateStr is an ISO string (includes T), use it directly
+    const isoString = dateStr.includes('T') ? dateStr : (timeStr ? `${dateStr}T${timeStr}` : dateStr);
+    const dateObj = new Date(isoString);
+    
+    // If invalid date, fallback to raw strings
+    if (isNaN(dateObj.getTime())) return { date: dateStr, time: timeStr || '' };
+
+    return {
+        date: formatTz(toZonedTime(dateObj, 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }),
+        time: timeStr ? formatTz(toZonedTime(dateObj, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' }) : ''
+    };
+};
+
+// Helper to convert NY date/time to UTC
+const getUTCDateTime = (dateStr: string, timeStr: string) => {
+    if (!dateStr) return { date: undefined, time: undefined };
+
+    // Create date object treating the input strings as NY time
+    // If time is missing, default to 00:00 for the conversion
+    const dateTimeStr = `${dateStr} ${timeStr || '00:00'}`;
+    const nyDate = fromZonedTime(dateTimeStr, 'America/New_York');
+    
+    // Return ISO string for date (which preserves full partial time info) and simple time string
+    // toISOString() returns UTC format (e.g., 2023-10-27T14:00:00.000Z)
+    return {
+        date: nyDate.toISOString(),
+        time: timeStr ? nyDate.toISOString().split('T')[1].substring(0, 5) : undefined
+    };
+};
+
+
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
     // Get settings from store
     const { assets, strategies, setups } = useSettingsStore();
     const { playbooks } = usePlaybookStore();
     const { showToast } = useToast();
     
+    // Initialize with NY Time if editing
+    // If initialData.entryDate is ISO string, getNYDateTime handles it
+    const nyEntry = getNYDateTime(initialData?.entryDate, initialData?.entryTime);
+    const nyExit = getNYDateTime(initialData?.exitDate, initialData?.exitTime);
+
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
     const [type, setType] = useState<'Long' | 'Short' | ''>(initialData?.type || '');
     const [entryPrice, setEntryPrice] = useState(initialData?.entryPrice?.toString() || '');
@@ -31,10 +74,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [takeProfit, setTakeProfit] = useState(initialData?.takeProfit?.toString() || '');
     const [exitPrice, setExitPrice] = useState(initialData?.exitPrice?.toString() || '');
     const [lot, setLot] = useState(initialData?.lot?.toString() || '');
-    const [entryDate, setEntryDate] = useState(initialData?.entryDate || dayjs().format('YYYY-MM-DD'));
-    const [entryTime, setEntryTime] = useState(initialData?.entryTime || '');
-    const [exitDate, setExitDate] = useState(initialData?.exitDate || '');
-    const [exitTime, setExitTime] = useState(initialData?.exitTime || '');
+    
+    // State stores NY Local Date/Time strings for the Inputs
+    const [entryDate, setEntryDate] = useState(nyEntry.date);
+    // Use nyEntry.time only if it exists, otherwise empty
+    const [entryTime, setEntryTime] = useState(nyEntry.time);
+    const [exitDate, setExitDate] = useState(nyExit.date);
+    const [exitTime, setExitTime] = useState(nyExit.time);
     const [tfAnalise, setTfAnalise] = useState(initialData?.tfAnalise || '');
     const [tfEntrada, setTfEntrada] = useState(initialData?.tfEntrada || '');
     // Tags state
@@ -83,6 +129,10 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
         const asset = assets.find(a => a.symbol === symbol.toUpperCase());
         const assetMultiplier = asset ? asset.multiplier : 1;
         
+        // Convert NY inputs to UTC for storage
+        const utcEntry = getUTCDateTime(entryDate, entryTime);
+        const utcExit = getUTCDateTime(exitDate, exitTime);
+
         const tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'> = {
             userId: '', // Will be set by storage
             accountId,
@@ -93,10 +143,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
             exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
             lot: parseFloat(lot),
-            entryDate,
-            entryTime: entryTime || undefined,
-            exitDate: exitDate || undefined,
-            exitTime: exitTime || undefined,
+            
+            // Use converted UTC values
+            entryDate: utcEntry.date || entryDate, // Fallback to raw if conversion failed
+            entryTime: utcEntry.time,
+            exitDate: utcExit.date,
+            exitTime: utcExit.time,
+            
             tfAnalise: tfAnalise || undefined,
             tfEntrada: tfEntrada || undefined,
             tags: tagsList.length > 0 ? tagsList.join(', ') : undefined,

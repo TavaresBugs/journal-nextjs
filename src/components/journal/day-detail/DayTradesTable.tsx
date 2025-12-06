@@ -6,6 +6,7 @@ import { Button } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
 
+
 interface DayTradesTableProps {
   trades: Trade[];
   standaloneEntries: JournalEntry[];

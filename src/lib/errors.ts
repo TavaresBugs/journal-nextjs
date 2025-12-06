@@ -24,6 +24,7 @@ export function getErrorMessage(error: unknown): string {
   }
 
   if (typeof error === 'object' && error !== null && 'message' in error) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return String((error as any).message);
   }
 

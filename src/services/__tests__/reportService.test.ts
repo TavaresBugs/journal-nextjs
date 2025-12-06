@@ -46,6 +46,7 @@ describe('reportService', () => {
             }
         ];
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         vi.mocked(tradeService.getTrades).mockResolvedValue(mockTrades as any);
 
         const startDate = new Date('2024-01-01');

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { Modal, Button } from '@/components/ui';
 import type { Trade, JournalEntry } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
-import dayjs from 'dayjs';
+import { toZonedTime, format as formatTz } from 'date-fns-tz';
 
 interface JournalEntryPreviewProps {
   entry: JournalEntry;
@@ -112,7 +112,7 @@ const JournalEntryPreviewComponent = ({
             <div>
               <h2 className="text-xl font-bold text-gray-100">{entry.title}</h2>
               <div className="text-gray-400 text-sm mt-1">
-                {dayjs(entry.date).add(12, 'hour').format('DD/MM/YYYY')} • {trade?.symbol || entry.asset || 'Diário'}
+                {formatTz(toZonedTime(entry.date, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' })} • {trade?.symbol || entry.asset || 'Diário'}
               </div>
             </div>
             <div className="flex gap-2">
@@ -130,7 +130,13 @@ const JournalEntryPreviewComponent = ({
             <h3 className="text-cyan-400 text-sm font-medium mb-1">Trade Vinculado</h3>
             {trade ? (
               <p className="text-gray-300 text-sm">
-                {dayjs(trade.entryDate).add(12, 'hour').format('DD/MM/YYYY')} - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
+                {(() => {
+                  let dateTimeStr = trade.entryDate;
+                  if (!dateTimeStr.includes('T') && trade.entryTime) {
+                    dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
+                  }
+                  return formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
+                })()} (NY) - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
                 {trade.pnl !== undefined && (
                   <span className={`ml-1 ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
                     {formatCurrency(trade.pnl)}

@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { parse, isValid, formatISO } from 'date-fns';
+import { parse, isValid } from 'date-fns';
 
 export interface RawTradeData {
   [key: string]: string | number;
@@ -40,7 +40,7 @@ export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
         const worksheet = workbook.Sheets[firstSheetName];
 
         // Convert sheet to array of arrays to handle custom parsing
-        const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
 
         // 1. Find "Positions" section
         let positionsRowIndex = -1;
@@ -128,7 +128,7 @@ export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
             const rowData: RawTradeData = {};
             uniqueHeaders.forEach((header, index) => {
                 if (index < row.length) {
-                    rowData[header] = row[index];
+                    rowData[header] = row[index] as string | number;
                 }
             });
             rawData.push(rowData);
@@ -147,6 +147,142 @@ export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
 };
 
 /**
+ * Parses MetaTrader HTML Report.
+ */
+export const parseHTMLReport = async (file: File): Promise<RawTradeData[]> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                if (!content) throw new Error('File is empty');
+
+                // Basic Regex to find rows in the table
+                // MetaTrader reports usually have rows with <tr ...> <td ...> ... </td> </tr>
+                // We look for rows that contain trade data.
+                
+                const rows: RawTradeData[] = [];
+                
+                // Regex to find all tr elements
+                const trRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+                let match;
+                
+                let inPositionsSection = false;
+
+                while ((match = trRegex.exec(content)) !== null) {
+                    const rowContent = match[1];
+                    
+                    // Check for section headers
+                    if (rowContent.includes('<b>Positions</b>')) {
+                        inPositionsSection = true;
+                        continue;
+                    }
+                    if (rowContent.includes('<b>Orders</b>') || rowContent.includes('<b>Deals</b>')) {
+                        inPositionsSection = false;
+                        // Assuming Positions comes first, we can break here to be faster
+                        // But if order varies, we just disable the flag
+                         continue;
+                    }
+
+                    if (!inPositionsSection) continue;
+                    
+                    // Extract cells
+                    const tdRegex = /<td[^>]*>(.*?)<\/td>/gi;
+                    const cells: string[] = [];
+                    let cellMatch;
+                    
+                    while ((cellMatch = tdRegex.exec(rowContent)) !== null) {
+                        // Remove HTML tags from cell content and trim
+                        const cellText = cellMatch[1].replace(/<[^>]*>/g, '').trim();
+                        cells.push(cellText); 
+                    }
+
+                    // Strict check for data row: should look like a date
+                    if (cells.length > 0 && /^\d{4}\.\d{2}\.\d{2}/.test(cells[0])) {
+                         // Heuristic: If we have > 13 columns, maybe there's a hidden one?
+                         // But for now, let's treat it as standard 13-column or adapt.
+                         // If we have "phantom" empty cells that shift everything, we need to know where they are.
+                         
+                         // Reverting to standard index mapping but keeping empty cells (important for S/L, T/P)
+                         // User reported "Profit" issues. Profit is usually last. 
+                         // If there's an extra cell, profit might be at 13 instead of 12.
+                         // Let's grab the LAST cell for Profit? 
+                         // And Index - 1 for Swap, etc?
+                         // Or try to detect the hidden cell.
+                         
+                         // Common MT4 Report issue: hidden cell for "Taxes" or something?
+                         // Let's assume standard indices first but handle potential shifting if length > 13.
+                         
+                         const entryTimeIndex = 0;
+                         const ticketIndex = 1;
+                         const symbolIndex = 2;
+                         const typeIndex = 3;
+                         const volumeIndex = 4;
+                         let entryPriceIndex = 5;
+                         const slIndex = 6;
+                         const tpIndex = 7;
+                         let exitTimeIndex = 8;
+                         let exitPriceIndex = 9;
+                         let commissionIndex = 10;
+                         let swapIndex = 11;
+
+                         // If we have 14 columns, usually one is hidden or check logic
+                         if (cells.length === 14) {
+                             // Sometimes there's a hidden column after Type? or at the end?
+                             // Let's assume the alignment based on "Profit" being last.
+                             swapIndex = 12;
+                             commissionIndex = 11;
+                             exitPriceIndex = 10;
+                             exitTimeIndex = 9;
+                             entryPriceIndex = 5; // Should be consistent unless hidden is before
+                         }
+
+                         const type = cells[typeIndex].toLowerCase();
+                         if (type !== 'buy' && type !== 'sell') continue;
+
+                         const tradeData: RawTradeData = {
+                             'Entry Time': cells[entryTimeIndex],
+                             'Ticket': cells[ticketIndex],
+                             'Symbol': cells[symbolIndex],
+                             'Type': cells[typeIndex],
+                             'Volume': cells[volumeIndex],
+                             'Entry Price': cells[entryPriceIndex],
+                             'S/L': cells[slIndex],
+                             'T/P': cells[tpIndex],
+                             'Exit Time': cells[exitTimeIndex],
+                             'Exit Price': cells[exitPriceIndex],
+                             'Commission': cells[commissionIndex],
+                             'Swap': cells[swapIndex],
+                             'Profit': cells[cells.length - 1] // Always take the last cell as profit
+                         };
+                         rows.push(tradeData);
+                     }
+                }
+                
+                resolve(rows);
+
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        reader.onerror = (error) => reject(error);
+        reader.readAsText(file); // HTML is text
+    });
+};
+
+/**
+ * Wrapper to detect file type and call appropriate parser.
+ */
+export const processImportFile = async (file: File): Promise<RawTradeData[]> => {
+    if (file.type === 'text/html' || file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+        return parseHTMLReport(file);
+    }
+    return parseTradingFile(file);
+};
+
+/**
  * Parses a custom date format "yyyy.MM.dd HH:mm:ss" or standard Excel date.
  */
 export const parseTradeDate = (dateStr: string | number): Date | null => {
@@ -154,37 +290,42 @@ export const parseTradeDate = (dateStr: string | number): Date | null => {
 
     // If it's a number (Excel serial date)
     if (typeof dateStr === 'number') {
-        // XLSX.utils usually handles this if we use sheet_to_json with raw: false, but we used raw: true (implicitly by accessing rows directly via sheet_to_json header:1).
-        // Actually sheet_to_json(..., {header:1}) returns raw values (numbers for dates).
-        // SheetJS provides a utility to convert Excel date to JS Date.
         const date = XLSX.SSF.parse_date_code(dateStr);
         return new Date(date.y, date.m - 1, date.d, date.H, date.M, date.S);
     }
-
+    
     if (typeof dateStr === 'string') {
-        // Format: "2025.12.05 17:35" or "2025.12.05 17:35:00"
-        // Replace dots with hyphens for standard parsing or use date-fns
-        // date-fns format string for "2025.12.05 17:35" is "yyyy.MM.dd HH:mm"
         try {
-            const normalized = dateStr.trim();
-            // Use a reference date with zeroed seconds/milliseconds to prevent leaking current time components
+            let normalized = dateStr.trim();
+            // Normalize separators: 2025.12.05 -> 2025-12-05, 2025/12/05 -> 2025-12-05
+            normalized = normalized.replace(/\./g, '-').replace(/\//g, '-');
+
             const referenceDate = new Date();
             referenceDate.setSeconds(0, 0);
 
-            // Try parsing with seconds
-            let date = parse(normalized, 'yyyy.MM.dd HH:mm:ss', referenceDate);
+            // 1. Try ISO-like "yyyy-MM-dd HH:mm:ss"
+            let date = parse(normalized, 'yyyy-MM-dd HH:mm:ss', referenceDate);
             if (isValid(date)) return date;
 
-            // Try parsing without seconds
-            date = parse(normalized, 'yyyy.MM.dd HH:mm', referenceDate);
+            // 2. Try "yyyy-MM-dd HH:mm"
+            date = parse(normalized, 'yyyy-MM-dd HH:mm', referenceDate);
             if (isValid(date)) {
-                // Explicitly zero out seconds and ms if they weren't in the format
-                // This ensures determinism regardless of referenceDate quirks
                 date.setSeconds(0, 0);
                 return date;
             }
 
-             // Try standard ISO
+            // 3. Try "dd-MM-yyyy HH:mm:ss" (Brazilian/European format)
+            date = parse(normalized, 'dd-MM-yyyy HH:mm:ss', referenceDate);
+            if (isValid(date)) return date;
+
+            // 4. Try "dd-MM-yyyy HH:mm"
+            date = parse(normalized, 'dd-MM-yyyy HH:mm', referenceDate);
+            if (isValid(date)) {
+                date.setSeconds(0, 0);
+                return date;
+            }
+
+             // 5. Try standard Date constructor as fallback
             date = new Date(normalized);
             if (isValid(date)) return date;
 
