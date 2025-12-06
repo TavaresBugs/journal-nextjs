@@ -168,29 +168,36 @@ Criar sistema robusto de importação capaz de ler XLSX/CSV, pular metadados, id
 ### 1. Parser Inteligente (importService.ts)
 
 - **Leitura:** Usar `XLSX.read` com `file.arrayBuffer()`.
-- **Navegação:** Identificar a sheet correta.
-- **Header Skip:** Ignorar as primeiras 6-7 linhas de metadados (Conta, Nome, Moeda...).
-- **Detecção de Seção:** Buscar a linha que contém o cabeçalho "Positions" ou "Time, Position, Symbol...".
-- **Formato de Dados:** Tratar separadores decimais (ponto vs vírgula) e data ("2025.09.23 20:58:41").
+- **Navegação:** Identificar a sheet correta (primeira).
+- **Header Skip:** O cabeçalho "Positions" está na linha 6 (índice 5). Os dados começam na linha 8.
+- **Detecção de Seção:** Buscar a linha que contém apenas `["Positions"]`. A linha seguinte contém os nomes das colunas.
+- **Colunas Identificadas:** `Time, Position, Symbol, Type, Volume, Price, S / L, T / P, Time, Price, Commission, Swap, Profit`.
+- **Formato de Dados:**
+  - Data: "yyyy.MM.dd HH:mm:ss" (ex: "2025.12.05 17:35")
+  - Decimal: Ponto (ex: 24597.95)
 
 ### 2. Mapeamento Flexível
 
+O arquivo possui colunas duplicadas (`Time`, `Price`). O parser deve renomear para garantir unicidade ANTES de gerar o JSON final:
+
+- `Time` (índice 0) -> `Entry Time`
+- `Price` (índice 5) -> `Entry Price`
+- `Time` (índice 8) -> `Exit Time`
+- `Price` (índice 9) -> `Exit Price`
+
 Interface para o Mapper:
 interface ColumnMapping {
-entryDate: string; // "Time" (1ª ocorrência)
+entryDate: string; // "Entry Time"
 symbol: string; // "Symbol"
-direction: string; // "Type" (buy/sell -> converter para long/short)
+direction: string; // "Type"
 volume: string; // "Volume"
-entryPrice: string; // "Price" (1ª ocorrência)
-exitDate?: string; // "Time" (2ª ocorrência ou "Time_2")
-exitPrice?: string; // "Price" (2ª ocorrência ou "Price_2")
+entryPrice: string; // "Entry Price"
+exitDate?: string; // "Exit Time"
+exitPrice?: string; // "Exit Price"
 profit?: string; // "Profit"
 commission?: string; // "Commission" + "Swap"
 }
 
-O sistema deve:
-
-- Detectar colunas com mesmo nome (Time, Price) e renomear internamente para (Time_1, Time_2) para permitir distinção no select box.
 - Converter automaticamente:
   - `buy` -> `long`
   - `sell` -> `short`
