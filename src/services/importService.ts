@@ -167,13 +167,22 @@ export const parseTradeDate = (dateStr: string | number): Date | null => {
         // date-fns format string for "2025.12.05 17:35" is "yyyy.MM.dd HH:mm"
         try {
             const normalized = dateStr.trim();
+            // Use a reference date with zeroed seconds/milliseconds to prevent leaking current time components
+            const referenceDate = new Date();
+            referenceDate.setSeconds(0, 0);
+
             // Try parsing with seconds
-            let date = parse(normalized, 'yyyy.MM.dd HH:mm:ss', new Date());
+            let date = parse(normalized, 'yyyy.MM.dd HH:mm:ss', referenceDate);
             if (isValid(date)) return date;
 
             // Try parsing without seconds
-            date = parse(normalized, 'yyyy.MM.dd HH:mm', new Date());
-            if (isValid(date)) return date;
+            date = parse(normalized, 'yyyy.MM.dd HH:mm', referenceDate);
+            if (isValid(date)) {
+                // Explicitly zero out seconds and ms if they weren't in the format
+                // This ensures determinism regardless of referenceDate quirks
+                date.setSeconds(0, 0);
+                return date;
+            }
 
              // Try standard ISO
             date = new Date(normalized);

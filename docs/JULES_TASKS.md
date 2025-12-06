@@ -26,7 +26,7 @@
 | 9   | Reorganização de Pastas             | ✅ Concluída | Jules     |
 | 10  | Import de Trades (CSV)              | ✅ Concluída | Jules     |
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
-| 12  | Relatório Excel                     | 📋 Pendente  | -         |
+| 12  | Relatório Excel                     | ✅ Concluída | Jules     |
 | 13  | Calculadora de Imposto BR           | ✅ Concluída | Jules     |
 | 14  | Test Plan + Vitest Config           | ✅ Concluída | Jules     |
 | 15  | Validação com Zod Schemas           | ✅ Concluída | Jules     |
@@ -59,6 +59,7 @@
 | **TASK 17** | Centralized Error Handling          | `src/lib/errors.ts`, `src/hooks/useError.ts`               |
 | **TASK 13** | Calculadora de Imposto BR           | `src/services/taxService.ts`, `src/components/tax/*`       |
 | **TASK 10** | Import de Trades (CSV)              | `src/services/importService.ts`, `src/components/import/*` |
+| **TASK 12** | Relatório Excel                     | `src/services/reportService.ts`                            |
 
 ---
 
@@ -117,52 +118,6 @@ Nomear arquivo: journal_backup_2024-12-05.json
 - [ ] Nome do arquivo inclui data
 ```
 
----
-
-### 📋 TASK 12: Relatório Excel
-
-**Prioridade:** 🟡 Média | **Tempo estimado:** ~45 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js. Usuários querem exportar relatórios para Excel.
-
-## Objetivo
-
-Gerar arquivo .xlsx com múltiplas sheets formatadas.
-
-## Arquivo a Criar
-
-- src/services/reportService.ts
-
-## Biblioteca
-
-- exceljs (melhor formatação) ou xlsx (mais leve)
-
-## Estrutura do Excel
-
-### Sheet 1: Resumo
-
-- Período do relatório
-- Total de trades
-- Win Rate
-- Profit Factor
-- Lucro/Prejuízo Total
-- Melhor trade
-- Pior trade
-
-### Sheet 2: Trades
-
-- Tabela com todos os trades
-- Colunas: Data, Ativo, Direção, Entrada, Saída, Resultado, %
-- Formatação condicional: verde (lucro), vermelho (prejuízo)
-
-### Sheet 3: Mensal
-
-- Resumo por mês
-- Colunas: Mês, Trades, Wins, Losses, P/L, Win Rate
-
 ## Funções
 
 - generateReport(startDate, endDate): Promise<Blob>
@@ -174,6 +129,7 @@ Gerar arquivo .xlsx com múltiplas sheets formatadas.
 - [ ] Formatação profissional
 - [ ] Cores condicionais funcionando
 - [ ] Download funciona
+
 ```
 
 ---
@@ -183,3 +139,4 @@ Gerar arquivo .xlsx com múltiplas sheets formatadas.
 ---
 
 ---
+```
