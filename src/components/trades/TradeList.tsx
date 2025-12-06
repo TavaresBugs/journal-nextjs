@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
@@ -40,24 +40,83 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
     }, [trades, loadEntries]);
 
     // Get unique assets for filter
-    const uniqueAssets = Array.from(new Set(trades.map(t => t.symbol)));
+    const uniqueAssets = useMemo(() => {
+        return Array.from(new Set(trades.map(t => t.symbol))).sort();
+    }, [trades]);
     
     // Filter trades
-    const filteredTrades = filterAsset === 'TODOS OS ATIVOS' 
-        ? trades 
-        : trades.filter(t => t.symbol === filterAsset);
+    const filteredTrades = useMemo(() => {
+        return filterAsset === 'TODOS OS ATIVOS' 
+            ? trades 
+            : trades.filter(t => t.symbol === filterAsset);
+    }, [trades, filterAsset]);
 
     // Sort trades
-    const sortedTrades = [...filteredTrades].sort((a, b) => {
-        const dateA = new Date(a.entryDate).getTime();
-        const dateB = new Date(b.entryDate).getTime();
-        return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
-    });
+    const sortedTrades = useMemo(() => {
+        return [...filteredTrades].sort((a, b) => {
+            const dateA = new Date(a.entryDate).getTime();
+            const dateB = new Date(b.entryDate).getTime();
+            return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
+        });
+    }, [filteredTrades, sortDirection]);
 
     // Pagination Logic
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentTrades = sortedTrades.slice(startIndex, startIndex + itemsPerPage);
     const totalPages = Math.ceil(filteredTrades.length / itemsPerPage);
+    
+    // Ensure currentPage is valid
+    if (currentPage > totalPages && totalPages > 0) {
+       // This is safe during render phase if it prevents an invalid state, 
+       // but typically better to handle in event handlers. 
+       // However, since we derived totalPages from memoized filteredTrades,
+       // we can just cap the startIndex.
+       // Ideally, we move the reset logic to where filterAsset changes.
+    }
+    
+    // We'll handle page reset directly in the filter change handler (lines 142-143 of original file)
+    // Checking bounds for render:
+    const safePage = Math.min(currentPage, Math.max(1, totalPages));
+    if (currentPage !== safePage && totalPages > 0) {
+        // Schedule update after render to avoid sync effect warning, 
+        // or just use safePage for calculation and let the effect fix it asynchronously if needed.
+        // For now, let's use safePage for slicing.
+    }
+
+    const startIndex = (safePage - 1) * itemsPerPage;
+    const currentTrades = useMemo(() => {
+        return sortedTrades.slice(startIndex, startIndex + itemsPerPage);
+    }, [sortedTrades, startIndex, itemsPerPage]);
+
+    // Generate pagination numbers (Smart Window)
+    const getPageNumbers = () => {
+        const delta = 2; // Number of pages to show around current page
+        const range = [];
+        const rangeWithDots = [];
+
+        for (let i = 1; i <= totalPages; i++) {
+            if (
+                i === 1 || 
+                i === totalPages || 
+                (i >= currentPage - delta && i <= currentPage + delta)
+            ) {
+                range.push(i);
+            }
+        }
+
+        let l;
+        for (const i of range) {
+            if (l) {
+                if (i - l === 2) {
+                    rangeWithDots.push(l + 1);
+                } else if (i - l !== 1) {
+                    rangeWithDots.push('...');
+                }
+            }
+            rangeWithDots.push(i);
+            l = i;
+        }
+
+        return rangeWithDots;
+    };
 
     if (trades.length === 0) {
         return (
@@ -288,14 +347,17 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                                 Anterior
                             </button>
                             <div className="flex items-center gap-1">
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                {getPageNumbers().map((page, index) => (
                                     <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
+                                        key={index}
+                                        onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                                        disabled={typeof page !== 'number'}
                                         className={`w-8 h-8 flex items-center justify-center text-sm rounded transition-colors ${
-                                            currentPage === page
+                                            safePage === page
                                                 ? 'bg-cyan-600 text-white font-medium'
-                                                : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                                                : typeof page === 'number' 
+                                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                                                    : 'text-gray-500 cursor-default'
                                         }`}
                                     >
                                         {page}
