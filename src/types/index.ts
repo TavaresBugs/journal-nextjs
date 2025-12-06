@@ -405,3 +405,18 @@ export interface Notification {
     read: boolean;
     data?: MentorInvite;
 }
+
+// ============================================
+// EXPORT/IMPORT TYPES
+// ============================================
+
+export interface ExportData {
+    exportedAt: string;
+    version: string;
+    accounts: Account[];
+    trades: Trade[];
+    journalEntries: JournalEntry[];
+    playbooks: Playbook[];
+    routines: DailyRoutine[];
+    settings: UserSettings | null;
+}

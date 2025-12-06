@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { exportAllData, downloadAsJSON } from '@/services/exportService';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -49,6 +50,20 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
     const [newMultiplier, setNewMultiplier] = useState('1');
     const [newStrategy, setNewStrategy] = useState('');
     const [newSetup, setNewSetup] = useState('');
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const data = await exportAllData();
+            downloadAsJSON(data);
+        } catch (error) {
+            console.error('Erro ao exportar dados:', error);
+            alert('Erro ao exportar dados. Verifique o console.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const addAsset = () => {
         if (newAsset.trim()) {
@@ -195,6 +210,27 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                         </Button>
                                     </span>
                                 ))}
+                            </div>
+                        </section>
+
+                        {/* Backup e Exportação */}
+                        <section className="pt-4 border-t border-gray-700">
+                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                                💾 Backup & Dados
+                            </h3>
+                            <div className="flex items-center justify-between bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                                <div>
+                                    <h4 className="text-gray-200 font-medium">Backup Completo (JSON)</h4>
+                                    <p className="text-gray-400 text-sm">Baixe uma cópia local de todos os seus dados: trades, diários, playbooks e configurações.</p>
+                                </div>
+                                <Button
+                                    variant="gradient-info"
+                                    onClick={handleExport}
+                                    disabled={isExporting}
+                                    className="font-bold flex items-center gap-2"
+                                >
+                                    {isExporting ? 'Gerando...' : '📥 Baixar Backup'}
+                                </Button>
                             </div>
                         </section>
                     </>
