@@ -200,42 +200,49 @@ export const parseHTMLReport = async (file: File): Promise<RawTradeData[]> => {
 
                     // Strict check for data row: should look like a date
                     if (cells.length > 0 && /^\d{4}\.\d{2}\.\d{2}/.test(cells[0])) {
-                         // Heuristic: If we have > 13 columns, maybe there's a hidden one?
-                         // But for now, let's treat it as standard 13-column or adapt.
-                         // If we have "phantom" empty cells that shift everything, we need to know where they are.
+                         // MetaTrader HTML column structure varies:
+                         // 13 cols: Time, Ticket, Symbol, Type, Volume, Price, S/L, T/P, Time, Price, Comm, Swap, Profit
+                         // 14 cols: Sometimes has extra column (Taxes or hidden)
+                         // 15 cols: MT5 may have additional columns
                          
-                         // Reverting to standard index mapping but keeping empty cells (important for S/L, T/P)
-                         // User reported "Profit" issues. Profit is usually last. 
-                         // If there's an extra cell, profit might be at 13 instead of 12.
-                         // Let's grab the LAST cell for Profit? 
-                         // And Index - 1 for Swap, etc?
-                         // Or try to detect the hidden cell.
-                         
-                         // Common MT4 Report issue: hidden cell for "Taxes" or something?
-                         // Let's assume standard indices first but handle potential shifting if length > 13.
-                         
+                         // Standard 13-column layout (MT4)
                          const entryTimeIndex = 0;
                          const ticketIndex = 1;
                          const symbolIndex = 2;
                          const typeIndex = 3;
-                         const volumeIndex = 4;
+                         let volumeIndex = 4;
                          let entryPriceIndex = 5;
-                         const slIndex = 6;
-                         const tpIndex = 7;
+                         let slIndex = 6;
+                         let tpIndex = 7;
                          let exitTimeIndex = 8;
                          let exitPriceIndex = 9;
                          let commissionIndex = 10;
                          let swapIndex = 11;
+                         // Profit is always last
 
-                         // If we have 14 columns, usually one is hidden or check logic
+                         // Adjust indices based on actual column count
                          if (cells.length === 14) {
-                             // Sometimes there's a hidden column after Type? or at the end?
-                             // Let's assume the alignment based on "Profit" being last.
-                             swapIndex = 12;
-                             commissionIndex = 11;
-                             exitPriceIndex = 10;
+                             // 14 columns: extra column usually at position 4 (after Type)
+                             // New layout: Time, Ticket, Symbol, Type, [Extra], Volume, Price, S/L, T/P, Time, Price, Comm, Swap, Profit
+                             volumeIndex = 5;
+                             entryPriceIndex = 6;
+                             slIndex = 7;
+                             tpIndex = 8;
                              exitTimeIndex = 9;
-                             entryPriceIndex = 5; // Should be consistent unless hidden is before
+                             exitPriceIndex = 10;
+                             commissionIndex = 11;
+                             swapIndex = 12;
+                         } else if (cells.length >= 15) {
+                             // 15+ columns: check if extra column is before Volume
+                             // Alternative: extra column after TP
+                             volumeIndex = 4;
+                             entryPriceIndex = 5;
+                             slIndex = 6;
+                             tpIndex = 7;
+                             exitTimeIndex = 8;
+                             exitPriceIndex = 9;
+                             commissionIndex = cells.length - 3;
+                             swapIndex = cells.length - 2;
                          }
 
                          const type = cells[typeIndex].toLowerCase();
