@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { Trade } from '@/types';
+import { Trade, TradeLite } from '@/types';
 import { DBTrade } from '@/types/database';
 import { getCurrentUserId } from './accountService';
 
@@ -106,6 +106,113 @@ export async function getTrades(accountId: string): Promise<Trade[]> {
     }
 
     return data ? data.map(mapTradeFromDB) : [];
+}
+
+/**
+ * Obtém um trade específico pelo ID.
+ * @param {string} id - O ID do trade.
+ * @returns {Promise<Trade | null>} O trade completo ou null se não encontrado.
+ */
+export async function getTradeById(id: string): Promise<Trade | null> {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    const { data, error } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', userId)
+        .single();
+
+    if (error) {
+        console.error('Error fetching trade by id:', error);
+        return null;
+    }
+
+    return data ? mapTradeFromDB(data) : null;
+}
+
+/**
+ * Obtém os trades de uma conta com paginação simples.
+ * @param {string} accountId - O ID da conta.
+ * @param {number} page - Página atual (1-based).
+ * @param {number} pageSize - Itens por página.
+ * @returns {Promise<{ data: Trade[], count: number }>} Lista de trades e total.
+ */
+export async function getTradesPaginated(accountId: string, page: number = 1, pageSize: number = 20): Promise<{ data: Trade[], count: number }> {
+    const userId = await getCurrentUserId();
+    if (!userId) return { data: [], count: 0 };
+
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    // Get Data
+    const { data, error, count } = await supabase
+        .from('trades')
+        .select('*', { count: 'exact' })
+        .eq('account_id', accountId)
+        .eq('user_id', userId)
+        .order('entry_date', { ascending: false })
+        .range(from, to);
+
+    if (error) {
+        console.error('Error fetching paginated trades:', error);
+        return { data: [], count: 0 };
+    }
+
+    return {
+        data: data ? data.map(mapTradeFromDB) : [],
+        count: count || 0
+    };
+}
+
+/**
+ * Mapeia um trade parcial do banco para TradeLite.
+ */
+const mapTradeLiteFromDB = (db: any): TradeLite => ({
+    id: db.id,
+    entryDate: db.entry_date,
+    entryTime: db.entry_time,
+    exitDate: db.exit_date,
+    exitTime: db.exit_time,
+    pnl: db.pnl ? Number(db.pnl) : undefined,
+    outcome: db.outcome,
+    accountId: db.account_id,
+    symbol: db.symbol,
+    type: db.type,
+    entryPrice: Number(db.entry_price),
+    exitPrice: db.exit_price ? Number(db.exit_price) : undefined,
+    stopLoss: Number(db.stop_loss),
+    takeProfit: Number(db.take_profit),
+    lot: Number(db.lot),
+    tags: db.tags,
+    strategy: db.strategy,
+    setup: db.setup
+});
+
+/**
+ * Obtém histórico leve (apenas dados críticos) para gráficos.
+ * @param {string} accountId
+ * @returns {Promise<TradeLite[]>}
+ */
+export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[]> {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    // Select only necessary columns to reduce payload
+    const { data, error } = await supabase
+        .from('trades')
+        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, user_id')
+        .eq('account_id', accountId)
+        .eq('user_id', userId)
+        .order('entry_date', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching history lite:', error);
+        return [];
+    }
+
+    return data ? data.map(mapTradeLiteFromDB) : [];
 }
 
 /**

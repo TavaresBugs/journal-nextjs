@@ -16,28 +16,50 @@ interface TradeListProps {
     currency: string;
     onEditTrade?: (trade: Trade) => void;
     onDeleteTrade?: (tradeId: string) => void;
+    // Server-side pagination props (optional)
+    totalCount?: number;
+    currentPage?: number;
+    itemsPerPage?: number;
+    onPageChange?: (page: number) => void;
 }
 
-export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: TradeListProps) {
+export function TradeList({ 
+    trades, 
+    currency, 
+    onEditTrade, 
+    onDeleteTrade,
+    totalCount,
+    currentPage: controlledPage,
+    itemsPerPage = 10,
+    onPageChange
+}: TradeListProps) {
     const [filterAsset, setFilterAsset] = useState<string>('TODOS OS ATIVOS');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     
-    // Pagination State
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    // Local Pagination State (fallback)
+    const [localPage, setLocalPage] = useState(1);
+    
+    // Determine mode
+    const isServerSide = typeof totalCount === 'number' && typeof onPageChange === 'function';
+    const currentPage = isServerSide ? (controlledPage || 1) : localPage;
 
     // Journal Modal State
     const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
     const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
-    const { entries } = useJournalStore(); // loadEntries removed
-
+    const { entries } = useJournalStore(); 
 
     // Get unique assets for filter
     const uniqueAssets = useMemo(() => {
         return Array.from(new Set(trades.map(t => t.symbol))).sort();
     }, [trades]);
     
-    // Filter trades
+    // If not server side, we filter and slice locally.
+    // If server side, we assume 'trades' is ALREADY the current page filtered by API (if API supports filters).
+    // Note: Our current API does NOT support server-side filtering by asset yet.
+    // So if server-side is on, filtering assets might be weird if we only have one page.
+    // Ideally user filters -> triggers API reload.
+    // For now, let's assume 'filteredTrades' logic applies to local dataset.
+    
     const filteredTrades = useMemo(() => {
         return filterAsset === 'TODOS OS ATIVOS' 
             ? trades 
@@ -54,34 +76,28 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
     }, [filteredTrades, sortDirection]);
 
     // Pagination Logic
-    const totalPages = Math.ceil(filteredTrades.length / itemsPerPage);
+    // If server-side, 'trades' is the page. totalCount tells us total pages.
+    // If client-side, 'filteredTrades' is the full set.
     
-    // Ensure currentPage is valid
-    if (currentPage > totalPages && totalPages > 0) {
-       // This is safe during render phase if it prevents an invalid state, 
-       // but typically better to handle in event handlers. 
-       // However, since we derived totalPages from memoized filteredTrades,
-       // we can just cap the startIndex.
-       // Ideally, we move the reset logic to where filterAsset changes.
-    }
+    // When Server Side: 'trades' is ALREADY just 10 items.
+    // However, if we filter client-side (asset filter), we might reduce it further to <10.
+    // Real server-side filtering requires API support. 
+    // For this MVP step 1: We accept that asset filtering only filters the CURRENT PAGE. (Limitation acceptable for now to fix freezing).
     
-    // We'll handle page reset directly in the filter change handler (lines 142-143 of original file)
-    // Checking bounds for render:
-    const safePage = Math.min(currentPage, Math.max(1, totalPages));
-    if (currentPage !== safePage && totalPages > 0) {
-        // Schedule update after render to avoid sync effect warning, 
-        // or just use safePage for calculation and let the effect fix it asynchronously if needed.
-        // For now, let's use safePage for slicing.
-    }
-
-    const startIndex = (safePage - 1) * itemsPerPage;
+    const count = isServerSide ? (totalCount || 0) : filteredTrades.length;
+    const totalPages = Math.ceil(count / itemsPerPage);
+    
+    // Slicing: Only slice if CLIENT SIDE.
     const currentTrades = useMemo(() => {
+        if (isServerSide) return sortedTrades; // Display all passed trades (they are the page)
+        
+        const startIndex = (localPage - 1) * itemsPerPage;
         return sortedTrades.slice(startIndex, startIndex + itemsPerPage);
-    }, [sortedTrades, startIndex, itemsPerPage]);
+    }, [sortedTrades, isServerSide, localPage, itemsPerPage]);
 
     // Generate pagination numbers (Smart Window)
     const getPageNumbers = () => {
-        const delta = 2; // Number of pages to show around current page
+        const delta = 2; 
         const range = [];
         const rangeWithDots = [];
 
@@ -109,6 +125,14 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
         }
 
         return rangeWithDots;
+    };
+    
+    const handlePageChange = (p: number) => {
+        if (isServerSide && onPageChange) {
+            onPageChange(p);
+        } else {
+            setLocalPage(p);
+        }
     };
 
     if (trades.length === 0) {
@@ -140,7 +164,7 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                     value={filterAsset}
                     onChange={(e) => {
                         setFilterAsset(e.target.value);
-                        setCurrentPage(1); // Reset pagination on filter change
+                        handlePageChange(1); // Reset pagination on filter change
                     }}
                     placeholder="TODOS OS ATIVOS"
                     className="px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all uppercase"
@@ -329,11 +353,16 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700/50 bg-gray-800/50">
                         <div className="text-sm text-gray-400">
-                            Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredTrades.length)} de {filteredTrades.length} trades
+                            {isServerSide ? (
+                                // For server side, calculation is slightly different as we don't have all items
+                                <>Página {currentPage} de {totalPages}</>
+                            ) : (
+                                <>Mostrando {(localPage - 1) * itemsPerPage + 1} a {Math.min(localPage * itemsPerPage, filteredTrades.length)} de {filteredTrades.length} trades</>
+                            )}
                         </div>
                         <div className="flex gap-2">
                             <button
-                                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                                 disabled={currentPage === 1}
                                 className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
                             >
@@ -343,10 +372,10 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                                 {getPageNumbers().map((page, index) => (
                                     <button
                                         key={index}
-                                        onClick={() => typeof page === 'number' && setCurrentPage(page)}
+                                        onClick={() => typeof page === 'number' && handlePageChange(page)}
                                         disabled={typeof page !== 'number'}
                                         className={`w-8 h-8 flex items-center justify-center text-sm rounded transition-colors ${
-                                            safePage === page
+                                            currentPage === page
                                                 ? 'bg-cyan-600 text-white font-medium'
                                                 : typeof page === 'number' 
                                                     ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
@@ -358,7 +387,7 @@ export function TradeList({ trades, currency, onEditTrade, onDeleteTrade }: Trad
                                 ))}
                             </div>
                             <button
-                                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                                 disabled={currentPage === totalPages}
                                 className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
                             >

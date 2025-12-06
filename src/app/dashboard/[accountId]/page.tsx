@@ -27,6 +27,7 @@ import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
 import { ImportModal } from '@/components/import/ImportModal';
 import type { Trade, Playbook } from '@/types';
+import { getTradeById } from '@/lib/storage';
 import { 
     formatCurrency, 
     calculateTradeMetrics,
@@ -63,7 +64,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
     
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
-    const { trades, loadTrades, addTrade, updateTrade, removeTrade } = useTradeStore();
+    const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage, addTrade, updateTrade, removeTrade } = useTradeStore();
     const { entries, loadEntries } = useJournalStore();
     const { playbooks, loadPlaybooks, removePlaybook } = usePlaybookStore();
     const { loadSettings } = useSettingsStore();
@@ -88,7 +89,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
     const streakMetrics = useMemo(() => {
         // Combine dates from trades and journal entries
-        const tradeDates = trades.map(t => t.entryDate.split('T')[0]);
+        const tradeDates = allHistory.map(t => t.entryDate.split('T')[0]);
         const journalDates = entries.map(e => e.date);
         
         // Create a unique sorted list of all activity dates
@@ -119,7 +120,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             else break;
         }
         return { daysAccessed, streak };
-    }, [trades, entries]);
+    }, [allHistory, entries]);
 
     useEffect(() => {
         const init = async () => {
@@ -176,7 +177,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
     useEffect(() => {
         if (!currentAccount || isLoading) return;
 
-        const totalPnL = trades.reduce((sum, trade) => {
+        const totalPnL = allHistory.reduce((sum, trade) => {
             return sum + (trade.pnl || 0);
         }, 0);
 
@@ -185,7 +186,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         if (Math.abs(currentAccount.currentBalance - expectedBalance) > 0.001) {
             updateAccountBalance(accountId, totalPnL);
         }
-    }, [trades.length, accountId, currentAccount, isLoading, trades, updateAccountBalance]);
+    }, [allHistory.length, accountId, currentAccount, isLoading, allHistory, updateAccountBalance]);
 
 
 
@@ -201,9 +202,23 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         setActiveTab('lista'); // Switch to list tab after creating
     };
 
-    const handleEditTrade = (trade: Trade) => {
-        setSelectedTrade(trade);
-        setIsEditModalOpen(true);
+    const handleEditTrade = async (trade: Trade) => {
+        try {
+            // Always fetch full trade details to ensure we have notes/images/etc
+            // The list view might have Lite versions or incomplete data from other contexts
+            const fullTrade = await getTradeById(trade.id);
+            
+            if (!fullTrade) {
+                showToast('Erro ao carregar detalhes do trade.', 'error');
+                return;
+            }
+            
+            setSelectedTrade(fullTrade);
+            setIsEditModalOpen(true);
+        } catch (error) {
+            console.error('Error fetching trade details:', error);
+            showToast('Erro ao carregar trade.', 'error');
+        }
     };
 
     const handleUpdateTrade = async (trade: Trade) => {
@@ -218,7 +233,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         }
         
         try {
-            await removeTrade(tradeId);
+            await removeTrade(tradeId, accountId);
             showToast('Trade excluído com sucesso!', 'success');
         } catch (error) {
             console.error('Error deleting trade:', error);
@@ -273,17 +288,17 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
         console.log('New balance:', newBalance);
     };
 
-    const metrics = useMemo(() => calculateTradeMetrics(trades), [trades]);
+    const metrics = useMemo(() => calculateTradeMetrics(allHistory as unknown as Trade[]), [allHistory]);
     
     // Calculate advanced metrics
     const advancedMetrics = useMemo(() => {
         return {
-            sharpe: calculateSharpeRatio(trades),
-            calmar: calculateCalmarRatio(trades, currentAccount?.initialBalance || 0),
-            holdTime: calculateAverageHoldTime(trades),
-            streaks: calculateConsecutiveStreaks(trades)
+            sharpe: calculateSharpeRatio(allHistory as unknown as Trade[]),
+            calmar: calculateCalmarRatio(allHistory as unknown as Trade[], currentAccount?.initialBalance || 0),
+            holdTime: calculateAverageHoldTime(allHistory as unknown as Trade[]),
+            streaks: calculateConsecutiveStreaks(allHistory as unknown as Trade[])
         };
-    }, [trades, currentAccount?.initialBalance]);
+    }, [allHistory, currentAccount?.initialBalance]);
 
     if (!uuidRegex.test(accountId)) {
         return null;
@@ -534,6 +549,9 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                                 currency={currentAccount.currency}
                                 onEditTrade={handleEditTrade}
                                 onDeleteTrade={handleDeleteTrade}
+                                totalCount={totalCount}
+                                currentPage={currentPage}
+                                onPageChange={(p) => loadPage(accountId, p)}
                             />
                         </CardContent>
                     </Card>
@@ -546,7 +564,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                         </CardHeader>
                         <CardContent>
                             <TradeCalendar
-                                trades={trades}
+                                trades={allHistory as unknown as Trade[]}
                                 onDayClick={handleDayClick}
                             />
                         </CardContent>
@@ -707,7 +725,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
 
                                 
                                 <Charts 
-                                    trades={trades} 
+                                    trades={allHistory as unknown as Trade[]} 
                                     currency={currentAccount.currency} 
                                     initialBalance={currentAccount.initialBalance}
                                     accountCreatedAt={currentAccount.createdAt}
@@ -750,7 +768,7 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
                 isOpen={isDayDetailModalOpen}
                 onClose={() => setIsDayDetailModalOpen(false)}
                 date={selectedDate}
-                trades={trades.filter(t => t.entryDate.split('T')[0] === selectedDate)}
+                trades={allHistory.filter(t => t.entryDate.split('T')[0] === selectedDate) as unknown as Trade[]}
                 accountId={accountId}
                 onDeleteTrade={handleDeleteTrade}
             />

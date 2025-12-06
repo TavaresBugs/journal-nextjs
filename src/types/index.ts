@@ -49,6 +49,33 @@ export interface Trade {
     updatedAt: string;
 }
 
+export interface TradeLite {
+    id: string;
+    entryDate: string;
+    entryTime?: string;
+    exitDate?: string;
+    exitTime?: string;
+    pnl?: number;
+    outcome?: 'win' | 'loss' | 'breakeven' | 'pending';
+    accountId: string; 
+    symbol: string; 
+    type: 'Long' | 'Short';
+    // Table columns
+    entryPrice: number;
+    exitPrice?: number;
+    stopLoss: number;
+    takeProfit: number;
+    lot: number;
+    tags?: string;
+    strategy?: string;
+    setup?: string;
+}
+
+export interface TradeResponse {
+    data: Trade[];
+    count: number;
+}
+
 export interface JournalImage {
     id: string;
     userId: string; // User ID from Supabase Auth

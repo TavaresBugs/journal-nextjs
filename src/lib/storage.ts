@@ -4,7 +4,14 @@
 
 // Re-export functionality from modular services
 export * from '@/services/accountService';
-export * from '@/services/tradeService';
+export { 
+    saveTrade, 
+    deleteTrade, 
+    getTrades, 
+    getTradesPaginated,
+    getTradeHistoryLite,
+    getTradeById
+} from '@/services/tradeService';
 export * from '@/services/journalService';
 export * from '@/services/routineService';
 export * from '@/services/migrationService';
