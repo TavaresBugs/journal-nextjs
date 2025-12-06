@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { exportAllData, downloadAsJSON } from '@/services/exportService';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -49,6 +50,20 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
     const [newMultiplier, setNewMultiplier] = useState('1');
     const [newStrategy, setNewStrategy] = useState('');
     const [newSetup, setNewSetup] = useState('');
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExport = async () => {
+        try {
+            setIsExporting(true);
+            const data = await exportAllData();
+            downloadAsJSON(data);
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            alert('Erro ao exportar dados. Tente novamente.');
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const addAsset = () => {
         if (newAsset.trim()) {
@@ -353,7 +368,15 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
             
             {/* Footer for Global Settings */}
             {isGlobalMode && (
-                <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="mt-6 pt-4 border-t border-gray-700 space-y-3">
+                    <Button
+                        variant="secondary"
+                        onClick={handleExport}
+                        className="w-full font-extrabold flex items-center justify-center gap-2"
+                        disabled={isExporting}
+                    >
+                        {isExporting ? 'Exportando...' : '📥 Baixar Backup'}
+                    </Button>
                     <Button variant="gradient-danger" onClick={onClose} className="w-full font-extrabold">
                         Fechar
                     </Button>
