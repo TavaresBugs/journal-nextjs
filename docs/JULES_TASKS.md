@@ -24,7 +24,7 @@
 | 7   | StudentCalendarModal                | ✅ Concluída | Jules     |
 | 8   | Auditoria de Segurança              | ✅ Concluída | Jules     |
 | 9   | Reorganização de Pastas             | ✅ Concluída | Jules     |
-| 10  | Import de Trades (CSV)              | 📋 Pendente  | -         |
+| 10  | Import de Trades (CSV)              | ✅ Concluída | Jules     |
 | 11  | Export Backup Local                 | 📋 Pendente  | -         |
 | 12  | Relatório Excel                     | 📋 Pendente  | -         |
 | 13  | Calculadora de Imposto BR           | ✅ Concluída | Jules     |
@@ -37,114 +37,32 @@
 
 ## ✅ Tasks Concluídas (Histórico)
 
-| Task        | Descrição                           | Arquivos Criados/Modificados                         |
-| ----------- | ----------------------------------- | ---------------------------------------------------- |
-| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                      |
-| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`         |
-| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                      |
-| Task        | Descrição                           | Arquivos Criados/Modificados                         |
-| ---         | ----------------------------------- | ------------------------------------------------     |
-| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                      |
-| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`         |
-| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                      |
-| **TASK 4**  | JSDoc em Services                   | Todos os arquivos em `src/services/`                 |
-| **TASK 5**  | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`       |
-| **TASK 6**  | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)               |
-| **TASK 7**  | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx`     |
-| **TASK 8**  | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`           |
-| **TASK 9**  | Reorganização de Pastas             | Services, Components, e SQL Docs                     |
-| **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`             |
-| **TASK 15** | Validação com Zod Schemas           | `src/schemas/`, `package.json`                       |
-| **TASK 16** | Database Seed Script                | `scripts/seed.ts`, `package.json`                    |
-| **TASK 17** | Centralized Error Handling          | `src/lib/errors.ts`, `src/hooks/useError.ts`         |
-| **TASK 13** | Calculadora de Imposto BR           | `src/services/taxService.ts`, `src/components/tax/*` |
+| Task        | Descrição                           | Arquivos Criados/Modificados                               |
+| ----------- | ----------------------------------- | ---------------------------------------------------------- |
+| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                            |
+| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`               |
+| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                            |
+| Task        | Descrição                           | Arquivos Criados/Modificados                               |
+| ---         | ----------------------------------- | ------------------------------------------------           |
+| **TASK 1**  | Reorganizar Componentes Notificação | `src/components/notifications/`                            |
+| **TASK 2**  | Migration mentor_reviews            | `supabase/migrations/016_mentor_reviews.sql`               |
+| **TASK 3**  | ReviewService CRUD                  | `src/services/reviewService.ts`                            |
+| **TASK 4**  | JSDoc em Services                   | Todos os arquivos em `src/services/`                       |
+| **TASK 5**  | Testes MentorService                | `src/services/__tests__/mentorService.test.ts`             |
+| **TASK 6**  | Fix Lint Warnings                   | Vários arquivos (refatoração de tipos)                     |
+| **TASK 7**  | StudentCalendarModal                | `src/components/mentor/StudentCalendarModal.tsx`           |
+| **TASK 8**  | Auditoria de Segurança              | `docs/SECURITY_AUDIT.md`, `next.config.ts`                 |
+| **TASK 9**  | Reorganização de Pastas             | Services, Components, e SQL Docs                           |
+| **TASK 14** | Test Plan + Vitest Config           | `docs/TEST_PLAN.md`, `vitest.config.mts`                   |
+| **TASK 15** | Validação com Zod Schemas           | `src/schemas/`, `package.json`                             |
+| **TASK 16** | Database Seed Script                | `scripts/seed.ts`, `package.json`                          |
+| **TASK 17** | Centralized Error Handling          | `src/lib/errors.ts`, `src/hooks/useError.ts`               |
+| **TASK 13** | Calculadora de Imposto BR           | `src/services/taxService.ts`, `src/components/tax/*`       |
+| **TASK 10** | Import de Trades (CSV)              | `src/services/importService.ts`, `src/components/import/*` |
 
 ---
 
 ## 🚀 Próximas Tasks (Lista Detalhada)
-
-### 📋 TASK 10: Import de Trades (Excel/CSV)
-
-**Prioridade:** 🔴 Alta | **Tempo estimado:** ~120 min
-
-```markdown
-## Contexto
-
-Trading Journal Next.js. O usuário exporta dados do MetaTrader (ou similares) geralmente em .xlsx ou .csv.
-A estrutura é complexa: possui cabeçalho de metadados (6 linhas) e múltiplas seções (Positions, Orders, Deals).
-Focaremos na seção **"Positions"** (trades completos).
-
-## Objetivo
-
-Criar sistema robusto de importação capaz de ler XLSX/CSV, pular metadados, identificar a tabela correta e mapear colunas duplicadas.
-
-## Bibliotecas
-
-- `npm install xlsx` (SheetJS) - Para ler .xlsx e .csv robustamente.
-- `npm install date-fns` - Para parsing de datas customizadas ("yyyy.MM.dd HH:mm:ss").
-
-## Arquivos a Criar
-
-- src/services/importService.ts
-- src/components/import/ImportModal.tsx
-- src/components/import/ColumnMapper.tsx
-
-## Funcionalidades Chave
-
-### 1. Parser Inteligente (importService.ts)
-
-- **Leitura:** Usar `XLSX.read` com `file.arrayBuffer()`.
-- **Navegação:** Identificar a sheet correta (primeira).
-- **Header Skip:** O cabeçalho "Positions" está na linha 6 (índice 5). Os dados começam na linha 8.
-- **Detecção de Seção:** Buscar a linha que contém apenas `["Positions"]`. A linha seguinte contém os nomes das colunas.
-- **Colunas Identificadas:** `Time, Position, Symbol, Type, Volume, Price, S / L, T / P, Time, Price, Commission, Swap, Profit`.
-- **Formato de Dados:**
-  - Data: "yyyy.MM.dd HH:mm:ss" (ex: "2025.12.05 17:35")
-  - Decimal: Ponto (ex: 24597.95)
-
-### 2. Mapeamento Flexível
-
-O arquivo possui colunas duplicadas (`Time`, `Price`). O parser deve renomear para garantir unicidade ANTES de gerar o JSON final:
-
-- `Time` (índice 0) -> `Entry Time`
-- `Price` (índice 5) -> `Entry Price`
-- `Time` (índice 8) -> `Exit Time`
-- `Price` (índice 9) -> `Exit Price`
-
-Interface para o Mapper:
-interface ColumnMapping {
-entryDate: string; // "Entry Time"
-symbol: string; // "Symbol"
-direction: string; // "Type"
-volume: string; // "Volume"
-entryPrice: string; // "Entry Price"
-exitDate?: string; // "Exit Time"
-exitPrice?: string; // "Exit Price"
-profit?: string; // "Profit"
-commission?: string; // "Commission" + "Swap"
-}
-
-- Converter automaticamente:
-  - `buy` -> `long`
-  - `sell` -> `short`
-  - Remove sufixos do Symbol (ex: "EURUSD.cash" -> "EURUSD").
-
-### 3. ImportModal.tsx UX
-
-1. **Upload Area:** Aceita .csv, .xlsx, .xls.
-2. **Preview:** Mostra tabela bruta das 5 primeiras linhas DA SEÇÃO DE DADOS (não do cabeçalho do arquivo).
-3. **Mapeamento:** Dropdowns para selecionar qual coluna do Excel corresponde a qual campo do sistema.
-   - _Inteligência:_ Tentar auto-selecionar se o nome for parecido ("Profit" -> "profit").
-4. **Confirmação:** "Importar 50 trades detectados".
-
-## Critérios de Sucesso
-
-- [ ] Lê arquivo XLSX complexo (com cabeçalho de metadados).
-- [ ] Identifica corretamente a seção "Positions".
-- [ ] Permite mapear Data Entrada vs Data Saída (colunas com mesmo nome "Time").
-- [ ] Salva corretamente no Supabase convertendo tipos (String date -> ISO, String price -> Number).
-- [ ] Ignora linhas de rodapé ou totalizadores.
-```
 
 ---
 
