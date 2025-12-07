@@ -13,6 +13,7 @@ interface NotificationsModalProps {
     onRejectInvite: (invite: MentorInvite) => void;
     onMarkRead: (id: string) => void;
     onReviewAnnouncements: () => void;
+    onViewFeedback: (notification: Notification) => void;
 }
 
 export function NotificationsModal({
@@ -22,11 +23,13 @@ export function NotificationsModal({
     onAcceptInvite,
     onRejectInvite,
     onMarkRead,
-    onReviewAnnouncements
+    onReviewAnnouncements,
+    onViewFeedback
 }: NotificationsModalProps) {
     // Filter notifications
     const invites = notifications.filter(n => n.type === 'invite');
     const announcements = notifications.filter(n => n.type === 'announcement');
+    const feedbacks = notifications.filter(n => n.type === 'feedback');
 
     // Helper to format time
     const formatTime = (date: Date) => {
@@ -119,6 +122,60 @@ export function NotificationsModal({
                                             </Button>
                                         </div>
                                     )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* SECTION: Feedbacks */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-2 text-yellow-500 font-medium pb-2 border-b border-gray-700">
+                        <span>📝</span>
+                        <span>Feedbacks ({feedbacks.length})</span>
+                    </div>
+
+                    {feedbacks.length === 0 ? (
+                        <p className="text-gray-500 text-sm italic py-2">
+                            Nenhum feedback não lido.
+                        </p>
+                    ) : (
+                        <div className="grid gap-3">
+                            {feedbacks.map(notif => (
+                                <div 
+                                    key={notif.id} 
+                                    className="bg-gray-800/50 border border-gray-700/50 rounded-xl p-4 flex flex-col md:flex-row gap-4 items-start md:items-center justify-between hover:bg-gray-800 transition-colors"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 shrink-0 rounded-full bg-yellow-500/20 text-yellow-500 flex items-center justify-center font-bold border border-yellow-500/30">
+                                            📝
+                                        </div>
+                                        <div>
+                                            <h4 className="text-white font-medium">
+                                                {notif.title}
+                                            </h4>
+                                            <p className="text-sm text-gray-400">
+                                                {notif.message}
+                                            </p>
+                                            <span className="text-xs text-gray-500 mt-1 block">
+                                                {formatTime(notif.timestamp)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex gap-2 w-full md:w-auto">
+                                        <Button
+                                            size="sm"
+                                            variant="gold"
+                                            onClick={() => {
+                                                onViewFeedback(notif);
+                                                onClose();
+                                            }}
+                                            className="flex-1 md:flex-none"
+                                        >
+                                            Ver
+                                        </Button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

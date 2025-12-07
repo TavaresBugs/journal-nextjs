@@ -11,11 +11,13 @@ interface DayTradesTableProps {
   trades: Trade[];
   standaloneEntries: JournalEntry[];
   onDeleteTrade: (tradeId: string) => void;
-  onJournalClick: (trade: Trade) => void;
+  onJournalClick: (trade: Trade, startEditing?: boolean) => void;
   onEditEntry: (entry: JournalEntry) => void;
   onDeleteEntry: (entryId: string) => void;
   getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
   onNewEntry: () => void;
+  hasMentor?: boolean;
+  reviewsMap?: Record<string, { hasUnread: boolean; count: number }>;
 }
 
 /**
@@ -32,6 +34,8 @@ const DayTradesTableComponent = ({
   onDeleteEntry,
   getEntryByTradeId,
   onNewEntry,
+  hasMentor = false,
+  reviewsMap = {},
 }: DayTradesTableProps) => {
   return (
     <div className="bg-gray-900/30 border border-gray-800 rounded-xl overflow-hidden">
@@ -63,33 +67,40 @@ const DayTradesTableComponent = ({
         </thead>
         <tbody className="divide-y divide-gray-800">
           {/* Standalone Entries */}
-          {standaloneEntries.map((entry) => (
+          {standaloneEntries.map((entry) => {
+             const reviewStatus = reviewsMap[entry.id];
+             return (
             <tr
               key={entry.id}
               className="hover:bg-gray-800/30 transition-colors group"
             >
               <td className="px-4 py-3 text-center">
-                <Button
-                  variant="success"
-                  size="icon"
-                  onClick={() => onEditEntry(entry)}
-                  className="w-8 h-8 mx-auto"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <div className="relative inline-block">
+                  <Button
+                    variant="success"
+                    size="icon"
+                    onClick={() => onEditEntry(entry)}
+                    className="w-8 h-8 mx-auto"
                   >
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                  </svg>
-                </Button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
+                  </Button>
+                  {hasMentor && reviewStatus?.hasUnread && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
+                  )}
+                </div>
               </td>
               <td className="px-4 py-3 text-center">
                 <div className="flex items-center justify-center gap-2">
@@ -136,7 +147,7 @@ const DayTradesTableComponent = ({
                 -
               </td>
             </tr>
-          ))}
+          );})}
 
           {/* Trades */}
           {trades.map((trade) => {
@@ -162,6 +173,7 @@ const DayTradesTableComponent = ({
             }
 
             const journalEntry = getEntryByTradeId(trade.id);
+            const reviewStatus = reviewsMap[trade.id] || (journalEntry ? reviewsMap[journalEntry.id] : undefined);
 
             return (
               <tr
@@ -169,51 +181,56 @@ const DayTradesTableComponent = ({
                 className="hover:bg-gray-800/30 transition-colors group"
               >
                 <td className="px-4 py-3 text-center">
-                  <Button
-                    variant="success"
-                    size="icon"
-                    onClick={() => onJournalClick(trade)}
-                    className="w-8 h-8 mx-auto"
-                  >
-                    {journalEntry ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M5 12h14" />
-                        <path d="M12 5v14" />
-                      </svg>
+                  <div className="relative inline-block">
+                    <Button
+                      variant="success"
+                      size="icon"
+                      onClick={() => onJournalClick(trade, !journalEntry)}
+                      className="w-8 h-8 mx-auto"
+                    >
+                      {journalEntry ? (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                        </svg>
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
+                      )}
+                    </Button>
+                    {hasMentor && reviewStatus?.hasUnread && (
+                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
                     )}
-                  </Button>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="gold"
                       size="icon"
-                      onClick={() => onJournalClick(trade)}
+                      onClick={() => onJournalClick(trade, true)}
                       className="w-8 h-8"
                       title="Editar Diário"
                     >
@@ -271,6 +288,7 @@ const DayTradesTableComponent = ({
               </tr>
             );
           })}
+
         </tbody>
       </table>
     </div>

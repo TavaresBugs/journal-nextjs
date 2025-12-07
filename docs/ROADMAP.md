@@ -177,27 +177,27 @@ Cálculo automático de IR para operações de trading:
 | Feature                   | Descrição                                      | Status       |
 | ------------------------- | ---------------------------------------------- | ------------ |
 | **StudentCalendarModal**  | Mentor visualiza calendário completo do aluno  | ✅ Concluído |
-| **Seletor de Aluno**      | Dropdown para alternar entre mentorados        | 🔴 Pendente  |
-| **Trade Detail View**     | Mentor pode clicar em trades para ver detalhes | 🔴 Pendente  |
-| **Permissões Granulares** | Níveis: view-only, can-comment, full-analysis  | 🟡 Parcial   |
+| **Seletor de Aluno**      | Dropdown para alternar entre mentorados        | ✅ Concluído |
+| **Trade Detail View**     | Mentor pode clicar em trades para ver detalhes | ✅ Concluído |
+| **Permissões Granulares** | Níveis: view-only, can-comment, full-analysis  | ✅ Concluído |
 
 ##### Sistema de Correções/Comentários 📋 PRÓXIMO
 
-| Feature              | Descrição                           | Status      |
-| -------------------- | ----------------------------------- | ----------- |
-| **TradeReviewModal** | Modal para mentor escrever correção | 🔴 Pendente |
-| **CommentThread**    | Thread de comentários por trade     | 🔴 Pendente |
-| **Tipos de Review**  | Correção, Sugestão, Comentário      | 🔴 Pendente |
-| **Rating por Trade** | Opcional: 1-5 estrelas              | 🟢 Futuro   |
+| Feature              | Descrição                           | Status       |
+| -------------------- | ----------------------------------- | ------------ |
+| **TradeReviewModal** | Modal para mentor escrever correção | ✅ Concluído |
+| **CommentThread**    | Thread de comentários por trade     | ✅ Concluído |
+| **Tipos de Review**  | Correção, Sugestão, Comentário      | ✅ Concluído |
+| **Rating por Trade** | Opcional: 1-5 estrelas              | 🟢 Futuro    |
 
 ##### Visualização do Aluno 📋 PRÓXIMO
 
-| Feature                    | Descrição                          | Status      |
-| -------------------------- | ---------------------------------- | ----------- |
-| **Tab "Correções"**        | Nova aba no NotificationsModal     | 🔴 Pendente |
-| **Badge em Trades**        | Indicador de trades com correções  | 🔴 Pendente |
-| **Thread no Trade Detail** | Ver correções no contexto do trade | 🔴 Pendente |
-| **Marcar como Lido**       | Sistema de read/unread             | 🔴 Pendente |
+| Feature                    | Descrição                          | Status       |
+| -------------------------- | ---------------------------------- | ------------ |
+| **Tab "Correções"**        | Nova aba no NotificationsModal     | ✅ Concluído |
+| **Badge em Trades**        | Indicador de trades com correções  | ✅ Concluído |
+| **Thread no Trade Detail** | Ver correções no contexto do trade | ✅ Concluído |
+| **Marcar como Lido**       | Sistema de read/unread             | ✅ Concluído |
 
 ##### Tabelas Supabase necessárias:
 

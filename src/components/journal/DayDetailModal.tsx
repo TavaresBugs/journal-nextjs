@@ -9,6 +9,8 @@ import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
 import { DailyHabitsRow, DayStatsCards, DayTradesTable } from "@/components/journal/day-detail";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
+import { getMyMentors } from "@/services/mentor/inviteService";
+import { getReviewsForContext } from "@/services/reviewService";
 
 dayjs.locale("pt-br");
 
@@ -46,12 +48,22 @@ export function DayDetailModal({
 
   const { showToast } = useToast();
 
-  // Journal Modal State
   const [selectedTradeForJournal, setSelectedTradeForJournal] =
     useState<Trade | null>(null);
   const [selectedEntryForEdit, setSelectedEntryForEdit] =
     useState<JournalEntry | null>(null);
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [startModalEditing, setStartModalEditing] = useState(false);
+
+  // Mentor & Review State
+  const [hasMentor, setHasMentor] = useState(false);
+  const [reviewsMap, setReviewsMap] = useState<Record<string, { hasUnread: boolean; count: number }>>({});
+
+  // Filter standalone entries with useMemo
+  const standaloneEntries = useMemo(() =>
+    entries.filter((e) => e.date === date && !e.tradeId),
+    [entries, date]
+  );
 
   // Derive current routine directly from store state
   const currentRoutine = routines.find((r) => r.date === date);
@@ -60,8 +72,49 @@ export function DayDetailModal({
     if (isOpen && accountId) {
       loadRoutines(accountId);
       loadEntries(accountId);
+      
+      // Check for mentor connection
+      getMyMentors().then(mentors => {
+        setHasMentor(mentors.length > 0);
+      });
     }
   }, [isOpen, accountId, loadRoutines, loadEntries]);
+
+  // Load reviews for context (trades + standalone entries of the day)
+  useEffect(() => {
+    if (!isOpen || !hasMentor) return;
+
+    const loadReviews = async () => {
+      const tradeIds = trades.map(t => t.id);
+      const entryIds = standaloneEntries.map(e => e.id);
+      
+      if (tradeIds.length === 0 && entryIds.length === 0) return;
+
+      const reviews = await getReviewsForContext(tradeIds, entryIds);
+      
+      // Process reviews into map
+      const map: Record<string, { hasUnread: boolean; count: number }> = {};
+      
+      reviews.forEach(review => {
+        // Link to trade OR journal entry
+        const key = review.tradeId || review.journalEntryId;
+        if (!key) return;
+
+        if (!map[key]) {
+          map[key] = { hasUnread: false, count: 0 };
+        }
+
+        map[key].count++;
+        if (!review.isRead) {
+          map[key].hasUnread = true;
+        }
+      });
+
+      setReviewsMap(map);
+    };
+
+    loadReviews();
+  }, [isOpen, hasMentor, trades, standaloneEntries, date]); // Re-run when trades/entries update
 
   const handleToggleHabit = useCallback(async (
     habit: keyof Omit<
@@ -89,22 +142,25 @@ export function DayDetailModal({
     }
   }, [currentRoutine, updateRoutine, addRoutine, accountId, date]);
 
-  const handleJournalClick = useCallback((trade: Trade) => {
+  const handleJournalClick = useCallback((trade: Trade, startEditing: boolean = true) => {
     const entry = getEntryByTradeId(trade.id);
     setSelectedTradeForJournal(trade);
     setSelectedEntryForEdit(entry || null);
+    setStartModalEditing(startEditing);
     setIsJournalModalOpen(true);
   }, [getEntryByTradeId]);
 
   const handleStandaloneEntryClick = useCallback(() => {
     setSelectedTradeForJournal(null);
     setSelectedEntryForEdit(null);
+    setStartModalEditing(true);
     setIsJournalModalOpen(true);
   }, []);
 
   const handleEditEntry = useCallback((entry: JournalEntry) => {
     setSelectedEntryForEdit(entry);
     setSelectedTradeForJournal(null);
+    setStartModalEditing(true);
     setIsJournalModalOpen(true);
   }, []);
 
@@ -132,12 +188,6 @@ export function DayDetailModal({
     const formatted = date ? dayjs(date).format("dddd, DD/MM/YYYY") : "";
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }, [date]);
-
-  // Filter standalone entries with useMemo
-  const standaloneEntries = useMemo(() =>
-    entries.filter((e) => e.date === date && !e.tradeId),
-    [entries, date]
-  );
 
   return (
     <>
@@ -175,6 +225,8 @@ export function DayDetailModal({
             onDeleteEntry={handleDeleteEntry}
             getEntryByTradeId={getEntryByTradeId}
             onNewEntry={handleStandaloneEntryClick}
+            hasMentor={hasMentor}
+            reviewsMap={reviewsMap}
           />
 
           {/* Footer Button */}
@@ -209,7 +261,16 @@ export function DayDetailModal({
           initialDate={date}
           accountId={accountId}
           availableTrades={trades}
-          startEditing={true}
+          startEditing={startModalEditing}
+          hasMentor={hasMentor}
+          hasUnreadComments={(() => {
+            const tradeId = selectedTradeForJournal?.id;
+            const entryId = selectedEntryForEdit?.id;
+            // Check review status for trade OR entry
+            if (tradeId && reviewsMap[tradeId]?.hasUnread) return true;
+            if (entryId && reviewsMap[entryId]?.hasUnread) return true;
+            return false;
+          })()}
         />
       )}
     </>

@@ -105,7 +105,7 @@ export async function saveDailyRoutine(routine: DailyRoutine): Promise<boolean> 
 
     const { error } = await supabase
         .from('daily_routines')
-        .upsert(mapDailyRoutineToDB(routineWithUser));
+        .upsert(mapDailyRoutineToDB(routineWithUser), { onConflict: 'account_id, date' });
 
     if (error) {
         console.error('Error saving daily routine:', error);

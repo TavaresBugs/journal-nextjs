@@ -368,6 +368,21 @@ export interface MenteeOverview {
     lastTradeDate?: string;
 }
 
+/**
+ * Permissão de acesso do mentor a uma carteira específica do mentorado
+ */
+export interface MentorAccountPermission {
+    id: string;
+    inviteId: string;
+    accountId: string;
+    accountName?: string; // Para exibição na UI
+    canViewTrades: boolean;
+    canViewJournal: boolean;
+    canViewRoutines: boolean;
+    createdAt: string;
+    updatedAt?: string;
+}
+
 // ============================================
 // COMMUNITY TYPES
 // ============================================
@@ -429,10 +444,10 @@ export interface LeaderboardOptIn {
 
 export interface Notification {
     id: string;
-    type: 'invite' | 'update' | 'announcement';
+    type: 'invite' | 'update' | 'announcement' | 'feedback';
     title: string;
     message: string;
     timestamp: Date;
     read: boolean;
-    data?: MentorInvite;
+    data?: any; // Flexible data payload (MentorInvite, ReviewContext, etc)
 }

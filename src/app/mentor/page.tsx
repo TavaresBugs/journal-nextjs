@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { useAccountStore } from '@/store/useAccountStore';
+import { StudentCalendarModal } from '@/components/mentor/StudentCalendarModal';
 import { 
     getMentees, 
     getSentInvites, 
@@ -272,6 +273,19 @@ export default function MentoriaPage() {
     const invitePermission: MentorPermission = 'comment'; // Fixed to 'comment' - view + comment
     const [inviting, setInviting] = useState(false);
 
+    // Modal de trades do mentorado
+    const [showTradesModal, setShowTradesModal] = useState(false);
+    const [selectedMentee, setSelectedMentee] = useState<{ id: string; name: string } | null>(null);
+
+    // Handler para abrir modal de trades
+    const handleViewTrades = (menteeId: string) => {
+        const mentee = mentees.find(m => m.menteeId === menteeId);
+        if (mentee) {
+            setSelectedMentee({ id: menteeId, name: mentee.menteeName || mentee.menteeEmail });
+            setShowTradesModal(true);
+        }
+    };
+
     // Voltar para última carteira ou home
     const goBack = () => {
         if (currentAccountId) {
@@ -425,7 +439,7 @@ export default function MentoriaPage() {
                     {activeTab === 'mentorados' && (
                         <MentoradosTable 
                             mentees={mentees} 
-                            onViewTrades={(id) => router.push(`/mentor/${id}`)}
+                            onViewTrades={handleViewTrades}
                             loading={loading}
                         />
                     )}
@@ -493,6 +507,19 @@ export default function MentoriaPage() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {/* Modal de Trades do Mentorado */}
+                {selectedMentee && (
+                    <StudentCalendarModal
+                        isOpen={showTradesModal}
+                        onClose={() => {
+                            setShowTradesModal(false);
+                            setSelectedMentee(null);
+                        }}
+                        menteeId={selectedMentee.id}
+                        menteeName={selectedMentee.name}
+                    />
                 )}
             </div>
         </div>

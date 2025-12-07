@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -53,6 +53,9 @@ export function Button({
         
         // Gold (for Edit buttons)
         gold: "bg-yellow-500/10 text-yellow-500 border border-yellow-500 hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] font-black",
+        
+        // Purple (for Mentor interactions)
+        purple: "bg-purple-500/10 text-purple-500 border border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] font-black",
     };
 
     const sizes = {
@@ -67,7 +70,7 @@ export function Button({
     // For now, let's trust the size prop or className overrides.
 
     // Determine if we should apply the progressive fill effect
-    const isProgressive = variant === 'danger' || variant === 'success' || variant === 'warning' || variant === 'info' || variant === 'ghost-success' || variant === 'gold';
+    const isProgressive = variant === 'danger' || variant === 'success' || variant === 'warning' || variant === 'info' || variant === 'ghost-success' || variant === 'gold' || variant === 'purple';
 
     return (
         <button 
@@ -88,6 +91,7 @@ export function Button({
                     variant === 'success' || variant === 'ghost-success' ? 'bg-emerald-500' : 
                     variant === 'info' ? 'bg-blue-500' :
                     variant === 'gold' ? 'bg-yellow-500' :
+                    variant === 'purple' ? 'bg-purple-500' :
                     'bg-orange-500'
                 }`} />
             )}

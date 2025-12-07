@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { exportAllData, downloadAsJSON } from '@/services/exportService';
+import { MentorshipSettings } from './MentorshipSettings';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -188,32 +189,37 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                     value={newLeverage}
                                     onChange={(e) => setNewLeverage(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && addLeverage()}
-                                />
-                                <Button variant="gradient-success" onClick={addLeverage} className="w-20 font-extrabold h-10">
-                                    Add
-                                </Button>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {leverages.map((leverage) => (
-                                    <span
-                                        key={leverage}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
-                                    >
-                                        {leverage}
-                                        <Button
-                                            variant="danger"
-                                            size="icon"
-                                            onClick={() => removeLeverage(leverage)}
-                                            className="w-6 h-6 p-0"
+                                    />
+                                    <Button variant="gradient-success" onClick={addLeverage} className="w-20 font-extrabold h-10">
+                                        Add
+                                    </Button>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {leverages.map((leverage) => (
+                                        <span
+                                            key={leverage}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                        </Button>
-                                    </span>
-                                ))}
-                            </div>
-                        </section>
-                    </>
-                ) : (
+                                            {leverage}
+                                            <Button
+                                                variant="danger"
+                                                size="icon"
+                                                onClick={() => removeLeverage(leverage)}
+                                                className="w-6 h-6 p-0"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                            </Button>
+                                        </span>
+                                    ))}
+                                </div>
+                            </section>
+    
+                            {/* Mentoria */}
+                            <section>
+                                <MentorshipSettings />
+                            </section>
+                        </>
+                    ) : (
                     <>
                         {/* Dashboard Settings - ONLY visible when inside a dashboard (accountId exists) */}
                         

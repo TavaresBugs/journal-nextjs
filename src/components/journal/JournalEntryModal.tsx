@@ -18,6 +18,8 @@ interface JournalEntryModalProps {
   accountId?: string;
   availableTrades?: Trade[];
   startEditing?: boolean;
+  hasMentor?: boolean;
+  hasUnreadComments?: boolean;
 }
 
 /**
@@ -32,6 +34,8 @@ interface JournalEntryModalProps {
  * @param accountId - Account ID associated with the entry
  * @param availableTrades - List of trades available to link
  * @param startEditing - Whether to start in edit mode (default: false)
+ * @param hasMentor - Whether the user has an active mentor
+ * @param hasUnreadComments - Whether there are unread comments for this entry/trade
  */
 export function JournalEntryModal({
   isOpen,
@@ -41,7 +45,9 @@ export function JournalEntryModal({
   initialDate,
   accountId,
   availableTrades = [],
-  startEditing = false
+  startEditing = false,
+  hasMentor = false,
+  hasUnreadComments = false
 }: JournalEntryModalProps) {
   const { addEntry, updateEntry } = useJournalStore();
   const { trades: allTrades } = useTradeStore();
@@ -177,6 +183,8 @@ export function JournalEntryModal({
         onEdit={() => setIsEditing(true)}
         onShare={handleShare}
         isSharingLoading={isSharingLoading}
+        hasMentor={hasMentor}
+        hasUnreadComments={hasUnreadComments}
       />
     );
   }

@@ -21,6 +21,9 @@ export interface MentorReview {
     isRead: boolean;
     createdAt: string;
     updatedAt: string;
+    // Context data for notifications
+    entryDate?: string;
+    entryAccountId?: string;
 }
 
 // ============================================
@@ -39,6 +42,10 @@ interface DBMentorReview {
     is_read: boolean;
     created_at: string;
     updated_at: string;
+    journal_entries?: {
+        date: string;
+        account_id: string;
+    } | null;
 }
 
 // ============================================
@@ -58,6 +65,8 @@ function mapReviewFromDB(db: DBMentorReview): MentorReview {
         isRead: db.is_read,
         createdAt: db.created_at,
         updatedAt: db.updated_at,
+        entryDate: db.journal_entries?.date,
+        entryAccountId: db.journal_entries?.account_id,
     };
 }
 
@@ -196,7 +205,7 @@ export async function getMyReviews(): Promise<MentorReview[]> {
 
     const { data, error } = await supabase
         .from('mentor_reviews')
-        .select('*')
+        .select('*, journal_entries(date, account_id)')
         .eq('mentee_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -205,7 +214,8 @@ export async function getMyReviews(): Promise<MentorReview[]> {
         return [];
     }
 
-    return (data || []).map(mapReviewFromDB);
+    // Cast data because Supabase types might not infer the join perfectly without generated types
+    return (data as unknown as DBMentorReview[] || []).map(mapReviewFromDB);
 }
 
 /**
@@ -224,6 +234,67 @@ export async function getReviewsForTrade(tradeId: string): Promise<MentorReview[
 
     if (error) {
         console.error('[getReviewsForTrade] Error fetching reviews:', error);
+        return [];
+    }
+
+    return (data || []).map(mapReviewFromDB);
+}
+
+/**
+ * Busca reviews específicas de um journal entry.
+ * @param {string} journalEntryId - O ID do journal entry.
+ * @returns {Promise<MentorReview[]>} Lista de reviews.
+ */
+export async function getReviewsForJournalEntry(journalEntryId: string): Promise<MentorReview[]> {
+    const { data, error } = await supabase
+        .from('mentor_reviews')
+        .select('*')
+        .eq('journal_entry_id', journalEntryId)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('[getReviewsForJournalEntry] Error fetching reviews:', error);
+        return [];
+    }
+
+    return (data || []).map(mapReviewFromDB);
+}
+
+/**
+ * Busca reviews para um conjunto de trades e journal entries.
+ * Útil para carregar notificações em lote (ex: DayDetailModal).
+ * @param {string[]} tradeIds - Lista de IDs de trades.
+ * @param {string[]} journalEntryIds - Lista de IDs de journal entries.
+ * @returns {Promise<MentorReview[]>} Lista de reviews.
+ */
+export async function getReviewsForContext(
+    tradeIds: string[], 
+    journalEntryIds: string[]
+): Promise<MentorReview[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    let query = supabase
+        .from('mentor_reviews')
+        .select('*')
+        .eq('mentee_id', user.id);
+
+    // Filter by IDs if provided
+    const conditions = [];
+    if (tradeIds.length > 0) conditions.push(`trade_id.in.(${tradeIds.join(',')})`);
+    if (journalEntryIds.length > 0) conditions.push(`journal_entry_id.in.(${journalEntryIds.join(',')})`);
+
+    if (conditions.length === 0) return []; // Nothing to fetch
+
+    // OR logic: trade_id IN (...) OR journal_entry_id IN (...)
+    // Supabase .or() syntax is string based: 'condition1,condition2'
+    query = query.or(conditions.join(','));
+
+    const { data, error } = await query;
+
+    if (error) {
+        // Log only if it's not a syntax error due to empty lists (handled above but safety first)
+        console.error('[getReviewsForContext] Error fetching reviews:', error);
         return [];
     }
 

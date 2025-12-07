@@ -1,7 +1,9 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentor/inviteService';
+import { getMyReviews } from '@/services/reviewService';
 import { MentorInvite, Notification } from '@/types';
 import { NotificationsModal } from './NotificationsModal';
 
@@ -21,7 +23,8 @@ const PROJECT_ANNOUNCEMENTS = [
     },
 ];
 
-export function NotificationBell() {
+export function NotificationBell({ accountId }: { accountId?: string }) {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [showFullModal, setShowFullModal] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -32,38 +35,58 @@ export function NotificationBell() {
 
     const loadNotifications = useCallback(async () => {
         setLoading(true);
-        
-        // Carregar convites pendentes
-        const invites = await getReceivedInvites();
-        
-        // Converter para notificações
-        const inviteNotifs: Notification[] = invites.map(invite => ({
-            id: `invite-${invite.id}`,
-            type: 'invite',
-            title: '👨‍🏫 Convite de Mentoria',
-            message: `${invite.mentorEmail} quer ser seu mentor`,
-            timestamp: new Date(invite.createdAt),
-            read: false,
-            data: invite,
-        }));
+        try {
+            // 1. Carregar convites
+            const invites = await getReceivedInvites();
+            const inviteNotifs: Notification[] = invites.map(inv => ({
+                id: inv.id,
+                type: 'invite',
+                title: 'Convite de Mentoria',
+                message: `${inv.mentorName || inv.mentorEmail} convidou você.`,
+                timestamp: new Date(inv.createdAt),
+                read: false,
+                data: inv
+            }));
 
-        // Anúncios do projeto (marcar como lidos se já vistos)
-        const readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements') || '[]');
-        const announcementNotifs: Notification[] = PROJECT_ANNOUNCEMENTS.map(ann => ({
-            id: ann.id,
-            type: 'announcement',
-            title: ann.title,
-            message: ann.message,
-            timestamp: ann.date,
-            read: readAnnouncements.includes(ann.id),
-        }));
+            // 2. Carregar Feedback (Reviews)
+            const reviews = await getMyReviews();
+            const reviewNotifs: Notification[] = reviews.filter(r => !r.isRead).map(r => ({
+                id: r.id,
+                type: 'feedback', // Cast as generic or 'feedback' if type updated
+                title: 'Novo Feedback',
+                message: r.reviewType === 'correction' ? 'Nova correção recebida.' : 
+                         r.reviewType === 'suggestion' ? 'Nova sugestão recebida.' : 'Novo comentário recebido.',
+                timestamp: new Date(r.createdAt),
+                read: false,
+                data: {
+                    journalEntryId: r.journalEntryId,
+                    date: r.entryDate,
+                    accountId: r.entryAccountId
+                }
+            })) as Notification[];
 
-        // Combinar e ordenar por data
-        const allNotifs = [...inviteNotifs, ...announcementNotifs]
-            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+            // 3. Carregar Anúncios
+            const readAnnouncements = JSON.parse(localStorage.getItem('readAnnouncements') || '[]');
+            const announcementNotifs: Notification[] = PROJECT_ANNOUNCEMENTS.map(ann => ({
+                id: ann.id,
+                type: 'announcement',
+                title: ann.title,
+                message: ann.message,
+                timestamp: ann.date,
+                read: readAnnouncements.includes(ann.id)
+            }));
 
-        setNotifications(allNotifs);
-        setLoading(false);
+            // Merge and Sort
+            const all = [...inviteNotifs, ...reviewNotifs, ...announcementNotifs].sort((a, b) => 
+                b.timestamp.getTime() - a.timestamp.getTime()
+            );
+
+            setNotifications(all);
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -120,6 +143,19 @@ export function NotificationBell() {
         });
         localStorage.setItem('readAnnouncements', JSON.stringify(readAnnouncements));
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    };
+
+    const handleViewFeedback = (notification: Notification) => {
+        const { date, journalEntryId, accountId: entryAccountId } = notification.data || {};
+        // Prefer prop accountId, then entryAccountId
+        const targetAccountId = accountId || entryAccountId;
+        
+        if (targetAccountId && date) {
+            router.push(`/dashboard/${targetAccountId}?date=${date}`);
+            setIsOpen(false); // Close bell dropdown/modal
+        } else {
+            console.error('Dados insuficientes para navegação', notification);
+        }
     };
 
     const formatTimeAgo = (date: Date) => {
@@ -292,6 +328,7 @@ export function NotificationBell() {
                 onRejectInvite={handleRejectInvite}
                 onMarkRead={markAnnouncementRead}
                 onReviewAnnouncements={markAllAnnouncementsRead}
+                onViewFeedback={handleViewFeedback}
             />
         </>
     );

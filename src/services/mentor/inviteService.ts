@@ -4,13 +4,18 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase';
+import { mapTradeFromDB } from '@/services/tradeService';
 import { 
     MentorInvite, 
     MentorPermission, 
     TradeComment, 
     MenteeOverview,
-    Trade 
+    Trade,
+    JournalEntry,
+    DailyRoutine,
+    MentorAccountPermission
 } from '@/types';
+import { DBTrade } from '@/types/database';
 
 // ============================================
 // DB TYPES (snake_case)
@@ -448,24 +453,125 @@ export async function getMentees(): Promise<MenteeOverview[]> {
 /**
  * Busca os trades de um aluno específico.
  * @param {string} menteeId - O ID do aluno.
+ * @param {string} [accountId] - O ID da carteira (opcional).
  * @returns {Promise<Trade[]>} Lista de trades do aluno.
  * @example
- * const trades = await getMenteeTrades('mentee-id');
+ * const trades = await getMenteeTrades('mentee-id', 'account-id');
  */
-export async function getMenteeTrades(menteeId: string): Promise<Trade[]> {
-    const { data, error } = await supabase
+export async function getMenteeTrades(menteeId: string, accountId?: string): Promise<Trade[]> {
+    let query = supabase
         .from('trades')
         .select('*')
         .eq('user_id', menteeId)
         .order('entry_date', { ascending: false });
+
+    if (accountId) {
+        query = query.eq('account_id', accountId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
         console.error('Erro ao buscar trades do aluno:', error);
         return [];
     }
 
-    // Map from DB format (would need to import from tradeService or duplicate mapping)
-    return data || [];
+    // Map from DB format to Trade format
+    return (data || []).map((dbTrade: DBTrade) => mapTradeFromDB(dbTrade));
+}
+
+/**
+ * Busca as entradas de diário de um aluno em uma data específica.
+ * @param {string} menteeId - O ID do aluno.
+ * @param {string} date - A data no formato YYYY-MM-DD.
+ * @param {string} [accountId] - O ID da carteira (opcional).
+ * @returns {Promise<JournalEntry[]>} Lista de entradas de diário.
+ * @example
+ * const entries = await getMenteeJournalEntries('mentee-id', '2025-12-06');
+ */
+export async function getMenteeJournalEntries(menteeId: string, date: string, accountId?: string): Promise<JournalEntry[]> {
+    let query = supabase
+        .from('journal_entries')
+        .select('*')
+        .eq('user_id', menteeId)
+        .eq('date', date)
+        .order('created_at', { ascending: false });
+    
+    if (accountId) {
+        query = query.eq('account_id', accountId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Erro ao buscar entradas de diário do aluno:', error);
+        return [];
+    }
+
+    // Map from DB format to JournalEntry format
+    return (data || []).map(db => ({
+        id: db.id,
+        userId: db.user_id,
+        accountId: db.account_id,
+        date: db.date,
+        title: db.title,
+        asset: db.asset,
+        tradeId: db.trade_id,
+        images: db.images || [],
+        emotion: db.emotion,
+        analysis: db.analysis,
+        notes: db.notes,
+        createdAt: db.created_at,
+        updatedAt: db.updated_at,
+    }));
+}
+
+/**
+ * Busca a rotina diária de um aluno em uma data específica.
+ * @param {string} menteeId - O ID do aluno.
+ * @param {string} date - A data no formato YYYY-MM-DD.
+ * @param {string} [accountId] - O ID da carteira (opcional).
+ * @returns {Promise<DailyRoutine | null>} A rotina diária ou null.
+ * @example
+ * const routine = await getMenteeRoutine('mentee-id', '2025-12-06');
+ */
+export async function getMenteeRoutine(menteeId: string, date: string, accountId?: string): Promise<DailyRoutine | null> {
+    let query = supabase
+        .from('daily_routines')
+        .select('*')
+        .eq('user_id', menteeId)
+        .eq('date', date);
+    
+    if (accountId) {
+        query = query.eq('account_id', accountId);
+    }
+
+    // Rotinas são normalmente por dia, mas podem ser vinculadas a conta
+    // Se passar accountId, tenta filtrar. Se não, pega a primeira encontrada.
+    const { data, error } = await query.maybeSingle();
+
+    if (error) {
+        console.error('Erro ao buscar rotina do aluno:', error);
+        return null;
+    }
+
+    if (!data) return null;
+
+    // Map from DB format to DailyRoutine format
+    return {
+        id: data.id,
+        userId: data.user_id,
+        accountId: data.account_id,
+        date: data.date,
+        aerobic: data.aerobic,
+        diet: data.diet,
+        reading: data.reading,
+        meditation: data.meditation,
+        preMarket: data.pre_market,
+        prayer: data.prayer,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+    };
 }
 
 // ============================================
@@ -583,4 +689,188 @@ export async function canCommentOnTrade(tradeId: string): Promise<boolean> {
         .maybeSingle();
 
     return invite !== null;
+}
+
+/**
+ * Busca todos os mentores do usuário atual (mentorado).
+ * @returns {Promise<MentorInvite[]>} Lista de mentores aceitos.
+ */
+export async function getMyMentors(): Promise<MentorInvite[]> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('mentor_invites')
+        .select('*')
+        .eq('mentee_id', user.id)
+        .eq('status', 'accepted');
+
+    if (error) {
+        console.error('Erro ao buscar mentores:', error);
+        return [];
+    }
+
+    // Mapear snake_case para camelCase
+    return (data || []).map(invite => ({
+        id: invite.id,
+        mentorId: invite.mentor_id,
+        mentorEmail: invite.mentor_email,
+        // mentorName: não temos no DB, teria que buscar profile
+        menteeId: invite.mentee_id,
+        menteeEmail: invite.mentee_email,
+        permission: invite.permission,
+        status: invite.status,
+        inviteToken: invite.invite_token,
+        createdAt: invite.created_at,
+        acceptedAt: invite.accepted_at,
+        expiresAt: invite.expires_at,
+    }));
+}
+
+// ============================================
+// ACCOUNT PERMISSION FUNCTIONS
+// ============================================
+
+/**
+ * Busca as permissões de carteiras que o mentorado compartilhou com um mentor específico.
+ * Usado pelo MENTORADO para ver/gerenciar suas permissões.
+ * @param {string} inviteId - O ID do convite de mentoria.
+ * @returns {Promise<MentorAccountPermission[]>} Lista de permissões.
+ */
+export async function getAccountPermissions(inviteId: string): Promise<MentorAccountPermission[]> {
+    const { data, error } = await supabase
+        .from('mentor_account_permissions')
+        .select(`
+            *,
+            accounts:account_id (name)
+        `)
+        .eq('invite_id', inviteId);
+
+    if (error) {
+        console.error('Erro ao buscar permissões:', error);
+        return [];
+    }
+
+    return (data || []).map(db => ({
+        id: db.id,
+        inviteId: db.invite_id,
+        accountId: db.account_id,
+        accountName: db.accounts?.name,
+        canViewTrades: db.can_view_trades,
+        canViewJournal: db.can_view_journal,
+        canViewRoutines: db.can_view_routines,
+        createdAt: db.created_at,
+        updatedAt: db.updated_at,
+    }));
+}
+
+/**
+ * Adiciona/atualiza permissão de uma carteira para um mentor.
+ * Usado pelo MENTORADO para compartilhar uma carteira.
+ * @param {string} inviteId - O ID do convite de mentoria.
+ * @param {string} accountId - O ID da carteira.
+ * @param {object} permissions - Permissões a serem definidas.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ */
+export async function setAccountPermission(
+    inviteId: string, 
+    accountId: string, 
+    permissions: { 
+        canViewTrades?: boolean; 
+        canViewJournal?: boolean; 
+        canViewRoutines?: boolean;
+    }
+): Promise<boolean> {
+    const { error } = await supabase
+        .from('mentor_account_permissions')
+        .upsert({
+            invite_id: inviteId,
+            account_id: accountId,
+            can_view_trades: permissions.canViewTrades ?? true,
+            can_view_journal: permissions.canViewJournal ?? true,
+            can_view_routines: permissions.canViewRoutines ?? true,
+            updated_at: new Date().toISOString(),
+        }, {
+            onConflict: 'invite_id,account_id'
+        });
+
+    if (error) {
+        console.error('Erro ao definir permissão:', error);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Remove permissão de uma carteira para um mentor.
+ * Usado pelo MENTORADO para revogar acesso a uma carteira.
+ * @param {string} inviteId - O ID do convite de mentoria.
+ * @param {string} accountId - O ID da carteira.
+ * @returns {Promise<boolean>} True se sucesso, False caso contrário.
+ */
+export async function removeAccountPermission(
+    inviteId: string, 
+    accountId: string
+): Promise<boolean> {
+    const { error } = await supabase
+        .from('mentor_account_permissions')
+        .delete()
+        .eq('invite_id', inviteId)
+        .eq('account_id', accountId);
+
+    if (error) {
+        console.error('Erro ao remover permissão:', error);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Busca as carteiras permitidas de um mentorado para o mentor atual.
+ * Usado pelo MENTOR para obter lista de carteiras que pode ver.
+ * @param {string} menteeId - O ID do mentorado.
+ * @returns {Promise<Array<{id: string; name: string; currency: string}>>} Lista de carteiras permitidas.
+ */
+export async function getMenteePermittedAccounts(menteeId: string): Promise<Array<{id: string; name: string; currency: string}>> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    // Buscar o invite ativo entre mentor e mentorado
+    const { data: invite } = await supabase
+        .from('mentor_invites')
+        .select('id')
+        .eq('mentor_id', user.id)
+        .eq('mentee_id', menteeId)
+        .eq('status', 'accepted')
+        .maybeSingle();
+
+    if (!invite) return [];
+
+    // Buscar permissões de carteiras
+    const { data, error } = await supabase
+        .from('mentor_account_permissions')
+        .select(`
+            account_id,
+            accounts:account_id (id, name, currency)
+        `)
+        .eq('invite_id', invite.id)
+        .eq('can_view_trades', true);
+
+    if (error) {
+        console.error('Erro ao buscar carteiras permitidas:', error);
+        return [];
+    }
+
+    // Usando cast para any para facilitar mapeamento do retorno complexo do Supabase
+    const rows = data as any[];
+    
+    return rows
+        .filter(d => d.accounts)
+        .map(d => ({
+            id: d.accounts.id,
+            name: d.accounts.name,
+            currency: d.accounts.currency,
+        }));
 }

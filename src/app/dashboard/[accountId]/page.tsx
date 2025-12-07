@@ -47,10 +47,11 @@ const Charts = dynamic(() => import('@/components/reports/Charts').then(mod => m
 // Validate if accountId is a valid UUID
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default function DashboardPage({ params }: { params: Promise<{ accountId: string }> }) {
+export default function DashboardPage({ params, searchParams }: { params: Promise<{ accountId: string }>, searchParams: Promise<{ date?: string }> }) {
     const router = useRouter();
     // Unwrap params Promise using React.use()
     const { accountId } = use(params);
+    const { date: queryDate } = use(searchParams);
 
     // uuidRegex definition removed from here
 
@@ -60,6 +61,14 @@ export default function DashboardPage({ params }: { params: Promise<{ accountId:
             router.push('/');
         }
     }, [accountId, router]);
+
+    // Handle Deep Linking
+    useEffect(() => {
+        if (queryDate) {
+            setSelectedDate(queryDate);
+            setIsDayDetailModalOpen(true);
+        }
+    }, [queryDate]);
 
 
     
