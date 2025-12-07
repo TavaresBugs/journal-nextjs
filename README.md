@@ -7,6 +7,23 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-green?logo=supabase)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8?logo=tailwindcss)
+![Vitest](https://img.shields.io/badge/Tests-Vitest-729B1B?logo=vitest)
+![Zod](https://img.shields.io/badge/Validation-Zod-3068B7)
+
+---
+
+## 📊 Status do Projeto
+
+| Área              | Status          | Detalhes                               |
+| ----------------- | --------------- | -------------------------------------- |
+| **Core Features** | ✅ Completo     | Trades, Journal, Playbooks, Calendário |
+| **Mentor System** | ✅ Completo     | Convites, visualização, reviews        |
+| **Admin Panel**   | ✅ Completo     | RBAC, Audit logs, Aprovação            |
+| **Import/Export** | ✅ Completo     | NinjaTrader, MetaTrader, Excel         |
+| **Testes**        | 🟡 Em progresso | Vitest configurado, cobertura básica   |
+| **AI Features**   | 📋 Planejado    | Roadmap Q2 2025                        |
+
+> **17/17 Tasks Jules concluídas** • Última atualização: Dezembro 2024
 
 ---
 
@@ -18,6 +35,8 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 - Múltiplos timeframes de análise
 - Cálculo automático de P&L, RR e métricas
 - Tags de PDArrays (FVG, OB, BPR, etc)
+- **Import:** NinjaTrader CSV, MetaTrader HTML
+- **Export:** Excel, CSV, Backup JSON
 
 ### 📓 Journal Multi-Timeframe
 
@@ -42,9 +61,22 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 
 ### 📈 Gráficos & Métricas
 
-- **Recharts:** Win Rate, Distribuição, Grid Mensal
-- **Lightweight Charts:** Curva de Capital, Drawdown
+- **Recharts:** Win Rate, Distribuição, Grid Mensal, Performance por Ativo
+- **Lightweight Charts:** Curva de Capital, Drawdown, Timeline
 - Métricas avançadas: Profit Factor, Expectancy, Sharpe Ratio
+
+### 👥 Sistema de Mentoria
+
+- Convites via email entre mentor/mentorado
+- Visualização do calendário do aluno
+- Sistema de reviews e correções
+- Notificações em tempo real
+
+### 💰 Calculadora de Impostos (BR)
+
+- Day Trade: 20% sobre lucro
+- Swing Trade: 15% (isenção até R$20k/mês)
+- Relatórios fiscais exportáveis
 
 ### 💼 Multi-Contas
 
@@ -62,16 +94,18 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 
 ## 🛠️ Stack Tecnológico
 
-| Categoria       | Tecnologia                              |
-| --------------- | --------------------------------------- |
-| **Framework**   | Next.js 16 (App Router)                 |
-| **UI**          | React 19, TypeScript 5                  |
-| **Estilização** | Tailwind CSS 4                          |
-| **Database**    | Supabase (PostgreSQL)                   |
-| **Auth**        | Supabase Auth (Google OAuth)            |
-| **Estado**      | Zustand 5                               |
-| **Gráficos**    | Recharts, Lightweight Charts, Plotly.js |
-| **Datas**       | Day.js                                  |
+| Categoria       | Tecnologia                   |
+| --------------- | ---------------------------- |
+| **Framework**   | Next.js 16 (App Router)      |
+| **UI**          | React 19, TypeScript 5       |
+| **Estilização** | Tailwind CSS 4               |
+| **Database**    | Supabase (PostgreSQL + RLS)  |
+| **Auth**        | Supabase Auth (Google OAuth) |
+| **Estado**      | Zustand 5                    |
+| **Validação**   | Zod                          |
+| **Gráficos**    | Recharts, Lightweight Charts |
+| **Testes**      | Vitest                       |
+| **Datas**       | Day.js, date-fns             |
 
 ---
 
@@ -80,38 +114,41 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 ```
 src/
 ├── app/                    # Rotas Next.js (App Router)
-│   ├── auth/              # Callback OAuth
-│   ├── dashboard/         # Página principal
-│   ├── login/             # Autenticação
-│   ├── mentor/            # Painel do Mentor
-│   ├── comunidade/        # Playbooks globais e Leaderboard
-│   └── share/             # Páginas públicas
+│   ├── admin/              # Painel Admin (protegido)
+│   ├── auth/callback/      # OAuth callback
+│   ├── dashboard/          # Página principal
+│   ├── mentor/             # Painel do Mentor
+│   ├── comunidade/         # Playbooks globais e Leaderboard
+│   ├── pending/            # Aguardando aprovação
+│   ├── privacidade/        # Política de privacidade
+│   ├── termos/             # Termos de uso
+│   └── share/              # Páginas públicas
 ├── components/
-│   ├── ui/                # Componentes base (shadcn-like)
-│   ├── trades/            # Formulários e listas de trade
-│   ├── mentor/            # StudentCalendar, Invites
-│   ├── notifications/     # Bell e Modal de Notificações
-│   ├── journal/           # JournalModal, DayDetailModal, Calendar
-│   ├── charts/            # Recharts + Lightweight Charts
-│   ├── playbook/          # Gestão de playbooks
-│   ├── accounts/          # Seletor de contas
-│   └── shared/            # Páginas de compartilhamento
-├── services/              # Lógica de Negócios e API
-│   ├── mentor/            # inviteService.ts, reviewService.ts
-│   ├── community/         # playbookService.ts, leaderboardService.ts
-│   ├── accountService.ts  # CRUD de contas
-│   ├── tradeService.ts    # CRUD de trades
-│   └── journalService.ts  # CRUD de journal entries
-├── schemas/               # Zod Schemas (New)
-│   ├── tradeSchema.ts
-│   ├── journalSchema.ts
-│   └── authSchema.ts
-├── store/                 # Zustand stores
-├── hooks/                 # Custom React hooks
-├── lib/                   # Utilitários e config
-├── types/                 # TypeScript types
-└── contexts/              # React contexts
+│   ├── ui/                 # Componentes base
+│   ├── trades/             # Formulários de trade
+│   ├── journal/            # Journal modals
+│   ├── charts/             # Recharts + Lightweight
+│   ├── mentor/             # Sistema de mentoria
+│   ├── notifications/      # Notificações
+│   ├── import/             # Importação de dados
+│   ├── tax/                # Relatórios fiscais
+│   └── playbook/           # Gestão de playbooks
+├── services/               # Camada de dados
+│   ├── accountService.ts   # CRUD contas
+│   ├── tradeService.ts     # CRUD trades
+│   ├── journalService.ts   # CRUD journal
+│   ├── importService.ts    # Import NinjaTrader/MT
+│   ├── exportService.ts    # Export Excel/CSV
+│   ├── taxService.ts       # Cálculos fiscais
+│   └── adminService.ts     # Gestão admin
+├── schemas/                # Validação Zod
+├── store/                  # Zustand stores
+├── hooks/                  # Custom React hooks
+├── lib/                    # Utilitários
+└── types/                  # TypeScript types
 ```
+
+> 📐 Para arquitetura completa, veja [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
@@ -120,7 +157,7 @@ src/
 ### Pré-requisitos
 
 - Node.js >= 20.9.0
-- npm ou yarn
+- npm, yarn ou bun
 - Conta Supabase
 
 ### Instalação
@@ -156,8 +193,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_anon_key
 
 - **Supabase Auth** com Google OAuth
 - **Row Level Security (RLS)** para isolamento de dados por usuário
+- **RBAC:** Roles admin, user, guest
+- **Audit Logs:** Registro de ações críticas
+- **CSP/CORS:** Headers de segurança configurados
 - Middleware de proteção de rotas
-- Tratamento robusto de erros de autenticação
+- Validação de dados com Zod
 
 ---
 
@@ -169,7 +209,6 @@ npm run build    # Build de produção
 npm run start    # Executar produção
 npm run lint     # ESLint
 npm test         # Executar testes (Vitest)
-npm run seed     # Rodar seed (futuro)
 ```
 
 ---
@@ -188,17 +227,50 @@ npm run seed     # Rodar seed (futuro)
 
 ### Tabelas Principais
 
-- `accounts` - Carteiras de trading
-- `trades` - Operações registradas
-- `journal_entries` - Entradas de journal
-- `playbooks` - Estratégias/setups
-- `daily_routines` - Checklist diário
+| Tabela            | Descrição             |
+| ----------------- | --------------------- |
+| `accounts`        | Carteiras de trading  |
+| `trades`          | Operações registradas |
+| `journal_entries` | Entradas de journal   |
+| `playbooks`       | Estratégias/setups    |
+| `daily_routines`  | Checklist diário      |
+| `users_extended`  | Roles e status        |
+| `mentor_invites`  | Convites de mentoria  |
+| `mentor_reviews`  | Feedbacks de mentor   |
+| `audit_logs`      | Logs de segurança     |
 
 ### Migrations
 
 ```bash
 npx supabase db push
 ```
+
+---
+
+## 🚀 Próximos Passos
+
+### 🔴 Alta Prioridade
+
+- [ ] Testar import NinjaTrader com arquivo real
+- [ ] Deploy migração `017_add_trade_costs.sql` em produção
+- [ ] Verificar fluxo completo em produção
+
+### 🟡 Média Prioridade
+
+- [ ] Drag & Drop para reordenar regras de playbook
+- [ ] Gráfico MFE/MAE (dispersão de trades)
+- [ ] Carousel de imagens no journal
+- [ ] Templates de playbooks (ICT, SMC, Price Action)
+
+### 🟢 Backlog
+
+- [ ] AI: Análise de padrões comportamentais
+- [ ] AI: Alertas de desvio de regras
+- [ ] Internacionalização (EN/ES)
+- [ ] App Mobile (React Native)
+- [ ] Trade Replay com controle de velocidade
+
+> 📋 Lista completa em [TODO.md](docs/TODO.md) e [ROADMAP.md](docs/ROADMAP.md)
 
 ---
 
@@ -216,12 +288,43 @@ Configure as variáveis de ambiente no dashboard do Vercel.
 
 ## 📚 Documentação
 
-| Documento                                      | Descrição                                         |
-| ---------------------------------------------- | ------------------------------------------------- |
-| [Arquitetura](docs/ARCHITECTURE.md)            | Estrutura do projeto, fluxo de dados, componentes |
-| [Roadmap](docs/ROADMAP.md)                     | Análise competitiva e plano de evolução           |
-| [Features Pendentes](docs/PENDING_FEATURES.md) | Roadmap e funcionalidades planejadas              |
-| [Plano de Testes](docs/TEST_PLAN.md)           | Estratégia de testes e exemplos                   |
+| Documento                               | Descrição                                      |
+| --------------------------------------- | ---------------------------------------------- |
+| [📐 Arquitetura](docs/ARCHITECTURE.md)  | Estrutura completa, fluxos de dados, diagramas |
+| [🗺️ Roadmap](docs/ROADMAP.md)           | Análise competitiva, roadmap até Q4 2025       |
+| [🚧 Features](docs/PENDING_FEATURES.md) | Features pendentes por prioridade              |
+| [📋 TODO](docs/TODO.md)                 | Tarefas do dia-a-dia                           |
+| [🤖 Jules Tasks](docs/JULES_TASKS.md)   | Histórico das 17 tasks automatizadas           |
+| [🔒 Security](docs/SECURITY_AUDIT.md)   | Auditoria de segurança                         |
+| [🧪 Testes](docs/TEST_PLAN.md)          | Plano de testes e Vitest config                |
+
+---
+
+## 💡 Sugestões de Melhorias Futuras
+
+### Performance
+
+- [ ] Implementar Server Components para páginas estáticas
+- [ ] Adicionar cache com React Query/SWR
+- [ ] Lazy loading de gráficos pesados
+
+### UX
+
+- [ ] Onboarding guiado para novos usuários
+- [ ] Atalhos de teclado (hotkeys)
+- [ ] Modo de entrada rápida de trades
+
+### Integrações
+
+- [ ] Webhook para TradingView alerts
+- [ ] Sync automático com B3 (CEI)
+- [ ] API pública para desenvolvedores
+
+### Comunidade
+
+- [ ] Sistema de rating de playbooks
+- [ ] Filtros avançados no leaderboard
+- [ ] Challenges/competições mensais
 
 ---
 

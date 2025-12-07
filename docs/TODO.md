@@ -1,6 +1,6 @@
 # 📋 TODO List - Trading Journal Pro
 
-> **Última atualização:** 06/12/2024 16:11 (Brasília)
+> **Última atualização:** 06/12/2024 21:50 (Brasília)
 
 ---
 
