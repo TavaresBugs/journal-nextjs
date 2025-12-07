@@ -39,6 +39,13 @@ export const mapTradeFromDB = (db: DBTrade): Trade => ({
     exitTime: db.exit_time,
     pnl: db.pnl ? Number(db.pnl) : undefined,
     outcome: db.outcome,
+    // Telemetry
+    session: db.session,
+    htfAligned: db.htf_aligned,
+    rMultiple: db.r_multiple ? Number(db.r_multiple) : undefined,
+    marketCondition: db.market_condition as Trade['marketCondition'],
+    planAdherence: db.plan_adherence as Trade['planAdherence'],
+    planAdherenceRating: db.plan_adherence_rating,
     createdAt: db.created_at,
     updatedAt: db.updated_at,
 });
@@ -75,6 +82,13 @@ export const mapTradeToDB = (app: Trade): DBTrade => ({
     exit_time: app.exitTime,
     pnl: app.pnl,
     outcome: app.outcome,
+    // Telemetry
+    session: app.session,
+    htf_aligned: app.htfAligned,
+    r_multiple: app.rMultiple,
+    market_condition: app.marketCondition,
+    plan_adherence: app.planAdherence,
+    plan_adherence_rating: app.planAdherenceRating,
     created_at: app.createdAt,
     updated_at: new Date().toISOString(),
 });
@@ -192,7 +206,9 @@ const mapTradeLiteFromDB = (db: any): TradeLite => ({
     lot: Number(db.lot),
     tags: db.tags,
     strategy: db.strategy,
-    setup: db.setup
+    setup: db.setup,
+    tfAnalise: db.tf_analise,
+    tfEntrada: db.tf_entrada
 });
 
 /**
@@ -207,7 +223,7 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
     // Select only necessary columns to reduce payload
     const { data, error } = await supabase
         .from('trades')
-        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, user_id')
+        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, user_id')
         .eq('account_id', accountId)
         .eq('user_id', userId)
         .order('entry_date', { ascending: false });

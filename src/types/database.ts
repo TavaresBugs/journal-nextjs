@@ -38,6 +38,13 @@ export interface DBTrade {
   exit_time?: string;
   pnl?: number | string | null;
   outcome?: 'win' | 'loss' | 'breakeven' | 'pending';
+  // Telemetry fields
+  session?: string;
+  htf_aligned?: boolean;
+  r_multiple?: number | string | null;
+  market_condition?: string;
+  plan_adherence?: string;
+  plan_adherence_rating?: number;
   created_at: string;
   updated_at: string;
 }

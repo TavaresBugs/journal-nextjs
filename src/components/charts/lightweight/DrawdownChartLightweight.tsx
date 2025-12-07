@@ -122,7 +122,7 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
             </div>
             
             <LightweightChartWrapper
-                height={400}
+                height={350}
                 onChartReady={onChartReady}
             />
             

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { Input, Button } from '@/components/ui';
 import type { Trade } from '@/types';
@@ -9,6 +9,14 @@ import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { useToast } from '@/contexts/ToastContext';
+import { 
+    detectSession, 
+    validateAlignment, 
+    calculateRMultiple,
+    getSessionEmoji,
+    formatRMultiple,
+    getRMultipleColor
+} from '@/lib/timeframeUtils';
 
 interface TradeFormProps {
     accountId: string;
@@ -20,53 +28,62 @@ interface TradeFormProps {
 
 import { toZonedTime, fromZonedTime, format as formatTz } from 'date-fns-tz';
 
-// Helper to get formatted date/time in NY timezone
 const getNYDateTime = (dateStr?: string, timeStr?: string) => {
     if (!dateStr) return { date: formatTz(toZonedTime(new Date(), 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }), time: '' };
-    
-    // Construct ISO string
-    // If dateStr is an ISO string (includes T), use it directly
     const isoString = dateStr.includes('T') ? dateStr : (timeStr ? `${dateStr}T${timeStr}` : dateStr);
     const dateObj = new Date(isoString);
-    
-    // If invalid date, fallback to raw strings
     if (isNaN(dateObj.getTime())) return { date: dateStr, time: timeStr || '' };
-
     return {
         date: formatTz(toZonedTime(dateObj, 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }),
         time: timeStr ? formatTz(toZonedTime(dateObj, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' }) : ''
     };
 };
 
-// Helper to convert NY date/time to UTC
 const getUTCDateTime = (dateStr: string, timeStr: string) => {
     if (!dateStr) return { date: undefined, time: undefined };
-
-    // Create date object treating the input strings as NY time
-    // If time is missing, default to 00:00 for the conversion
     const dateTimeStr = `${dateStr} ${timeStr || '00:00'}`;
     const nyDate = fromZonedTime(dateTimeStr, 'America/New_York');
-    
-    // Return ISO string for date (which preserves full partial time info) and simple time string
-    // toISOString() returns UTC format (e.g., 2023-10-27T14:00:00.000Z)
     return {
         date: nyDate.toISOString(),
         time: timeStr ? nyDate.toISOString().split('T')[1].substring(0, 5) : undefined
     };
 };
 
+const MARKET_CONDITIONS = [
+    'Tendência Alta',
+    'Tendência Baixa', 
+    'Lateralidade',
+    'Rompimento',
+    'Consolidação',
+    'Alta Volatilidade'
+];
+
+// Section Header Component
+const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-700/50">
+        <span className="text-lg">{icon}</span>
+        <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">{title}</h3>
+    </div>
+);
 
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
-    // Get settings from store
     const { assets, strategies, setups } = useSettingsStore();
     const { playbooks } = usePlaybookStore();
     const { showToast } = useToast();
     
-    // Initialize with NY Time if editing
-    // If initialData.entryDate is ISO string, getNYDateTime handles it
     const nyEntry = getNYDateTime(initialData?.entryDate, initialData?.entryTime);
     const nyExit = getNYDateTime(initialData?.exitDate, initialData?.exitTime);
 
+    // Market Conditions
+    const [marketCondition, setMarketCondition] = useState(initialData?.marketCondition || '');
+    const [tfAnalise, setTfAnalise] = useState(initialData?.tfAnalise || '');
+    const [tfEntrada, setTfEntrada] = useState(initialData?.tfEntrada || '');
+    const [tagsList, setTagsList] = useState<string[]>(initialData?.tags ? initialData.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+    const [tagInput, setTagInput] = useState('');
+    const [strategy, setStrategy] = useState(initialData?.strategy || '');
+    const [setup, setSetup] = useState(initialData?.setup || '');
+
+    // Financial
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
     const [type, setType] = useState<'Long' | 'Short' | ''>(initialData?.type || '');
     const [entryPrice, setEntryPrice] = useState(initialData?.entryPrice?.toString() || '');
@@ -77,42 +94,48 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [commission, setCommission] = useState(initialData?.commission ? Math.abs(initialData.commission).toString() : '');
     const [swap, setSwap] = useState(initialData?.swap?.toString() || '');
     
-    // State stores NY Local Date/Time strings for the Inputs
+    // DateTime
     const [entryDate, setEntryDate] = useState(nyEntry.date);
-    // Use nyEntry.time only if it exists, otherwise empty
     const [entryTime, setEntryTime] = useState(nyEntry.time);
     const [exitDate, setExitDate] = useState(nyExit.date);
     const [exitTime, setExitTime] = useState(nyExit.time);
-    const [tfAnalise, setTfAnalise] = useState(initialData?.tfAnalise || '');
-    const [tfEntrada, setTfEntrada] = useState(initialData?.tfEntrada || '');
-    // Tags state
-    const [tagsList, setTagsList] = useState<string[]>(initialData?.tags ? initialData.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
-    const [tagInput, setTagInput] = useState('');
-    
-    const [strategy, setStrategy] = useState(initialData?.strategy || '');
-    const [setup, setSetup] = useState(initialData?.setup || '');
-    const [notes, setNotes] = useState(initialData?.notes || '');
 
     const isTradeOpen = !exitPrice || exitPrice === '';
+
+    // Telemetry
+    const detectedSession = useMemo(() => {
+        if (entryDate && entryTime) {
+            return detectSession(entryDate, entryTime, -3);
+        }
+        return 'Off-Hours' as const;
+    }, [entryDate, entryTime]);
+
+    const alignmentResult = useMemo(() => {
+        return validateAlignment(tfAnalise, tfEntrada);
+    }, [tfAnalise, tfEntrada]);
+
+    const rMultiplePreview = useMemo(() => {
+        if (!entryPrice || !exitPrice || !stopLoss || !type) return null;
+        return calculateRMultiple(
+            parseFloat(entryPrice),
+            parseFloat(exitPrice),
+            parseFloat(stopLoss),
+            type as 'Long' | 'Short'
+        );
+    }, [entryPrice, exitPrice, stopLoss, type]);
     
-    // Calculate estimates
     const calculateEstimates = () => {
         if (!entryPrice || !lot || !stopLoss || !takeProfit) {
             return { risk: 0, reward: 0 };
         }
-        
         const entry = parseFloat(entryPrice);
         const sl = parseFloat(stopLoss);
         const tp = parseFloat(takeProfit);
         const lotSize = parseFloat(lot);
-        
-        // Find asset in store or default to 1
         const asset = assets.find(a => a.symbol === symbol.toUpperCase());
         const assetMultiplier = asset ? asset.multiplier : 1;
-        
         const risk = Math.abs((entry - sl) * lotSize * assetMultiplier);
         const reward = Math.abs((tp - entry) * lotSize * assetMultiplier);
-        
         return { risk, reward };
     };
     
@@ -121,22 +144,19 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate type is not empty
         if (!type || (type !== 'Long' && type !== 'Short')) {
             showToast('Por favor, selecione a direção (Long ou Short)', 'error');
             return;
         }
 
-        // Find asset in store or default to 1
         const asset = assets.find(a => a.symbol === symbol.toUpperCase());
         const assetMultiplier = asset ? asset.multiplier : 1;
         
-        // Convert NY inputs to UTC for storage
         const utcEntry = getUTCDateTime(entryDate, entryTime);
         const utcExit = getUTCDateTime(exitDate, exitTime);
 
         const tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'> = {
-            userId: '', // Will be set by storage
+            userId: '',
             accountId,
             symbol: symbol.toUpperCase(),
             type: type as 'Long' | 'Short',
@@ -145,39 +165,45 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
             exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
             lot: parseFloat(lot),
-            
-            // Costs: Commission is usually a cost, so we store as negative
             commission: commission ? -Math.abs(parseFloat(commission)) : 0, 
             swap: swap ? parseFloat(swap) : 0,
-            
-            // Use converted UTC values
-            entryDate: utcEntry.date || entryDate, // Fallback to raw if conversion failed
+            entryDate: utcEntry.date || entryDate,
             entryTime: utcEntry.time,
             exitDate: utcExit.date,
             exitTime: utcExit.time,
-            
             tfAnalise: tfAnalise || undefined,
             tfEntrada: tfEntrada || undefined,
             tags: tagsList.length > 0 ? tagsList.join(', ') : undefined,
             strategy: strategy || undefined,
             setup: setup || undefined,
-            notes: notes || undefined,
+            marketCondition: marketCondition as Trade['marketCondition'] || undefined,
+            session: entryTime ? detectedSession : undefined,
+            htfAligned: (tfAnalise && tfEntrada) ? alignmentResult.valid : undefined,
+            rMultiple: undefined,
             pnl: undefined,
             outcome: 'pending',
         };
 
-        // Calculate P&L if exit price is provided
         if (exitPrice) {
             const tempTrade = { ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade;
             const pnl = calculateTradePnL(tempTrade, assetMultiplier);
             tradeData.pnl = pnl;
             tradeData.outcome = determineTradeOutcome({ ...tempTrade, pnl } as Trade);
+            
+            const rMult = calculateRMultiple(
+                parseFloat(entryPrice),
+                parseFloat(exitPrice),
+                parseFloat(stopLoss),
+                type as 'Long' | 'Short'
+            );
+            tradeData.rMultiple = rMult ?? undefined;
         }
 
         onSubmit(tradeData);
         showToast('Seu trade foi adicionado com sucesso!', 'success');
 
         // Reset form
+        setMarketCondition('');
         setSymbol('');
         setType('');
         setEntryPrice('');
@@ -197,473 +223,321 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
         setTagInput('');
         setStrategy('');
         setSetup('');
-        setNotes('');
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Toggle: Em Aberto / Concluído - Only show in create mode */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Toggle: Em Aberto / Finalizado */}
             {mode === 'create' && (
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-2">
                     <button
                         type="button"
                         onClick={() => setExitPrice('')}
-                        className={`
-                            flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200
-                            ${isTradeOpen
-                                ? 'bg-linear-to-r from-yellow-600 to-yellow-500 text-white shadow-lg shadow-yellow-500/30'
+                        className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
+                            isTradeOpen
+                                ? 'bg-yellow-500/20 text-yellow-300 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20'
                                 : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:bg-gray-800'
-                            }
-                        `}
+                        }`}
                     >
                         🟡 Em Aberto
                     </button>
                     <button
                         type="button"
                         onClick={() => setExitPrice(entryPrice || '0')}
-                        className={`
-                            flex-1 px-6 py-3 rounded-lg font-medium transition-all duration-200
-                            ${!isTradeOpen
-                                ? 'bg-linear-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30'
+                        className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
+                            !isTradeOpen
+                                ? 'bg-green-500/20 text-green-300 border-2 border-green-500/50 shadow-lg shadow-green-500/20'
                                 : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:bg-gray-800'
-                            }
-                        `}
+                        }`}
                     >
                         🟢 Finalizado
                     </button>
                 </div>
             )}
 
-            {/* Grid: Layout único */}
-            <div className="space-y-4">
-                {/* Ativo, Lote e Direção - Primeira linha com 3 campos */}
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Ativo
-                        </label>
-                        <input
-                            list="assets-list"
-                            value={symbol}
-                            onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-                            placeholder="EX: EURUSD"
-                            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 uppercase [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                            required
-                        />
-                        <datalist id="assets-list">
-                            {assets.map((asset) => (
-                                <option key={asset.symbol} value={asset.symbol} />
-                            ))}
-                        </datalist>
-                    </div>
-                    
-                    <Input
-                        label="Lote"
-                        type="number"
-                        step="0.01"
-                        value={lot}
-                        onChange={(e) => setLot(e.target.value)}
-                        placeholder="1.0"
-                        required
-                    />
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Direção
-                        </label>
-                        <input
-                            list="direction-list"
-                            value={type}
-                            onChange={(e) => setType(e.target.value as 'Long' | 'Short')}
-                            placeholder="Long Ou Short"
-                            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                        />
-                        <datalist id="direction-list">
-                            <option value="Long" />
-                            <option value="Short" />
-                        </datalist>
-                    </div>
-                </div>
-
-                {/* 3 campos: Preço Entrada, Stop Loss, Take Profit */}
-                <div className="grid grid-cols-3 gap-4">
-                    <Input
-                        label="Preço Entrada"
-                        type="number"
-                        step="0.00001"
-                        value={entryPrice}
-                        onChange={(e) => setEntryPrice(e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="Stop Loss"
-                        type="number"
-                        step="0.00001"
-                        value={stopLoss}
-                        onChange={(e) => setStopLoss(e.target.value)}
-                    />
-                    <Input
-                        label="Take Profit"
-                        type="number"
-                        step="0.00001"
-                        value={takeProfit}
-                        onChange={(e) => setTakeProfit(e.target.value)}
-                    />
-                </div>
-
-
-                {/* Estimativas (full width on mobile, half on desktop) + Timeframes (stacked on mobile, side-by-side on desktop) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Estimativas - Layout Horizontal (lado a lado) */}
-                    <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-                        <h4 className="text-sm font-medium text-gray-400 mb-3">Estimativas</h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gray-900/50 rounded-lg p-3 border border-red-900/30">
-                                <div className="text-xs text-gray-500 mb-1">Risco Estimado</div>
-                                <div className="text-lg font-bold text-red-400">
-                                    $ {estimates.risk.toFixed(2)}
-                                </div>
+            {/* ===== BLOCO 1: CONDIÇÕES DE MERCADO ===== */}
+            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+                <SectionHeader icon="📊" title="Condições de Mercado" />
+                
+                <div className="space-y-3">
+                    {/* Market Condition + Strategy */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Condição</label>
+                            <input
+                                list="market-conditions-list"
+                                value={marketCondition}
+                                onChange={(e) => setMarketCondition(e.target.value)}
+                                placeholder="Tendência, Lateral..."
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                            />
+                            <datalist id="market-conditions-list">
+                                {MARKET_CONDITIONS.map((cond) => (
+                                    <option key={cond} value={cond} />
+                                ))}
+                            </datalist>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Estratégia</label>
+                            <div className="relative">
+                                <input
+                                    list="strategies-list"
+                                    value={strategy}
+                                    onChange={(e) => setStrategy(e.target.value)}
+                                    placeholder="MMBM, AMD..."
+                                    className={`w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
+                                        playbooks.find(p => p.name === strategy) ? 'pl-8' : ''
+                                    }`}
+                                />
+                                {playbooks.find(p => p.name === strategy) && (
+                                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm" style={{ color: playbooks.find(p => p.name === strategy)?.color }}>
+                                        {playbooks.find(p => p.name === strategy)?.icon}
+                                    </div>
+                                )}
                             </div>
-                            <div className="bg-gray-900/50 rounded-lg p-3 border border-green-900/30">
-                                <div className="text-xs text-gray-500 mb-1">Retorno Estimado</div>
-                                <div className="text-lg font-bold text-green-400">
-                                    $ {estimates.reward.toFixed(2)}
-                                </div>
-                            </div>
+                            <datalist id="strategies-list">
+                                {Array.from(new Set([...playbooks.map(p => p.name), ...strategies])).sort().map((strat) => (
+                                    <option key={strat} value={strat} />
+                                ))}
+                            </datalist>
                         </div>
                     </div>
 
-                    {/* Timeframes na direita (desktop) ou abaixo (mobile) */}
-                    <div className="space-y-4">
+                    {/* Timeframes + Setup */}
+                    <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Timeframe Análise (HTF)
-                            </label>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">TF Análise</label>
                             <input
                                 list="htf-list"
                                 value={tfAnalise}
                                 onChange={(e) => setTfAnalise(e.target.value)}
-                                placeholder="EX: 4H"
-                                className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                                placeholder="H4"
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="htf-list">
-                                <option value="Mensal" />
-                                <option value="Semanal" />
-                                <option value="Diário" />
-                                <option value="H4" />
-                                <option value="H1" />
-                                <option value="M15" />
+                                <option value="Monthly" /><option value="Weekly" /><option value="Daily" /><option value="H4" /><option value="H1" />
                             </datalist>
                         </div>
-
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Timeframe Entrada (LTF)
-                            </label>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">TF Entrada</label>
                             <input
                                 list="ltf-list"
                                 value={tfEntrada}
                                 onChange={(e) => setTfEntrada(e.target.value)}
-                                placeholder="EX: 5M"
-                                className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
+                                placeholder="M5"
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="ltf-list">
-                                <option value="H1" />
-                                <option value="M15" />
-                                <option value="M5" />
-                                <option value="M3" />
-                                <option value="M1" />
+                                <option value="H1" /><option value="M15" /><option value="M5" /><option value="M3" /><option value="M1" />
+                            </datalist>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Setup</label>
+                            <input
+                                list="setups-list"
+                                value={setup}
+                                onChange={(e) => setSetup(e.target.value)}
+                                placeholder="ST+RE"
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            />
+                            <datalist id="setups-list">
+                                {setups.map((s) => (<option key={s} value={s} />))}
                             </datalist>
                         </div>
                     </div>
-                </div>
 
-                {/* Estratégia e Setup - Responsive: stacks on mobile, side-by-side on tablet+ */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Alignment Badge */}
+                    {tfAnalise && tfEntrada && (
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
+                            alignmentResult.valid
+                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        }`}>
+                            {alignmentResult.valid ? '✓ HTF Aligned' : `⚠ Máx: ${alignmentResult.recommendedEntryTF}`}
+                        </div>
+                    )}
+
+                    {/* Tags */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Estratégia
-                        </label>
-                        <div className="relative">
+                        <label className="block text-xs font-medium text-gray-400 mb-1.5">Tags</label>
+                        <div 
+                            className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 flex flex-wrap gap-1.5 items-center min-h-[38px]"
+                            onClick={() => document.getElementById('tags-input')?.focus()}
+                        >
+                            {tagsList.map((tag, index) => (
+                                <span key={index} className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                    {tag}
+                                    <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
+                                </span>
+                            ))}
                             <input
-                                list="strategies-list"
-                                value={strategy}
-                                onChange={(e) => setStrategy(e.target.value)}
-                                placeholder="Selecione ou digite..."
-                                className={`w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 ${
-                                    playbooks.find(p => p.name === strategy) ? 'pl-10' : ''
-                                }`}
-                            />
-                            {playbooks.find(p => p.name === strategy) && (
-                                <div 
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-lg"
-                                    style={{ color: playbooks.find(p => p.name === strategy)?.color }}
-                                >
-                                    {playbooks.find(p => p.name === strategy)?.icon}
-                                </div>
-                            )}
-                        </div>
-                        <datalist id="strategies-list">
-                            {/* Combine Playbooks and Settings Strategies */}
-                            {Array.from(new Set([
-                                ...playbooks.map(p => p.name),
-                                ...strategies
-                            ])).sort().map((strat) => (
-                                <option key={strat} value={strat} />
-                            ))}
-                        </datalist>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Tipo de Entrada (Setup)
-                        </label>
-                        <input
-                            list="setups-list"
-                            value={setup}
-                            onChange={(e) => setSetup(e.target.value)}
-                            placeholder="Selecione ou digite..."
-                            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                        />
-                        <datalist id="setups-list">
-                            {setups.map((s) => (
-                                <option key={s} value={s} />
-                            ))}
-                        </datalist>
-                    </div>
-                </div>
-
-                {/* Tags - Custom Input */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Tags (PDArrays, Contexto)
-                    </label>
-                    <div 
-                        className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-transparent transition-all duration-200 flex flex-wrap gap-2 items-center min-h-[46px]"
-                        onClick={() => document.getElementById('tags-input')?.focus()}
-                    >
-                        {tagsList.map((tag, index) => (
-                            <span 
-                                key={index} 
-                                className={`
-                                    px-2 py-1 rounded text-xs font-medium border flex items-center gap-1
-                                    ${index % 2 === 0 
-                                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' 
-                                        : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                                id="tags-input"
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === ' ' || e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const newTag = tagInput.trim();
+                                        if (newTag && !tagsList.includes(newTag)) {
+                                            setTagsList(prev => [...prev, newTag]);
+                                            setTagInput('');
+                                        }
+                                    } else if (e.key === 'Backspace' && !tagInput && tagsList.length > 0) {
+                                        setTagsList(prev => prev.slice(0, -1));
                                     }
-                                `}
-                            >
-                                {tag}
-                                <button
-                                    type="button"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setTagsList(prev => prev.filter((_, i) => i !== index));
-                                    }}
-                                    className="hover:text-white transition-colors"
-                                >
-                                    ×
-                                </button>
-                            </span>
-                        ))}
-                        <input
-                            id="tags-input"
-                            value={tagInput}
-                            onChange={(e) => setTagInput(e.target.value)}
-                            onKeyDown={(e) => {
-                                if (e.key === ' ' || e.key === 'Enter') {
-                                    e.preventDefault();
-                                    const newTag = tagInput.trim();
-                                    if (newTag && !tagsList.includes(newTag)) {
-                                        setTagsList(prev => [...prev, newTag]);
-                                        setTagInput('');
-                                    }
-                                } else if (e.key === 'Backspace' && !tagInput && tagsList.length > 0) {
-                                    setTagsList(prev => prev.slice(0, -1));
-                                }
-                            }}
-                            placeholder={tagsList.length === 0 ? "#FVG #BPR #OB #Liquidez" : ""}
-                            className="bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 flex-1 min-w-[120px] text-sm"
-                        />
+                                }}
+                                placeholder={tagsList.length === 0 ? "#FVG #Breaker #OB" : ""}
+                                className="bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 flex-1 min-w-[60px] text-sm"
+                            />
+                        </div>
                     </div>
                 </div>
-
-                {/* Notas - Opcional */}
-                <div>
-                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Notas
-                    </label>
-                    <textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200"
-                        rows={3}
-                        placeholder="Observações sobre o trade..."
-                    />
-                </div>
-
-                {/* Data e Hora Entrada - Responsive: stacks on mobile */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Input
-                        label="Data Entrada"
-                        type="date"
-                        value={entryDate}
-                        onChange={(e) => setEntryDate(e.target.value)}
-                        required
-                    />
-                    <Input
-                        label="Hora Entrada"
-                        type="time"
-                        value={entryTime}
-                        onChange={(e) => setEntryTime(e.target.value)}
-                    />
-                </div>
-
-                {/* Resultado do Trade - Always show in edit mode, or when trade is closed in create mode */}
-                {(mode === 'edit' || !isTradeOpen) && (
-                    <>
-                        <div className="border-t border-gray-700 my-4"></div>
-                        <h3 className="text-sm font-medium text-gray-400 mb-3">
-                            {isTradeOpen ? 'Finalizar Trade (Opcional)' : 'Resultado do Trade'}
-                        </h3>
-                        
-                        <Input
-                            label="Preço Saída"
-                            type="number"
-                            step="0.00001"
-                            value={exitPrice}
-                            onChange={(e) => setExitPrice(e.target.value)}
-                            placeholder={isTradeOpen ? "Deixe vazio se ainda em aberto" : ""}
-                        />
-
-                         {/* Custos (Corretagem e Swap) - Opcionais */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <Input
-                                label="Corretagem ($)"
-                                type="number"
-                                step="0.01"
-                                min="0" 
-                                value={commission}
-                                onChange={(e) => setCommission(e.target.value)}
-                                placeholder="0.00"
-                            />
-                            <Input
-                                label="Swap ($)"
-                                type="number"
-                                step="0.01"
-                                value={swap}
-                                onChange={(e) => setSwap(e.target.value)}
-                                placeholder="-1.50 ou 2.00"
-                            />
-                        </div>
-
-                        {/* Indicador de Resultado */}
-                        {(() => {
-                            if (!exitPrice || !entryPrice || !lot) {
-                                // Sem dados suficientes
-                                return (
-                                    <div className="rounded-xl p-6 text-center font-bold text-2xl bg-gray-800/50 border-2 border-gray-600 text-gray-400">
-                                        {isTradeOpen ? 'Trade em Aberto' : 'Resultado'}
-                                    </div>
-                                );
-                            }
-
-                            const entry = parseFloat(entryPrice);
-                            const exit = parseFloat(exitPrice);
-                            const lotSize = parseFloat(lot);
-                            const assetMultiplier = DEFAULT_ASSETS[symbol.toUpperCase()] || 1;
-
-                            // Calcular P&L real
-                            let pnl = 0;
-                            if (type === 'Long') {
-                                pnl = (exit - entry) * lotSize * assetMultiplier;
-                            } else {
-                                pnl = (entry - exit) * lotSize * assetMultiplier;
-                            }
-
-                            // Aplicar custos
-                            const commValue = commission ? -Math.abs(parseFloat(commission)) : 0;
-                            const swapValue = swap ? parseFloat(swap) : 0;
-                            pnl = pnl + commValue + swapValue;
-
-                            // Determinar resultado
-                            if (pnl > 0) {
-                                // WIN
-                                return (
-                                    <div className="rounded-xl p-6 text-center font-bold text-2xl bg-green-900/30 border-2 border-green-500 text-green-400">
-                                        WIN
-                                    </div>
-                                );
-                            } else if (pnl < 0) {
-                                // LOSS
-                                return (
-                                    <div className="rounded-xl p-6 text-center font-bold text-2xl bg-red-900/30 border-2 border-red-500 text-red-400">
-                                        LOSS
-                                    </div>
-                                );
-                            } else {
-                                // Break Even
-                                return (
-                                    <div className="rounded-xl p-6 text-center font-bold text-2xl bg-yellow-900/30 border-2 border-yellow-500 text-yellow-400">
-                                        BE
-                                    </div>
-                                );
-                            }
-                        })()}
-
-                        {/* Data e Hora Saída - Responsive */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <Input
-                                label="Data Saída"
-                                type="date"
-                                value={exitDate}
-                                onChange={(e) => setExitDate(e.target.value)}
-                                placeholder={isTradeOpen ? "Opcional" : ""}
-                            />
-                            <Input
-                                label="Hora Saída"
-                                type="time"
-                                value={exitTime}
-                                onChange={(e) => setExitTime(e.target.value)}
-                                placeholder={isTradeOpen ? "Opcional" : ""}
-                            />
-                        </div>
-                    </>
-                )}
             </div>
 
-            {/* Botões de Ação */}
-            <div className="flex gap-3 pt-4">
+            {/* ===== BLOCO 2: FINANCEIRO ===== */}
+            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+                <SectionHeader icon="💰" title="Dados Financeiros" />
+                
+                <div className="space-y-3">
+                    {/* Ativo, Lote, Direção */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Ativo</label>
+                            <input
+                                list="assets-list"
+                                value={symbol}
+                                onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                                placeholder="EURUSD"
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm uppercase placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                required
+                            />
+                            <datalist id="assets-list">
+                                {assets.map((asset) => (<option key={asset.symbol} value={asset.symbol} />))}
+                            </datalist>
+                        </div>
+                        <Input label="Lote" type="number" step="0.01" value={lot} onChange={(e) => setLot(e.target.value)} placeholder="1.0" required />
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Direção</label>
+                            <input
+                                list="direction-list"
+                                value={type}
+                                onChange={(e) => setType(e.target.value as 'Long' | 'Short')}
+                                placeholder="Long/Short"
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                            />
+                            <datalist id="direction-list">
+                                <option value="Long" /><option value="Short" />
+                            </datalist>
+                        </div>
+                    </div>
+
+                    {/* Entry, SL, TP */}
+                    <div className="grid grid-cols-3 gap-3">
+                        <Input label="Preço Entrada" type="number" step="0.00001" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} required />
+                        <Input label="Stop Loss" type="number" step="0.00001" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} />
+                        <Input label="Take Profit" type="number" step="0.00001" value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} />
+                    </div>
+
+                    {/* Exit Price (only if finalized) */}
+                    {!isTradeOpen && (
+                        <Input label="Preço Saída" type="number" step="0.00001" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} />
+                    )}
+
+                    {/* Costs (always visible) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <Input label="Corretagem ($)" type="number" step="0.01" min="0" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="0.00" />
+                        <Input label="Swap ($)" type="number" step="0.01" value={swap} onChange={(e) => setSwap(e.target.value)} placeholder="-1.50" />
+                    </div>
+
+                    {/* Estimates */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="bg-gray-900/50 rounded-lg p-2.5 text-center border border-red-900/30">
+                            <div className="text-xs text-gray-500">Risco</div>
+                            <div className="text-base font-bold text-red-400">$ {estimates.risk.toFixed(2)}</div>
+                        </div>
+                        <div className="bg-gray-900/50 rounded-lg p-2.5 text-center border border-green-900/30">
+                            <div className="text-xs text-gray-500">Retorno</div>
+                            <div className="text-base font-bold text-green-400">$ {estimates.reward.toFixed(2)}</div>
+                        </div>
+                    </div>
+
+                    {/* Result (only if finalized) */}
+                    {!isTradeOpen && exitPrice && entryPrice && (
+                        <div className="pt-2">
+                            {(() => {
+                                const entry = parseFloat(entryPrice);
+                                const exit = parseFloat(exitPrice);
+                                const lotSize = parseFloat(lot) || 1;
+                                const assetMultiplier = DEFAULT_ASSETS[symbol.toUpperCase()] || 1;
+                                let pnl = type === 'Long' ? (exit - entry) * lotSize * assetMultiplier : (entry - exit) * lotSize * assetMultiplier;
+                                pnl += (commission ? -Math.abs(parseFloat(commission)) : 0) + (swap ? parseFloat(swap) : 0);
+                                
+                                return (
+                                    <div className="flex items-center justify-between">
+                                        <div className={`flex-1 text-center py-2 rounded-lg font-bold text-lg ${
+                                            pnl > 0 ? 'bg-green-900/30 text-green-400 border border-green-500/30' : 
+                                            pnl < 0 ? 'bg-red-900/30 text-red-400 border border-red-500/30' : 
+                                            'bg-yellow-900/30 text-yellow-400 border border-yellow-500/30'
+                                        }`}>
+                                            {pnl > 0 ? 'WIN' : pnl < 0 ? 'LOSS' : 'BE'}
+                                        </div>
+                                        {rMultiplePreview !== null && (
+                                            <div className={`ml-3 px-3 py-2 rounded-lg font-bold ${getRMultipleColor(rMultiplePreview)} bg-gray-900/50 border border-gray-700`}>
+                                                {formatRMultiple(rMultiplePreview)}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ===== BLOCO 3: DATA E HORA ===== */}
+            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+                <SectionHeader icon="📅" title="Data e Hora" />
+                
+                <div className="space-y-3">
+                    {/* Entry DateTime */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <Input label="Data Entrada" type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} required />
+                        <Input label="Hora Entrada" type="time" value={entryTime} onChange={(e) => setEntryTime(e.target.value)} />
+                    </div>
+
+                    {/* Session Badge */}
+                    {entryTime && (
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
+                            detectedSession === 'London-NY Overlap' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+                            : detectedSession === 'New York' || detectedSession === 'London' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                            : 'bg-gray-700/50 text-gray-400 border border-gray-600'
+                        }`}>
+                            {getSessionEmoji(detectedSession)} {detectedSession}
+                        </div>
+                    )}
+
+                    {/* Exit DateTime (only if finalized) */}
+                    {!isTradeOpen && (
+                        <div className="grid grid-cols-2 gap-3">
+                            <Input label="Data Saída" type="date" value={exitDate} onChange={(e) => setExitDate(e.target.value)} />
+                            <Input label="Hora Saída" type="time" value={exitTime} onChange={(e) => setExitTime(e.target.value)} />
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-3">
                 {mode === 'edit' && onCancel && (
-                    <Button
-                        type="button"
-                        onClick={onCancel}
-                        variant="gradient-danger"
-                        className="flex-1 font-extrabold"
-                    >
+                    <Button type="button" onClick={onCancel} variant="gradient-danger" className="flex-1">
                         Cancelar
                     </Button>
                 )}
-                
                 <button
                     type="submit"
-                    className={`
-                        ${mode === 'edit' ? 'flex-1' : 'w-full'} 
-                        py-3 px-4 
-                        ${mode === 'edit' 
-                            ? 'bg-green-600 hover:bg-green-500 text-white' 
-                            : 'bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-lg shadow-green-500/30'
-                        } 
-                        font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2
-                    `}
+                    className="flex-1 py-3 px-4 bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-green-500/30"
                 >
-                    {mode === 'edit' ? (
-                        'Salvar Alterações'
-                    ) : (
-                        <>
-                            <span>Registrar</span>
-                        </>
-                    )}
+                    {mode === 'edit' ? 'Salvar' : 'Registrar Trade'}
                 </button>
             </div>
         </form>

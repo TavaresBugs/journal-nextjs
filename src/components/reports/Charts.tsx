@@ -20,7 +20,7 @@ const DrawdownChartLightweight = dynamic(
 );
 
 // Recharts components (modular)
-const StrategyPieChart = dynamic(() => import('@/components/charts/recharts').then(m => m.StrategyPieChart), { ssr: false });
+const StrategyComparisonChart = dynamic(() => import('@/components/charts/recharts').then(m => m.StrategyComparisonChart), { ssr: false });
 const WinLossDistributionChart = dynamic(() => import('@/components/charts/recharts').then(m => m.WinLossDistributionChart), { ssr: false });
 const AssetPerformanceChart = dynamic(() => import('@/components/charts/recharts').then(m => m.AssetPerformanceChart), { ssr: false });
 const MonthlyPerformanceGrid = dynamic(() => import('@/components/charts/recharts').then(m => m.MonthlyPerformanceGrid), { ssr: false });
@@ -54,7 +54,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
                     Análise de Distribuição
                 </h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <StrategyPieChart trades={trades} />
+                    <StrategyComparisonChart trades={trades} currency={currency} />
                     <WinLossDistributionChart trades={trades} />
                 </div>
             </div>

@@ -1,10 +1,53 @@
 # 📋 TODO List - Trading Journal Pro
 
-> **Última atualização:** 06/12/2024 21:50 (Brasília)
+> **Última atualização:** 07/12/2024 14:36 (Brasília)
 
 ---
 
-## ✅ Concluído Hoje (06/12/2024)
+## ✅ Concluído Hoje (07/12/2024)
+
+### Melhorias nos Gráficos
+
+- [x] **Padronização de Altura dos Gráficos** - Altura fixa de 300px para todos os gráficos Recharts
+
+  - `WinLossDistributionChart` - Altura padronizada
+  - `RMultipleDistributionChart` - Altura padronizada
+  - `WeekdayWinRateChart` - Altura padronizada
+  - `MonthlyPerformanceGrid` - Altura padronizada
+  - `DrawdownChartLightweight` - Altura padronizada
+
+- [x] **Tooltips Visíveis** - Corrigido contraste de texto nos tooltips
+
+  - Cores escuras para melhor legibilidade
+  - padding e border-radius consistentes
+
+- [x] **Orientação de Barras** - Gráficos ajustados para layout horizontal
+
+  - `WeekdayWinRateChart` - Barras horizontais para melhor visualização
+  - `WinLossDistributionChart` - Barras horizontais
+
+- [x] **Novo Componente** - `StrategyComparisonChart`
+
+  - Gráfico de comparação entre estratégias/playbooks
+
+- [x] **Playbook Review Tab** - Aba de reviews no modal de playbook
+
+- [x] **Timeframe Utils** - Utilitários para ordenação de timeframes
+
+  - `timeframeUtils.ts` com lógica de ordenação
+  - Testes unitários adicionados
+
+- [x] **Tag Analytics Service** - Serviço de análise por tags
+
+  - Métricas por tag/PDArray
+  - Testes unitários adicionados
+
+- [x] **Telemetry Fields** - Campos de telemetria para trades
+  - Migração SQL: `020_add_telemetry_fields.sql`
+
+---
+
+## ✅ Concluído (06/12/2024)
 
 ### Implementações
 

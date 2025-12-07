@@ -16,11 +16,11 @@ export function Input({
     const id = props.id || generatedId;
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
             {label && (
                 <label
                     htmlFor={id}
-                    className="text-sm font-medium text-gray-300"
+                    className="text-xs font-medium text-gray-400"
                 >
                     {label}
                 </label>
@@ -28,7 +28,7 @@ export function Input({
             <input
                 id={id}
                 className={cn(
-                    "w-full px-4 py-2.5 bg-gray-800/50 border rounded-lg text-gray-100 placeholder-gray-500",
+                    "w-full px-3 py-2 bg-gray-800/50 border rounded-lg text-gray-100 text-sm placeholder-gray-500",
                     "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200",
                     error ? 'border-red-500' : 'border-gray-700',
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
@@ -39,7 +39,7 @@ export function Input({
                 {...props}
             />
             {error && (
-                <span className="text-sm text-red-400">{error}</span>
+                <span className="text-xs text-red-400">{error}</span>
             )}
         </div>
     );

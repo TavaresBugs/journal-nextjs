@@ -810,6 +810,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                 isOpen={!!viewingPlaybook}
                 onClose={() => setViewingPlaybook(null)}
                 playbook={viewingPlaybook}
+                trades={allHistory as unknown as Trade[]}
+                currency={currentAccount?.currency || 'USD'}
                 onEdit={(playbook) => {
                     setViewingPlaybook(null);
                     setEditingPlaybook(playbook);

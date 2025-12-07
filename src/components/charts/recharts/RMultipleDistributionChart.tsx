@@ -62,14 +62,16 @@ export function RMultipleDistributionChart({ trades }: RMultipleDistributionChar
             <p className="text-xs text-gray-500 mb-6">
                 Mostra a eficiência dos seus trades em relação ao risco inicial.
             </p>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} vertical={false} />
                     <XAxis dataKey="range" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 10 }} interval={0} />
                     <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 12 }} allowDecimals={false} />
                     <Tooltip
                         cursor={{ fill: '#374151', opacity: 0.2 }}
-                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
+                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem' }}
+                        labelStyle={{ color: '#f3f4f6' }}
+                        itemStyle={{ color: '#f3f4f6' }}
                     />
                     <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                         {data.map((entry, index) => (

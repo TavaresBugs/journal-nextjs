@@ -35,23 +35,31 @@ export function WinLossDistributionChart({ trades }: WinLossDistributionChartPro
         <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
             <h3 className="text-base font-medium text-gray-400 mb-8">Distribuição Win/Loss</h3>
             <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} horizontal={true} vertical={true} />
-                    <XAxis type="number" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                    <YAxis 
+                <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} vertical={false} />
+                    <XAxis 
                         dataKey="strategy" 
-                        type="category" 
                         stroke="#9ca3af" 
-                        tick={{ fill: '#9ca3af', fontSize: 12 }} 
-                        width={100}
+                        tick={{ fill: '#9ca3af', fontSize: 10 }} 
+                        interval={0}
+                        angle={-15}
+                        textAnchor="end"
+                        height={60}
+                    />
+                    <YAxis 
+                        stroke="#9ca3af" 
+                        tick={{ fill: '#9ca3af', fontSize: 12 }}
+                        allowDecimals={false}
                     />
                     <Tooltip
                         cursor={{ fill: '#374151', opacity: 0.2 }}
-                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
+                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem' }}
+                        labelStyle={{ color: '#f3f4f6' }}
+                        itemStyle={{ color: '#f3f4f6' }}
                         formatter={(value: number, name: string) => [value, name === 'wins' ? 'Wins' : 'Losses']}
                     />
-                    <Bar dataKey="wins" name="Wins" stackId="a" fill="#22c55e" radius={[0, 4, 4, 0]} />
-                    <Bar dataKey="losses" name="Losses" stackId="a" fill="#ef4444" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="wins" name="Wins" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="losses" name="Losses" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
             </ResponsiveContainer>
         </div>

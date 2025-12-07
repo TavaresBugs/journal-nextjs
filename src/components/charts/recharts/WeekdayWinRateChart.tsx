@@ -41,7 +41,7 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
     return (
         <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
             <h3 className="text-base font-medium text-gray-400 mb-8">Win Rate por Dia</h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} vertical={false} />
                     <XAxis dataKey="day" stroke="#9ca3af" tick={{ fill: '#9ca3af', fontSize: 12 }} />

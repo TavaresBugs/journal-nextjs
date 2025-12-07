@@ -12,18 +12,18 @@ interface MonthlyPerformanceGridProps {
 
 export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceGridProps) {
     const monthlyData = useMemo(() => {
-        const data: Record<string, Record<string, number>> = {};
+        const data: Record<string, Record<number, number>> = {};
         const years = new Set<string>();
 
         trades.forEach(trade => {
             const date = dayjs(trade.entryDate);
             const year = date.format('YYYY');
-            const month = date.format('MMM'); // Jan, Feb, etc.
+            const monthIndex = date.month(); // 0-11
             
             if (!data[year]) data[year] = {};
-            if (!data[year][month]) data[year][month] = 0;
+            if (!data[year][monthIndex]) data[year][monthIndex] = 0;
             
-            data[year][month] += trade.pnl || 0;
+            data[year][monthIndex] += trade.pnl || 0;
             years.add(year);
         });
 
@@ -54,9 +54,9 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
                         return (
                             <tr key={year} className="border-b border-gray-800 hover:bg-gray-800/30">
                                 <td className="px-4 py-4 font-medium text-gray-300">{year}</td>
-                                {monthlyData.months.map(month => {
-                                    const value = monthlyData.data[year]?.[month] || 0;
-                                    const hasValue = monthlyData.data[year] && month in monthlyData.data[year];
+                                {monthlyData.months.map((month, monthIndex) => {
+                                    const value = monthlyData.data[year]?.[monthIndex] || 0;
+                                    const hasValue = monthlyData.data[year] && monthIndex in monthlyData.data[year];
                                     
                                     return (
                                         <td key={`${year}-${month}`} className="px-2 py-4 text-center">

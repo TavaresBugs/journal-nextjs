@@ -55,8 +55,11 @@ export function CircularProgress({
             </svg>
             {showPercentage && (
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-sm font-bold text-gray-100">
-                        {percentage.toFixed(1)}%
+                    <span 
+                        className="font-bold text-gray-100"
+                        style={{ fontSize: `${Math.max(size * 0.18, 10)}px` }}
+                    >
+                        {percentage % 1 === 0 ? percentage.toFixed(0) : percentage.toFixed(1)}%
                     </span>
                 </div>
             )}

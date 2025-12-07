@@ -1,84 +1,114 @@
 'use client';
 
+import { useState } from 'react';
 import { Modal, Button } from '@/components/ui';
-import type { Playbook } from '@/types';
+import { Tabs, TabPanel } from '@/components/ui/Tabs';
+import { PlaybookReviewTab } from './PlaybookReviewTab';
+import type { Playbook, Trade } from '@/types';
+
+const PLAYBOOK_TABS = [
+    { id: 'info', label: 'Info', icon: '📋' },
+    { id: 'relatorios', label: 'Relatórios', icon: '📊' }
+];
 
 interface ViewPlaybookModalProps {
     isOpen: boolean;
     onClose: () => void;
     playbook: Playbook | null;
     onEdit?: (playbook: Playbook) => void;
+    trades?: Trade[];
+    currency?: string;
 }
 
-export function ViewPlaybookModal({ isOpen, onClose, playbook, onEdit }: ViewPlaybookModalProps) {
+export function ViewPlaybookModal({ 
+    isOpen, 
+    onClose, 
+    playbook, 
+    onEdit,
+    trades = [],
+    currency = 'USD'
+}: ViewPlaybookModalProps) {
+    const [activeTab, setActiveTab] = useState('info');
+
     if (!playbook) return null;
 
+    // Filter trades that match this playbook strategy
+    const playbookTrades = trades.filter(t => t.strategy === playbook.name);
+
+    const handleClose = () => {
+        setActiveTab('info'); // Reset to info tab on close
+        onClose();
+    };
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`📖 ${playbook.name}`} maxWidth="2xl">
-            <div className="space-y-6">
-                {/* Header Info */}
-                <div className="flex items-start gap-4 p-4 bg-gray-800/30 rounded-xl border border-gray-700">
-                    <div 
-                        className="text-4xl p-3 rounded-xl bg-gray-900/50 border border-gray-700"
-                        style={{ color: playbook.color }}
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleClose} 
+            title={`${playbook.icon} ${playbook.name}`} 
+            maxWidth="2xl"
+            headerActions={
+                onEdit && activeTab === 'info' ? (
+                    <Button
+                        variant="gold"
+                        size="sm"
+                        onClick={() => {
+                            onEdit(playbook);
+                            handleClose();
+                        }}
+                        leftIcon={<span>✏️</span>}
                     >
-                        {playbook.icon}
-                    </div>
-                    <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-100 mb-1">{playbook.name}</h3>
-                        {playbook.description && (
-                            <p className="text-gray-400 text-sm leading-relaxed">
-                                {playbook.description}
-                            </p>
-                        )}
-                    </div>
-                </div>
-
-                {/* Rules */}
-                <div>
-                    <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
-                        Regras do Playbook
-                    </h4>
-                    
-                    <div className="space-y-4">
-                        {playbook.ruleGroups?.map((group) => (
-                            <div key={group.id} className="bg-gray-800/30 rounded-lg border border-gray-700 overflow-hidden">
-                                <div className="px-4 py-2 bg-gray-900/50 border-b border-gray-700 flex items-center gap-2">
-                                    <span className="text-gray-500">☰</span>
-                                    <span className="font-medium text-gray-200">{group.name}</span>
-                                </div>
-                                <div className="p-4 space-y-2">
-                                    {group.rules.length > 0 ? (
-                                        group.rules.map((rule, index) => (
-                                            <div key={index} className="flex items-start gap-3 text-sm text-gray-300">
-                                                <span className="text-emerald-500 mt-0.5">✓</span>
-                                                <span className="leading-relaxed">{rule}</span>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">Nenhuma regra definida.</p>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Footer Actions */}
-                {onEdit && (
-                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                        <Button
-                            variant="gold"
-                            onClick={() => {
-                                onEdit(playbook);
-                                onClose();
-                            }}
-                            leftIcon={<span>✏️</span>}
-                        >
-                            Editar Playbook
-                        </Button>
-                    </div>
+                        Editar
+                    </Button>
+                ) : undefined
+            }
+        >
+            <div className="space-y-6">
+                {/* Description (if exists) */}
+                {playbook.description && (
+                    <p className="text-gray-400 text-sm leading-relaxed px-1">
+                        {playbook.description}
+                    </p>
                 )}
+
+                {/* Tabs */}
+                <Tabs tabs={PLAYBOOK_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+                {/* Tab: Info (Rules) */}
+                <TabPanel value="info" activeTab={activeTab}>
+                    <div>
+                        <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+                            Regras do Playbook
+                        </h4>
+                        
+                        <div className="space-y-4">
+                            {playbook.ruleGroups?.map((group) => (
+                                <div key={group.id} className="bg-gray-800/30 rounded-lg border border-gray-700 overflow-hidden">
+                                    <div className="px-4 py-2 bg-gray-900/50 border-b border-gray-700 flex items-center gap-2">
+                                        <span className="text-gray-500">☰</span>
+                                        <span className="font-medium text-gray-200">{group.name}</span>
+                                    </div>
+                                    <div className="p-4 space-y-2">
+                                        {group.rules.length > 0 ? (
+                                            group.rules.map((rule, index) => (
+                                                <div key={index} className="flex items-start gap-3 text-sm text-gray-300">
+                                                    <span className="text-emerald-500 mt-0.5">✓</span>
+                                                    <span className="leading-relaxed">{rule}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-gray-500 italic">Nenhuma regra definida.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </TabPanel>
+
+                {/* Tab: Relatórios (Analytics) */}
+                <TabPanel value="relatorios" activeTab={activeTab}>
+                    <PlaybookReviewTab trades={playbookTrades} currency={currency} />
+                </TabPanel>
             </div>
         </Modal>
     );

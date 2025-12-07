@@ -49,6 +49,16 @@ export interface Trade {
     pnl?: number;
     outcome?: 'win' | 'loss' | 'breakeven' | 'pending';
 
+    // Telemetria automática
+    session?: string; // Trading session (Tokyo, London, NY, etc.)
+    htfAligned?: boolean; // Whether TF alignment is valid
+    rMultiple?: number; // Risk multiple
+
+    // Telemetria qualitativa
+    marketCondition?: 'Trending Bull' | 'Trending Bear' | 'Range' | 'High Vol' | 'Low Vol';
+    planAdherence?: '100%' | 'partial' | 'off-plan';
+    planAdherenceRating?: number; // 1-5
+
     createdAt: string;
     updatedAt: string;
 }
@@ -73,6 +83,9 @@ export interface TradeLite {
     tags?: string;
     strategy?: string;
     setup?: string;
+    // Timeframes for analytics
+    tfAnalise?: string;
+    tfEntrada?: string;
 }
 
 export interface TradeResponse {
