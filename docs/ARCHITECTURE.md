@@ -1,6 +1,6 @@
 # 🏗️ Arquitetura do Projeto
 
-> Última atualização: Dezembro 2024
+> Última atualização: 06 de Dezembro 2024
 
 ## Visão Geral
 
@@ -33,6 +33,9 @@ src/
 │   ├── mentor/             # Painel do Mentor (protegido)
 │   ├── comunidade/         # Leaderboard e Playbooks
 │   ├── login/              # Página de login
+│   ├── pending/            # Aprovação pendente
+│   ├── privacidade/        # Política de privacidade
+│   ├── termos/             # Termos de uso
 │   ├── share/[id]/         # Páginas públicas
 │   ├── layout.tsx          # Root layout
 │   ├── page.tsx            # Home/Dashboard
@@ -42,29 +45,28 @@ src/
 │   ├── ui/                 # Componentes base
 │   │   ├── Button.tsx
 │   │   ├── Card.tsx
+│   │   ├── CircularProgress.tsx
+│   │   ├── CookieConsent.tsx  # LGPD/GDPR
 │   │   ├── Input.tsx
 │   │   ├── Modal.tsx
 │   │   ├── Tabs.tsx
 │   │   └── Toast.tsx
 │   │
 │   ├── trades/             # Gestão de trades
-│   │   ├── TradeForm.tsx
-│   │   ├── TradeList.tsx
-│   │   ├── TradeCalendar.tsx
-│   │   └── TradeDetails.tsx
-│   │
 │   ├── journal/            # Journal entries
-│   │   ├── JournalEntryModal.tsx
-│   │   ├── DayDetailModal.tsx
-│   │   └── ...
+│   ├── import/             # Importação de dados
+│   ├── notifications/      # Sistema de notificações
+│   ├── settings/           # Configurações do usuário
+│   ├── tax/                # Relatórios fiscais
 │   │
 │   ├── charts/
-│   │   ├── recharts/       # Win Rate, Distribution, Grid
-│   │   └── lightweight/    # Equity Curve, Drawdown
+│   │   ├── recharts/       # Gráficos SVG
+│   │   └── lightweight/    # Gráficos Canvas
 │   │
 │   ├── playbook/           # Gestão de playbooks
 │   ├── accounts/           # Seletor de contas
 │   ├── reports/            # Métricas e relatórios
+│   ├── mentor/             # Componentes de mentoria
 │   └── shared/             # Páginas de compartilhamento
 │
 ├── services/               # Camada de dados
@@ -72,28 +74,47 @@ src/
 │   ├── tradeService.ts     # CRUD trades
 │   ├── journalService.ts   # CRUD journal
 │   ├── routineService.ts   # Rotinas diárias
-│   └── migrationService.ts # Migração de dados
+│   ├── migrationService.ts # Migração de dados
+│   ├── adminService.ts     # Gestão admin/auditoria
+│   ├── exportService.ts    # Exportação Excel/CSV
+│   ├── importService.ts    # Importação de dados
+│   ├── taxService.ts       # Cálculos fiscais
+│   ├── reportService.ts    # Geração de relatórios
+│   └── reviewService.ts    # Reviews de mentor
+│
+├── schemas/                # Validação com Zod
+│   ├── authSchema.ts       # Validação de auth
+│   ├── tradeSchema.ts      # Validação de trades
+│   └── journalSchema.ts    # Validação de journal
 │
 ├── store/                  # Estado global (Zustand)
 │   ├── useAccountStore.ts
 │   ├── useTradeStore.ts
 │   ├── usePlaybookStore.ts
-│   └── ...
+│   ├── useJournalStore.ts
+│   └── useSettingsStore.ts
 │
 ├── hooks/                  # Custom hooks
-│   ├── useAuth.ts
-│   ├── useToast.ts
-│   └── ...
+│   ├── useAuth.ts          # Autenticação
+│   ├── useDayStats.ts      # Estatísticas do dia
+│   ├── useError.ts         # Tratamento de erros
+│   ├── useImageUpload.ts   # Upload de imagens
+│   └── useJournalForm.ts   # Form do journal
 │
 ├── lib/                    # Utilitários
 │   ├── supabase.ts         # Cliente Supabase
+│   ├── auth.ts             # Helpers de autenticação
 │   ├── storage.ts          # Abstração de storage
 │   ├── calculations.ts     # Métricas financeiras
+│   ├── errors.ts           # Custom errors
+│   ├── sanitizer.ts        # Sanitização de dados
+│   ├── shareUtils.ts       # Utils de compartilhamento
 │   └── utils.ts            # Helpers gerais
 │
 ├── types/                  # TypeScript types
 │   ├── index.ts
-│   └── ...
+│   ├── database.ts
+│   └── utils.ts
 │
 ├── contexts/               # React contexts
 │   └── AuthContext.tsx
@@ -120,6 +141,78 @@ Service (accountService, tradeService, etc.)
 Supabase Client
     ↓
 PostgreSQL (com RLS)
+```
+
+---
+
+## 🔄 Fluxos Principais
+
+### Trade Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> New
+    New --> Open: Create Trade (Manual)
+    New --> Open: Import (CSV/HTML)
+
+    state Open {
+        [*] --> Active
+        Active --> Closed: Add Exit Price/Date
+    }
+
+    Closed --> [*]
+
+    note right of Open
+        Calcula PnL, RR
+        e Métricas auto
+    end note
+```
+
+### Journal Entry Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Modal as JournalEntryModal
+    participant Store as JournalStore
+    participant DB as Supabase
+    participant Storage as Supabase Storage
+
+    User->>Modal: Open Entry
+    alt Create New
+        User->>Modal: Fill Form (Title, Emotion, Notes)
+        opt Upload Images
+            User->>Modal: Select Files
+            Modal->>Storage: Upload per Timeframe
+            Storage-->>Modal: Public URLs
+        end
+        Modal->>Store: addEntry(data)
+        Store->>DB: Insert
+    else Edit Existing
+        Modal->>Store: updateEntry(id, changes)
+        Store->>DB: Update
+    end
+```
+
+### Import Workflow (NinjaTrader/MetaTrader)
+
+```mermaid
+flowchart TD
+    A[Upload CSV/HTML] --> B{Detect Type}
+    B -->|NinjaTrader| C[Parse CSV (`;` sep)]
+    B -->|MetaTrader| D[Parse HTML Table]
+
+    C --> E[Normalize Data]
+    D --> E
+
+    E --> F{Map Symbols}
+    F -->|MNQ -> MNQ| G[cleanSymbol()]
+
+    G --> H[Convert Timezone]
+    H --> I[Preview Table]
+
+    I --> J[Confirm Import]
+    J --> K[Batch Insert Operations]
 ```
 
 ---
@@ -241,13 +334,15 @@ O leaderboard é **opt-in**. O usuário deve habilitar explicitamente a exibiç�
 
 ### Design System
 
-| Componente | Variantes                                                            |
-| ---------- | -------------------------------------------------------------------- |
-| `Button`   | `default`, `outline`, `ghost`, `gradient-primary`, `gradient-danger` |
-| `Card`     | `default`, `glass`                                                   |
-| `Input`    | `default`, `textarea`                                                |
-| `Modal`    | `default`, `fullscreen`                                              |
-| `Tabs`     | `default`                                                            |
+| Componente         | Variáveis                                                            |
+| ------------------ | -------------------------------------------------------------------- |
+| `Button`           | `default`, `outline`, `ghost`, `gradient-primary`, `gradient-danger` |
+| `Card`             | `default`, `glass`                                                   |
+| `Input`            | `default`, `textarea`                                                |
+| `Modal`            | `default`, `fullscreen`                                              |
+| `Tabs`             | `default`                                                            |
+| `CircularProgress` | Indicadores circulares de progresso                                  |
+| `CookieConsent`    | Banner LGPD/GDPR                                                     |
 
 ### Tema
 
@@ -261,15 +356,101 @@ O leaderboard é **opt-in**. O usuário deve habilitar explicitamente a exibiç�
 
 ### Recharts (SVG)
 
-- `WinRateChart` - Gauge de win rate
 - `WinLossDistributionChart` - Barras de distribuição
 - `MonthlyPerformanceGrid` - Heatmap mensal
-- `WeekdayWinRateChart` - Performance por dia
+- `WeekdayWinRateChart` - Performance por dia da semana
+- `AssetPerformanceChart` - Performance por ativo
+- `RMultipleDistributionChart` - Distribuição de R-múltiplos
+- `StrategyPieChart` - Pizza de estratégias
 
 ### Lightweight Charts (Canvas)
 
 - `EquityCurveLightweight` - Linha de capital
 - `DrawdownChartLightweight` - Área de drawdown
+- `PerformanceTimelineLightweight` - Timeline de performance
+- `LightweightChartWrapper` - Wrapper reutilizável
+
+---
+
+## ✅ Schema Validation
+
+Validação de dados com **Zod** em todas as camadas da aplicação.
+
+```mermaid
+flowchart LR
+    A[User Input] --> B{Zod Schema}
+    B --> |Valid| C[Service Call]
+    B --> |Invalid| D[Error Display]
+
+    subgraph Schemas
+        E[authSchema]
+        F[tradeSchema]
+        G[journalSchema]
+    end
+```
+
+| Schema          | Campos Principais                         |
+| --------------- | ----------------------------------------- |
+| `authSchema`    | Email, password, confirmação              |
+| `tradeSchema`   | Symbol, entry/exit price, quantity, dates |
+| `journalSchema` | Title, emotion, notes, images             |
+
+---
+
+## 💰 Sistema de Taxas/Impostos
+
+Cálculos fiscais automáticos para operações de day trade e swing trade.
+
+```mermaid
+flowchart TD
+    A[Trades Fechados] --> B[taxService]
+    B --> C{Tipo de Operação}
+    C --> |Day Trade| D[20% sobre lucro]
+    C --> |Swing Trade| E[15% sobre lucro]
+    D --> F[Relatório Fiscal]
+    E --> F
+    F --> G[Export PDF/Excel]
+```
+
+- **Day Trade:** Operações abertas e fechadas no mesmo dia (20% IR)
+- **Swing Trade:** Operações com mais de um dia (15% IR)
+- **Isenção:** Vendas até R$ 20.000/mês em swing trade
+
+---
+
+## 📤 Export/Import Flow
+
+### Importação
+
+```mermaid
+flowchart TD
+    A[Upload CSV/HTML] --> B{Detect Type}
+    B --> |NinjaTrader| C["Parse CSV (`;` sep)"]
+    B --> |MetaTrader| D[Parse HTML Table]
+    C --> E[Normalize Data]
+    D --> E
+    E --> F[Convert Timezone]
+    F --> G[Preview Table]
+    G --> H[Confirm Import]
+    H --> I[Batch Insert]
+```
+
+### Exportação
+
+```mermaid
+flowchart LR
+    A[Select Data] --> B[exportService]
+    B --> C{Format}
+    C --> |Excel| D[ExcelJS]
+    C --> |CSV| E[CSV String]
+    D --> F[Download]
+    E --> F
+```
+
+**Formatos suportados:**
+
+- **Import:** NinjaTrader CSV, MetaTrader HTML
+- **Export:** Excel (.xlsx), CSV, PDF (relatórios)
 
 ---
 
@@ -291,13 +472,19 @@ Dashboard (protegido)
 
 ## 📦 Dependências Principais
 
-| Pacote                  | Versão  | Uso             |
-| ----------------------- | ------- | --------------- |
-| `next`                  | 16.0.7  | Framework       |
-| `react`                 | 19.2.1  | UI Library      |
-| `@supabase/supabase-js` | 2.86.0  | Database        |
-| `zustand`               | 5.0.9   | Estado          |
-| `recharts`              | 3.5.1   | Gráficos SVG    |
-| `lightweight-charts`    | 5.0.9   | Gráficos Canvas |
-| `dayjs`                 | 1.11.19 | Datas           |
-| `tailwindcss`           | 4.x     | Estilos         |
+| Pacote                     | Versão        | Uso                |
+| -------------------------- | ------------- | ------------------ |
+| `next`                     | 16.0.7        | Framework          |
+| `react`                    | 19.2.1        | UI Library         |
+| `@supabase/supabase-js`    | 2.86.0        | Database           |
+| `@supabase/ssr`            | 0.8.0         | SSR Auth           |
+| `zustand`                  | 5.0.9         | Estado             |
+| `recharts`                 | 3.5.1         | Gráficos SVG       |
+| `lightweight-charts`       | 5.0.9         | Gráficos Canvas    |
+| `dayjs`                    | 1.11.19       | Datas              |
+| `date-fns` / `date-fns-tz` | 4.1.0 / 3.2.0 | Datas com timezone |
+| `zod`                      | 3.23.8        | Validação schemas  |
+| `exceljs`                  | 4.4.0         | Export Excel       |
+| `xlsx`                     | 0.18.5        | Leitura planilhas  |
+| `tailwindcss`              | 4.x           | Estilos            |
+| `vitest`                   | 2.1.9         | Testes unitários   |
