@@ -149,22 +149,24 @@ export function JournalEntryForm({
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Ativo
-              </label>
-              <input
-                list="journal-assets-list"
-                value={asset}
-                onChange={(e) => setAsset(e.target.value.toUpperCase())}
-                placeholder="EX: NAS100"
-                className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 uppercase"
-                required
-              />
-              <datalist id="journal-assets-list">
-                {assets.map((a) => (
-                  <option key={a.symbol} value={a.symbol} />
-                ))}
-              </datalist>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-gray-400">
+                  Ativo
+                </label>
+                <input
+                  list="journal-assets-list"
+                  value={asset}
+                  onChange={(e) => setAsset(e.target.value.toUpperCase())}
+                  placeholder="EX: NAS100"
+                  className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 uppercase"
+                  required
+                />
+                <datalist id="journal-assets-list">
+                  {assets.map((a) => (
+                    <option key={a.symbol} value={a.symbol} />
+                  ))}
+                </datalist>
+              </div>
             </div>
             <div className="md:col-span-1">
               <Input
