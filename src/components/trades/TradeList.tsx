@@ -268,18 +268,26 @@ export function TradeList({
 
                                         {/* DATA */}
                                         <td className="px-3 py-3 whitespace-nowrap text-center">
-                                            <div className="text-sm text-gray-300 font-medium">
-                                                {formatTz(toZonedTime(trade.entryDate, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' })}
-                                            </div>
-                                            <div className="text-[10px] text-cyan-500/80 font-mono">
-                                                {(() => {
-                                                    let dateTimeStr = trade.entryDate;
-                                                    if (!dateTimeStr.includes('T') && trade.entryTime) {
-                                                        dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
-                                                    }
-                                                    return `${formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'HH:mm:ss', { timeZone: 'America/New_York' })} NY`;
-                                                })()}
-                                            </div>
+                                            {(() => {
+                                                // Combina entryDate com entryTime para evitar bug de timezone
+                                                // Quando apenas a data é passada para toZonedTime, ela é interpretada como meia-noite local
+                                                // o que pode resultar no dia anterior ao converter para NY
+                                                let dateTimeStr = trade.entryDate;
+                                                if (!dateTimeStr.includes('T') && trade.entryTime) {
+                                                    dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
+                                                }
+                                                const zonedDate = toZonedTime(dateTimeStr, 'America/New_York');
+                                                return (
+                                                    <>
+                                                        <div className="text-sm text-gray-300 font-medium">
+                                                            {formatTz(zonedDate, 'dd/MM/yyyy', { timeZone: 'America/New_York' })}
+                                                        </div>
+                                                        <div className="text-[10px] text-cyan-500/80 font-mono">
+                                                            {formatTz(zonedDate, 'HH:mm:ss', { timeZone: 'America/New_York' })} NY
+                                                        </div>
+                                                    </>
+                                                );
+                                            })()}
                                         </td>
 
                                         {/* ATIVO */}

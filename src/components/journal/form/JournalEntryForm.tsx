@@ -357,7 +357,13 @@ export function JournalEntryForm({
                           <span className={t.type === 'Long' ? 'text-green-400' : 'text-red-400'}>{t.type}</span> @ {t.entryPrice}
                         </span>
                         <span>
-                          {formatTz(toZonedTime(t.entryDate, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)
+                          {(() => {
+                            let dateTimeStr = t.entryDate;
+                            if (!dateTimeStr.includes('T') && t.entryTime) {
+                              dateTimeStr = `${t.entryDate}T${t.entryTime}`;
+                            }
+                            return `${formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)`;
+                          })()}
                         </span>
                       </div>
                     </button>

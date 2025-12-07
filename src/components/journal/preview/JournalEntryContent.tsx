@@ -125,7 +125,12 @@ export function JournalEntryContent({ entry, trade, showComments = false }: Jour
             <div>
               <h2 className="text-xl font-bold text-gray-100">{entry.title}</h2>
               <div className="text-gray-400 text-sm mt-1">
-                {formatTz(toZonedTime(entry.date, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' })} • {trade?.symbol || entry.asset || 'Diário'}
+                {(() => {
+                  // entry.date é apenas YYYY-MM-DD sem hora
+                  // Adiciona T12:00 para evitar shift de timezone ao converter para NY
+                  const dateStr = entry.date.includes('T') ? entry.date : `${entry.date}T12:00`;
+                  return formatTz(toZonedTime(dateStr, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' });
+                })()} • {trade?.symbol || entry.asset || 'Diário'}
               </div>
             </div>
           </div>
