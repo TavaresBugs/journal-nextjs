@@ -319,8 +319,8 @@ export function TimePickerInput({
     }, []);
 
     return (
-        <div className={`flex flex-col gap-1 ${className}`} ref={containerRef}>
-            <label className="text-sm text-gray-400 mb-1">
+        <div className={`flex flex-col gap-1.5 ${className}`} ref={containerRef}>
+            <label className="text-xs font-medium text-gray-400">
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -331,7 +331,7 @@ export function TimePickerInput({
                     onClick={() => setIsOpen(true)}
                     readOnly
                     placeholder="HH:mm"
-                    className="w-full pl-3 pr-10 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 
+                    className="w-full pl-3 pr-10 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
                                placeholder-gray-500 cursor-pointer"
                 />
