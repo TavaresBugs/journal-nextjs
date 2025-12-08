@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { Input, Button } from '@/components/ui';
 import { DatePickerInput, TimePickerInput } from '@/components/ui/DateTimePicker';
@@ -148,6 +148,36 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [entryTime, setEntryTime] = useState(nyEntry.time);
     const [exitDate, setExitDate] = useState(nyExit.date);
     const [exitTime, setExitTime] = useState(nyExit.time);
+
+    // Update form when initialData changes (fix for Edit Modal)
+    useEffect(() => {
+        if (initialData) {
+            const nyEntry = getNYDateTime(initialData.entryDate, initialData.entryTime);
+            const nyExit = getNYDateTime(initialData.exitDate, initialData.exitTime);
+
+            setMarketCondition(initialData.marketCondition || '');
+            setTfAnalise(initialData.tfAnalise || '');
+            setTfEntrada(initialData.tfEntrada || '');
+            setTagsList(initialData.tags ? initialData.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
+            setStrategy(initialData.strategy || '');
+            setSetup(initialData.setup || '');
+            setEntryQuality(mapEntryQualityFromDb(initialData.entry_quality));
+            setMarketConditionV2(mapMarketConditionFromDb(initialData.market_condition_v2));
+            setSymbol(initialData.symbol || '');
+            setType(initialData.type || '');
+            setEntryPrice(initialData.entryPrice?.toString() || '');
+            setStopLoss(initialData.stopLoss?.toString() || '');
+            setTakeProfit(initialData.takeProfit?.toString() || '');
+            setExitPrice(initialData.exitPrice?.toString() || '');
+            setLot(initialData.lot?.toString() || '');
+            setCommission(initialData.commission ? Math.abs(initialData.commission).toString() : '');
+            setSwap(initialData.swap?.toString() || '');
+            setEntryDate(nyEntry.date);
+            setEntryTime(nyEntry.time);
+            setExitDate(nyExit.date);
+            setExitTime(nyExit.time);
+        }
+    }, [initialData]);
 
     const isTradeOpen = !exitPrice || exitPrice === '';
     const [isSaving, setIsSaving] = useState(false);

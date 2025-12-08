@@ -96,6 +96,8 @@ export interface TradeLite {
     entry_quality?: 'picture-perfect' | 'nice' | 'normal' | 'ugly';
     market_condition_v2?: 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout';
     session?: string;
+    commission?: number;
+    swap?: number;
 }
 
 export interface TradeResponse {

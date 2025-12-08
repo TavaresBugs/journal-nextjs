@@ -246,6 +246,8 @@ const mapTradeLiteFromDB = (db: any): TradeLite => ({
     entry_quality: db.entry_quality,
     market_condition_v2: db.market_condition_v2,
     session: db.session,
+    commission: db.commission ? Number(db.commission) : undefined,
+    swap: db.swap ? Number(db.swap) : undefined,
 });
 
 /**
@@ -260,7 +262,7 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
     // Select only necessary columns to reduce payload
     const { data, error } = await supabase
         .from('trades')
-        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, market_condition, entry_quality, market_condition_v2, session, user_id')
+        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, market_condition, entry_quality, market_condition_v2, session, user_id, commission, swap')
         .eq('account_id', accountId)
         .eq('user_id', userId)
         .order('entry_date', { ascending: false });
