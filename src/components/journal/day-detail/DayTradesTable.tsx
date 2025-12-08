@@ -14,6 +14,7 @@ interface DayTradesTableProps {
   onEditTrade?: (trade: Trade) => void;
   onJournalClick: (trade: Trade, startEditing?: boolean) => void;
   onEditEntry: (entry: JournalEntry) => void;
+  onPreviewEntry?: (entry: JournalEntry) => void;
   onDeleteEntry: (entryId: string) => void;
   getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
   onNewEntry: () => void;
@@ -33,6 +34,7 @@ const DayTradesTableComponent = ({
   onEditTrade,
   onJournalClick,
   onEditEntry,
+  onPreviewEntry,
   onDeleteEntry,
   getEntryByTradeId,
   onNewEntry,
@@ -81,7 +83,7 @@ const DayTradesTableComponent = ({
                   <Button
                     variant="success"
                     size="icon"
-                    onClick={() => onEditEntry(entry)}
+                    onClick={() => onPreviewEntry ? onPreviewEntry(entry) : onEditEntry(entry)}
                     className="w-8 h-8 mx-auto"
                   >
                     <svg

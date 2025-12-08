@@ -166,6 +166,13 @@ export function DayDetailModal({
     setIsJournalModalOpen(true);
   }, []);
 
+  const handlePreviewEntry = useCallback((entry: JournalEntry) => {
+    setSelectedEntryForEdit(entry);
+    setSelectedTradeForJournal(null);
+    setStartModalEditing(false);
+    setIsJournalModalOpen(true);
+  }, []);
+
   const handleDeleteEntry = useCallback(async (entryId: string) => {
     if (!confirm("⚠️ Tem certeza que deseja excluir esta entrada do diário?")) {
       return;
@@ -225,6 +232,7 @@ export function DayDetailModal({
             onEditTrade={onEditTrade}
             onJournalClick={handleJournalClick}
             onEditEntry={handleEditEntry}
+            onPreviewEntry={handlePreviewEntry}
             onDeleteEntry={handleDeleteEntry}
             getEntryByTradeId={getEntryByTradeId}
             onNewEntry={handleStandaloneEntryClick}

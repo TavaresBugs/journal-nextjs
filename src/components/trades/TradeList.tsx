@@ -7,8 +7,7 @@ import { JournalEntryModal } from '@/components/journal/JournalEntryModal';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
-import { ensureUTC } from '@/lib/timeframeUtils';
+// Imports removed
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -18,6 +17,7 @@ interface TradeListProps {
     currency: string;
     onEditTrade?: (trade: Trade) => void;
     onDeleteTrade?: (tradeId: string) => void;
+    onViewDay?: (date: string) => void;
     // Server-side pagination props (optional)
     totalCount?: number;
     currentPage?: number;
@@ -30,6 +30,7 @@ export function TradeList({
     currency, 
     onEditTrade, 
     onDeleteTrade,
+    onViewDay,
     totalCount,
     currentPage: controlledPage,
     itemsPerPage = 10,
@@ -45,7 +46,7 @@ export function TradeList({
     const isServerSide = typeof totalCount === 'number' && typeof onPageChange === 'function';
     const currentPage = isServerSide ? (controlledPage || 1) : localPage;
 
-    // Journal Modal State
+    // Journal Modal State (Legacy - keeping mostly for safe removal or if needed later, but button now triggers viewDay)
     const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
     const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
     const { entries } = useJournalStore(); 
@@ -55,12 +56,7 @@ export function TradeList({
         return Array.from(new Set(trades.map(t => t.symbol))).sort();
     }, [trades]);
     
-    // If not server side, we filter and slice locally.
-    // If server side, we assume 'trades' is ALREADY the current page filtered by API (if API supports filters).
-    // Note: Our current API does NOT support server-side filtering by asset yet.
-    // So if server-side is on, filtering assets might be weird if we only have one page.
-    // Ideally user filters -> triggers API reload.
-    // For now, let's assume 'filteredTrades' logic applies to local dataset.
+    // ... filtering logic omitted for brevity as it's unchanged ...
     
     const filteredTrades = useMemo(() => {
         return filterAsset === 'TODOS OS ATIVOS' 
@@ -77,27 +73,17 @@ export function TradeList({
         });
     }, [filteredTrades, sortDirection]);
 
-    // Pagination Logic
-    // If server-side, 'trades' is the page. totalCount tells us total pages.
-    // If client-side, 'filteredTrades' is the full set.
-    
-    // When Server Side: 'trades' is ALREADY just 10 items.
-    // However, if we filter client-side (asset filter), we might reduce it further to <10.
-    // Real server-side filtering requires API support. 
-    // For this MVP step 1: We accept that asset filtering only filters the CURRENT PAGE. (Limitation acceptable for now to fix freezing).
-    
     const count = isServerSide ? (totalCount || 0) : filteredTrades.length;
     const totalPages = Math.ceil(count / itemsPerPage);
     
-    // Slicing: Only slice if CLIENT SIDE.
     const currentTrades = useMemo(() => {
-        if (isServerSide) return sortedTrades; // Display all passed trades (they are the page)
+        if (isServerSide) return sortedTrades; 
         
         const startIndex = (localPage - 1) * itemsPerPage;
         return sortedTrades.slice(startIndex, startIndex + itemsPerPage);
     }, [sortedTrades, isServerSide, localPage, itemsPerPage]);
 
-    // Generate pagination numbers (Smart Window)
+    // Generate pagination numbers
     const getPageNumbers = () => {
         const delta = 2; 
         const range = [];
@@ -146,11 +132,6 @@ export function TradeList({
             </div>
         );
     }
-
-    const handleJournalClick = (trade: Trade) => {
-        setSelectedTradeForJournal(trade);
-        setIsJournalModalOpen(true);
-    };
 
     const getJournalEntry = (tradeId: string) => {
         return entries.find(e => e.tradeId === tradeId);
@@ -226,8 +207,9 @@ export function TradeList({
                                             <Button 
                                                 variant="success"
                                                 size="icon"
-                                                onClick={() => handleJournalClick(trade)}
+                                                onClick={() => onViewDay?.(trade.entryDate)}
                                                 className="w-8 h-8 mx-auto"
+                                                title="Ver Detalhes do Dia"
                                             >
                                                 {journalEntry ? (
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -236,8 +218,7 @@ export function TradeList({
                                                     </svg>
                                                 ) : (
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M5 12h14" />
-                                                        <path d="M12 5v14" />
+                                                        <path d="M12 4.5v15m7.5-7.5h-15" />
                                                     </svg>
                                                 )}
                                             </Button>

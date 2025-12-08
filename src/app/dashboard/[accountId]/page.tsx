@@ -501,12 +501,12 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
             </div>
 
             {/* Tabs */}
-            <div className="container mx-auto px-6 mt-6" style={{ maxWidth: '1200px' }}>
+            <div className="container mx-auto px-4 mt-6" style={{ maxWidth: '1200px' }}>
                 <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
             </div>
 
             {/* Content */}
-            <div className="container mx-auto px-4 py-6" style={{ maxWidth: '1200px' }}>
+            <div className="container mx-auto px-4 py-4" style={{ maxWidth: '1200px' }}>
                 <TabPanel value="novo" activeTab={activeTab}>
                     <Card>
                         <CardHeader>
@@ -580,6 +580,10 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                 currency={currentAccount.currency}
                                 onEditTrade={handleEditTrade}
                                 onDeleteTrade={handleDeleteTrade}
+                                onViewDay={(date) => {
+                                    setSelectedDate(date);
+                                    setIsDayDetailModalOpen(true);
+                                }}
                                 totalCount={totalCount}
                                 currentPage={currentPage}
                                 onPageChange={(p) => loadPage(accountId, p)}

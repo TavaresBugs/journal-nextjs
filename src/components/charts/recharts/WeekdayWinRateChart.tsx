@@ -53,7 +53,9 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
                     />
                     <Tooltip
                         cursor={{ fill: '#374151', opacity: 0.2 }}
-                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem', color: '#f3f4f6' }}
+                        contentStyle={{ backgroundColor: '#111827', borderColor: '#374151', borderRadius: '0.5rem' }}
+                        itemStyle={{ color: '#E5E7EB' }}
+                        labelStyle={{ color: '#9CA3AF' }}
                         formatter={(value: number, name: string, props: unknown) => {
                             const payload = (props as { payload: { wins: number; total: number } }).payload;
                             return [
