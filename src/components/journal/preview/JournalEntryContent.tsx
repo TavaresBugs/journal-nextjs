@@ -25,6 +25,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
   // Fetch reviews when sidebar is opened
   useEffect(() => {
     if (showComments && entry.id) {
+      // eslint-disable-next-line
       setIsLoadingReviews(true);
       getReviewsForJournalEntry(entry.id)
         .then(data => {

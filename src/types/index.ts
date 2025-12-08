@@ -474,5 +474,5 @@ export interface Notification {
     message: string;
     timestamp: Date;
     read: boolean;
-    data?: any; // Flexible data payload (MentorInvite, ReviewContext, etc)
+    data?: unknown; // Flexible data payload (MentorInvite, ReviewContext, etc)
 }

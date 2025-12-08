@@ -146,7 +146,8 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
     };
 
     const handleViewFeedback = (notification: Notification) => {
-        const { date, journalEntryId, accountId: entryAccountId } = notification.data || {};
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { date, accountId: entryAccountId } = (notification.data as any) || {};
         // Prefer prop accountId, then entryAccountId
         const targetAccountId = accountId || entryAccountId;
         
@@ -273,12 +274,12 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
                                                 </p>
 
                                                 {/* Invite Actions (compact) */}
-                                                {notif.type === 'invite' && notif.data && (
+                                                {notif.type === 'invite' && !!notif.data && (
                                                     <div className="flex gap-2 mt-2">
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleAcceptInvite(notif.data!);
+                                                                handleAcceptInvite(notif.data as MentorInvite);
                                                             }}
                                                             className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded-lg"
                                                         >
@@ -287,7 +288,7 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                handleRejectInvite(notif.data!);
+                                                                handleRejectInvite(notif.data as MentorInvite);
                                                             }}
                                                             className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs rounded-lg"
                                                         >

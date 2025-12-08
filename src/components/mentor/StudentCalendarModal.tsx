@@ -53,7 +53,7 @@ export function StudentCalendarModal({
       };
       fetchAccounts();
     }
-  }, [isOpen, menteeId]);
+  }, [isOpen, menteeId, selectedAccountId]);
 
   // Fetch trades when account changes or modal opens
   useEffect(() => {

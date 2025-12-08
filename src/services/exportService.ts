@@ -5,8 +5,10 @@ import {
     JournalEntry,
     Playbook,
     DailyRoutine,
-    UserSettings
+    UserSettings,
+    Asset
 } from '@/types';
+import { DBAccount, DBTrade, DBJournalEntry, DBDailyRoutine, DBSettings } from '@/types/database';
 import { getCurrentUserId } from '@/services/accountService';
 
 export interface ExportData {
@@ -69,24 +71,18 @@ export async function exportAllData(): Promise<ExportData> {
         throw new Error('User not authenticated');
     }
 
-    const [
-        accounts,
-        trades,
-        journalEntries,
-        playbooks,
-        routines,
-        settingsData
-    ] = await Promise.all([
-        fetchAll<any>('accounts', userId),
-        fetchAll<any>('trades', userId),
-        fetchAll<any>('journal_entries', userId),
+    const [accounts, trades, journalEntries, playbooks, routines, settingsData] = await Promise.all([
+        fetchAll<DBAccount>('accounts', userId),
+        fetchAll<DBTrade>('trades', userId),
+        fetchAll<DBJournalEntry>('journal_entries', userId),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fetchAll<any>('playbooks', userId),
-        fetchAll<any>('daily_routines', userId),
+        fetchAll<DBDailyRoutine>('daily_routines', userId),
         supabase.from('settings').select('*').eq('user_id', userId).maybeSingle()
     ]);
 
 
-    const mapAccount = (db: any): Account => ({
+    const mapAccount = (db: DBAccount): Account => ({
         id: db.id,
         userId: db.user_id,
         name: db.name,
@@ -99,7 +95,7 @@ export async function exportAllData(): Promise<ExportData> {
         updatedAt: db.updated_at,
     });
 
-    const mapTrade = (db: any): Trade => ({
+    const mapTrade = (db: DBTrade): Trade => ({
         id: db.id,
         userId: db.user_id,
         accountId: db.account_id,
@@ -126,16 +122,16 @@ export async function exportAllData(): Promise<ExportData> {
         updatedAt: db.updated_at,
     });
 
-    const mapJournalEntry = (db: any): JournalEntry => ({
+    const mapJournalEntry = (db: DBJournalEntry): JournalEntry => ({
         id: db.id,
         userId: db.user_id,
         accountId: db.account_id,
         date: db.date,
-        title: db.title,
-        asset: db.asset,
-        tradeIds: db.trade_id ? [db.trade_id] : [],
-        images: db.images || [],
-        emotion: db.emotion,
+        title: db.title || '',
+        asset: db.asset || '',
+        tradeIds: db.trade_id ? [db.trade_id] : [], // Legacy support
+        images: [], // Images are handled separately
+        emotion: db.emotion as JournalEntry['emotion'],
         analysis: db.analysis,
         notes: db.notes,
         createdAt: db.created_at,
@@ -143,8 +139,10 @@ export async function exportAllData(): Promise<ExportData> {
     });
 
     // We need to fetch journal_images
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const journalImages = await fetchAll<any>('journal_images', userId);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mapPlaybook = (db: any): Playbook => ({
         id: db.id,
         userId: db.user_id,
@@ -158,7 +156,7 @@ export async function exportAllData(): Promise<ExportData> {
         updatedAt: db.updated_at,
     });
 
-    const mapRoutine = (db: any): DailyRoutine => ({
+    const mapRoutine = (db: DBDailyRoutine): DailyRoutine => ({
         id: db.id,
         userId: db.user_id,
         accountId: db.account_id,
@@ -173,17 +171,24 @@ export async function exportAllData(): Promise<ExportData> {
         updatedAt: db.updated_at,
     });
 
-    const mapSettings = (db: any): UserSettings => ({
-        id: db.id,
-        user_id: db.user_id,
-        currencies: db.currencies || [],
-        leverages: db.leverages || [],
-        assets: db.assets || [],
-        strategies: db.strategies || [],
-        setups: db.setups || [],
-        created_at: db.created_at,
-        updated_at: db.updated_at
-    });
+    const mapSettings = (db: DBSettings): UserSettings => {
+        // Convert Record<string, number> to Asset[]
+        const assetsList: Asset[] = db.assets 
+            ? Object.entries(db.assets).map(([symbol, multiplier]) => ({ symbol, multiplier }))
+            : [];
+
+        return {
+            id: db.id,
+            user_id: db.user_id,
+            currencies: db.currencies || [],
+            leverages: db.leverages || [],
+            assets: assetsList,
+            strategies: db.strategies || [],
+            setups: db.setups || [],
+            created_at: db.created_at,
+            updated_at: db.updated_at
+        };
+    };
 
     // Associate images with journal entries
     const mappedJournalEntries = journalEntries.map(entry => {
@@ -239,6 +244,6 @@ export function downloadAsJSON(data: ExportData): void {
 /**
  * Placeholder for ZIP download (optional)
  */
-export function downloadAsZIP(data: ExportData): void {
+export function downloadAsZIP(_data: ExportData): void {
     console.warn('ZIP download not implemented yet.');
 }

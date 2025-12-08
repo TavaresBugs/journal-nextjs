@@ -863,7 +863,7 @@ export async function getMenteePermittedAccounts(menteeId: string): Promise<Arra
         return [];
     }
 
-    // Usando cast para any para facilitar mapeamento do retorno complexo do Supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = data as any[];
     
     return rows
