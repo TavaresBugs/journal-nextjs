@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import dayjs from 'dayjs';
 import { Input, Button } from '@/components/ui';
+import { DatePickerInput, TimePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
 import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
@@ -29,13 +30,20 @@ interface TradeFormProps {
 import { toZonedTime, fromZonedTime, format as formatTz } from 'date-fns-tz';
 
 const getNYDateTime = (dateStr?: string, timeStr?: string) => {
-    if (!dateStr) return { date: formatTz(toZonedTime(new Date(), 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }), time: '' };
-    const isoString = dateStr.includes('T') ? dateStr : (timeStr ? `${dateStr}T${timeStr}` : dateStr);
-    const dateObj = new Date(isoString);
-    if (isNaN(dateObj.getTime())) return { date: dateStr, time: timeStr || '' };
+    // Dados já estão armazenados como NY time, apenas retornar diretamente
+    if (!dateStr) {
+        // Para novos trades, usar horário NY atual
+        const now = new Date();
+        const nyNow = toZonedTime(now, 'America/New_York');
+        return { 
+            date: formatTz(nyNow, 'yyyy-MM-dd', { timeZone: 'America/New_York' }), 
+            time: formatTz(nyNow, 'HH:mm', { timeZone: 'America/New_York' }) 
+        };
+    }
+    // Para trades existentes, retornar valores armazenados (já são NY)
     return {
-        date: formatTz(toZonedTime(dateObj, 'America/New_York'), 'yyyy-MM-dd', { timeZone: 'America/New_York' }),
-        time: timeStr ? formatTz(toZonedTime(dateObj, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' }) : ''
+        date: dateStr,
+        time: timeStr ? timeStr.substring(0, 5) : '' // Remove seconds if present
     };
 };
 
@@ -501,8 +509,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                 <div className="space-y-3">
                     {/* Entry DateTime */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Input label="Data Entrada" type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} required />
-                        <Input label="Hora Entrada" type="time" value={entryTime} onChange={(e) => setEntryTime(e.target.value)} />
+                        <DatePickerInput label="Data Entrada" value={entryDate} onChange={setEntryDate} required />
+                        <TimePickerInput label="Hora Entrada" value={entryTime} onChange={setEntryTime} />
                     </div>
 
                     {/* Session Badge */}
@@ -519,8 +527,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     {/* Exit DateTime (only if finalized) */}
                     {!isTradeOpen && (
                         <div className="grid grid-cols-2 gap-3">
-                            <Input label="Data Saída" type="date" value={exitDate} onChange={(e) => setExitDate(e.target.value)} />
-                            <Input label="Hora Saída" type="time" value={exitTime} onChange={(e) => setExitTime(e.target.value)} />
+                            <DatePickerInput label="Data Saída" value={exitDate} onChange={setExitDate} />
+                            <TimePickerInput label="Hora Saída" value={exitTime} onChange={setExitTime} />
                         </div>
                     )}
                 </div>

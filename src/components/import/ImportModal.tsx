@@ -161,15 +161,31 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
   };
 
   const convertToUtc = (date: Date, timezone: string): Date => {
-      const isoString = format(date, 'yyyy-MM-dd HH:mm:ss');
+      // Extrair componentes de data/hora do objeto Date (interpretado como horário do broker)
+      // Não usar format() pois ele aplica timezone local
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
       return fromZonedTime(isoString, timezone);
   };
 
   // Convert from source timezone to NY timezone for NinjaTrader
   // CSV is in Brasília time, but we want to store in NY time
   const convertToNYTime = (date: Date, sourceTimezone: string): Date => {
+      // Extrair componentes de data/hora sem interferência de timezone
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      
       // First convert to UTC
-      const isoString = format(date, 'yyyy-MM-dd HH:mm:ss');
       const utcDate = fromZonedTime(isoString, sourceTimezone);
       
       // Then convert UTC to NY time and return as if it were a local date
@@ -225,13 +241,10 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     continue;
                 }
 
-                // Apply Timezone Conversion based on data source
-                if (dataSource === 'ninjatrader' && brokerTimezone) {
-                    // NinjaTrader: Convert from source timezone (Brasília) to NY time
+                // Apply Timezone Conversion - Always convert to NY time
+                // Broker timezone (EET for FTMO, etc) -> NY time
+                if (brokerTimezone) {
                     entryDate = convertToNYTime(entryDate, brokerTimezone);
-                } else if (brokerTimezone && brokerTimezone !== 'UTC') {
-                    // MetaTrader: Convert to UTC
-                    entryDate = convertToUtc(entryDate, brokerTimezone);
                 }
 
                 const symbol = cleanSymbol(String(row[mapping.symbol]));
@@ -242,9 +255,20 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     continue;
                 }
 
-                // Format date/time for storage
+                // Format date/time for storage (NY time directly from entryDate)
+                // entryDate is already in NY time from convertToNYTime
                 const entryDateStr = format(entryDate, 'yyyy-MM-dd');
                 const entryTimeStr = format(entryDate, 'HH:mm:ss');
+                
+                // DEBUG: Log to verify correct values
+                console.log('[Import Save Debug]', {
+                    symbol: cleanSymbol(String(row[mapping.symbol])),
+                    originalTime: row[mapping.entryDate],
+                    brokerTimezone,
+                    entryDateStr,
+                    entryTimeStr,
+                    expectedNY: 'Should be NY time'
+                });
                 
                 // Use appropriate price parser based on data source
                 let entryPrice: number;
@@ -295,12 +319,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                          exitDate = parseTradeDate(row[mapping.exitDate]);
                      }
                      if (exitDate) {
-                         // Apply Timezone Conversion based on data source
-                         if (dataSource === 'ninjatrader' && brokerTimezone) {
+                         // Apply Timezone Conversion - Always convert to NY time
+                         if (brokerTimezone) {
                              exitDate = convertToNYTime(exitDate, brokerTimezone);
-                         } else if (brokerTimezone && brokerTimezone !== 'UTC') {
-                             exitDate = convertToUtc(exitDate, brokerTimezone);
                          }
+                         // Store NY time directly
                          trade.exitDate = format(exitDate, 'yyyy-MM-dd');
                          trade.exitTime = format(exitDate, 'HH:mm:ss');
                      }
@@ -674,13 +697,9 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                                  // Face Value (Local interpretation of the numbers)
                                  const faceValue = format(parsed, 'dd/MM/yyyy HH:mm:ss');
                                  
-                                 // Convert
-                                 const utcDate = convertToUtc(parsed, brokerTimezone);
-                                 const utcStr = format(utcDate, 'dd/MM/yyyy HH:mm:ss', { timeZone: 'UTC' }); // Force format as UTC
-                                 
-                                 // NY Time
-                                 const nyDate = toZonedTime(utcDate, 'America/New_York');
-                                 const nyStr = format(nyDate, 'dd/MM/yyyy HH:mm', { timeZone: 'America/New_York' });
+                                 // Convert directly to NY time
+                                 const nyDate = convertToNYTime(parsed, brokerTimezone);
+                                 const nyStr = format(nyDate, 'dd/MM/yyyy HH:mm:ss');
 
                                  return (
                                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
@@ -689,12 +708,12 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                                              <span className="font-mono text-yellow-500">{String(rawValue)}</span>
                                          </div>
                                          <div>
-                                             <span className="block text-[10px] text-gray-500">2. Identificado como</span>
-                                             <span className="font-mono text-blue-400">{faceValue}</span>
+                                             <span className="block text-[10px] text-gray-500">2. Timezone do Broker</span>
+                                             <span className="font-mono text-blue-400">{brokerTimezone}</span>
                                          </div>
                                          <div>
-                                             <span className="block text-[10px] text-gray-500">3. Convertido para UTC (Fuso {brokerTimezone})</span>
-                                             <span className="font-mono text-gray-300">{utcStr}</span>
+                                             <span className="block text-[10px] text-gray-500">3. Interpretado como</span>
+                                             <span className="font-mono text-gray-300">{faceValue} ({brokerTimezone.split('/')[1]})</span>
                                          </div>
                                          <div>
                                              <span className="block text-[10px] text-gray-500">4. Resultado Final (NY)</span>

@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
+import { ensureUTC } from '@/lib/timeframeUtils';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -269,21 +270,22 @@ export function TradeList({
                                         {/* DATA */}
                                         <td className="px-3 py-3 whitespace-nowrap text-center">
                                             {(() => {
-                                                // Combina entryDate com entryTime para evitar bug de timezone
-                                                // Quando apenas a data é passada para toZonedTime, ela é interpretada como meia-noite local
-                                                // o que pode resultar no dia anterior ao converter para NY
-                                                let dateTimeStr = trade.entryDate;
-                                                if (!dateTimeStr.includes('T') && trade.entryTime) {
-                                                    dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
-                                                }
-                                                const zonedDate = toZonedTime(dateTimeStr, 'America/New_York');
+                                                // Data já está armazenada como NY time
+                                                // Não precisa de conversão - apenas formatar
+                                                const dateStr = trade.entryDate;
+                                                const timeStr = trade.entryTime || '00:00:00';
+                                                
+                                                // Parse date parts directly for display
+                                                const [year, month, day] = dateStr.split('-');
+                                                const displayDate = `${day}/${month}/${year}`;
+                                                
                                                 return (
                                                     <>
                                                         <div className="text-sm text-gray-300 font-medium">
-                                                            {formatTz(zonedDate, 'dd/MM/yyyy', { timeZone: 'America/New_York' })}
+                                                            {displayDate}
                                                         </div>
                                                         <div className="text-[10px] text-cyan-500/80 font-mono">
-                                                            {formatTz(zonedDate, 'HH:mm:ss', { timeZone: 'America/New_York' })} NY
+                                                            {timeStr} NY
                                                         </div>
                                                     </>
                                                 );

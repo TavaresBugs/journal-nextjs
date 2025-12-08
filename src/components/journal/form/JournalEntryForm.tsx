@@ -10,6 +10,7 @@ import { TimeframeImageGrid } from '@/components/shared';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
+import { ensureUTC } from '@/lib/timeframeUtils';
 
 
 interface JournalEntryFormProps {
@@ -190,7 +191,8 @@ export function JournalEntryForm({
                     if (!dateTimeStr.includes('T') && trade.entryTime) {
                       dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
                     }
-                    return formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
+                    // Garantir interpretação como UTC
+                    return formatTz(toZonedTime(ensureUTC(dateTimeStr), 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
                   })()} NY - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
                   {trade.pnl !== undefined && (
                     <span className={`ml-1 ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -362,7 +364,8 @@ export function JournalEntryForm({
                             if (!dateTimeStr.includes('T') && t.entryTime) {
                               dateTimeStr = `${t.entryDate}T${t.entryTime}`;
                             }
-                            return `${formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)`;
+                            // Garantir interpretação como UTC
+                            return `${formatTz(toZonedTime(ensureUTC(dateTimeStr), 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)`;
                           })()}
                         </span>
                       </div>

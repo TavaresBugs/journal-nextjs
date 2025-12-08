@@ -330,3 +330,33 @@ export function formatRMultiple(rMultiple: number | null): string {
     const sign = rMultiple >= 0 ? '+' : '';
     return `${sign}${rMultiple.toFixed(2)}R`;
 }
+
+// ============================================
+// UTC HELPERS
+// ============================================
+
+/**
+ * Ensures a datetime string is interpreted as UTC by adding 'Z' suffix if needed.
+ * Handles dates stored without timezone info that should be treated as UTC.
+ * 
+ * @param dateTimeStr - Date/time string, possibly without timezone indicator
+ * @returns The same string with 'Z' suffix if no timezone info was present
+ */
+export function ensureUTC(dateTimeStr: string): string {
+    if (!dateTimeStr) return dateTimeStr;
+    
+    // Already has 'Z' suffix
+    if (dateTimeStr.endsWith('Z')) return dateTimeStr;
+    
+    // Already has timezone offset like +00:00 or -03:00
+    if (/[+-]\d{2}:\d{2}$/.test(dateTimeStr)) return dateTimeStr;
+    
+    // Has 'T' separator, meaning it's a datetime - add 'Z'
+    if (dateTimeStr.includes('T')) {
+        return dateTimeStr + 'Z';
+    }
+    
+    // Just a date without time, return as-is
+    return dateTimeStr;
+}
+

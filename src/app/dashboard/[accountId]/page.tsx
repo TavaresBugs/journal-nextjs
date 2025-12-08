@@ -538,19 +538,54 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle>Histórico de Trades</CardTitle>
-                            <Button
-                                variant="outline"
-                                onClick={() => setIsImportModalOpen(true)}
-                                leftIcon={
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                        <polyline points="7 10 12 15 17 10"/>
-                                        <line x1="12" y1="15" x2="12" y2="3"/>
-                                    </svg>
-                                }
-                            >
-                                Importar
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsImportModalOpen(true)}
+                                    leftIcon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="7 10 12 15 17 10"/>
+                                            <line x1="12" y1="15" x2="12" y2="3"/>
+                                        </svg>
+                                    }
+                                >
+                                    Importar
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    onClick={async () => {
+                                        const confirmText = prompt(
+                                            '⚠️ ATENÇÃO: Esta ação irá DELETAR TODOS os trades desta conta!\n\n' +
+                                            'Para confirmar, digite "DELETAR" (em maiúsculas):'
+                                        );
+                                        if (confirmText === 'DELETAR') {
+                                            try {
+                                                // Delete all trades one by one
+                                                for (const trade of allHistory) {
+                                                    await removeTrade(trade.id, accountId);
+                                                }
+                                                showToast('Todos os trades foram deletados!', 'success');
+                                                loadTrades(accountId);
+                                            } catch (error) {
+                                                console.error('Error deleting all trades:', error);
+                                                showToast('Erro ao deletar trades', 'error');
+                                            }
+                                        } else if (confirmText !== null) {
+                                            showToast('Texto incorreto. Nenhum trade foi deletado.', 'warning');
+                                        }
+                                    }}
+                                    leftIcon={
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M3 6h18"/>
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                        </svg>
+                                    }
+                                >
+                                    Deletar Todos
+                                </Button>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             <TradeList 

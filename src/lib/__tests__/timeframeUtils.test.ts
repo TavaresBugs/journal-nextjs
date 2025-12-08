@@ -5,7 +5,8 @@ import {
     validateAlignment,
     getRecommendedEntryTF,
     calculateRMultiple,
-    formatRMultiple
+    formatRMultiple,
+    ensureUTC
 } from '../timeframeUtils';
 
 describe('timeframeUtils', () => {
@@ -143,4 +144,31 @@ describe('timeframeUtils', () => {
             expect(formatRMultiple(null)).toBe('-');
         });
     });
+
+    describe('ensureUTC', () => {
+        it('should add Z suffix to datetime without timezone', () => {
+            expect(ensureUTC('2025-09-23T17:58:00')).toBe('2025-09-23T17:58:00Z');
+        });
+
+        it('should preserve Z suffix if already present', () => {
+            expect(ensureUTC('2025-09-23T17:58:00Z')).toBe('2025-09-23T17:58:00Z');
+        });
+
+        it('should preserve timezone offset +00:00', () => {
+            expect(ensureUTC('2025-09-23T17:58:00+00:00')).toBe('2025-09-23T17:58:00+00:00');
+        });
+
+        it('should preserve timezone offset -03:00', () => {
+            expect(ensureUTC('2025-09-23T17:58:00-03:00')).toBe('2025-09-23T17:58:00-03:00');
+        });
+
+        it('should return date-only string unchanged (no T separator)', () => {
+            expect(ensureUTC('2025-09-23')).toBe('2025-09-23');
+        });
+
+        it('should handle empty string', () => {
+            expect(ensureUTC('')).toBe('');
+        });
+    });
 });
+

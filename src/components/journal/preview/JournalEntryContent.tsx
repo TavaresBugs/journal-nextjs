@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { formatCurrency } from '@/lib/calculations';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
+import { ensureUTC } from '@/lib/timeframeUtils';
 import type { Trade, JournalEntry } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '@/services/reviewService';
@@ -145,7 +146,8 @@ export function JournalEntryContent({ entry, trade, showComments = false }: Jour
                   if (!dateTimeStr.includes('T') && trade.entryTime) {
                     dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
                   }
-                  return formatTz(toZonedTime(dateTimeStr, 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
+                  // Garantir interpretação como UTC
+                  return formatTz(toZonedTime(ensureUTC(dateTimeStr), 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
                 })()} (NY) - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
                 {trade.pnl !== undefined && (
                   <span className={`ml-1 ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
