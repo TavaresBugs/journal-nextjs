@@ -92,6 +92,8 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
             tags: trade.tags,
             strategy: trade.strategy,
             setup: trade.setup,
+            tfAnalise: trade.tfAnalise,
+            tfEntrada: trade.tfEntrada,
             session: trade.session,
             entry_quality: trade.entry_quality,
             market_condition_v2: trade.market_condition_v2
@@ -142,6 +144,8 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
                 tags: trade.tags,
                 strategy: trade.strategy,
                 setup: trade.setup,
+                tfAnalise: trade.tfAnalise,
+                tfEntrada: trade.tfEntrada,
                 marketCondition: trade.marketCondition,
                 entry_quality: trade.entry_quality,
                 market_condition_v2: trade.market_condition_v2,

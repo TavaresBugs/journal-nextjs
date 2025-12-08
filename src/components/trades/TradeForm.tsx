@@ -385,7 +385,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="htf-list">
-                                <option value="Monthly" /><option value="Weekly" /><option value="Daily" /><option value="H4" /><option value="H1" />
+                                <option value="Monthly" /><option value="Weekly" /><option value="Daily" /><option value="H4" /><option value="H1" /><option value="M15" />
                             </datalist>
                         </div>
                         <div>
@@ -394,12 +394,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 list="ltf-list"
                                 value={tfEntrada}
                                 onChange={(e) => setTfEntrada(e.target.value)}
-                                placeholder="M5"
+                                placeholder="M15"
                                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="ltf-list">
                                 <option value="H1" /><option value="M15" /><option value="M5" /><option value="M3" /><option value="M1" />
                             </datalist>
+
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-gray-400 mb-1.5">Setup</label>
