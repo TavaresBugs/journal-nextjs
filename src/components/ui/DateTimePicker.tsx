@@ -169,12 +169,14 @@ export function DatePickerInput({
     onChange,
     required = false,
     className = '',
+    openDirection = 'top',
 }: {
     label: string;
     value: string; // yyyy-MM-dd format
     onChange: (value: string) => void;
     required?: boolean;
     className?: string;
+    openDirection?: 'top' | 'bottom';
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -209,9 +211,13 @@ export function DatePickerInput({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const calendarPosition = openDirection === 'bottom' 
+        ? 'top-full mt-1' 
+        : 'bottom-full mb-1';
+
     return (
-        <div className={`flex flex-col gap-1 ${className}`} ref={containerRef}>
-            <label className="text-sm text-gray-400 mb-1">
+        <div className={`flex flex-col gap-1.5 ${className}`} ref={containerRef}>
+            <label className="text-xs font-medium text-gray-400">
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -222,9 +228,9 @@ export function DatePickerInput({
                     onClick={() => setIsOpen(!isOpen)}
                     readOnly
                     placeholder="dd/mm/aaaa"
-                    className="w-full pl-3 pr-10 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 
+                    className="w-full pl-3 pr-10 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-                               placeholder-gray-500 cursor-pointer"
+                               placeholder-gray-500 cursor-pointer transition-all duration-200"
                 />
                 {/* Calendar Icon */}
                 <button
@@ -240,7 +246,7 @@ export function DatePickerInput({
                     </svg>
                 </button>
                 {isOpen && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50">
+                    <div className={`absolute ${calendarPosition} left-1/2 -translate-x-1/2 z-50`}>
                         <CustomCalendar
                             selected={dateValue}
                             onSelect={handleSelect}

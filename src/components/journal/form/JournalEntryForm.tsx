@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal, Input, Textarea, Button } from '@/components/ui';
+import { DatePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { TimeframeImageGrid } from '@/components/shared';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
-import { ensureUTC } from '@/lib/timeframeUtils';
 
 
 interface JournalEntryFormProps {
@@ -141,12 +140,12 @@ export function JournalEntryForm({
           {/* Header Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
-              <Input
+              <DatePickerInput
                 label="Data"
-                type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                onChange={setDate}
                 required
+                openDirection="bottom"
               />
             </div>
             <div className="md:col-span-1">
@@ -185,21 +184,44 @@ export function JournalEntryForm({
             <div className="flex-1">
               <h3 className="text-cyan-400 text-sm font-medium mb-1">Trade Vinculado</h3>
               {trade ? (
-                <p className="text-gray-300 text-sm">
-                  {(() => {
-                    let dateTimeStr = trade.entryDate;
-                    if (!dateTimeStr.includes('T') && trade.entryTime) {
-                      dateTimeStr = `${trade.entryDate}T${trade.entryTime}`;
-                    }
-                    // Garantir interpretação como UTC
-                    return formatTz(toZonedTime(ensureUTC(dateTimeStr), 'America/New_York'), 'dd/MM/yyyy - HH:mm:ss', { timeZone: 'America/New_York' });
-                  })()} NY - {trade.symbol} - {trade.type} - #{trade.id.slice(0, 13)} -
+                <div className="text-gray-300 text-sm flex items-center flex-wrap gap-1">
+                  <span>
+                    {(() => {
+                      // Dados já estão armazenados como horário NY
+                      const dateFormatted = dayjs(trade.entryDate).format('DD/MM/YYYY');
+                      const timeFormatted = trade.entryTime ? trade.entryTime.substring(0, 8) : '';
+                      return `${dateFormatted} - ${timeFormatted}`;
+                    })()} (NY) - {trade.symbol} -
+                  </span>
+                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
+                    trade.type === 'Long'
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'bg-red-500/20 text-red-400'
+                  }`}>
+                    {trade.type}
+                    {trade.type === 'Long' ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                        <polyline points="17 18 23 18 23 12"></polyline>
+                      </svg>
+                    )}
+                  </span>
+                <span>- #{trade.id.slice(0, 13)} -</span>
                   {trade.pnl !== undefined && (
-                    <span className={`ml-1 ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded font-bold ${
+                      trade.pnl > 0 
+                        ? 'bg-green-500/20 text-green-400' 
+                        : 'bg-red-500/20 text-red-400'
+                    }`}>
                       {formatCurrency(trade.pnl)}
                     </span>
                   )}
-                </p>
+                </div>
               ) : (
                 <p className="text-gray-400 text-sm italic">Nenhum trade vinculado a esta entrada.</p>
               )}
@@ -355,17 +377,28 @@ export function JournalEntryForm({
                         </span>
                       </div>
                       <div className="text-xs text-gray-400 flex justify-between">
-                        <span>
-                          <span className={t.type === 'Long' ? 'text-green-400' : 'text-red-400'}>{t.type}</span> @ {t.entryPrice}
+                        <span className="flex items-center gap-1">
+                          <span className={`flex items-center gap-1 ${t.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
+                            {t.type}
+                            {t.type === 'Long' ? (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                              </svg>
+                            ) : (
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                <polyline points="17 18 23 18 23 12"></polyline>
+                              </svg>
+                            )}
+                          </span>
+                          <span className="text-gray-400">@ {t.entryPrice}</span>
                         </span>
                         <span>
                           {(() => {
-                            let dateTimeStr = t.entryDate;
-                            if (!dateTimeStr.includes('T') && t.entryTime) {
-                              dateTimeStr = `${t.entryDate}T${t.entryTime}`;
-                            }
-                            // Garantir interpretação como UTC
-                            return `${formatTz(toZonedTime(ensureUTC(dateTimeStr), 'America/New_York'), 'HH:mm', { timeZone: 'America/New_York' })} (NY)`;
+                            // Dados já estão armazenados como horário NY
+                            const timeFormatted = t.entryTime ? t.entryTime.substring(0, 5) : '';
+                            return `${timeFormatted} (NY)`;
                           })()}
                         </span>
                       </div>

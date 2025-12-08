@@ -282,13 +282,24 @@ export function TradeList({
 
                                         {/* TIPO */}
                                         <td className="px-3 py-3 text-center">
-                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                            <div className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${
                                                 trade.type === 'Long' 
                                                     ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                                                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
                                             }`}>
-                                                {trade.type.toUpperCase()}
-                                            </span>
+                                                <span>{trade.type}</span>
+                                                {trade.type === 'Long' ? (
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                                        <polyline points="17 6 23 6 23 12"></polyline>
+                                                    </svg>
+                                                ) : (
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                                        <polyline points="17 18 23 18 23 12"></polyline>
+                                                    </svg>
+                                                )}
+                                            </div>
                                         </td>
 
                                         {/* P/L */}

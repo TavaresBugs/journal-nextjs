@@ -261,15 +261,26 @@ const DayTradesTableComponent = ({
                     <span className="text-[10px] text-gray-500">
                       #{trade.id.slice(0, 13)}
                     </span>
-                    <span
-                      className={`text-xs font-bold ${
+                    <div
+                      className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
                         trade.type === "Long"
-                          ? "text-green-400"
-                          : "text-red-400"
+                          ? "bg-green-500/20 text-green-400"
+                          : "bg-red-500/20 text-red-400"
                       }`}
                     >
-                      1 {trade.type}
-                    </span>
+                      <span>{trade.type}</span>
+                      {trade.type === "Long" ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                          <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
+                      ) : (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                          <polyline points="17 18 23 18 23 12"></polyline>
+                        </svg>
+                      )}
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center font-bold">
