@@ -8,19 +8,19 @@ interface EditTradeModalProps {
     isOpen: boolean;
     onClose: () => void;
     trade: Trade | null;
-    onUpdateTrade: (trade: Trade) => void;
+    onUpdateTrade: (trade: Trade) => void | Promise<void>;
 }
 
 export function EditTradeModal({ isOpen, onClose, trade, onUpdateTrade }: EditTradeModalProps) {
     if (!trade) return null;
 
-    const handleUpdate = (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const handleUpdate = async (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => {
         const updatedTrade: Trade = {
             ...trade,
             ...tradeData,
             updatedAt: new Date().toISOString(),
         };
-        onUpdateTrade(updatedTrade);
+        await onUpdateTrade(updatedTrade);
     };
 
     return (

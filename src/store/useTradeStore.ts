@@ -91,7 +91,10 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
             lot: trade.lot,
             tags: trade.tags,
             strategy: trade.strategy,
-            setup: trade.setup
+            setup: trade.setup,
+            session: trade.session,
+            entry_quality: trade.entry_quality,
+            market_condition_v2: trade.market_condition_v2
         };
 
         // Optimistic update
@@ -138,7 +141,11 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
                 lot: trade.lot,
                 tags: trade.tags,
                 strategy: trade.strategy,
-                setup: trade.setup
+                setup: trade.setup,
+                marketCondition: trade.marketCondition,
+                entry_quality: trade.entry_quality,
+                market_condition_v2: trade.market_condition_v2,
+                session: trade.session,
             } : t
         ).sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
 

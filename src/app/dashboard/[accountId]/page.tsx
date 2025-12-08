@@ -27,7 +27,6 @@ import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
 import { ImportModal } from '@/components/import/ImportModal';
 import type { Trade, Playbook } from '@/types';
-import { getTradeById } from '@/lib/storage';
 import { 
     formatCurrency, 
     calculateTradeMetrics,
@@ -211,28 +210,16 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
         setActiveTab('lista'); // Switch to list tab after creating
     };
 
-    const handleEditTrade = async (trade: Trade) => {
-        try {
-            // Always fetch full trade details to ensure we have notes/images/etc
-            // The list view might have Lite versions or incomplete data from other contexts
-            const fullTrade = await getTradeById(trade.id);
-            
-            if (!fullTrade) {
-                showToast('Erro ao carregar detalhes do trade.', 'error');
-                return;
-            }
-            
-            setSelectedTrade(fullTrade);
-            setIsEditModalOpen(true);
-        } catch (error) {
-            console.error('Error fetching trade details:', error);
-            showToast('Erro ao carregar trade.', 'error');
-        }
+    const handleEditTrade = (trade: Trade) => {
+        // Use existing trade data directly - no need to fetch again
+        // The trade object already has all the necessary fields
+        setSelectedTrade(trade);
+        setIsEditModalOpen(true);
     };
 
     const handleUpdateTrade = async (trade: Trade) => {
         await updateTrade(trade);
-        setIsEditModalOpen(false);
+        // TradeForm handles closing the modal and showing toast
         setSelectedTrade(null);
     };
 
@@ -815,6 +802,7 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                 trades={allHistory.filter(t => t.entryDate.split('T')[0] === selectedDate) as unknown as Trade[]}
                 accountId={accountId}
                 onDeleteTrade={handleDeleteTrade}
+                onEditTrade={handleEditTrade}
             />
 
             {/* Settings Modal */}

@@ -21,6 +21,7 @@ interface DayDetailModalProps {
   trades: Trade[];
   accountId: string;
   onDeleteTrade: (tradeId: string) => void;
+  onEditTrade?: (trade: Trade) => void;
 }
 
 /**
@@ -34,6 +35,7 @@ export function DayDetailModal({
   trades,
   accountId,
   onDeleteTrade,
+  onEditTrade,
 }: DayDetailModalProps) {
   const {
     routines,
@@ -220,6 +222,7 @@ export function DayDetailModal({
             trades={trades}
             standaloneEntries={standaloneEntries}
             onDeleteTrade={onDeleteTrade}
+            onEditTrade={onEditTrade}
             onJournalClick={handleJournalClick}
             onEditEntry={handleEditEntry}
             onDeleteEntry={handleDeleteEntry}

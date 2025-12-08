@@ -11,6 +11,7 @@ interface DayTradesTableProps {
   trades: Trade[];
   standaloneEntries: JournalEntry[];
   onDeleteTrade: (tradeId: string) => void;
+  onEditTrade?: (trade: Trade) => void;
   onJournalClick: (trade: Trade, startEditing?: boolean) => void;
   onEditEntry: (entry: JournalEntry) => void;
   onDeleteEntry: (entryId: string) => void;
@@ -29,6 +30,7 @@ const DayTradesTableComponent = ({
   trades,
   standaloneEntries,
   onDeleteTrade,
+  onEditTrade,
   onJournalClick,
   onEditEntry,
   onDeleteEntry,
@@ -183,10 +185,11 @@ const DayTradesTableComponent = ({
                 <td className="px-4 py-3 text-center">
                   <div className="relative inline-block">
                     <Button
-                      variant="success"
+                      variant={journalEntry ? "success" : "ghost"}
                       size="icon"
                       onClick={() => onJournalClick(trade, !journalEntry)}
-                      className="w-8 h-8 mx-auto"
+                      className={`w-8 h-8 mx-auto ${!journalEntry ? 'opacity-40 border border-gray-600 hover:opacity-70' : ''}`}
+                      title={journalEntry ? "Ver Diário" : "Criar Diário"}
                     >
                       {journalEntry ? (
                         <svg
@@ -206,17 +209,18 @@ const DayTradesTableComponent = ({
                       ) : (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          width="18"
-                          height="18"
+                          width="16"
+                          height="16"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
+                          className="text-gray-500"
                         >
-                          <path d="M5 12h14" />
-                          <path d="M12 5v14" />
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                         </svg>
                       )}
                     </Button>
@@ -227,21 +231,24 @@ const DayTradesTableComponent = ({
                 </td>
                 <td className="px-4 py-3 text-center">
                   <div className="flex items-center justify-center gap-2">
+                    {/* Edit Trade Button */}
                     <Button
                       variant="gold"
                       size="icon"
-                      onClick={() => onJournalClick(trade, true)}
-                      className="w-8 h-8"
-                      title="Editar Diário"
+                      onClick={() => onEditTrade?.(trade)}
+                      className={`w-8 h-8 ${!onEditTrade ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title="Editar Trade"
+                      disabled={!onEditTrade}
                     >
                       ✏️
                     </Button>
+                    {/* Delete Trade Button */}
                     <Button
                       variant="danger"
                       size="icon"
                       onClick={() => onDeleteTrade(trade.id)}
                       className="w-8 h-8"
-                      title="Excluir"
+                      title="Excluir Trade"
                     >
                       🗑️
                     </Button>

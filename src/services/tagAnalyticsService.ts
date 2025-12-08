@@ -23,7 +23,7 @@ export interface TagMetrics {
 /**
  * Parse tags string into array of trimmed, unique tags
  */
-export function parseTagsFromString(tagsString?: string): string[] {
+export function parseTagsFromString(tagsString?: string | null): string[] {
     if (!tagsString) return [];
     return tagsString
         .split(',')

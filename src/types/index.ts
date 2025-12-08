@@ -34,7 +34,7 @@ export interface Trade {
     // Análise
     tfAnalise?: string; // HTF (ex: 4H)
     tfEntrada?: string; // LTF (ex: M5)
-    tags?: string; // PDArrays, contexto
+    tags?: string | null; // PDArrays, contexto
     strategy?: string; // Estratégia
     setup?: string; // Setup específico
     notes?: string; // Notas/contexto
@@ -59,6 +59,10 @@ export interface Trade {
     planAdherence?: '100%' | 'partial' | 'off-plan';
     planAdherenceRating?: number; // 1-5
 
+    // Entry Telemetry (v2)
+    entry_quality?: 'picture-perfect' | 'nice' | 'normal' | 'ugly';
+    market_condition_v2?: 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout';
+
     createdAt: string;
     updatedAt: string;
 }
@@ -80,12 +84,18 @@ export interface TradeLite {
     stopLoss: number;
     takeProfit: number;
     lot: number;
-    tags?: string;
+    tags?: string | null;
     strategy?: string;
     setup?: string;
     // Timeframes for analytics
     tfAnalise?: string;
     tfEntrada?: string;
+    // Market condition (legacy)
+    marketCondition?: 'Trending Bull' | 'Trending Bear' | 'Range' | 'High Vol' | 'Low Vol';
+    // Entry Telemetry v2
+    entry_quality?: 'picture-perfect' | 'nice' | 'normal' | 'ugly';
+    market_condition_v2?: 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout';
+    session?: string;
 }
 
 export interface TradeResponse {

@@ -21,13 +21,13 @@ import {
 
 interface TradeFormProps {
     accountId: string;
-    onSubmit: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => void;
+    onSubmit: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => void | Promise<void>;
     onCancel?: () => void;
     initialData?: Partial<Trade>;
     mode?: 'create' | 'edit';
 }
 
-import { toZonedTime, fromZonedTime, format as formatTz } from 'date-fns-tz';
+import { toZonedTime, format as formatTz } from 'date-fns-tz';
 
 const getNYDateTime = (dateStr?: string, timeStr?: string) => {
     // Dados já estão armazenados como NY time, apenas retornar diretamente
@@ -47,24 +47,60 @@ const getNYDateTime = (dateStr?: string, timeStr?: string) => {
     };
 };
 
-const getUTCDateTime = (dateStr: string, timeStr: string) => {
-    if (!dateStr) return { date: undefined, time: undefined };
-    const dateTimeStr = `${dateStr} ${timeStr || '00:00'}`;
-    const nyDate = fromZonedTime(dateTimeStr, 'America/New_York');
-    return {
-        date: nyDate.toISOString(),
-        time: timeStr ? nyDate.toISOString().split('T')[1].substring(0, 5) : undefined
-    };
+// REMOVED: getUTCDateTime - data is already stored as NY time, no conversion needed
+
+const MARKET_CONDITIONS_V2 = [
+    '📈 Tendência de Alta',
+    '📉 Tendência de Baixa', 
+    '↔️ Lateralidade',
+    '⚡ Rompimento'
+];
+
+const ENTRY_QUALITY_OPTIONS = [
+    '🌟 Picture Perfect',
+    '✅ Nice ST',
+    '➖ Normal ST',
+    '⚠️ Ugly ST'
+];
+
+// Map display values to database values
+const mapEntryQualityToDb = (value: string): 'picture-perfect' | 'nice' | 'normal' | 'ugly' | undefined => {
+    if (value.includes('Picture Perfect')) return 'picture-perfect';
+    if (value.includes('Nice')) return 'nice';
+    if (value.includes('Normal')) return 'normal';
+    if (value.includes('Ugly')) return 'ugly';
+    return undefined;
 };
 
-const MARKET_CONDITIONS = [
-    'Tendência Alta',
-    'Tendência Baixa', 
-    'Lateralidade',
-    'Rompimento',
-    'Consolidação',
-    'Alta Volatilidade'
-];
+// Reverse mapping: DB value -> Display value
+const mapEntryQualityFromDb = (value?: string): string => {
+    switch (value) {
+        case 'picture-perfect': return '🌟 Picture Perfect';
+        case 'nice': return '✅ Nice ST';
+        case 'normal': return '➖ Normal ST';
+        case 'ugly': return '⚠️ Ugly ST';
+        default: return '';
+    }
+};
+
+const mapMarketConditionToDb = (value: string): 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout' | undefined => {
+    if (value.includes('Alta')) return 'bull-trend';
+    if (value.includes('Baixa')) return 'bear-trend';
+    if (value.includes('Lateralidade')) return 'ranging';
+    if (value.includes('Rompimento')) return 'breakout';
+    return undefined;
+};
+
+// Reverse mapping: DB value -> Display value
+const mapMarketConditionFromDb = (value?: string): string => {
+    switch (value) {
+        case 'bull-trend': return '📈 Tendência de Alta';
+        case 'bear-trend': return '📉 Tendência de Baixa';
+        case 'ranging': return '↔️ Lateralidade';
+        case 'breakout': return '⚡ Rompimento';
+        default: return '';
+    }
+};
 
 // Section Header Component
 const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
@@ -91,6 +127,11 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [strategy, setStrategy] = useState(initialData?.strategy || '');
     const [setup, setSetup] = useState(initialData?.setup || '');
 
+    // Entry Telemetry (v2) - now using string for datalist compatibility
+    // Use reverse mapping to convert DB values to display values
+    const [entryQuality, setEntryQuality] = useState(mapEntryQualityFromDb(initialData?.entry_quality));
+    const [marketConditionV2, setMarketConditionV2] = useState(mapMarketConditionFromDb(initialData?.market_condition_v2));
+
     // Financial
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
     const [type, setType] = useState<'Long' | 'Short' | ''>(initialData?.type || '');
@@ -109,6 +150,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const [exitTime, setExitTime] = useState(nyExit.time);
 
     const isTradeOpen = !exitPrice || exitPrice === '';
+    const [isSaving, setIsSaving] = useState(false);
 
     // Telemetry
     const detectedSession = useMemo(() => {
@@ -149,88 +191,108 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     
     const estimates = calculateEstimates();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (isSaving) return;
 
         if (!type || (type !== 'Long' && type !== 'Short')) {
             showToast('Por favor, selecione a direção (Long ou Short)', 'error');
             return;
         }
 
-        const asset = assets.find(a => a.symbol === symbol.toUpperCase());
-        const assetMultiplier = asset ? asset.multiplier : 1;
-        
-        const utcEntry = getUTCDateTime(entryDate, entryTime);
-        const utcExit = getUTCDateTime(exitDate, exitTime);
+        setIsSaving(true);
 
-        const tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'> = {
-            userId: '',
-            accountId,
-            symbol: symbol.toUpperCase(),
-            type: type as 'Long' | 'Short',
-            entryPrice: parseFloat(entryPrice),
-            stopLoss: stopLoss ? parseFloat(stopLoss) : 0,
-            takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
-            exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
-            lot: parseFloat(lot),
-            commission: commission ? -Math.abs(parseFloat(commission)) : 0, 
-            swap: swap ? parseFloat(swap) : 0,
-            entryDate: utcEntry.date || entryDate,
-            entryTime: utcEntry.time,
-            exitDate: utcExit.date,
-            exitTime: utcExit.time,
-            tfAnalise: tfAnalise || undefined,
-            tfEntrada: tfEntrada || undefined,
-            tags: tagsList.length > 0 ? tagsList.join(', ') : undefined,
-            strategy: strategy || undefined,
-            setup: setup || undefined,
-            marketCondition: marketCondition as Trade['marketCondition'] || undefined,
-            session: entryTime ? detectedSession : undefined,
-            htfAligned: (tfAnalise && tfEntrada) ? alignmentResult.valid : undefined,
-            rMultiple: undefined,
-            pnl: undefined,
-            outcome: 'pending',
-        };
+        try {
+            const asset = assets.find(a => a.symbol === symbol.toUpperCase());
+            const assetMultiplier = asset ? asset.multiplier : 1;
 
-        if (exitPrice) {
-            const tempTrade = { ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade;
-            const pnl = calculateTradePnL(tempTrade, assetMultiplier);
-            tradeData.pnl = pnl;
-            tradeData.outcome = determineTradeOutcome({ ...tempTrade, pnl } as Trade);
+            const tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'> = {
+                userId: '',
+                accountId,
+                symbol: symbol.toUpperCase(),
+                type: type as 'Long' | 'Short',
+                entryPrice: parseFloat(entryPrice),
+                stopLoss: stopLoss ? parseFloat(stopLoss) : 0,
+                takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
+                exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
+                lot: parseFloat(lot),
+                commission: commission ? -Math.abs(parseFloat(commission)) : 0, 
+                swap: swap ? parseFloat(swap) : 0,
+                // Save dates directly as NY time (no UTC conversion)
+                entryDate: entryDate,
+                entryTime: entryTime || undefined,
+                exitDate: exitDate || undefined,
+                exitTime: exitTime || undefined,
+                tfAnalise: tfAnalise || undefined,
+                tfEntrada: tfEntrada || undefined,
+                tags: tagsList.length > 0 ? tagsList.join(', ') : '#SemConfluencias',
+                strategy: strategy || undefined,
+                setup: setup || undefined,
+                marketCondition: marketCondition as Trade['marketCondition'] || undefined,
+                session: entryTime ? detectedSession : undefined,
+                htfAligned: (tfAnalise && tfEntrada) ? alignmentResult.valid : undefined,
+                rMultiple: undefined,
+                pnl: undefined,
+                outcome: 'pending',
+                // Entry Telemetry (v2) - map display values to DB values
+                entry_quality: mapEntryQualityToDb(entryQuality),
+                market_condition_v2: mapMarketConditionToDb(marketConditionV2),
+            };
+
+            if (exitPrice) {
+                const tempTrade = { ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade;
+                const pnl = calculateTradePnL(tempTrade, assetMultiplier);
+                tradeData.pnl = pnl;
+                tradeData.outcome = determineTradeOutcome({ ...tempTrade, pnl } as Trade);
+                
+                const rMult = calculateRMultiple(
+                    parseFloat(entryPrice),
+                    parseFloat(exitPrice),
+                    parseFloat(stopLoss),
+                    type as 'Long' | 'Short'
+                );
+                tradeData.rMultiple = rMult ?? undefined;
+            }
+
+            await onSubmit(tradeData);
             
-            const rMult = calculateRMultiple(
-                parseFloat(entryPrice),
-                parseFloat(exitPrice),
-                parseFloat(stopLoss),
-                type as 'Long' | 'Short'
-            );
-            tradeData.rMultiple = rMult ?? undefined;
+            if (mode === 'edit') {
+                // Close modal first, then show toast
+                onCancel?.();
+                setTimeout(() => showToast('Trade atualizado com sucesso!', 'success'), 100);
+            } else {
+                showToast('Seu trade foi adicionado com sucesso!', 'success');
+                // Reset form only for create mode
+                setMarketCondition('');
+                setSymbol('');
+                setType('');
+                setEntryPrice('');
+                setStopLoss('');
+                setTakeProfit('');
+                setExitPrice('');
+                setLot('');
+                setCommission('');
+                setSwap('');
+                setEntryDate(dayjs().format('YYYY-MM-DD'));
+                setEntryTime('');
+                setExitDate('');
+                setExitTime('');
+                setTfAnalise('');
+                setTfEntrada('');
+                setTagsList([]);
+                setTagInput('');
+                setStrategy('');
+                setSetup('');
+                setEntryQuality('');
+                setMarketConditionV2('');
+            }
+        } catch (error) {
+            console.error('Error saving trade:', error);
+            showToast('Erro ao salvar trade', 'error');
+        } finally {
+            setIsSaving(false);
         }
-
-        onSubmit(tradeData);
-        showToast('Seu trade foi adicionado com sucesso!', 'success');
-
-        // Reset form
-        setMarketCondition('');
-        setSymbol('');
-        setType('');
-        setEntryPrice('');
-        setStopLoss('');
-        setTakeProfit('');
-        setExitPrice('');
-        setLot('');
-        setCommission('');
-        setSwap('');
-        setEntryDate(dayjs().format('YYYY-MM-DD'));
-        setEntryTime('');
-        setExitDate('');
-        setExitTime('');
-        setTfAnalise('');
-        setTfEntrada('');
-        setTagsList([]);
-        setTagInput('');
-        setStrategy('');
-        setSetup('');
     };
 
     return (
@@ -274,13 +336,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             <label className="block text-xs font-medium text-gray-400 mb-1.5">Condição</label>
                             <input
                                 list="market-conditions-list"
-                                value={marketCondition}
-                                onChange={(e) => setMarketCondition(e.target.value)}
+                                value={marketConditionV2}
+                                onChange={(e) => setMarketConditionV2(e.target.value)}
                                 placeholder="Tendência, Lateral..."
                                 className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                             />
                             <datalist id="market-conditions-list">
-                                {MARKET_CONDITIONS.map((cond) => (
+                                {MARKET_CONDITIONS_V2.map((cond) => (
                                     <option key={cond} value={cond} />
                                 ))}
                             </datalist>
@@ -364,39 +426,55 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             {alignmentResult.valid ? '✓ HTF Aligned' : `⚠ Máx: ${alignmentResult.recommendedEntryTF}`}
                         </div>
                     )}
-
-                    {/* Tags */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1.5">Tags</label>
-                        <div 
-                            className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 flex flex-wrap gap-1.5 items-center min-h-[38px]"
-                            onClick={() => document.getElementById('tags-input')?.focus()}
-                        >
-                            {tagsList.map((tag, index) => (
-                                <span key={index} className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                                    {tag}
-                                    <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
-                                </span>
-                            ))}
-                            <input
-                                id="tags-input"
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === ' ' || e.key === 'Enter') {
-                                        e.preventDefault();
-                                        const newTag = tagInput.trim();
-                                        if (newTag && !tagsList.includes(newTag)) {
-                                            setTagsList(prev => [...prev, newTag]);
-                                            setTagInput('');
+                    {/* Confluências + Avaliação */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Confluências</label>
+                            <div 
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 flex flex-wrap gap-1.5 items-center min-h-[38px]"
+                                onClick={() => document.getElementById('tags-input')?.focus()}
+                            >
+                                {tagsList.map((tag, index) => (
+                                    <span key={index} className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                                        {tag}
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
+                                    </span>
+                                ))}
+                                <input
+                                    id="tags-input"
+                                    value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === ' ' || e.key === 'Enter') {
+                                            e.preventDefault();
+                                            const newTag = tagInput.trim();
+                                            if (newTag && !tagsList.includes(newTag)) {
+                                                setTagsList(prev => [...prev, newTag]);
+                                                setTagInput('');
+                                            }
+                                        } else if (e.key === 'Backspace' && !tagInput && tagsList.length > 0) {
+                                            setTagsList(prev => prev.slice(0, -1));
                                         }
-                                    } else if (e.key === 'Backspace' && !tagInput && tagsList.length > 0) {
-                                        setTagsList(prev => prev.slice(0, -1));
-                                    }
-                                }}
-                                placeholder={tagsList.length === 0 ? "#FVG #Breaker #OB" : ""}
-                                className="bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 flex-1 min-w-[60px] text-sm"
+                                    }}
+                                    placeholder={tagsList.length === 0 ? "FVG Breaker OB" : ""}
+                                    className="bg-transparent border-none outline-none text-gray-100 placeholder-gray-500 flex-1 min-w-[60px] text-sm"
+                                />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Avaliação</label>
+                            <input
+                                list="entry-quality-list"
+                                value={entryQuality}
+                                onChange={(e) => setEntryQuality(e.target.value)}
+                                placeholder="🌟 Picture Perfect..."
+                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                             />
+                            <datalist id="entry-quality-list">
+                                {ENTRY_QUALITY_OPTIONS.map((opt) => (
+                                    <option key={opt} value={opt} />
+                                ))}
+                            </datalist>
                         </div>
                     </div>
                 </div>
@@ -543,9 +621,20 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                 )}
                 <button
                     type="submit"
-                    className="flex-1 py-3 px-4 bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-green-500/30"
+                    disabled={isSaving}
+                    className={`flex-1 py-3 px-4 bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-green-500/30 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                    {mode === 'edit' ? 'Salvar' : 'Registrar Trade'}
+                    {isSaving ? (
+                        <span className="flex items-center justify-center gap-2">
+                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Salvando...
+                        </span>
+                    ) : (
+                        mode === 'edit' ? 'Salvar' : 'Registrar Trade'
+                    )}
                 </button>
             </div>
         </form>

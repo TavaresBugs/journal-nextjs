@@ -19,6 +19,7 @@ import { getAccounts } from '@/services/accountService';
 import { saveTrade } from '@/services/tradeService';
 import { Account, Trade } from '@/types';
 import { cn } from '@/lib/utils';
+import { calculateSession } from '@/utils/tradeUtils';
 import { fromZonedTime, toZonedTime, format } from 'date-fns-tz';
 
 interface ImportModalProps {
@@ -308,6 +309,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     takeProfit: 0, 
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
+                    session: calculateSession(entryTimeStr),
                 };
 
                 // Exit Date/Price logic - adapted for NinjaTrader

@@ -45,7 +45,7 @@ export function ViewPlaybookModal({
             isOpen={isOpen} 
             onClose={handleClose} 
             title={`${playbook.icon} ${playbook.name}`} 
-            maxWidth="2xl"
+            maxWidth="5xl"
             headerActions={
                 onEdit && activeTab === 'info' ? (
                     <Button

@@ -28,7 +28,7 @@ export interface DBTrade {
   // Analysis
   tf_analise?: string;
   tf_entrada?: string;
-  tags?: string;
+  tags?: string | null;
   strategy?: string;
   setup?: string;
   notes?: string;
@@ -45,6 +45,9 @@ export interface DBTrade {
   market_condition?: string;
   plan_adherence?: string;
   plan_adherence_rating?: number;
+  // Entry Telemetry v2
+  entry_quality?: string;
+  market_condition_v2?: string;
   created_at: string;
   updated_at: string;
 }
