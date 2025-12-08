@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useRef } from 'react';
 
 interface ImageUploadZoneProps {
   timeframe: { key: string; label: string };
@@ -24,14 +24,26 @@ const ImageUploadZoneComponent = ({
   onRemove,
   onAddMore
 }: ImageUploadZoneProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const triggerFileInput = () => {
     document.getElementById(`file-input-${timeframe.key}`)?.click();
   };
 
+  const handleContainerClick = () => {
+    // Give focus to the container so paste works
+    containerRef.current?.focus();
+  };
+
   return (
     <div
-      className="aspect-video bg-gray-900/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 rounded-xl relative group overflow-hidden transition-all duration-200"
-      onPaste={onPaste}
+      ref={containerRef}
+      className="aspect-video bg-gray-900/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 rounded-xl relative group overflow-hidden transition-all duration-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 cursor-pointer"
+      onPaste={(e) => {
+        e.stopPropagation();
+        onPaste(e);
+      }}
+      onClick={handleContainerClick}
       tabIndex={0}
     >
       <input
@@ -80,10 +92,16 @@ const ImageUploadZoneComponent = ({
 
           {/* Add Button Overlay */}
           {onAddMore && (
-            <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-20">
+              <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
+                CTRL+V
+              </span>
               <button
                 type="button"
-                onClick={triggerFileInput}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerFileInput();
+                }}
                 className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors"
                 title="Adicionar outra imagem"
               >
