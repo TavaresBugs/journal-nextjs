@@ -189,9 +189,9 @@ export function MenteeDayDetailModal({
               <span className="text-yellow-400">📊</span> Trades
             </h3>
             {trades.map((trade) => {
-              // Find matching journal entry by tradeId OR symbol/asset
+              // Find matching journal entry by tradeIds OR symbol/asset
               const linkedEntry = journalEntries.find(
-                (e) => e.tradeId === trade.id || e.asset === trade.symbol
+                (e) => e.tradeIds?.includes(trade.id) || e.asset === trade.symbol
               );
 
               return (

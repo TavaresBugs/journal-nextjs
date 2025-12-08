@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useTradeStore } from '@/store/useTradeStore';
 import { useToast } from '@/contexts/ToastContext';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
+import { getTradesByIds } from '@/services/tradeService';
 import dayjs from 'dayjs';
 
 interface JournalEntryModalProps {
@@ -53,13 +54,56 @@ export function JournalEntryModal({
   const { trades: allTrades } = useTradeStore();
   const { showToast } = useToast();
   
-  const [trade] = useState<Trade | null | undefined>(() => {
-    if (initialTrade) return initialTrade;
-    if (existingEntry?.tradeId) {
-      return allTrades.find(t => t.id === existingEntry.tradeId) || null;
+  // State for trades fetched from DB when not found locally
+  const [fetchedTrades, setFetchedTrades] = useState<Trade[]>([]);
+
+  // Fetch missing trades from DB when entry has tradeIds not in local sources
+  useEffect(() => {
+    const fetchMissingTrades = async () => {
+      if (!existingEntry?.tradeIds || existingEntry.tradeIds.length === 0) return;
+      
+      // Find which IDs are missing from local sources
+      const localIds = new Set([
+        ...allTrades.map(t => t.id),
+        ...availableTrades.map(t => t.id)
+      ]);
+      
+      const missingIds = existingEntry.tradeIds.filter(id => !localIds.has(id));
+      
+      if (missingIds.length > 0) {
+        const trades = await getTradesByIds(missingIds);
+        setFetchedTrades(trades);
+      }
+    };
+    
+    fetchMissingTrades();
+  }, [existingEntry?.tradeIds, allTrades, availableTrades]);
+
+  // Combine all trade sources for resolution
+  const combinedTrades = useMemo(() => {
+    const tradeMap = new Map<string, Trade>();
+    // Add store trades first
+    allTrades.forEach(t => tradeMap.set(t.id, t));
+    // Then add availableTrades (may include older trades from context)
+    availableTrades.forEach(t => tradeMap.set(t.id, t));
+    // Finally add fetched trades (from DB for missing ones)
+    fetchedTrades.forEach(t => tradeMap.set(t.id, t));
+    return Array.from(tradeMap.values());
+  }, [allTrades, availableTrades, fetchedTrades]);
+
+  const linkedTrades = useMemo(() => {
+    // If we have an existing entry with tradeIds, resolve them
+    if (existingEntry?.tradeIds && existingEntry.tradeIds.length > 0) {
+      const resolved = existingEntry.tradeIds
+        .map(id => combinedTrades.find(t => t.id === id))
+        .filter((t): t is Trade => t !== undefined);
+      return resolved;
     }
-    return null;
-  });
+    // If we have an initial trade passed in
+    if (initialTrade) return [initialTrade];
+    return [];
+  }, [existingEntry?.tradeIds, combinedTrades, initialTrade]);
+
   const [isEditing, setIsEditing] = useState(startEditing || !existingEntry);
   const [isSharingLoading, setIsSharingLoading] = useState(false);
 
@@ -85,7 +129,7 @@ export function JournalEntryModal({
 
   // Handle form submission
   const handleSubmit = async (data: FormSubmissionData) => {
-    const targetAccountId = trade?.accountId || accountId || existingEntry?.accountId;
+    const targetAccountId = linkedTrades[0]?.accountId || accountId || existingEntry?.accountId;
     
     if (!targetAccountId) {
       console.error('Account ID is missing');
@@ -103,7 +147,7 @@ export function JournalEntryModal({
         date: data.date,
         title: data.title,
         asset: data.asset,
-        tradeId: data.tradeId,
+        tradeIds: data.tradeIds, // Now using tradeIds array
         // Cast to unknown first to avoid 'any', assuming store handles the type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         images: data.images as unknown as any,
@@ -161,7 +205,7 @@ export function JournalEntryModal({
     return {
       date: existingEntry?.date || (initialTrade ? initialTrade.entryDate.split('T')[0] : initialDate || dayjs().format('YYYY-MM-DD')),
       title: getDefaultTitle(),
-      asset: existingEntry?.asset || initialTrade?.symbol || '',
+      asset: existingEntry?.asset || linkedTrades[0]?.symbol || '',
       emotion: existingEntry?.emotion || '',
       analysis: existingEntry?.analysis || '',
       technicalWins: parsedNotes.technicalWins || '',
@@ -178,7 +222,7 @@ export function JournalEntryModal({
     return (
       <JournalEntryPreview
         entry={existingEntry}
-        trade={trade}
+        linkedTrades={linkedTrades}
         onClose={onClose}
         onEdit={() => setIsEditing(true)}
         onShare={handleShare}
@@ -196,9 +240,9 @@ export function JournalEntryModal({
       onClose={existingEntry ? () => setIsEditing(false) : onClose}
       onSubmit={handleSubmit}
       initialData={getInitialFormData()}
-      trade={trade}
+      linkedTrades={linkedTrades}
       availableTrades={availableTrades}
-      accountId={accountId || trade?.accountId || existingEntry?.accountId || ''}
+      accountId={accountId || linkedTrades[0]?.accountId || existingEntry?.accountId || ''}
       isEditing={!!existingEntry}
     />
   );

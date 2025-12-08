@@ -63,7 +63,7 @@ export function DayDetailModal({
 
   // Filter standalone entries with useMemo
   const standaloneEntries = useMemo(() =>
-    entries.filter((e) => e.date === date && !e.tradeId),
+    entries.filter((e) => e.date === date && (!e.tradeIds || e.tradeIds.length === 0)),
     [entries, date]
   );
 

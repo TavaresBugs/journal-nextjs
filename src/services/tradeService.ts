@@ -157,6 +157,31 @@ export async function getTradeById(id: string): Promise<Trade | null> {
 }
 
 /**
+ * Obtém múltiplos trades pelos seus IDs.
+ * @param {string[]} ids - Lista de IDs dos trades.
+ * @returns {Promise<Trade[]>} Lista de trades encontrados.
+ */
+export async function getTradesByIds(ids: string[]): Promise<Trade[]> {
+    if (!ids || ids.length === 0) return [];
+    
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+        .from('trades')
+        .select('*')
+        .in('id', ids)
+        .eq('user_id', userId);
+
+    if (error) {
+        console.error('Error fetching trades by ids:', error);
+        return [];
+    }
+
+    return data ? data.map(mapTradeFromDB) : [];
+}
+
+/**
  * Obtém os trades de uma conta com paginação simples.
  * @param {string} accountId - O ID da conta.
  * @param {number} page - Página atual (1-based).

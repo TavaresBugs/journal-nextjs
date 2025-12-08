@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState, useMemo } from 'react';
+import { use, useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useTradeStore } from '@/store/useTradeStore';
@@ -130,8 +130,19 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
         return { daysAccessed, streak };
     }, [allHistory, entries]);
 
+    // Track if we have already initialized data for this account
+    const isInitRef = useRef<string | null>(null);
+
     useEffect(() => {
         const init = async () => {
+            // Prevent double initialization for same account
+            if (isInitRef.current === accountId) {
+                // If it's already initialized but we are just re-rendering, 
+                // ensure loading is off and return
+                setIsLoading(false);
+                return;
+            }
+
             try {
                 // 1. Ensure accounts are loaded
                 // Use getState to avoid dependency cycle if we just want to check current state
@@ -168,6 +179,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                 ]);
                 setIsAdminUser(adminStatus);
                 setIsMentorUser(mentorStatus);
+                
+                // Mark as initialized for this account
+                isInitRef.current = accountId;
 
             } catch (error) {
                 console.error('Error initializing dashboard:', error);

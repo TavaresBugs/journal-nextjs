@@ -516,7 +516,7 @@ export async function getMenteeJournalEntries(menteeId: string, date: string, ac
         date: db.date,
         title: db.title,
         asset: db.asset,
-        tradeId: db.trade_id,
+        tradeIds: db.trade_id ? [db.trade_id] : [],
         images: db.images || [],
         emotion: db.emotion,
         analysis: db.analysis,

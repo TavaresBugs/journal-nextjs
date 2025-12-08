@@ -20,6 +20,7 @@ interface JournalStore {
     updateEntry: (entry: JournalEntry) => Promise<void>;
     removeEntry: (id: string) => Promise<void>;
     removeEntryByTradeId: (tradeId: string) => void;
+    getEntriesByTradeId: (tradeId: string) => JournalEntry[];
     getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
 
     // Routine Actions
@@ -82,12 +83,9 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
             const success = await saveJournalEntry(updatedEntry);
 
             if (success) {
-                set(state => ({
-                    entries: state.entries.map(e => 
-                        e.id === entry.id ? updatedEntry : e
-                    ),
-                    isLoading: false
-                }));
+                // Reload from DB to get fresh data including junction table relations
+                const freshEntries = await getJournalEntries(entry.accountId);
+                set({ entries: freshEntries, isLoading: false });
             } else {
                 throw new Error('Failed to update journal entry');
             }
@@ -116,12 +114,16 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
 
     removeEntryByTradeId: (tradeId: string) => {
         set(state => ({
-            entries: state.entries.filter(e => e.tradeId !== tradeId)
+            entries: state.entries.filter(e => !e.tradeIds?.includes(tradeId))
         }));
     },
 
+    getEntriesByTradeId: (tradeId: string) => {
+        return get().entries.filter(e => e.tradeIds?.includes(tradeId));
+    },
+
     getEntryByTradeId: (tradeId: string) => {
-        return get().entries.find(e => e.tradeId === tradeId);
+        return get().entries.find(e => e.tradeIds?.includes(tradeId));
     },
 
     // Routine Actions

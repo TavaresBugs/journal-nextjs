@@ -48,6 +48,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
 
   // Parsed data state
   const [rawData, setRawData] = useState<RawTradeData[]>([]);
+  // columnMapping unused, removed.
   const [headers, setHeaders] = useState<string[]>([]);
   
   // ... (Mapping Check: keep as is) ...
@@ -93,6 +94,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     setImportStats({ total: 0, success: 0, failed: 0, skipped: 0 });
     setBrokerTimezone('Europe/Helsinki');
     setImportMode('append');
+    setImportMode('append');
   };
 
   // ... (handleFileUpload - keep as is) ...
@@ -109,14 +111,94 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     }
 
     try {
-      const data = await processImportFile(selectedFile);
+      const { data } = await processImportFile(selectedFile);
       if (data.length === 0) {
         throw new Error('No data found in file.');
       }
 
       const detectedHeaders = Object.keys(data[0]);
       setHeaders(detectedHeaders);
-      setRawData(data);
+      setRawData(data); // data is RawTradeData[]
+      // setTotalNetProfit(fileTotalNetProfit); // Removed as per request
+
+      // Auto-detect mappings from first row
+      const firstRow = data[0];
+      const autoMapping: ColumnMapping = {
+        entryDate: '',
+        symbol: '',
+        direction: '',
+        volume: '',
+        entryPrice: '',
+        exitDate: '',
+        exitPrice: '',
+        profit: '',
+        commission: '',
+        swap: '',
+      };
+      if (firstRow) {
+        const headers = Object.keys(firstRow);
+        
+        // Helper: Find header case-insensitive
+        const findHeader = (candidates: string[]) => 
+            headers.find(h => candidates.some(c => h.toLowerCase() === c.toLowerCase()));
+
+        if (firstRow['Open Time']) autoMapping.entryDate = 'Open Time';
+        else {
+             const h = findHeader(['Open Time', 'Time', 'Data Abertura', 'Hora Entrada']);
+             if (h) autoMapping.entryDate = h;
+        }
+
+        if (firstRow['Symbol']) autoMapping.symbol = 'Symbol';
+        else {
+             const h = findHeader(['Symbol', 'Ativo', 'Instrumento']);
+             if (h) autoMapping.symbol = h;
+        }
+
+        if (firstRow['Type']) autoMapping.direction = 'Type';
+        else {
+             const h = findHeader(['Type', 'Tipo', 'Direção', 'Direcao']);
+             if (h) autoMapping.direction = h;
+        }
+        
+        if (firstRow['Volume']) autoMapping.volume = 'Volume';
+        else {
+             const h = findHeader(['Volume', 'Size', 'Lote', 'Qtd', 'Quantidade']);
+             if (h) autoMapping.volume = h;
+        }
+
+        if (firstRow['Open Price']) autoMapping.entryPrice = 'Open Price';
+        else {
+             const h = findHeader(['Open Price', 'Price', 'Preço Entrada', 'Preco Entrada']);
+             if (h) autoMapping.entryPrice = h;
+        }
+
+        if (firstRow['Close Time']) autoMapping.exitDate = 'Close Time';
+        else {
+             const h = findHeader(['Close Time', 'Data Fechamento', 'Hora Saída', 'Hora Saida']);
+             if (h) autoMapping.exitDate = h;
+        }
+
+        if (firstRow['Close Price']) autoMapping.exitPrice = 'Close Price';
+        else {
+             const h = findHeader(['Close Price', 'Preço Saída', 'Preco Saida']);
+             if (h) autoMapping.exitPrice = h;
+        }
+        
+        if (firstRow['Profit']) autoMapping.profit = 'Profit';
+        else {
+             const h = findHeader(['Profit', 'Lucro', 'P/L', 'PnL']);
+             if (h) autoMapping.profit = h;
+        }
+
+        // Enhanced mappings for Fees/Commission/Swap
+        const commHeader = findHeader(['Commission', 'Comission', 'Comissao', 'Comissão', 'Fee', 'Fees', 'Corretagem', 'Cost']);
+        if (commHeader) autoMapping.commission = commHeader;
+        
+        const swapHeader = findHeader(['Swap', 'Swaps', 'Rollover', 'Taxes', 'Taxa', 'Taxas']);
+        if (swapHeader) autoMapping.swap = swapHeader;
+      }
+      setMapping(autoMapping);
+
       setStep('mapping');
     } catch (err) {
       console.error(err);
@@ -137,7 +219,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     }
 
     try {
-      const data = await parseNinjaTraderCSV(selectedFile);
+      const { data } = await parseNinjaTraderCSV(selectedFile);
       if (data.length === 0) {
         throw new Error('Nenhum dado encontrado no arquivo.');
       }
@@ -145,6 +227,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
       const detectedHeaders = Object.keys(data[0]);
       setHeaders(detectedHeaders);
       setRawData(data);
+      // setTotalNetProfit(fileTotalNetProfit); // Removed as per request
       
       // Auto-map NinjaTrader columns
       const autoMapping = getNinjaTraderAutoMapping();
@@ -161,18 +244,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     }
   };
 
-  const convertToUtc = (date: Date, timezone: string): Date => {
-      // Extrair componentes de data/hora do objeto Date (interpretado como horário do broker)
-      // Não usar format() pois ele aplica timezone local
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      const hours = String(date.getHours()).padStart(2, '0');
-      const minutes = String(date.getMinutes()).padStart(2, '0');
-      const seconds = String(date.getSeconds()).padStart(2, '0');
-      const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-      return fromZonedTime(isoString, timezone);
-  };
+
 
   // Convert from source timezone to NY timezone for NinjaTrader
   // CSV is in Brasília time, but we want to store in NY time
@@ -226,6 +298,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                 return `${t.entryDate}|${time}|${t.symbol}|${t.type}|${t.entryPrice}`;
             }));
         }
+
+        const tradesToSave: Trade[] = [];
 
         for (const row of rawData) {
             try {
@@ -345,6 +419,20 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     } else {
                         trade.pnl = Number(row[mapping.profit]);
                     }
+
+                    // Add commission and swap to PnL if they exist
+                    // Note: commission and swap are usually negative numbers for costs
+                    if (mapping.commission && row[mapping.commission]) {
+                         const commVal = dataSource === 'ninjatrader' 
+                            ? -Math.abs(parseNinjaTraderMoney(row[mapping.commission])) // Ninja is positive, make negative
+                            : Number(row[mapping.commission]);
+                         if (!isNaN(commVal)) trade.pnl += commVal;
+                    }
+                    if (mapping.swap && row[mapping.swap]) {
+                         const swapVal = Number(row[mapping.swap]);
+                         if (!isNaN(swapVal)) trade.pnl += swapVal;
+                    }
+
                     if (trade.pnl > 0) trade.outcome = 'win';
                     else if (trade.pnl < 0) trade.outcome = 'loss';
                     else trade.outcome = 'breakeven';
@@ -382,18 +470,25 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                      if (!isNaN(swapVal)) trade.swap = swapVal;
                 }
 
-                const saved = await saveTrade(trade);
-                if (saved) {
-                    successCount++;
-                } else {
-                    failedCount++;
-                }
+                tradesToSave.push(trade);
 
             } catch (e) {
                 console.error('Error importing row', row, e);
                 failedCount++;
             }
         }
+
+
+
+        for (const trade of tradesToSave) {
+            const saved = await saveTrade(trade);
+            if (saved) {
+                successCount++;
+            } else {
+                failedCount++;
+            }
+        }
+
     } catch (err) {
         console.error('Failed import process', err);
         setError('Erro na importação. Tente novamente.');

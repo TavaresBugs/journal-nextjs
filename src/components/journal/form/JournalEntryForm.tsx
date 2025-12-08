@@ -17,7 +17,7 @@ interface JournalEntryFormProps {
   onClose: () => void;
   onSubmit: (data: FormSubmissionData) => Promise<void>;
   initialData?: Partial<FormSubmissionData>;
-  trade: Trade | null | undefined;
+  linkedTrades?: Trade[]; // Trades already linked (for editing)
   availableTrades?: Trade[];
   accountId: string;
   isEditing?: boolean;
@@ -36,7 +36,7 @@ export interface FormData {
 
 export interface FormSubmissionData extends FormData {
   images: Record<string, string[]>;
-  tradeId?: string;
+  tradeIds?: string[]; // Multiple trade IDs
 }
 
 const timeframes = [
@@ -59,7 +59,7 @@ export function JournalEntryForm({
   onClose,
   onSubmit,
   initialData,
-  trade: linkedTrade,
+  linkedTrades: initialLinkedTrades = [],
   availableTrades = [],
   isEditing = false
 }: JournalEntryFormProps) {
@@ -68,15 +68,15 @@ export function JournalEntryForm({
   // Form state
   const [date, setDate] = useState(initialData?.date || dayjs().format('YYYY-MM-DD'));
   const [title, setTitle] = useState(initialData?.title || `Diário - ${dayjs().format('DD/MM/YYYY')}`);
-  const [asset, setAsset] = useState(initialData?.asset || linkedTrade?.symbol || '');
+  const [asset, setAsset] = useState(initialData?.asset || initialLinkedTrades[0]?.symbol || '');
   const [emotion, setEmotion] = useState(initialData?.emotion || '');
   const [analysis, setAnalysis] = useState(initialData?.analysis || '');
   const [technicalWins, setTechnicalWins] = useState(initialData?.technicalWins || '');
   const [improvements, setImprovements] = useState(initialData?.improvements || '');
   const [errors, setErrors] = useState(initialData?.errors || '');
   
-  // Trade management
-  const [trade, setTrade] = useState<Trade | null | undefined>(linkedTrade);
+  // Trade management - support multiple trades
+  const [trades, setTrades] = useState<Trade[]>(initialLinkedTrades);
   const [isLinkTradeModalOpen, setIsLinkTradeModalOpen] = useState(false);
   
   // Image management
@@ -101,7 +101,7 @@ export function JournalEntryForm({
         improvements,
         errors,
         images,
-        tradeId: trade?.id
+        tradeIds: trades.map(t => t.id)
       });
     } finally {
       setIsSubmitting(false);
@@ -109,9 +109,19 @@ export function JournalEntryForm({
   };
 
   const handleLinkTrade = (selectedTrade: Trade) => {
-    setTrade(selectedTrade);
-    setAsset(selectedTrade.symbol);
+    // Add trade if not already linked
+    if (!trades.find(t => t.id === selectedTrade.id)) {
+      setTrades([...trades, selectedTrade]);
+      // Set asset from first trade if not set
+      if (!asset && trades.length === 0) {
+        setAsset(selectedTrade.symbol);
+      }
+    }
     setIsLinkTradeModalOpen(false);
+  };
+
+  const handleRemoveTrade = (tradeId: string) => {
+    setTrades(trades.filter(t => t.id !== tradeId));
   };
 
   const modalTitle = (
@@ -179,69 +189,76 @@ export function JournalEntryForm({
             </div>
           </div>
 
-          {/* Trade Vinculado */}
-          <div className="bg-cyan-950/30 border border-cyan-900/50 rounded-lg p-4 flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <h3 className="text-cyan-400 text-sm font-medium mb-1">Trade Vinculado</h3>
-              {trade ? (
-                <div className="text-gray-300 text-sm flex items-center flex-wrap gap-1">
-                  <span>
-                    {(() => {
-                      // Dados já estão armazenados como horário NY
-                      const dateFormatted = dayjs(trade.entryDate).format('DD/MM/YYYY');
-                      const timeFormatted = trade.entryTime ? trade.entryTime.substring(0, 8) : '';
-                      return `${dateFormatted} - ${timeFormatted}`;
-                    })()} (NY) - {trade.symbol} -
-                  </span>
-                  <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
-                    trade.type === 'Long'
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-red-500/20 text-red-400'
-                  }`}>
-                    {trade.type}
-                    {trade.type === 'Long' ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                      </svg>
-                    ) : (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                        <polyline points="17 18 23 18 23 12"></polyline>
-                      </svg>
-                    )}
-                  </span>
-                <span>- #{trade.id.slice(0, 13)} -</span>
-                  {trade.pnl !== undefined && (
-                    <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded font-bold ${
-                      trade.pnl > 0 
-                        ? 'bg-green-500/20 text-green-400' 
-                        : 'bg-red-500/20 text-red-400'
-                    }`}>
-                      {formatCurrency(trade.pnl)}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <p className="text-gray-400 text-sm italic">Nenhum trade vinculado a esta entrada.</p>
-              )}
+          {/* Trades Vinculados */}
+          <div className="bg-cyan-950/30 border border-cyan-900/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-cyan-400 text-sm font-medium">
+                Trades Vinculados {trades.length > 0 && <span className="text-cyan-300">({trades.length})</span>}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsLinkTradeModalOpen(true)}
+                className="text-sm bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-3 py-1.5 rounded-lg transition-all shadow-lg shadow-green-500/30 flex items-center gap-2 font-semibold"
+              >
+                ➕ Adicionar Trade
+              </button>
             </div>
-
-            <div>
-              {trade ? (
-                <span className="text-xs text-gray-500 italic">
-                  Trade vinculado
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsLinkTradeModalOpen(true)}
-                  className="text-sm bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-4 py-2 rounded-lg transition-all shadow-lg shadow-green-500/30 flex items-center gap-2 font-semibold"
-                >
-                  🔗 Vincular Trade
-                </button>
-              )}
-            </div>
+            
+            {trades.length > 0 ? (
+              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                {trades.map((trade) => (
+                  <div 
+                    key={trade.id} 
+                    className="bg-gray-800/50 border border-gray-700 rounded-lg p-2 flex items-center justify-between gap-2"
+                  >
+                    <div className="flex items-center flex-wrap gap-1 text-sm">
+                      <span className="text-gray-400">
+                        {dayjs(trade.entryDate).format('DD/MM')} {trade.entryTime?.substring(0, 5)}
+                      </span>
+                      <span className="text-gray-200 font-medium">{trade.symbol}</span>
+                      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
+                        trade.type === 'Long'
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {trade.type}
+                        {trade.type === 'Long' ? (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                          </svg>
+                        ) : (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                            <polyline points="17 18 23 18 23 12"></polyline>
+                          </svg>
+                        )}
+                      </span>
+                      {trade.pnl !== undefined && (
+                        <span className={`text-xs font-bold ${
+                          trade.pnl > 0 ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                          {formatCurrency(trade.pnl)}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTrade(trade.id)}
+                      className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                      title="Remover trade"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-sm italic">Nenhum trade vinculado a esta entrada.</p>
+            )}
           </div>
 
           {/* Análise Multi-Timeframe (Imagens) */}

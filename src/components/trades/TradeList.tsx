@@ -134,7 +134,7 @@ export function TradeList({
     }
 
     const getJournalEntry = (tradeId: string) => {
-        return entries.find(e => e.tradeId === tradeId);
+        return entries.find(e => e.tradeIds?.includes(tradeId));
     };
 
     return (

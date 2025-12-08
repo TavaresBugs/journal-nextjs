@@ -22,11 +22,16 @@ export interface ParsedTrade {
   takeProfit?: number;
 }
 
+export interface ImportResult {
+  data: RawTradeData[];
+  totalNetProfit?: number;
+}
+
 /**
  * Reads and parses the trading file (XLSX/CSV).
  * Handles metadata skipping, section detection, and duplicate column mapping.
  */
-export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
+export const parseTradingFile = async (file: File): Promise<ImportResult> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -134,7 +139,39 @@ export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
             rawData.push(rowData);
         }
 
-        resolve(rawData);
+        // 4. Extract Total Net Profit (if available in XLSX)
+        let totalNetProfit: number | undefined;
+        // Search for "Total Net Profit" in the rows
+        for (let i = rows.length - 1; i >= 0; i--) {
+            const row = rows[i];
+            if (!row) continue;
+            // Common MT4/MT5 format: Cell A = "Total Net Profit:", Cell B = Value
+            // Or just check all cells in row
+            const rowStr = row.join(' ').toLowerCase();
+            if (rowStr.includes('total net profit')) {
+                 // Try to find the number in this row
+                 for (const cell of row) {
+                     if (typeof cell === 'number') {
+                         totalNetProfit = cell;
+                         break;
+                     } else if (typeof cell === 'string') {
+                         // Clean string and try parse
+                         const val = parseFloat(cell.replace(/[^0-9.-]/g, ''));
+                         if (!isNaN(val) && cell.match(/[0-9]/)) { 
+                             // Basic heuristic: it should be the value next to label usually
+                             // But let's verify if the cell is NOT the label itself
+                             if (!cell.toLowerCase().includes('total')) {
+                                totalNetProfit = val;
+                                break;
+                             }
+                         }
+                     }
+                 }
+            }
+            if (totalNetProfit !== undefined) break;
+        }
+
+        resolve({ data: rawData, totalNetProfit });
 
       } catch (error) {
         reject(error);
@@ -149,7 +186,7 @@ export const parseTradingFile = async (file: File): Promise<RawTradeData[]> => {
 /**
  * Parses MetaTrader HTML Report.
  */
-export const parseHTMLReport = async (file: File): Promise<RawTradeData[]> => {
+export const parseHTMLReport = async (file: File): Promise<ImportResult> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
@@ -267,7 +304,18 @@ export const parseHTMLReport = async (file: File): Promise<RawTradeData[]> => {
                      }
                 }
                 
-                resolve(rows);
+                // Extract Total Net Profit from HTML Summary
+                let totalNetProfit: number | undefined;
+                // Look for: <td ...>Total Net Profit:</td><td ...><b>-22.03</b></td>
+                const totalRegex = /Total Net Profit:[\s\S]*?<b[^>]*>([\s\S]*?)<\/b>/i;
+                const totalMatch = totalRegex.exec(content);
+                if (totalMatch && totalMatch[1]) {
+                    const cleanVal = totalMatch[1].replace(/[^0-9.-]/g, '');
+                    const val = parseFloat(cleanVal);
+                    if (!isNaN(val)) totalNetProfit = val;
+                }
+
+                resolve({ data: rows, totalNetProfit });
 
             } catch (error) {
                 reject(error);
@@ -282,7 +330,7 @@ export const parseHTMLReport = async (file: File): Promise<RawTradeData[]> => {
 /**
  * Wrapper to detect file type and call appropriate parser.
  */
-export const processImportFile = async (file: File): Promise<RawTradeData[]> => {
+export const processImportFile = async (file: File): Promise<ImportResult> => {
     if (file.type === 'text/html' || file.name.endsWith('.html') || file.name.endsWith('.htm')) {
         return parseHTMLReport(file);
     }
@@ -415,7 +463,7 @@ export interface NinjaTraderColumnMapping {
  * @param file - CSV file from NinjaTrader Grid
  * @returns Promise<RawTradeData[]>
  */
-export const parseNinjaTraderCSV = async (file: File): Promise<RawTradeData[]> => {
+export const parseNinjaTraderCSV = async (file: File): Promise<ImportResult> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
@@ -459,7 +507,7 @@ export const parseNinjaTraderCSV = async (file: File): Promise<RawTradeData[]> =
                     }
                 }
 
-                resolve(rawData);
+                resolve({ data: rawData });
             } catch (error) {
                 reject(error);
             }

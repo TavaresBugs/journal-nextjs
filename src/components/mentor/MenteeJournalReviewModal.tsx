@@ -185,7 +185,7 @@ export function MenteeJournalReviewModal({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-20">
         {/* Left Side: Journal Content (ReadOnly) */}
         <div className="pr-2 lg:border-r border-gray-800">
-          <JournalEntryContent entry={entry} trade={trade} />
+          <JournalEntryContent entry={entry} linkedTrades={trade ? [trade] : []} />
         </div>
 
         {/* Right Side: Structured Review Panel */}

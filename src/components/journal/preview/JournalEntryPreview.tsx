@@ -7,7 +7,7 @@ import { JournalEntryContent } from './JournalEntryContent';
 
 interface JournalEntryPreviewProps {
   entry: JournalEntry;
-  trade: Trade | null | undefined;
+  linkedTrades?: Trade[]; // Multiple linked trades
   onClose: () => void;
   onEdit: () => void;
   onShare: () => void;
@@ -30,7 +30,7 @@ interface JournalEntryPreviewProps {
  */
 const JournalEntryPreviewComponent = ({
   entry,
-  trade,
+  linkedTrades = [],
   onClose,
   onEdit,
   onShare,
@@ -76,7 +76,7 @@ const JournalEntryPreviewComponent = ({
       <div className="space-y-6">
         <JournalEntryContent 
           entry={entry} 
-          trade={trade} 
+          linkedTrades={linkedTrades} 
           showComments={showComments}
         />
       </div>

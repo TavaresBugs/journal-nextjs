@@ -121,7 +121,7 @@ export interface JournalEntry {
     date: string; // YYYY-MM-DD
     title: string;
     asset?: string; // Ativo operado
-    tradeId?: string; // Trade vinculado (opcional)
+    tradeIds?: string[]; // Trades vinculados (opcional)
 
     // Imagens (Agora uma lista flexível)
     images: JournalImage[];

@@ -96,7 +96,7 @@ export default function SharePage() {
                     date: entryData.date,
                     title: entryData.title,
                     asset: entryData.asset,
-                    tradeId: entryData.trade_id,
+                    tradeIds: entryData.trade_id ? [entryData.trade_id] : [],
                     images: [],
                     emotion: entryData.emotion,
                     analysis: entryData.analysis,

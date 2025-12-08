@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { base64ToBlob } from '@/lib/utils';
 import { JournalEntry } from '@/types';
-import { DBJournalEntry, DBJournalImage } from '@/types/database';
+import { DBJournalEntry, DBJournalImage, DBJournalEntryTrade } from '@/types/database';
 import { getCurrentUserId } from './accountService';
 
 // ============================================
@@ -22,7 +22,9 @@ export const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
     date: db.date,
     title: db.title || '',
     asset: db.asset,
-    tradeId: db.trade_id,
+    // Support both new junction table and legacy trade_id
+    tradeIds: db.journal_entry_trades?.map((jet: DBJournalEntryTrade) => jet.trade_id) ||
+              (db.trade_id ? [db.trade_id] : []),
     images: db.journal_images ? db.journal_images.map((img: DBJournalImage) => ({
         id: img.id,
         userId: img.user_id,
@@ -47,15 +49,15 @@ export const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
  * @example
  * const dbEntry = mapJournalEntryToDB(entry);
  */
-export const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'journal_images'> => ({
+export const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'journal_images' | 'journal_entry_trades'> => ({
     id: app.id,
     user_id: app.userId,
     account_id: app.accountId,
     date: app.date,
     title: app.title,
     asset: app.asset,
-    trade_id: app.tradeId,
-    // Images are saved separately
+    // trade_id is deprecated, trades are saved via junction table
+    trade_id: app.tradeIds?.[0], // Keep first for backward compatibility
     emotion: app.emotion,
     analysis: app.analysis,
     notes: app.notes,
@@ -83,7 +85,7 @@ export async function getJournalEntries(accountId: string): Promise<JournalEntry
 
     const { data, error } = await supabase
         .from('journal_entries')
-        .select('*, journal_images(*)')
+        .select('*, journal_images(*), journal_entry_trades(trade_id)')
         .eq('account_id', accountId)
         .eq('user_id', userId)
         .order('date', { ascending: false });
@@ -124,6 +126,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
         console.error('Error saving journal entry:', entryError);
         return false;
     }
+
 
     // 2. Save the Images
     if (entry.images) {
@@ -278,6 +281,42 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
             if (imagesError) {
                 console.error('Error saving journal images:', imagesError);
             }
+        }
+    }
+
+    // 3. Save linked trades to junction table
+    if (entry.tradeIds && entry.tradeIds.length > 0) {
+        // Delete existing trade links and re-insert
+        const { error: deleteTradesError } = await supabase
+            .from('journal_entry_trades')
+            .delete()
+            .eq('journal_entry_id', entry.id);
+
+        if (deleteTradesError) {
+            console.error('Error deleting old trade links:', deleteTradesError);
+        }
+
+        const tradeLinks = entry.tradeIds.map(tradeId => ({
+            journal_entry_id: entry.id,
+            trade_id: tradeId
+        }));
+
+        const { error: insertTradesError } = await supabase
+            .from('journal_entry_trades')
+            .insert(tradeLinks);
+
+        if (insertTradesError) {
+            console.error('Error saving trade links:', insertTradesError);
+        }
+    } else {
+        // No trades linked, ensure junction table is clean
+        const { error: deleteTradesError } = await supabase
+            .from('journal_entry_trades')
+            .delete()
+            .eq('journal_entry_id', entry.id);
+
+        if (deleteTradesError) {
+            console.error('Error cleaning trade links:', deleteTradesError);
         }
     }
 

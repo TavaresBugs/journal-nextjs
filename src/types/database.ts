@@ -63,6 +63,14 @@ export interface DBJournalImage {
   created_at: string;
 }
 
+// Junction table for N:N relationship between journal entries and trades
+export interface DBJournalEntryTrade {
+  id: string;
+  journal_entry_id: string;
+  trade_id: string;
+  created_at: string;
+}
+
 export interface DBJournalEntry {
   id: string;
   user_id: string;
@@ -70,7 +78,8 @@ export interface DBJournalEntry {
   date: string;
   title?: string;
   asset?: string;
-  trade_id?: string;
+  trade_id?: string; // DEPRECATED - kept for backward compatibility
+  journal_entry_trades?: DBJournalEntryTrade[]; // New N:N relationship
   journal_images?: DBJournalImage[];
   emotion?: string;
   analysis?: string;
