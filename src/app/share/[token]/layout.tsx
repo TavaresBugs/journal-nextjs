@@ -35,16 +35,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         );
 
         // Get shared journal data
-        const { data: sharedData } = await supabase
+        const { data: sharedData, error: sharedError } = await supabase
             .from('shared_journals')
-            .select('journal_entry_id, expires_at, user_id')
+            .select('journal_entry_id, expires_at')
             .eq('share_token', token)
             .single();
 
-        if (!sharedData) {
+        if (sharedError || !sharedData) {
+            console.error('Error fetching shared_journals:', sharedError);
             return {
-                title: 'Link Inválido | Trading Journal Pro',
-                description: 'Este link de compartilhamento não foi encontrado ou expirou.',
+                title: 'Diário Compartilhado | Trading Journal Pro',
+                description: 'Visualize esta análise de trading compartilhada.',
             };
         }
 
@@ -57,35 +58,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
 
         // Get journal entry
-        const { data: entry } = await supabase
+        const { data: entry, error: entryError } = await supabase
             .from('journal_entries')
             .select('title, date, asset')
             .eq('id', sharedData.journal_entry_id)
             .single();
 
-        // Get user info who shared
-        const { data: userData } = await supabase
-            .from('users')
-            .select('name, email')
-            .eq('id', sharedData.user_id)
-            .single();
+        if (entryError) {
+            console.error('Error fetching journal_entries:', entryError);
+        }
 
         // Get first image for OG preview
-        const { data: images } = await supabase
+        const { data: images, error: imagesError } = await supabase
             .from('journal_images')
             .select('url')
             .eq('journal_entry_id', sharedData.journal_entry_id)
             .order('display_order', { ascending: true })
             .limit(1);
 
-        const userName = userData?.name || userData?.email?.split('@')[0] || 'Trader';
+        if (imagesError) {
+            console.error('Error fetching journal_images:', imagesError);
+        }
+
         const assetInfo = entry?.asset ? ` | ${entry.asset}` : '';
         const dateFormatted = entry?.date 
             ? new Date(entry.date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
             : '';
 
-        const title = `📊 Diário de ${userName}${assetInfo} - ${dateFormatted}`;
-        const description = entry?.title || `${userName} compartilhou uma análise de trading com você.`;
+        const title = `📊 Análise de Trading${assetInfo}${dateFormatted ? ` - ${dateFormatted}` : ''}`;
+        const description = entry?.title || 'Visualize esta análise de trading compartilhada.';
         const ogImage = images?.[0]?.url || undefined;
 
         return {
