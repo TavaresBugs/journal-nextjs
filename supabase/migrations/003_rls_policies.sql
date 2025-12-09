@@ -594,6 +594,7 @@ DROP FUNCTION IF EXISTS temp_drop_all_policies(TEXT);
 -- ALL GRANTS
 -- ============================================
 
+-- Authenticated users: full access
 GRANT ALL ON accounts TO authenticated;
 GRANT ALL ON trades TO authenticated;
 GRANT ALL ON journal_entries TO authenticated;
@@ -613,3 +614,9 @@ GRANT ALL ON mentor_account_permissions TO authenticated;
 GRANT ALL ON shared_playbooks TO authenticated;
 GRANT ALL ON playbook_stars TO authenticated;
 GRANT ALL ON leaderboard_opt_in TO authenticated;
+
+-- Anonymous users: SELECT only for shared content (RLS still controls access)
+GRANT SELECT ON shared_journals TO anon;
+GRANT SELECT ON journal_entries TO anon;
+GRANT SELECT ON journal_images TO anon;
+GRANT SELECT ON users_extended TO anon;
