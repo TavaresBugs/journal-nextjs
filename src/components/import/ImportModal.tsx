@@ -293,8 +293,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
         // Only fetch existing trades for deduplication if we are appending
         if (importMode === 'append') {
             const existingTrades = await getTradeHistoryLite(selectedAccountId);
+            // Normalize time to HH:mm (ignore seconds/milliseconds) to avoid duplicates
+            // caused by timestamp precision differences between import files and DB
             existingSignatures = new Set(existingTrades.map(t => {
-                const time = t.entryTime ? t.entryTime.substring(0, 8) : '00:00:00';
+                // Take only HH:mm from entryTime (first 5 chars), ignoring seconds
+                const time = t.entryTime ? t.entryTime.substring(0, 5) : '00:00';
                 return `${t.entryDate}|${time}|${t.symbol}|${t.type}|${t.entryPrice}`;
             }));
         }
@@ -353,9 +356,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
                     entryPrice = Number(row[mapping.entryPrice]) || 0;
                 }
 
-                const signature = `${entryDateStr}|${entryTimeStr}|${symbol}|${type}|${entryPrice}`;
+
+                const signature = `${entryDateStr}|${entryTimeStr.substring(0, 5)}|${symbol}|${type}|${entryPrice}`;
                 
                 // Deduplication Check (Only relevant in Append mode, as set is empty in Replace mode)
+                // Note: signature uses only HH:mm to match existing trades normalization
                 if (existingSignatures.has(signature)) {
                      skippedCount++;
                      continue;
