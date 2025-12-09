@@ -82,7 +82,7 @@ export default function SharePage() {
                     return;
                 }
 
-                // Get images
+                // Get images and map from DB format
                 const { data: imagesData } = await supabase
                     .from('journal_images')
                     .select('*')
@@ -105,7 +105,18 @@ export default function SharePage() {
                     updatedAt: entryData.updated_at,
                 });
 
-                setImages(imagesData || []);
+                // Map images from DB snake_case to camelCase format
+                const mappedImages: JournalImage[] = (imagesData || []).map((img: { id: string; user_id: string; journal_entry_id: string; url: string; path: string; timeframe: string; display_order: number; created_at: string }) => ({
+                    id: img.id,
+                    userId: img.user_id,
+                    journalEntryId: img.journal_entry_id,
+                    url: img.url,
+                    path: img.path,
+                    timeframe: img.timeframe,
+                    displayOrder: img.display_order,
+                    createdAt: img.created_at,
+                }));
+                setImages(mappedImages);
                 setLoading(false);
             } catch (err) {
                 console.error('Error loading shared entry:', err);
