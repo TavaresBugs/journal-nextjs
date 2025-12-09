@@ -64,12 +64,12 @@ export function TradeList({
             : trades.filter(t => t.symbol === filterAsset);
     }, [trades, filterAsset]);
 
-    // Sort trades
+    // Sort trades by date AND time
     const sortedTrades = useMemo(() => {
         return [...filteredTrades].sort((a, b) => {
-            const dateA = new Date(a.entryDate).getTime();
-            const dateB = new Date(b.entryDate).getTime();
-            return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
+            const dateTimeA = new Date(`${a.entryDate}T${a.entryTime || '00:00:00'}`).getTime();
+            const dateTimeB = new Date(`${b.entryDate}T${b.entryTime || '00:00:00'}`).getTime();
+            return sortDirection === 'desc' ? dateTimeB - dateTimeA : dateTimeA - dateTimeB;
         });
     }, [filteredTrades, sortDirection]);
 

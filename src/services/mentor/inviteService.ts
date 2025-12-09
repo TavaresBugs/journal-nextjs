@@ -463,7 +463,8 @@ export async function getMenteeTrades(menteeId: string, accountId?: string): Pro
         .from('trades')
         .select('*')
         .eq('user_id', menteeId)
-        .order('entry_date', { ascending: false });
+        .order('entry_date', { ascending: false })
+        .order('entry_time', { ascending: false });
 
     if (accountId) {
         query = query.eq('account_id', accountId);

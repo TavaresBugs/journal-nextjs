@@ -122,7 +122,8 @@ export async function getTrades(accountId: string): Promise<Trade[]> {
         .select('*')
         .eq('account_id', accountId)
         .eq('user_id', userId)
-        .order('entry_date', { ascending: false });
+        .order('entry_date', { ascending: false })
+        .order('entry_time', { ascending: false });
 
     if (error) {
         console.error('Error fetching trades:', error);
@@ -202,6 +203,7 @@ export async function getTradesPaginated(accountId: string, page: number = 1, pa
         .eq('account_id', accountId)
         .eq('user_id', userId)
         .order('entry_date', { ascending: false })
+        .order('entry_time', { ascending: false })
         .range(from, to);
 
     if (error) {
@@ -265,7 +267,8 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
         .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, market_condition, entry_quality, market_condition_v2, session, user_id, commission, swap')
         .eq('account_id', accountId)
         .eq('user_id', userId)
-        .order('entry_date', { ascending: false });
+        .order('entry_date', { ascending: false })
+        .order('entry_time', { ascending: false });
 
     if (error) {
         console.error('Error fetching history lite:', error);
