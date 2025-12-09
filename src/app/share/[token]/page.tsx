@@ -295,7 +295,7 @@ export default function SharePage() {
                             </>
                         )}
                         
-                        <div className="relative" onClick={e => e.stopPropagation()}>
+                        <div className="relative w-full max-w-5xl h-[85vh]" onClick={e => e.stopPropagation()}>
                             <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm font-medium text-cyan-400 z-10 flex gap-2">
                                 <span>{TIMEFRAME_LABELS[images.find(img => img.url === lightboxImage)?.timeframe || ''] || images.find(img => img.url === lightboxImage)?.timeframe}</span>
                                 {images.length > 1 && (
@@ -304,15 +304,13 @@ export default function SharePage() {
                                     </span>
                                 )}
                             </div>
-                            <div className="relative w-full h-[85vh]">
-                                <Image
-                                    src={lightboxImage}
-                                    alt="Preview"
-                                    fill
-                                    className="object-contain rounded-lg shadow-2xl"
-                                    quality={100}
-                                />
-                            </div>
+                            {/* Using native img tag to avoid Next.js Image optimization issues */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={lightboxImage}
+                                alt="Preview"
+                                className="w-full h-full object-contain rounded-lg shadow-2xl"
+                            />
                         </div>
                     </div>
                 </div>
