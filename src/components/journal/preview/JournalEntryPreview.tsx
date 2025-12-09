@@ -12,6 +12,7 @@ interface JournalEntryPreviewProps {
   onEdit: () => void;
   onShare: () => void;
   isSharingLoading: boolean;
+  hasMentor?: boolean;
   hasUnreadComments?: boolean;
 }
 
@@ -34,6 +35,7 @@ const JournalEntryPreviewComponent = ({
   onEdit,
   onShare,
   isSharingLoading,
+  hasMentor: _hasMentor,
   hasUnreadComments = false
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);

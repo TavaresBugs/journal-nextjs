@@ -82,11 +82,11 @@ export function NotificationsModal({
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className="h-10 w-10 shrink-0 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold border border-cyan-500/30">
-                                            {notif.data?.mentorEmail?.charAt(0).toUpperCase()}
+                                            {(notif.data as MentorInvite)?.mentorEmail?.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
                                             <h4 className="text-white font-medium">
-                                                {notif.data?.mentorEmail}
+                                                {(notif.data as MentorInvite)?.mentorEmail}
                                             </h4>
                                             <p className="text-sm text-gray-400">
                                                 Convidou você para ser mentorado
@@ -97,13 +97,13 @@ export function NotificationsModal({
                                         </div>
                                     </div>
                                     
-                                    {notif.data && (
+                                    {!!notif.data && (
                                         <div className="flex gap-2 w-full md:w-auto">
                                             <Button
                                                 size="sm"
                                                 variant="primary"
                                                 onClick={() => {
-                                                    onAcceptInvite(notif.data!);
+                                                    onAcceptInvite(notif.data as MentorInvite);
                                                     onClose();
                                                 }}
                                                 className="flex-1 md:flex-none"
@@ -114,7 +114,7 @@ export function NotificationsModal({
                                                 size="sm"
                                                 variant="danger"
                                                 onClick={() => {
-                                                    onRejectInvite(notif.data!);
+                                                    onRejectInvite(notif.data as MentorInvite);
                                                 }}
                                                 className="flex-1 md:flex-none"
                                             >
