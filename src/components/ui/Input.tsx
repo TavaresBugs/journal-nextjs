@@ -28,9 +28,15 @@ export function Input({
             <input
                 id={id}
                 className={cn(
-                    "w-full px-3 py-2 bg-gray-800/50 border rounded-lg text-gray-100 text-sm placeholder-gray-500",
-                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200",
-                    error ? 'border-red-500' : 'border-gray-700',
+                    // Glass base - dark transparent background
+                    "w-full px-3 py-2 bg-black/20 backdrop-blur-sm border rounded-lg",
+                    // Text
+                    "text-gray-200 text-sm placeholder-gray-500",
+                    // Focus - Green accent ring
+                    "focus:outline-none focus:ring-1 focus:ring-[#00c853] focus:border-transparent transition-all duration-200",
+                    // Error state
+                    error ? 'border-red-500' : 'border-white/10',
+                    // Number input fixes
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
                     "[color-scheme:dark]",
                     "[&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:filter-invert",
@@ -67,9 +73,14 @@ export function Textarea({ label, error, className = '', ...props }: TextareaPro
             <textarea
                 id={textareaId}
                 className={cn(
-                    "w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500",
-                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 resize-vertical",
-                    error && "border-red-500 focus:ring-red-500",
+                    // Glass base - dark transparent background
+                    "w-full px-4 py-2.5 bg-black/20 backdrop-blur-sm border rounded-lg",
+                    // Text
+                    "text-gray-200 placeholder-gray-500",
+                    // Focus - Green accent ring
+                    "focus:outline-none focus:ring-1 focus:ring-[#00c853] focus:border-transparent transition-all duration-200 resize-vertical",
+                    // Error state
+                    error ? "border-red-500" : "border-white/10",
                     className
                 )}
                 {...props}

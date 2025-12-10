@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -56,6 +56,15 @@ export function Button({
         
         // Purple (for Mentor interactions)
         purple: "bg-purple-500/10 text-purple-500 border border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] font-black",
+        
+        // Zorin Glass - Neon Green Primary Action
+        'zorin-primary': "bg-[#00c853] hover:bg-[#00e05a] text-black font-semibold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
+        
+        // Zorin Glass - Outline variant
+        'zorin-outline': "bg-transparent border border-[#00c853] text-[#00c853] hover:bg-[#00c853]/10 font-medium",
+        
+        // Zorin Glass - Ghost variant
+        'zorin-ghost': "bg-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5 focus:ring-gray-600 font-medium",
     };
 
     const sizes = {

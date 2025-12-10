@@ -3,7 +3,8 @@ export { Button } from './Button';
 export { Input, Textarea } from './Input';
 export { Modal } from './Modal';
 export { Card, CardHeader, CardTitle, CardContent } from './Card';
+export { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardContent, GlassCardFooter } from './GlassCard';
+export { Select } from './Select';
 export { Tabs, TabPanel } from './Tabs';
 export { Toast } from './Toast';
 export { CircularProgress } from './CircularProgress';
-
