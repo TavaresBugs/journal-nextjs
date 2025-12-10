@@ -66,10 +66,10 @@ describe('importService', () => {
 
             const file = new File([csvContent], 'test.csv', { type: 'text/csv' });
 
-            const data = await parseTradingFile(file);
+            const result = await parseTradingFile(file);
 
-            expect(data).toHaveLength(1);
-            const row = data[0];
+            expect(result.data).toHaveLength(1);
+            const row = result.data[0];
 
             // Check keys mapping
             // Time -> Entry Time (index 0)
