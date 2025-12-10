@@ -14,10 +14,26 @@ interface SettingsModalProps {
     onUpdateBalance?: (newBalance: number) => void;
 }
 
+// SVG Icon for Settings Header
+const SettingsIcon = () => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        className="text-green-500"
+    >
+        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </svg>
+);
 
-
-export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUpdateBalance }: SettingsModalProps) {
-    const [newBalance, setNewBalance] = useState(currentBalance?.toString() || '');
+export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps) {
     // Global Settings State from Store
     const { 
         currencies, 
@@ -29,9 +45,6 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
         assets,
         addAsset: addAssetToStore,
         removeAsset: removeAssetFromStore,
-        strategies,
-        addStrategy: addStrategyToStore,
-        removeStrategy: removeStrategyFromStore,
         setups,
         addSetup: addSetupToStore,
         removeSetup: removeSetupFromStore,
@@ -49,7 +62,6 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
     const [newLeverage, setNewLeverage] = useState('');
     const [newAsset, setNewAsset] = useState('');
     const [newMultiplier, setNewMultiplier] = useState('1');
-    const [newStrategy, setNewStrategy] = useState('');
     const [newSetup, setNewSetup] = useState('');
     const [isExporting, setIsExporting] = useState(false);
 
@@ -76,17 +88,6 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
 
     const removeAsset = (symbol: string) => {
         removeAssetFromStore(symbol);
-    };
-
-    const addStrategy = () => {
-        if (newStrategy.trim() && !strategies.includes(newStrategy)) {
-            addStrategyToStore(newStrategy);
-            setNewStrategy('');
-        }
-    };
-
-    const removeStrategy = (strategy: string) => {
-        removeStrategyFromStore(strategy);
     };
 
     const addSetup = () => {
@@ -122,19 +123,21 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
         removeLeverageFromStore(leverage);
     };
 
-    const handleSaveBalance = () => {
-        const balance = parseFloat(newBalance);
-        if (!isNaN(balance) && balance > 0 && onUpdateBalance) {
-            onUpdateBalance(balance);
-            alert('Saldo atualizado com sucesso!');
-        }
-    };
-
     const isGlobalMode = !accountId;
 
+    // Custom header with SVG icon
+    const headerTitle = (
+        <div className="flex items-center gap-3">
+            <SettingsIcon />
+            <span className="text-xl font-bold text-gray-100">
+                {isGlobalMode ? "Configurações Globais" : "Configurações"}
+            </span>
+        </div>
+    );
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={isGlobalMode ? "⚙️ Configurações Globais" : "⚙️ Configurações"} maxWidth="4xl">
-            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+        <Modal isOpen={isOpen} onClose={onClose} title={headerTitle} maxWidth="4xl">
+            <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-2">
                 
                 {/* Global Settings Sections - ONLY visible in Global Mode */}
                 {isGlobalMode ? (
@@ -143,7 +146,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                         
                         {/* Moedas */}
                         <section>
-                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-green-500 mb-3 flex items-center gap-2">
                                 💰 Moedas
                             </h3>
                             <div className="flex gap-2 mb-2">
@@ -180,7 +183,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
 
                         {/* Alavancagem */}
                         <section>
-                            <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-green-500 mb-3 flex items-center gap-2">
                                 ⚖️ Alavancagem
                             </h3>
                             <div className="flex gap-2 mb-2">
@@ -225,13 +228,12 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                         
                         {/* Ativos & Multiplicadores */}
                         <section>
-                            <h3 className="text-lg font-semibold text-cyan-400 mb-3">
-                                ATIVOS & MULTIPLICADORES
+                            <h3 className="text-lg font-semibold text-green-500 mb-4 flex items-center gap-2">
+                                📊 Ativos & Multiplicadores
                             </h3>
                             
                             {/* Add new asset */}
-                            {/* Add new asset */}
-                            <div className="grid grid-cols-3 gap-2 mb-2">
+                            <div className="grid grid-cols-3 gap-2 mb-4">
                                 <Input
                                     placeholder="Ativo (Ex: US30)"
                                     value={newAsset}
@@ -255,7 +257,7 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                 {assets.map((asset) => (
                                     <div
                                         key={asset.symbol}
-                                        className="bg-gray-800/50 rounded-lg p-2 border border-gray-700 flex items-center justify-between"
+                                        className="bg-black/20 rounded-lg p-3 border border-white/5 flex items-center justify-between"
                                     >
                                         <div>
                                             <div className="font-semibold text-gray-200">{asset.symbol}</div>
@@ -267,107 +269,49 @@ export function SettingsModal({ isOpen, onClose, accountId, currentBalance, onUp
                                             onClick={() => removeAsset(asset.symbol)}
                                             className="w-8 h-8"
                                         >
-                                            🗑️
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                                         </Button>
                                     </div>
                                 ))}
                             </div>
                         </section>
 
-                        {/* Estratégias e Setups lado a lado */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {/* Estratégias */}
-                            <section>
-                                <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                                    🧠 Estratégias
-                                </h3>
-                                <div className="flex gap-2 mb-2">
-                                    <Input
-                                        placeholder="Nova Estratégia"
-                                        value={newStrategy}
-                                        onChange={(e) => setNewStrategy(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && addStrategy()}
-                                    />
-                                    <Button variant="gradient-success" onClick={addStrategy} className="w-20 font-extrabold h-10">
-                                        Add
-                                    </Button>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {strategies.map((strategy) => (
-                                        <span
-                                            key={strategy}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
+                        {/* Tipos de Entrada (Setups) - Full width now since Estratégias is removed */}
+                        <section>
+                            <h3 className="text-lg font-semibold text-green-500 mb-4 flex items-center gap-2">
+                                🎯 Tipos de Entrada (Setups)
+                            </h3>
+                            <div className="flex gap-2 mb-4">
+                                <Input
+                                    placeholder="Novo Setup (ex: ST, RE, ST+RE)"
+                                    value={newSetup}
+                                    onChange={(e) => setNewSetup(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && addSetup()}
+                                    className="flex-1"
+                                />
+                                <Button variant="gradient-success" onClick={addSetup} className="w-24 font-extrabold h-10">
+                                    Add
+                                </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {setups.map((setup) => (
+                                    <span
+                                        key={setup}
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-black/20 border border-white/5 rounded-lg text-gray-200 text-sm"
+                                    >
+                                        {setup}
+                                        <Button
+                                            variant="danger"
+                                            size="icon"
+                                            onClick={() => removeSetup(setup)}
+                                            className="w-6 h-6 p-0"
                                         >
-                                            {strategy}
-                                            <Button
-                                                variant="danger"
-                                                size="icon"
-                                                onClick={() => removeStrategy(strategy)}
-                                                className="w-6 h-6 p-0"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                            </Button>
-                                        </span>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* Tipos de Entrada (Setups) */}
-                            <section>
-                                <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                                    🎯 Tipos de Entrada (Setups)
-                                </h3>
-                                <div className="flex gap-2 mb-2">
-                                    <Input
-                                        placeholder="Novo Setup"
-                                        value={newSetup}
-                                        onChange={(e) => setNewSetup(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && addSetup()}
-                                    />
-                                    <Button variant="gradient-success" onClick={addSetup} className="w-20 font-extrabold h-10">
-                                        Add
-                                    </Button>
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {setups.map((setup) => (
-                                        <span
-                                            key={setup}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-800/80 border border-gray-700 rounded-lg text-gray-200 text-sm"
-                                        >
-                                            {setup}
-                                            <Button
-                                                variant="danger"
-                                                size="icon"
-                                                onClick={() => removeSetup(setup)}
-                                                className="w-6 h-6 p-0"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                            </Button>
-                                        </span>
-                                    ))}
-                                </div>
-                            </section>
-                        </div>
-
-                        {/* Ajuste de Saldo */}
-                        {currentBalance !== undefined && (
-                            <section>
-                                <h3 className="text-lg font-semibold text-cyan-400 mb-3 flex items-center gap-2">
-                                    💰 Ajuste de Saldo
-                                </h3>
-                                <div className="space-y-3">
-                                    <Input
-                                        label="Novo Saldo"
-                                        type="number"
-                                        value={newBalance}
-                                        onChange={(e) => setNewBalance(e.target.value)}
-                                    />
-                                    <Button variant="gradient-success" onClick={handleSaveBalance} className="w-full font-extrabold h-10">
-                                        Salvar Saldo
-                                    </Button>
-                                </div>
-                            </section>
-                        )}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                        </Button>
+                                    </span>
+                                ))}
+                            </div>
+                        </section>
                     </>
                 )}
             </div>

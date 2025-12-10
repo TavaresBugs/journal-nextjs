@@ -23,6 +23,7 @@ import { ViewPlaybookModal } from '@/components/playbook/ViewPlaybookModal';
 import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { ChecklistFab } from '@/components/checklist';
+import { MentalButton } from '@/components/mental';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
@@ -420,6 +421,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
 
                             {/* Notification Bell */}
                             <NotificationBell />
+
+                            {/* Mental Button - Mindset Debugger */}
+                            <MentalButton />
                             
                             {/* Settings Button */}
                             <Button
