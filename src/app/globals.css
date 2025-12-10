@@ -57,6 +57,24 @@ body {
   min-height: 100vh;
 }
 
+/* Global Cursor UX Standardization */
+button,
+a,
+select,
+[role="button"],
+[onclick],
+.clickable {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+[aria-disabled="true"],
+.disabled {
+  cursor: not-allowed;
+  pointer-events: auto; /* Allow cursor to show on disabled elements */
+}
+
 /* Background Image with Blur */
 body::before {
   content: "";
