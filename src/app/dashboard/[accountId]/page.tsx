@@ -22,6 +22,7 @@ import { EditPlaybookModal } from '@/components/playbook/EditPlaybookModal';
 import { ViewPlaybookModal } from '@/components/playbook/ViewPlaybookModal';
 import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
+import { ChecklistFab } from '@/components/checklist';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
@@ -867,6 +868,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                     onSuccess={handleShareSuccess}
                 />
             )}
+
+            {/* Pre-Flight Checklist FAB */}
+            <ChecklistFab />
             </div>
         </div>
     );
