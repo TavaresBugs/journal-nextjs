@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { base64ToBlob } from '@/lib/utils';
+import { base64ToBlob, ensureFreshImageUrl } from '@/lib/utils';
 import { JournalEntry } from '@/types';
 import { DBJournalEntry, DBJournalImage, DBJournalEntryTrade } from '@/types/database';
 import { getCurrentUserId } from './accountService';
@@ -29,7 +29,7 @@ export const mapJournalEntryFromDB = (db: DBJournalEntry): JournalEntry => ({
         id: img.id,
         userId: img.user_id,
         journalEntryId: img.journal_entry_id,
-        url: img.url,
+        url: ensureFreshImageUrl(img.url), // Force fresh fetch to avoid cache issues
         path: img.path || '',
         timeframe: img.timeframe,
         displayOrder: img.display_order,

@@ -5,6 +5,7 @@ import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import type { Trade, JournalEntry } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '@/services/reviewService';
+import { ensureFreshImageUrl } from '@/lib/utils';
 import dayjs from 'dayjs';
 
 interface JournalEntryContentProps {
@@ -62,13 +63,14 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
     { key: 'tfM3', label: 'M3/M1' },
   ] as const;
 
-  // Parse images
+  // Parse images and ensure all URLs are complete
   const images: Record<string, string[]> = {};
   if (entry.images && Array.isArray(entry.images)) {
     const sortedImages = [...entry.images].sort((a, b) => a.displayOrder - b.displayOrder);
     sortedImages.forEach(img => {
       if (!images[img.timeframe]) images[img.timeframe] = [];
-      images[img.timeframe].push(img.url);
+      // Ensure URL is complete with Supabase storage base and cache buster
+      images[img.timeframe].push(ensureFreshImageUrl(img.url));
     });
   }
 

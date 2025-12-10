@@ -8,6 +8,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
 import { getTradesByIds } from '@/services/tradeService';
+import { ensureFreshImageUrl } from '@/lib/utils';
 import dayjs from 'dayjs';
 
 interface JournalEntryModalProps {
@@ -192,13 +193,14 @@ export function JournalEntryModal({
   const getInitialFormData = () => {
     const parsedNotes = existingEntry?.notes ? JSON.parse(existingEntry.notes) : {};
     
-    // Parse images
+    // Parse images and ensure all URLs are complete
     const images: Record<string, string[]> = {};
     if (existingEntry?.images && Array.isArray(existingEntry.images)) {
       const sortedImages = [...existingEntry.images].sort((a, b) => a.displayOrder - b.displayOrder);
       sortedImages.forEach(img => {
         if (!images[img.timeframe]) images[img.timeframe] = [];
-        images[img.timeframe].push(img.url);
+        // Ensure URL is complete with Supabase storage base and cache buster
+        images[img.timeframe].push(ensureFreshImageUrl(img.url));
       });
     }
     

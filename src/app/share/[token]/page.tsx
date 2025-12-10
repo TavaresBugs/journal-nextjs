@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
+import { ensureFreshImageUrl } from '@/lib/utils';
 import type { JournalEntry, JournalImage } from '@/types';
 
 // Mapeamento de timeframes para labels em português
@@ -106,11 +107,12 @@ export default function SharePage() {
                 });
 
                 // Map images from DB snake_case to camelCase format
+                // Ensure all URLs are complete with Supabase storage base
                 const mappedImages: JournalImage[] = (imagesData || []).map((img: { id: string; user_id: string; journal_entry_id: string; url: string; path: string; timeframe: string; display_order: number; created_at: string }) => ({
                     id: img.id,
                     userId: img.user_id,
                     journalEntryId: img.journal_entry_id,
-                    url: img.url,
+                    url: ensureFreshImageUrl(img.url), // Ensure complete URL
                     path: img.path,
                     timeframe: img.timeframe,
                     displayOrder: img.display_order,
