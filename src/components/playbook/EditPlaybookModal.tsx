@@ -307,19 +307,19 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
                                                     <>
                                                         <span className="flex-1 text-sm text-gray-300">{rule}</span>
                                                         <Button
-                                                            variant="zorin-ghost"
+                                                            variant="gold"
                                                             size="icon"
                                                             onClick={() => startEditingRule(group.id, index, rule)}
-                                                            className="w-6 h-6 text-xs text-yellow-500 hover:text-yellow-400"
+                                                            className="w-6 h-6 text-xs"
                                                             title="Editar"
                                                         >
                                                             ✏️
                                                         </Button>
                                                         <Button
-                                                            variant="zorin-ghost"
+                                                            variant="danger"
                                                             size="icon"
                                                             onClick={() => removeRule(group.id, index)}
-                                                            className="w-6 h-6 text-xs text-red-500 hover:text-red-400"
+                                                            className="w-6 h-6 text-xs"
                                                             title="Deletar"
                                                         >
                                                             🗑️
@@ -353,7 +353,7 @@ export function EditPlaybookModal({ isOpen, onClose, playbook, onUpdatePlaybook 
             <div className="flex gap-3 pt-6 mt-6 border-t border-gray-700">
                 <Button
                     type="button"
-                    variant="danger"
+                    variant="gradient-danger"
                     onClick={onClose}
                     className="flex-1 font-extrabold"
                 >

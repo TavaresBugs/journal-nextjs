@@ -331,7 +331,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
             <div className="flex gap-3 pt-6 mt-6 border-t border-gray-700">
                 <Button
                     type="button"
-                    variant="danger"
+                    variant="gradient-danger"
                     onClick={() => {
                         handleReset();
                         onClose();

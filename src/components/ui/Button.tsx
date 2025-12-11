@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning';
+    variant?: 'primary' | 'secondary' | 'outline' | 'outline-danger' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -32,6 +32,9 @@ export function Button({
         
         // Outline
         outline: "border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white focus:ring-gray-600 font-medium",
+        
+        // Outline Danger - Subtle red outline (matches visual weight of "outline" but with red accents)
+        'outline-danger': "border border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500 focus:ring-red-500/50 font-medium",
         
         // Ghost (for "Voltar" etc)
         ghost: "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 focus:ring-gray-600 font-medium",

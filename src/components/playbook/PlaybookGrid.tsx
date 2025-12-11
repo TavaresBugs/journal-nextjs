@@ -175,25 +175,25 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                                 {strategy.playbook && (
                                     <div className="flex gap-1">
                                         <Button 
-                                            variant="zorin-ghost"
+                                            variant="gold"
                                             size="icon"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onEdit?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
+                                            className="w-8 h-8"
                                             title="Editar"
                                         >
                                             ✏️
                                         </Button>
                                         <Button 
-                                            variant="zorin-ghost"
+                                            variant="info"
                                             size="icon"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onShare?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
+                                            className="w-8 h-8"
                                             title="Compartilhar"
                                         >
                                             🌐

@@ -662,7 +662,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             {/* Submit Button */}
             <div className="flex gap-3">
                 {mode === 'edit' && onCancel && (
-                    <Button type="button" onClick={onCancel} variant="zorin-ghost" className="flex-1">
+                    <Button type="button" onClick={onCancel} variant="gradient-danger" className="flex-1 font-extrabold">
                         Cancelar
                     </Button>
                 )}
