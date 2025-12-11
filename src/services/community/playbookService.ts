@@ -182,7 +182,7 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
     }
 
     // Buscar stats do autor para cada playbook
-    // const playbookNames = (data || []).map(item => item.playbook?.name).filter(Boolean);
+    // OPTIMIZAÇÃO: Buscar todos os trades de uma vez para evitar N+1 queries
     const authorStats: Map<string, { 
         totalTrades: number; 
         wins: number; 
@@ -195,45 +195,75 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
         preferredSession?: string;
     }> = new Map();
     
-    // Para cada user_id + playbook_name, buscar trades
-    for (const item of (data || [])) {
-        if (!item.playbook?.name) continue;
+    // Coletar todos os pares (user_id, strategy) necessários
+    const playbookPairs = (data || [])
+        .filter(item => item.playbook?.name)
+        .map(item => ({
+            userId: item.user_id,
+            strategy: item.playbook.name,
+            key: `${item.user_id}:${item.playbook_id}`
+        }));
+    
+    // Buscar TODOS os trades necessários em uma única query
+    if (playbookPairs.length > 0) {
+        // Construir filtro OR para todos os pares (user_id, strategy)
+        const uniqueUserIds = [...new Set(playbookPairs.map(p => p.userId))];
+        const uniqueStrategies = [...new Set(playbookPairs.map(p => p.strategy))];
         
-        const key = `${item.user_id}:${item.playbook_id}`;
-        
-        // Buscar trades do autor que usam este playbook/strategy
-        // Usando aliases para camelCase para facilitar o uso
-        const { data: trades } = await supabase
+        const { data: allTrades } = await supabase
             .from('trades')
             .select(`
+                user_id,
+                strategy,
                 outcome, 
                 pnl,
-                entryDate:entry_date,
-                entryTime:entry_time,
-                exitDate:exit_date,
-                exitTime:exit_time,
-                entryPrice:entry_price,
-                exitPrice:exit_price,
-                stopLoss:stop_loss,
+                entry_date,
+                entry_time,
+                exit_date,
+                exit_time,
+                entry_price,
+                exit_price,
+                stop_loss,
                 symbol
             `)
-            .eq('user_id', item.user_id)
-            .eq('strategy', item.playbook.name);
+            .in('user_id', uniqueUserIds)
+            .in('strategy', uniqueStrategies);
         
-        if (trades && trades.length > 0) {
-            // Conversão forçada de tipo para evitar erros de linter nos aliases
-            const typedTrades = trades as unknown as {
-                outcome: string;
-                pnl: number;
-                entryDate: string;
-                entryTime: string;
-                exitDate: string;
-                exitTime: string;
-                entryPrice: number;
-                exitPrice: number;
-                stopLoss: number;
-                symbol: string;
-            }[];
+        // Agrupar trades por (user_id:strategy)
+        const tradesMap = new Map<string, typeof allTrades>();
+        
+        for (const trade of (allTrades || [])) {
+            // Encontrar o playbook_id correspondente
+            const matchingPair = playbookPairs.find(
+                p => p.userId === trade.user_id && p.strategy === trade.strategy
+            );
+            if (!matchingPair) continue;
+            
+            const key = matchingPair.key;
+            if (!tradesMap.has(key)) {
+                tradesMap.set(key, []);
+            }
+            tradesMap.get(key)!.push(trade);
+        }
+        
+        // Calcular stats para cada playbook
+        for (const pair of playbookPairs) {
+            const trades = tradesMap.get(pair.key) || [];
+            if (trades.length === 0) continue;
+            
+            // Conversão de tipos
+            const typedTrades = trades.map(t => ({
+                outcome: t.outcome as string,
+                pnl: t.pnl as number,
+                entryDate: t.entry_date as string,
+                entryTime: t.entry_time as string,
+                exitDate: t.exit_date as string,
+                exitTime: t.exit_time as string,
+                entryPrice: t.entry_price as number,
+                exitPrice: t.exit_price as number,
+                stopLoss: t.stop_loss as number,
+                symbol: t.symbol as string
+            }));
 
             const wins = typedTrades.filter(t => t.outcome === 'win').length;
             const losses = typedTrades.filter(t => t.outcome === 'loss').length;
@@ -242,8 +272,9 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
             // Calcular Streak
             let currentStreak = 0;
             let maxStreak = 0;
-            // Ordenar por data para cálculo de streak
-            const sortedTrades = [...typedTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
+            const sortedTrades = [...typedTrades].sort((a, b) => 
+                new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()
+            );
             
             for (const trade of sortedTrades) {
                 if (trade.outcome === 'win') {
@@ -311,7 +342,7 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
             });
             const preferredSession = Object.entries(sessionCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
             
-            authorStats.set(key, {
+            authorStats.set(pair.key, {
                 totalTrades: trades.length,
                 wins,
                 losses,
