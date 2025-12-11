@@ -1,5 +1,5 @@
 import React from 'react';
-import { ColumnMapping } from '@/services/importParsers';
+import { ColumnMapping } from '@/services/trades/importParsers';
 
 interface ColumnMapperProps {
   headers: string[];

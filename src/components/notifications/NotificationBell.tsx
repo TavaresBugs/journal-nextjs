@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentor/inviteService';
-import { getMyReviews } from '@/services/reviewService';
+import { getReceivedInvites, acceptInvite, rejectInvite } from '@/services/mentor/invites';
+import { getMyReviews } from '@/services/journal/review';
 import { MentorInvite, Notification } from '@/types';
 import { NotificationsModal } from './NotificationsModal';
 

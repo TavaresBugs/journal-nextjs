@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { handleServiceError } from '@/lib/errorHandler';
 import { Trade, TradeLite } from '@/types';
 import { DBTrade } from '@/types/database';
-import { getCurrentUserId } from './accountService';
+import { getCurrentUserId } from '@/services/core/account';
 
 // ============================================
 // MAPPERS

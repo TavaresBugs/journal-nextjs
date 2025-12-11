@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Button, Modal } from "@/components/ui";
-import { getMyMentors, getAccountPermissions, setAccountPermission, removeAccountPermission } from "@/services/mentor/inviteService";
-import { getAccounts } from "@/services/accountService";
+import { getMyMentors, getAccountPermissions, setAccountPermission, removeAccountPermission } from "@/services/mentor/invites";
+import { getAccounts } from "@/services/core/account";
 import { Account, MentorInvite, MentorAccountPermission } from "@/types";
 
 export function MentorshipSettings() {

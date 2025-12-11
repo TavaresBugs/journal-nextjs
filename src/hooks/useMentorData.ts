@@ -6,7 +6,7 @@ import {
     getSentInvites, 
     inviteMentee,
     revokeInvite 
-} from '@/services/mentor/inviteService';
+} from '@/services/mentor/invites';
 import type { MentorPermission } from '@/types';
 
 // Query Keys for cache management

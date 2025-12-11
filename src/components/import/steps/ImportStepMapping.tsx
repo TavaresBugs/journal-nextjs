@@ -1,7 +1,7 @@
 import React from 'react';
 import { ColumnMapper } from '../ColumnMapper';
-import { ColumnMapping, convertToNYTime } from '@/services/importParsers';
-import { RawTradeData, parseTradeDate } from '@/services/importService';
+import { ColumnMapping, convertToNYTime } from '@/services/trades/importParsers';
+import { RawTradeData, parseTradeDate } from '@/services/trades/import';
 import { Account } from '@/types';
 import { cn } from '@/lib/utils/general';
 import { format } from 'date-fns-tz';

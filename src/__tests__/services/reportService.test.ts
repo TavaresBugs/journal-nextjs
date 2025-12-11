@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { generateReport } from '@/services/reportService';
-import * as tradeService from '@/services/tradeService';
+import { generateReport } from '@/services/analytics/report';
+import * as tradeService from '@/services/trades/trade';
 
 // Mock getTrades
 vi.mock('../tradeService', () => ({

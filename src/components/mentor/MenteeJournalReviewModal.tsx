@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Modal, Button } from '@/components/ui';
 import type { Trade, JournalEntry } from '@/types';
 import { JournalEntryContent } from '@/components/journal/preview';
-import { createReview, getReviewsForJournalEntry, type MentorReview } from '@/services/reviewService';
+import { createReview, getReviewsForJournalEntry, type MentorReview } from '@/services/journal/review';
 import { useToast } from '@/providers/ToastProvider';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -88,7 +88,7 @@ export function MenteeJournalReviewModal({
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este feedback?')) return;
     try {
-      const success = await import('@/services/reviewService').then(m => m.deleteReview(id));
+      const success = await import('@/services/journal/review').then(m => m.deleteReview(id));
       if (success) {
         setReviews(prev => prev.filter(r => r.id !== id));
         showToast('Feedback excluído.', 'success');
@@ -109,7 +109,7 @@ export function MenteeJournalReviewModal({
   const handleUpdate = async () => {
     if (!editingId || !editContent.trim()) return;
     try {
-      const success = await import('@/services/reviewService').then(m => m.updateReview(editingId, editContent));
+      const success = await import('@/services/journal/review').then(m => m.updateReview(editingId, editContent));
       if (success) {
         setReviews(prev => prev.map(r => r.id === editingId ? { ...r, content: editContent } : r));
         setEditingId(null);

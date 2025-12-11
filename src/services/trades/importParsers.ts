@@ -7,7 +7,7 @@ import {
     normalizeTradeType,
     parseNinjaTraderPrice,
     parseNinjaTraderMoney
-} from './importService';
+} from '@/services/trades/import';
 import { calculateSession } from '@/lib/utils/trade';
 import { Trade } from '@/types';
 

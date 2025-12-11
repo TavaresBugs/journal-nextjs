@@ -4,7 +4,7 @@
 // ============================================
 
 import { supabase } from '@/lib/supabase';
-import { mapTradeFromDB } from '@/services/tradeService';
+import { mapTradeFromDB } from '@/services/trades/trade';
 import { 
     MentorInvite, 
     MentorPermission, 

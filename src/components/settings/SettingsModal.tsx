@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { exportAllData, downloadAsJSON } from '@/services/exportService';
+import { exportAllData, downloadAsJSON } from '@/services/trades/export';
 import { MentorshipSettings } from './MentorshipSettings';
 
 interface SettingsModalProps {

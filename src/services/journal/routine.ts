@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { DailyRoutine } from '@/types';
 import { DBDailyRoutine } from '@/types/database';
-import { getCurrentUserId } from './accountService';
+import { getCurrentUserId } from '@/services/core/account';
 
 // ============================================
 // MAPPERS

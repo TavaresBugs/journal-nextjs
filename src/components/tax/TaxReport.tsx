@@ -1,5 +1,5 @@
 import React from 'react';
-import { TaxCalculation, DARFModel, generateDARFData } from '@/services/taxService';
+import { TaxCalculation, DARFModel, generateDARFData } from '@/services/analytics/tax';
 import { Card } from '@/components/ui/Card';
 
 interface TaxReportProps {

@@ -9,7 +9,7 @@ import {
     searchProfiles,
     type MentalEntry,
     type MentalProfile
-} from '@/services/mentalService';
+} from '@/services/core/mental';
 
 interface MentalGridProps {
     refreshTrigger?: number;

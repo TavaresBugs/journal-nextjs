@@ -9,7 +9,7 @@ import {
     Asset
 } from '@/types';
 import { DBAccount, DBTrade, DBJournalEntry, DBDailyRoutine, DBSettings } from '@/types/database';
-import { getCurrentUserId } from '@/services/accountService';
+import { getCurrentUserId } from '@/services/core/account';
 
 export interface ExportData {
     exportedAt: string;

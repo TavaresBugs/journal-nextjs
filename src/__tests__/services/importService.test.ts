@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { parseTradingFile, parseTradeDate, normalizeTradeType, cleanSymbol } from '@/services/importService';
+import { parseTradingFile, parseTradeDate, normalizeTradeType, cleanSymbol } from '@/services/trades/import';
 import * as XLSX from 'xlsx';
 
 // Mock FileReader if necessary, but jsdom usually handles it.

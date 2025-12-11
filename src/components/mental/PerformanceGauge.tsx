@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getZoneAverage, getZoneStats } from '@/services/mentalService';
+import { getZoneAverage, getZoneStats } from '@/services/core/mental';
 
 interface PerformanceGaugeProps {
     refreshTrigger?: number; // Increment to force refresh

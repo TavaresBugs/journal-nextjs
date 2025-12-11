@@ -1,6 +1,6 @@
 import * as ExcelJS from 'exceljs';
 import { Trade } from '@/types';
-import { getTrades } from './tradeService';
+import { getTrades } from '@/services/trades/trade';
 import { parseISO, isWithinInterval, format, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 

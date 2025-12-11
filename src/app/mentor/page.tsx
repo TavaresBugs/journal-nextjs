@@ -11,7 +11,7 @@ import {
     getSentInvites, 
     inviteMentee,
     revokeInvite 
-} from '@/services/mentor/inviteService';
+} from '@/services/mentor/invites';
 import { MentorInvite, MenteeOverview, MentorPermission } from '@/types';
 
 // ============================================

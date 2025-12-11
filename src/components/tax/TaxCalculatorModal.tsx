@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { TaxableTrade, TaxCalculation, TaxCostsConfig, calculateMonthlyTax, enrichTradesWithCosts } from '@/services/taxService';
+import { TaxableTrade, TaxCalculation, TaxCostsConfig, calculateMonthlyTax, enrichTradesWithCosts } from '@/services/analytics/tax';
 import { TaxReport } from './TaxReport';
 import { Trade } from '@/types';
 import dayjs from 'dayjs';

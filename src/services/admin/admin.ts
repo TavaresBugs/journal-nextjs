@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { UserExtended, UserStatus, UserRole, AuditLog, AdminStats } from '@/types';
-import { getCurrentUserId } from './accountService';
+import { getCurrentUserId } from '@/services/core/account';
 
 // ============================================
 // DB TYPES

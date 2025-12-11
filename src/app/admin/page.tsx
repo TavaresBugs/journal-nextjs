@@ -10,7 +10,7 @@ import {
     updateUserStatus,
     updateUserRole,
     getAuditLogs
-} from '@/services/adminService';
+} from '@/services/admin/admin';
 import { UserExtended, AuditLog, UserStatus, UserRole, AdminStats } from '@/types';
 
 // ============================================

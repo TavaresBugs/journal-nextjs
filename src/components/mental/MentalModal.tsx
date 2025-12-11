@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Modal, GlassCard } from '@/components/ui';
 import { Tabs } from '@/components/ui/Tabs';
-import { saveMentalLog, type MentalLog } from '@/services/mentalService';
+import { saveMentalLog, type MentalLog } from '@/services/core/mental';
 import { PerformanceGauge } from './PerformanceGauge';
 import { MentalGrid } from './MentalGrid';
 

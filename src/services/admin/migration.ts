@@ -1,11 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from '@/types';
 import { base64ToBlob } from '@/lib/utils/general';
-import { saveAccount, getCurrentUserId } from './accountService';
-import { saveTrade } from './tradeService';
-import { saveJournalEntry } from './journalService';
-import { saveDailyRoutine } from './routineService';
-import { saveSettings } from './accountService';
+import { saveAccount, getCurrentUserId } from '@/services/core/account';
+import { saveTrade } from '@/services/trades/trade';
+import { saveJournalEntry } from '@/services/journal/journal';
+import { saveDailyRoutine } from '@/services/journal/routine';
+import { saveSettings } from '@/services/core/account';
 
 // ============================================
 // MIGRATION HELPER

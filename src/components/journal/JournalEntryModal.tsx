@@ -7,7 +7,7 @@ import { useTradeStore } from '@/store/useTradeStore';
 import { useToast } from '@/providers/ToastProvider';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
-import { getTradesByIds } from '@/services/tradeService';
+import { getTradesByIds } from '@/services/trades/trade';
 import { ensureFreshImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
 

@@ -3,7 +3,7 @@
 // ============================================
 
 // Re-export functionality from modular services
-export * from '@/services/accountService';
+export * from '@/services/core/account';
 export { 
     saveTrade, 
     deleteTrade, 
@@ -11,10 +11,10 @@ export {
     getTradesPaginated,
     getTradeHistoryLite,
     getTradeById
-} from '@/services/tradeService';
-export * from '@/services/journalService';
-export * from '@/services/routineService';
-export * from '@/services/migrationService';
+} from '@/services/trades/trade';
+export * from '@/services/journal/journal';
+export * from '@/services/journal/routine';
+export * from '@/services/admin/migration';
 
 // To ensure backward compatibility with how imports were done previously,
 // we don't need to change anything else here if we export everything properly.

@@ -9,8 +9,8 @@ import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
 import { DailyHabitsRow, DayStatsCards, DayTradesTable } from "@/components/journal/day-detail";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
-import { getMyMentors } from "@/services/mentor/inviteService";
-import { getReviewsForContext } from "@/services/reviewService";
+import { getMyMentors } from "@/services/mentor/invites";
+import { getReviewsForContext } from "@/services/journal/review";
 
 dayjs.locale("pt-br");
 

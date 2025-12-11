@@ -7,7 +7,7 @@ import {
     updateUserStatus,
     updateUserRole,
     getAuditLogs
-} from '@/services/adminService';
+} from '@/services/admin/admin';
 // Types used for reference in consuming components
 
 // Query Keys for cache management

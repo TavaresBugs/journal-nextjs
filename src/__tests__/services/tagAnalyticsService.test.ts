@@ -4,7 +4,7 @@ import {
     getAllUniqueTags, 
     calculateTagMetrics,
     getTagMetricsForStrategy
-} from '@/services/tagAnalyticsService';
+} from '@/services/analytics/tagAnalytics';
 import type { Trade } from '@/types';
 
 // Mock trades for testing

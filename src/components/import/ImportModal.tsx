@@ -7,15 +7,15 @@ import {
   processImportFile, 
   parseNinjaTraderCSV,
   getNinjaTraderAutoMapping
-} from '@/services/importService';
+} from '@/services/trades/import';
 import {
     ColumnMapping,
     DataSource,
     detectColumnMapping,
     transformTrades
-} from '@/services/importParsers';
-import { getAccounts } from '@/services/accountService';
-import { saveTrade } from '@/services/tradeService';
+} from '@/services/trades/importParsers';
+import { getAccounts } from '@/services/core/account';
+import { saveTrade } from '@/services/trades/trade';
 import { Account } from '@/types';
 import { ImportStepUpload } from './steps/ImportStepUpload';
 import { ImportStepMapping } from './steps/ImportStepMapping';
@@ -164,7 +164,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     let skippedCount = 0;
 
     try {
-        const { getTradeHistoryLite, deleteTradesByAccount } = await import('@/services/tradeService');
+        const { getTradeHistoryLite, deleteTradesByAccount } = await import('@/services/trades/trade');
 
         // Optional: Replace Mode - Delete all existing trades
         if (importMode === 'replace') {

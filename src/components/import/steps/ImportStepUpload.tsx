@@ -1,5 +1,5 @@
 import React from 'react';
-import { DataSource } from '@/services/importParsers';
+import { DataSource } from '@/services/trades/importParsers';
 
 interface ImportStepUploadProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>, source: DataSource) => void;

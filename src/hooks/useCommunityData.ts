@@ -4,14 +4,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
     getPublicPlaybooks,
     togglePlaybookStar
-} from '@/services/community/playbookService';
+} from '@/services/community/playbook';
 import {
     getLeaderboard,
     getMyLeaderboardStatus,
     joinLeaderboard,
     leaveLeaderboard,
     getCurrentUserDisplayName
-} from '@/services/community/leaderboardService';
+} from '@/services/community/leaderboard';
 // Types are inferred from service return types
 
 // Query Keys for cache management

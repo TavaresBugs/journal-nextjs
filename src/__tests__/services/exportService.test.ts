@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { exportAllData } from '@/services/exportService';
+import { exportAllData } from '@/services/trades/export';
 import { supabase } from '@/lib/supabase';
 
 // Mock supabase
@@ -11,11 +11,11 @@ vi.mock('@/lib/supabase', () => ({
 }));
 
 // Mock getCurrentUserId
-vi.mock('@/services/accountService', () => ({
+vi.mock('@/services/core/account', () => ({
     getCurrentUserId: vi.fn(),
 }));
 
-import { getCurrentUserId } from '@/services/accountService';
+import { getCurrentUserId } from '@/services/core/account';
 
 describe('exportService', () => {
     beforeEach(() => {
