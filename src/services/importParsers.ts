@@ -50,7 +50,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
     // Entry Date
     if (headers.includes('Open Time')) autoMapping.entryDate = 'Open Time';
     else {
-         const h = findHeader(['Open Time', 'Time', 'Data Abertura', 'Hora Entrada']);
+         const h = findHeader(['Open Time', 'Time', 'Entry Time', 'Data Abertura', 'Hora Entrada']);
          if (h) autoMapping.entryDate = h;
     }
 
@@ -78,21 +78,21 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
     // Entry Price
     if (headers.includes('Open Price')) autoMapping.entryPrice = 'Open Price';
     else {
-         const h = findHeader(['Open Price', 'Price', 'Preço Entrada', 'Preco Entrada']);
+         const h = findHeader(['Open Price', 'Price', 'Entry Price', 'Preço Entrada', 'Preco Entrada']);
          if (h) autoMapping.entryPrice = h;
     }
 
     // Exit Date
     if (headers.includes('Close Time')) autoMapping.exitDate = 'Close Time';
     else {
-         const h = findHeader(['Close Time', 'Data Fechamento', 'Hora Saída', 'Hora Saida']);
+         const h = findHeader(['Close Time', 'Exit Time', 'Data Fechamento', 'Hora Saída', 'Hora Saida']);
          if (h) autoMapping.exitDate = h;
     }
 
     // Exit Price
     if (headers.includes('Close Price')) autoMapping.exitPrice = 'Close Price';
     else {
-         const h = findHeader(['Close Price', 'Preço Saída', 'Preco Saida']);
+         const h = findHeader(['Close Price', 'Exit Price', 'Preço Saída', 'Preco Saida']);
          if (h) autoMapping.exitPrice = h;
     }
 
