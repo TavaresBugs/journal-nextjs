@@ -21,6 +21,8 @@ const OPTIONAL_FIELDS: (keyof ColumnMapping)[] = [
   'profit',
   'commission',
   'swap',
+  'sl',
+  'tp',
 ];
 
 const FIELD_LABELS: Record<keyof ColumnMapping, string> = {
@@ -34,6 +36,8 @@ const FIELD_LABELS: Record<keyof ColumnMapping, string> = {
   profit: 'Profit (PnL)',
   commission: 'Commission',
   swap: 'Swap',
+  sl: 'Stop Loss',
+  tp: 'Take Profit',
 };
 
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, mapping, onChange }) => {
