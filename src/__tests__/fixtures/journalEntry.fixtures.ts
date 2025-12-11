@@ -78,7 +78,7 @@ export const dbJournalEntry = {
     date: '2025-12-11',
     title: 'Dia de Trading',
     asset: 'EURUSD',
-    trade_id: null,
+    trade_id: undefined,
     emotion: 'confident',
     analysis: 'Mercado em tendência de alta',
     notes: 'Segui o plano corretamente',

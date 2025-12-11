@@ -278,8 +278,8 @@ describe('Journal Entry - CRUD Operations', () => {
             const dbEntryWithTrades = {
                 ...dbJournalEntry,
                 journal_entry_trades: [
-                    { trade_id: 'trade-1' },
-                    { trade_id: 'trade-2' },
+                    { id: 'jet-1', journal_entry_id: 'entry-1', trade_id: 'trade-1', created_at: '2025-12-11T10:00:00.000Z' },
+                    { id: 'jet-2', journal_entry_id: 'entry-1', trade_id: 'trade-2', created_at: '2025-12-11T10:00:00.000Z' },
                 ],
             };
 
