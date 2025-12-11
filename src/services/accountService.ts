@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { handleServiceError } from '@/lib/errorHandler';
 import { Account, Settings } from '@/types';
 import { DBAccount, DBSettings } from '@/types/database';
 
@@ -18,7 +19,7 @@ export async function getCurrentUserId(): Promise<string | null> {
         if (error || !user) return null;
         return user.id;
     } catch (e) {
-        console.error('[getCurrentUserId] Error:', e);
+        handleServiceError(e, 'accountService.getCurrentUserId', { severity: 'silent' });
         return null;
     }
 }
@@ -121,7 +122,6 @@ export async function getAccounts(): Promise<Account[]> {
     try {
         const userId = await getCurrentUserId();
         if (!userId) {
-            console.warn('[getAccounts] No userId - user not authenticated, returning empty array');
             return [];
         }
 
@@ -132,13 +132,13 @@ export async function getAccounts(): Promise<Account[]> {
             .order('created_at', { ascending: false });
 
         if (error) {
-            console.error('[getAccounts] Supabase error:', error);
+            handleServiceError(error, 'accountService.getAccounts');
             return [];
         }
 
         return data ? data.map(mapAccountFromDB) : [];
     } catch (err) {
-        console.error('[getAccounts] Unexpected error:', err);
+        handleServiceError(err, 'accountService.getAccounts');
         return [];
     }
 }
@@ -162,7 +162,7 @@ export async function getAccount(id: string): Promise<Account | null> {
         .maybeSingle();
 
     if (error) {
-        console.error('Error fetching account:', error);
+        handleServiceError(error, 'accountService.getAccount');
         return null;
     }
 
@@ -187,7 +187,7 @@ export async function saveAccount(account: Account): Promise<boolean> {
         .upsert(mapAccountToDB(accountWithUser));
 
     if (error) {
-        console.error('[saveAccount] Error saving account:', error);
+        handleServiceError(error, 'accountService.saveAccount', { showToast: true });
         return false;
     }
 
@@ -212,7 +212,7 @@ export async function deleteAccount(id: string): Promise<boolean> {
         .eq('user_id', userId);
 
     if (error) {
-        console.error('Error deleting account:', error);
+        handleServiceError(error, 'accountService.deleteAccount', { showToast: true });
         return false;
     }
 
@@ -243,13 +243,13 @@ export async function getSettings(accountId?: string): Promise<Settings | null> 
             .maybeSingle();
 
         if (error) {
-            console.error('[getSettings] Supabase error:', error);
+            handleServiceError(error, 'accountService.getSettings');
             return null;
         }
 
         return data ? mapSettingsFromDB(data) : null;
     } catch (err) {
-        console.error('[getSettings] Unexpected error:', err);
+        handleServiceError(err, 'accountService.getSettings');
         return null;
     }
 }
@@ -272,7 +272,7 @@ export async function saveSettings(settings: Settings): Promise<boolean> {
         .upsert(mapSettingsToDB(settingsWithUser));
 
     if (error) {
-        console.error('Error saving settings:', error);
+        handleServiceError(error, 'accountService.saveSettings', { showToast: true });
         return false;
     }
 
@@ -296,7 +296,7 @@ export async function getUserSettings(): Promise<import('@/types').UserSettings 
         .maybeSingle();
 
     if (error) {
-        console.error('[getUserSettings] Error loading user settings:', error);
+        handleServiceError(error, 'accountService.getUserSettings');
         return null;
     }
 
@@ -341,7 +341,7 @@ export async function saveUserSettings(settings: import('@/types').UserSettings)
         });
 
     if (error) {
-        console.error('Error saving user settings:', error);
+        handleServiceError(error, 'accountService.saveUserSettings', { showToast: true });
         return false;
     }
 

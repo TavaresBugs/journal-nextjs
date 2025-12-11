@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { handleServiceError } from '@/lib/errorHandler';
 import { Trade, TradeLite } from '@/types';
 import { DBTrade } from '@/types/database';
 import { getCurrentUserId } from './accountService';
@@ -113,7 +114,7 @@ export const mapTradeToDB = (app: Trade): DBTrade => ({
 export async function getTrades(accountId: string): Promise<Trade[]> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'tradeService.getTrades', { severity: 'silent' });
         return [];
     }
 
@@ -126,7 +127,7 @@ export async function getTrades(accountId: string): Promise<Trade[]> {
         .order('entry_time', { ascending: false });
 
     if (error) {
-        console.error('Error fetching trades:', error);
+        handleServiceError(error, 'tradeService.getTrades');
         return [];
     }
 
@@ -150,7 +151,7 @@ export async function getTradeById(id: string): Promise<Trade | null> {
         .single();
 
     if (error) {
-        console.error('Error fetching trade by id:', error);
+        handleServiceError(error, 'tradeService.getTradeById');
         return null;
     }
 
@@ -175,7 +176,7 @@ export async function getTradesByIds(ids: string[]): Promise<Trade[]> {
         .eq('user_id', userId);
 
     if (error) {
-        console.error('Error fetching trades by ids:', error);
+        handleServiceError(error, 'tradeService.getTradesByIds');
         return [];
     }
 
@@ -207,7 +208,7 @@ export async function getTradesPaginated(accountId: string, page: number = 1, pa
         .range(from, to);
 
     if (error) {
-        console.error('Error fetching paginated trades:', error);
+        handleServiceError(error, 'tradeService.getTradesPaginated');
         return { data: [], count: 0 };
     }
 
@@ -271,7 +272,7 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
         .order('entry_time', { ascending: false });
 
     if (error) {
-        console.error('Error fetching history lite:', error);
+        handleServiceError(error, 'tradeService.getTradeHistoryLite');
         return [];
     }
 
@@ -288,7 +289,7 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
 export async function saveTrade(trade: Trade): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'tradeService.saveTrade', { severity: 'silent' });
         return false;
     }
 
@@ -302,7 +303,7 @@ export async function saveTrade(trade: Trade): Promise<boolean> {
         .upsert(mapTradeToDB(tradeWithUser));
 
     if (error) {
-        console.error('Error saving trade:', error);
+        handleServiceError(error, 'tradeService.saveTrade', { showToast: true });
         return false;
     }
 
@@ -319,11 +320,10 @@ export async function saveTrade(trade: Trade): Promise<boolean> {
 export async function deleteTrade(id: string): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'tradeService.deleteTrade', { severity: 'silent' });
         return false;
     }
 
-    // 3. Delete the trade
     const { error } = await supabase
         .from('trades')
         .delete()
@@ -331,7 +331,7 @@ export async function deleteTrade(id: string): Promise<boolean> {
         .eq('user_id', userId);
 
     if (error) {
-        console.error('Error deleting trade:', error);
+        handleServiceError(error, 'tradeService.deleteTrade', { showToast: true });
         return false;
     }
 
@@ -354,7 +354,7 @@ export async function deleteTradesByAccount(accountId: string): Promise<boolean>
         .eq('user_id', userId);
 
     if (error) {
-        console.error('Error deleting trades by account:', error);
+        handleServiceError(error, 'tradeService.deleteTradesByAccount', { showToast: true });
         return false;
     }
     return true;

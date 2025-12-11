@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { handleServiceError } from '@/lib/errorHandler';
 import { base64ToBlob, ensureFreshImageUrl } from '@/lib/utils';
 import { JournalEntry } from '@/types';
 import { DBJournalEntry, DBJournalImage, DBJournalEntryTrade } from '@/types/database';
@@ -79,7 +80,7 @@ export const mapJournalEntryToDB = (app: JournalEntry): Omit<DBJournalEntry, 'jo
 export async function getJournalEntries(accountId: string): Promise<JournalEntry[]> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'journalService.getJournalEntries', { severity: 'silent' });
         return [];
     }
 
@@ -91,7 +92,7 @@ export async function getJournalEntries(accountId: string): Promise<JournalEntry
         .order('date', { ascending: false });
 
     if (error) {
-        console.error('Error fetching journal entries:', error);
+        handleServiceError(error, 'journalService.getJournalEntries');
         return [];
     }
 
@@ -108,7 +109,7 @@ export async function getJournalEntries(accountId: string): Promise<JournalEntry
 export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'journalService.saveJournalEntry', { severity: 'silent' });
         return false;
     }
 
@@ -123,7 +124,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
         .upsert(mapJournalEntryToDB(entryWithUser));
 
     if (entryError) {
-        console.error('Error saving journal entry:', entryError);
+        handleServiceError(entryError, 'journalService.saveJournalEntry', { showToast: true });
         return false;
     }
 
@@ -180,7 +181,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                                 });
 
                             if (uploadError) {
-                                console.error(`Error uploading image for ${timeframe} index ${i}:`, uploadError);
+                                handleServiceError(uploadError, `journalService.uploadImage.${timeframe}`, { severity: 'warn' });
                                 continue;
                             }
 
@@ -202,7 +203,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                                 created_at: new Date().toISOString()
                             });
                         } catch (err) {
-                            console.error(`Error processing image for ${timeframe} index ${i}:`, err);
+                            handleServiceError(err, `journalService.processImage.${timeframe}`, { severity: 'warn' });
                         }
                     } else if (typeof base64 === 'string' && base64.startsWith('http')) {
                         // Existing image URL
@@ -258,7 +259,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                     }
                 }
             } catch (cleanupError) {
-                console.error('Error cleaning up orphaned images:', cleanupError);
+                handleServiceError(cleanupError, 'journalService.cleanupOrphanedImages', { severity: 'warn' });
             }
         }
 
@@ -270,7 +271,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
             .eq('journal_entry_id', entry.id);
 
         if (deleteError) {
-            console.error('Error deleting old image rows:', deleteError);
+            handleServiceError(deleteError, 'journalService.deleteOldImageRows', { severity: 'warn' });
         }
 
         if (imagesToSave.length > 0) {
@@ -279,7 +280,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                 .insert(imagesToSave);
 
             if (imagesError) {
-                console.error('Error saving journal images:', imagesError);
+                handleServiceError(imagesError, 'journalService.saveImages', { severity: 'warn' });
             }
         }
     }
@@ -293,7 +294,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
             .eq('journal_entry_id', entry.id);
 
         if (deleteTradesError) {
-            console.error('Error deleting old trade links:', deleteTradesError);
+            handleServiceError(deleteTradesError, 'journalService.deleteTradeLinks', { severity: 'warn' });
         }
 
         const tradeLinks = entry.tradeIds.map(tradeId => ({
@@ -306,7 +307,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
             .insert(tradeLinks);
 
         if (insertTradesError) {
-            console.error('Error saving trade links:', insertTradesError);
+            handleServiceError(insertTradesError, 'journalService.saveTradeLinks', { severity: 'warn' });
         }
     } else {
         // No trades linked, ensure junction table is clean
@@ -316,7 +317,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
             .eq('journal_entry_id', entry.id);
 
         if (deleteTradesError) {
-            console.error('Error cleaning trade links:', deleteTradesError);
+            handleServiceError(deleteTradesError, 'journalService.cleanTradeLinks', { severity: 'warn' });
         }
     }
 
@@ -333,7 +334,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
 export async function deleteJournalEntry(id: string): Promise<boolean> {
     const userId = await getCurrentUserId();
     if (!userId) {
-        console.error('User not authenticated');
+        handleServiceError(new Error('User not authenticated'), 'journalService.deleteJournalEntry', { severity: 'silent' });
         return false;
     }
 
@@ -352,7 +353,7 @@ export async function deleteJournalEntry(id: string): Promise<boolean> {
             .remove(pathsToDelete);
 
         if (storageError) {
-            console.error('Error deleting images from storage:', storageError);
+            handleServiceError(storageError, 'journalService.deleteImagesStorage', { severity: 'warn' });
         }
     }
 
@@ -364,7 +365,7 @@ export async function deleteJournalEntry(id: string): Promise<boolean> {
         .eq('user_id', userId);
 
     if (error) {
-        console.error('Error deleting journal entry:', error);
+        handleServiceError(error, 'journalService.deleteJournalEntry', { showToast: true });
         return false;
     }
 
