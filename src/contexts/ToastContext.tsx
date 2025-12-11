@@ -1,7 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Toast, ToastType } from '@/components/ui/Toast';
+import { registerToastHandler } from '@/lib/errorHandler';
 
 interface ToastContextType {
     showToast: (message: string, type?: ToastType, duration?: number) => void;
@@ -20,6 +21,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     const showToast = (message: string, type: ToastType = 'success', duration: number = 3000) => {
         setToast({ message, type, isVisible: true, duration });
     };
+
+    // Register toast handler for centralized error handling
+    useEffect(() => {
+        registerToastHandler((message, type) => {
+            showToast(message, type as ToastType);
+        });
+    }, []);
 
     const hideToast = () => {
         setToast((prev) => ({ ...prev, isVisible: false }));
