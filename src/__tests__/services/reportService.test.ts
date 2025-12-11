@@ -2,9 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { generateReport } from '@/services/analytics/report';
 import * as tradeService from '@/services/trades/trade';
 
-// Mock getTrades
-vi.mock('../tradeService', () => ({
+// Mock getTrades with correct path
+vi.mock('@/services/trades/trade', () => ({
   getTrades: vi.fn(),
+  mapTradeFromDB: vi.fn(),
 }));
 
 describe('reportService', () => {
