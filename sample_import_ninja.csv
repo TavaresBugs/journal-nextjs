@@ -1,0 +1,3 @@
+Núm. Neg.; Instrumento; Conta; Estratégia; Pos mercado.; Qtd; Preço entrada; Preço saída; Hora entrada; Hora saída; Entrada; Sáída; Profit; Acu lucro líquido; Corretagem; MAE; MFE; ETD; Barras
+1; WINZ23; Sim101; ATM; Long; 1; 114000,00; 114100,00; 27/10/2023 10:00:00; 27/10/2023 10:05:00; Market; Market; 20,00; 20,00; 1,50; 0; 0; 0; 10
+2; WDOZ23; Sim101; ATM; Short; 2; 5000,00; 4990,00; 27/10/2023 11:00:00; 27/10/2023 11:15:00; Limit; Limit; 200,00; 220,00; 3,00; 0; 0; 0; 15

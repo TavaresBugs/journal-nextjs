@@ -557,15 +557,40 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         <Input label="Swap ($)" type="number" step="0.01" value={swap} onChange={(e) => setSwap(e.target.value)} placeholder="-1.50" />
                     </div>
 
-                    {/* Estimates */}
+                    {/* Estimates - Neon Stat Cards */}
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                        <div className="bg-gray-900/50 rounded-lg p-2.5 text-center border border-red-900/30">
-                            <div className="text-xs text-gray-500">Risco</div>
-                            <div className="text-base font-bold text-red-400">$ {estimates.risk.toFixed(2)}</div>
+                        {/* Risk Card (Red/Rose) */}
+                        <div className="relative overflow-hidden rounded-xl p-4 text-center bg-linear-to-b from-red-500/20 to-transparent border border-red-500/40 shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                            {/* Background decorative arrow */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.08]">
+                                <svg className="w-16 h-16 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M16 18l2-2-6-6-6 6 2 2 4-4 4 4zm0-8l2-2-6-6-6 6 2 2 4-4 4 4z" transform="rotate(180 12 12)" />
+                                </svg>
+                            </div>
+                            {/* Content */}
+                            <div className="relative z-10">
+                                <div className="text-xs font-medium uppercase tracking-wider text-red-400/80 mb-1">Risco</div>
+                                <div className="text-2xl font-mono font-bold text-red-400 drop-shadow-md">
+                                    $ {estimates.risk.toFixed(2)}
+                                </div>
+                            </div>
                         </div>
-                        <div className="bg-gray-900/50 rounded-lg p-2.5 text-center border border-green-900/30">
-                            <div className="text-xs text-gray-500">Retorno</div>
-                            <div className="text-base font-bold text-green-400">$ {estimates.reward.toFixed(2)}</div>
+                        
+                        {/* Return Card (Green) */}
+                        <div className="relative overflow-hidden rounded-xl p-4 text-center bg-linear-to-b from-zorin-accent/20 to-transparent border border-zorin-accent/40 shadow-[0_0_20px_rgba(0,200,83,0.15)]">
+                            {/* Background decorative arrow */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.08]">
+                                <svg className="w-16 h-16 text-zorin-accent" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M16 18l2-2-6-6-6 6 2 2 4-4 4 4zm0-8l2-2-6-6-6 6 2 2 4-4 4 4z" />
+                                </svg>
+                            </div>
+                            {/* Content */}
+                            <div className="relative z-10">
+                                <div className="text-xs font-medium uppercase tracking-wider text-zorin-accent/80 mb-1">Retorno</div>
+                                <div className="text-2xl font-mono font-bold text-zorin-accent drop-shadow-md">
+                                    $ {estimates.reward.toFixed(2)}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
