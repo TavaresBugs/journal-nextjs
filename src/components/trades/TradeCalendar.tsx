@@ -112,7 +112,8 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
         Object.keys(tradesByDay).forEach(dateStr => {
             const dayTrades = tradesByDay[dateStr];
             const stats = calculateDayStats(dayTrades);
-            const dayEntries = entries.filter(e => e.date === dateStr && (!e.tradeIds || e.tradeIds.length === 0));
+            // Count ALL journal entries for this day (not just ones without trades)
+            const dayEntries = entries.filter(e => e.date === dateStr);
             
             statsMap[dateStr] = {
                 ...stats,
@@ -121,15 +122,20 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
             };
         });
         
-        // Also add stats for days with only journal entries
-        entries.forEach(entry => {
-            if ((!entry.tradeIds || entry.tradeIds.length === 0) && !statsMap[entry.date]) {
-                statsMap[entry.date] = {
-                    ...calculateDayStats([]),
-                    dayTrades: [],
-                    journalCount: 1
-                };
-            }
+        // Also add stats for days with only journal entries (no trades)
+        const journalOnlyDates = new Set(
+            entries
+                .map(e => e.date)
+                .filter(date => !statsMap[date])
+        );
+        
+        journalOnlyDates.forEach(date => {
+            const dayEntries = entries.filter(e => e.date === date);
+            statsMap[date] = {
+                ...calculateDayStats([]),
+                dayTrades: [],
+                journalCount: dayEntries.length
+            };
         });
         
         return statsMap;
