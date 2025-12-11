@@ -1,21 +1,16 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { PageSkeleton } from '@/components/ui/PageSkeleton';
 import { useAccountStore } from '@/store/useAccountStore';
-import { 
-    getPublicPlaybooks,
-    togglePlaybookStar
-} from '@/services/community/playbookService';
 import {
-    getLeaderboard,
-    getMyLeaderboardStatus,
-    joinLeaderboard,
-    leaveLeaderboard,
-    getCurrentUserDisplayName
-} from '@/services/community/leaderboardService';
+    useCommunityPlaybooks,
+    useCommunityLeaderboard,
+    useLeaderboardOptIn,
+    useCommunityActions
+} from '@/hooks/useCommunityData';
 import { SharedPlaybook, LeaderboardEntry, LeaderboardOptIn } from '@/types';
 
 // ============================================
@@ -387,11 +382,15 @@ export default function ComunidadePage() {
     const router = useRouter();
     const { currentAccountId } = useAccountStore();
     const [activeTab, setActiveTab] = useState<'playbooks' | 'leaderboard'>('playbooks');
-    const [playbooks, setPlaybooks] = useState<SharedPlaybook[]>([]);
-    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-    const [optInStatus, setOptInStatus] = useState<LeaderboardOptIn | null>(null);
-    const [loading, setLoading] = useState(true);
     const [viewingPlaybook, setViewingPlaybook] = useState<SharedPlaybook | null>(null);
+
+    // React Query hooks for data fetching with caching
+    const { data: playbooks = [], isLoading: loadingPlaybooks } = useCommunityPlaybooks();
+    const { data: leaderboard = [], isLoading: loadingLeaderboard } = useCommunityLeaderboard();
+    const { data: optInStatus = null } = useLeaderboardOptIn();
+    const { handleStar, handleJoinLeaderboard, handleLeaveLeaderboard } = useCommunityActions();
+
+    const loading = loadingPlaybooks || loadingLeaderboard;
 
     // Stats calculadas
     const stats: CommunityStats = {
@@ -407,61 +406,6 @@ export default function ComunidadePage() {
         } else {
             router.push('/');
         }
-    };
-
-    const loadData = useCallback(async () => {
-        setLoading(true);
-        try {
-            const [playbooksData, leaderboardData, optIn] = await Promise.all([
-                getPublicPlaybooks(),
-                getLeaderboard(),
-                getMyLeaderboardStatus(),
-            ]);
-            setPlaybooks(playbooksData);
-            setLeaderboard(leaderboardData);
-            setOptInStatus(optIn);
-        } catch (error) {
-            console.error('Error loading community data:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        // Wrap loadData call in a function to avoid direct promise return
-        const fetchData = async () => {
-             await loadData();
-        };
-        fetchData();
-    }, [loadData]);
-
-    const handleStar = async (playbookId: string) => {
-        const success = await togglePlaybookStar(playbookId);
-        if (success) loadData();
-    };
-
-    const handleJoinLeaderboard = async () => {
-        let displayName = await getCurrentUserDisplayName();
-        
-        if (!displayName) {
-            displayName = prompt('Escolha um nome de exibição:');
-        }
-        
-        if (!displayName) return;
-        
-        const result = await joinLeaderboard(displayName, {
-            showWinRate: true,
-            showProfitFactor: true,
-            showTotalTrades: true,
-            showPnl: true
-        });
-        if (result) loadData();
-    };
-
-    const handleLeaveLeaderboard = async () => {
-        if (!confirm('Tem certeza que deseja sair do leaderboard?')) return;
-        const success = await leaveLeaderboard();
-        if (success) loadData();
     };
 
     return (
