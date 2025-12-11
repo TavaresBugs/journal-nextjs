@@ -28,7 +28,7 @@ export const communityKeys = {
 export function useCommunityPlaybooks() {
     return useQuery({
         queryKey: communityKeys.playbooks(),
-        queryFn: getPublicPlaybooks,
+        queryFn: () => getPublicPlaybooks(),
         staleTime: 2 * 60 * 1000, // 2 minutes for community data
     });
 }
@@ -116,7 +116,7 @@ export function usePrefetchCommunityData() {
     return () => {
         queryClient.prefetchQuery({
             queryKey: communityKeys.playbooks(),
-            queryFn: getPublicPlaybooks,
+            queryFn: () => getPublicPlaybooks(),
             staleTime: 2 * 60 * 1000,
         });
         queryClient.prefetchQuery({

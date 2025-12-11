@@ -133,14 +133,16 @@ export async function unsharePlaybook(playbookId: string): Promise<boolean> {
 
 /**
  * Lista todos os playbooks públicos, incluindo estatísticas e detalhes do autor.
+ * @param limit - Maximum number of playbooks to return (default: 20)
+ * @param offset - Number of playbooks to skip (default: 0)
  * @returns {Promise<SharedPlaybook[]>} Lista de playbooks compartilhados.
  * @example
- * const playbooks = await getPublicPlaybooks();
+ * const playbooks = await getPublicPlaybooks(20, 0);
  */
-export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
+export async function getPublicPlaybooks(limit = 20, offset = 0): Promise<SharedPlaybook[]> {
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Buscar shared_playbooks com o playbook relacionado
+    // Buscar shared_playbooks com o playbook relacionado (with pagination)
     const { data, error } = await supabase
         .from('shared_playbooks')
         .select(`
@@ -148,7 +150,8 @@ export async function getPublicPlaybooks(): Promise<SharedPlaybook[]> {
             playbook:playbooks(*)
         `)
         .eq('is_public', true)
-        .order('stars', { ascending: false });
+        .order('stars', { ascending: false })
+        .range(offset, offset + limit - 1);
 
     if (error) {
         console.error('Erro ao buscar playbooks públicos:', error);
