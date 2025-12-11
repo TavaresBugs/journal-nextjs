@@ -183,17 +183,42 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
   });
 };
 
-/**
- * Parses MetaTrader HTML Report.
- */
+
 export const parseHTMLReport = async (file: File): Promise<ImportResult> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = (e) => {
             try {
-                const content = e.target?.result as string;
-                if (!content) throw new Error('File is empty');
+                const buffer = e.target?.result as ArrayBuffer;
+                if (!buffer) throw new Error('File is empty');
+
+                // Decode using TextDecoder which handles BOM automatically for UTF-8 and UTF-16
+                // If it fails or produces garbage, we might need to try specific encodings.
+                // But usually, standard TextDecoder("utf-8") works for UTF-8. 
+                // For UTF-16le (common in Windows reports), we need to detect it.
+                
+                let content = '';
+                const uint8Array = new Uint8Array(buffer);
+                
+                // Simple BOM detection
+                if (uint8Array[0] === 0xFF && uint8Array[1] === 0xFE) {
+                    const decoder = new TextDecoder('utf-16le');
+                    content = decoder.decode(buffer);
+                } else if (uint8Array[0] === 0xFE && uint8Array[1] === 0xFF) {
+                    const decoder = new TextDecoder('utf-16be');
+                    content = decoder.decode(buffer);
+                } else {
+                    // Try utf-8 first
+                    try {
+                        const decoder = new TextDecoder('utf-8', { fatal: true });
+                        content = decoder.decode(buffer);
+                    } catch {
+                        // If fatal error, try windows-1252 (ANSI)
+                        const decoder = new TextDecoder('windows-1252');
+                        content = decoder.decode(buffer);
+                    }
+                }
 
                 // Basic Regex to find rows in the table
                 // MetaTrader reports usually have rows with <tr ...> <td ...> ... </td> </tr>
@@ -323,7 +348,7 @@ export const parseHTMLReport = async (file: File): Promise<ImportResult> => {
         };
 
         reader.onerror = (error) => reject(error);
-        reader.readAsText(file); // HTML is text
+        reader.readAsArrayBuffer(file); // Read as binary to handle encoding manually
     });
 };
 
