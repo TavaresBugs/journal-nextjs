@@ -73,7 +73,7 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
 
 
     
-    const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
+    const { accounts, currentAccount, setCurrentAccount, updateAccountBalance, updateAccount } = useAccountStore();
     const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage, addTrade, updateTrade, removeTrade } = useTradeStore();
     const { entries, loadEntries } = useJournalStore();
     const { playbooks, loadPlaybooks, removePlaybook } = usePlaybookStore();
@@ -296,8 +296,24 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
     };
 
     const handleUpdateBalance = async (newBalance: number) => {
-        // TODO: Update account balance in store
-        console.log('New balance:', newBalance);
+        if (!currentAccount) return;
+
+        const totalPnL = allHistory.reduce((sum, trade) => {
+            return sum + (trade.pnl || 0);
+        }, 0);
+
+        const newInitialBalance = newBalance - totalPnL;
+
+        const updatedAccount = {
+            ...currentAccount,
+            initialBalance: newInitialBalance,
+            currentBalance: newBalance,
+            updatedAt: new Date().toISOString()
+        };
+
+        await updateAccount(updatedAccount);
+        showToast('Saldo atualizado com sucesso!', 'success');
+        setIsSettingsModalOpen(false);
     };
 
     const metrics = useMemo(() => calculateTradeMetrics(allHistory as unknown as Trade[]), [allHistory]);
