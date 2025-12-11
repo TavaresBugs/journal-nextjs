@@ -50,6 +50,8 @@ describe('importParsers', () => {
             profit: 'Profit',
             commission: 'Commission',
             swap: 'Swap',
+            sl: '',
+            tp: ''
         };
 
         const mockRawData: RawTradeData[] = [
@@ -118,7 +120,9 @@ describe('importParsers', () => {
                 exitPrice: 'Exit price',
                 profit: 'Profit',
                 commission: 'Commission',
-                swap: 'Swap'
+                swap: 'Swap',
+                sl: '',
+                tp: ''
             };
 
             const ninjaData: RawTradeData[] = [{

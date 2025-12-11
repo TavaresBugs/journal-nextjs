@@ -22,9 +22,26 @@ export interface ColumnMapping {
   profit: string;
   commission: string;
   swap: string;
+  sl: string;
+  tp: string;
 }
 
 export type DataSource = 'metatrader' | 'ninjatrader' | null;
+
+/**
+ * Robust UUID generator that works in insecure contexts (HTTP)
+ */
+const generateUUID = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    // Fallback for older browsers or insecure context
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
 
 /**
  * Detects column mapping based on headers for MetaTrader/generic CSVs
@@ -41,6 +58,8 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
         profit: '',
         commission: '',
         swap: '',
+        sl: '',
+        tp: ''
     };
 
     // Helper: Find header case-insensitive
@@ -96,6 +115,13 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
          if (h) autoMapping.exitPrice = h;
     }
 
+    // Stop Loss / Take Profit
+    const slHeader = findHeader(['S / L', 'SL', 'Stop Loss', 'S/L', 'StopLoss']);
+    if (slHeader) autoMapping.sl = slHeader;
+
+    const tpHeader = findHeader(['T / P', 'TP', 'Take Profit', 'T/P', 'TakeProfit']);
+    if (tpHeader) autoMapping.tp = tpHeader;
+
     // Profit
     if (headers.includes('Profit')) autoMapping.profit = 'Profit';
     else {
@@ -118,22 +144,27 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
  * Converts a date from a source timezone to New York time.
  */
 export const convertToNYTime = (date: Date, sourceTimezone: string): Date => {
-    // Extract date components without timezone interference
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
-    const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    try {
+        // Extract date components without timezone interference
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    // First convert to UTC assuming the date is in sourceTimezone
-    const utcDate = fromZonedTime(isoString, sourceTimezone);
+        // First convert to UTC assuming the date is in sourceTimezone
+        const utcDate = fromZonedTime(isoString, sourceTimezone);
 
-    // Then convert UTC to NY time and return as if it were a local date
-    // (This matches the behavior in the original component)
-    const nyDate = toZonedTime(utcDate, 'America/New_York');
-    return nyDate;
+        // Then convert UTC to NY time and return as if it were a local date
+        // (This matches the behavior in the original component)
+        const nyDate = toZonedTime(utcDate, 'America/New_York');
+        return nyDate;
+    } catch (e) {
+        console.warn('Timezone conversion failed', e);
+        return date; // Fallback to original date
+    }
 };
 
 /**
@@ -192,9 +223,19 @@ export const transformTrades = (
                 volume = Number(row[mapping.volume]) || 0;
             }
 
+            // 6b. Parse S/L and T/P
+            let stopLoss = 0;
+            let takeProfit = 0;
+            if (mapping.sl && row[mapping.sl]) {
+                 stopLoss = dataSource === 'ninjatrader' ? parseNinjaTraderPrice(row[mapping.sl]) : (Number(row[mapping.sl]) || 0);
+            }
+            if (mapping.tp && row[mapping.tp]) {
+                 takeProfit = dataSource === 'ninjatrader' ? parseNinjaTraderPrice(row[mapping.tp]) : (Number(row[mapping.tp]) || 0);
+            }
+
             // Construct partial trade object
             const trade: Trade = {
-                id: crypto.randomUUID(), // We generate UUID here for now
+                id: generateUUID(), // Use robust generator
                 userId: '', // Caller should fill or DB
                 accountId: accountId,
                 symbol: symbol,
@@ -203,8 +244,8 @@ export const transformTrades = (
                 entryTime: entryTimeStr,
                 entryPrice: entryPrice,
                 lot: volume,
-                stopLoss: 0,
-                takeProfit: 0,
+                stopLoss: stopLoss,
+                takeProfit: takeProfit,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 session: calculateSession(entryTimeStr),

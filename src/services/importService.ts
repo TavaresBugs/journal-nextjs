@@ -627,4 +627,6 @@ export const getNinjaTraderAutoMapping = () => ({
     profit: 'Profit',
     commission: 'Corretagem',
     swap: '', // NinjaTrader doesn't have swap
+    sl: '',
+    tp: '',
 });

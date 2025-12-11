@@ -59,6 +59,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({ isOpen, onClose, onImp
     profit: '',
     commission: '',
     swap: '',
+    sl: '',
+    tp: '',
   });
 
   // Stats
