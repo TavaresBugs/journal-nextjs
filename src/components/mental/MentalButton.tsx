@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui';
 import { MentalModal } from './MentalModal';
 
 export function MentalButton() {
@@ -8,11 +9,13 @@ export function MentalButton() {
 
     return (
         <>
-            {/* Brain Button - Same style as NotificationBell */}
-            <button
+            {/* Brain Button - Same style as Settings Button */}
+            <Button
+                variant="primary"
+                size="icon"
                 onClick={() => setIsModalOpen(true)}
                 title="Mindset Debugger"
-                className="relative w-12 h-12 rounded-xl bg-gray-800/80 hover:bg-gray-800 border border-gray-700 hover:border-cyan-500/50 text-gray-400 hover:text-cyan-400 flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
+                className="w-12 h-12 rounded-xl"
             >
                 {/* Brain Circuit Icon */}
                 <svg 
@@ -36,7 +39,7 @@ export function MentalButton() {
                     <path d="M6 18a4 4 0 0 1-1.967-.516"/>
                     <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
                 </svg>
-            </button>
+            </Button>
 
             <MentalModal
                 isOpen={isModalOpen}

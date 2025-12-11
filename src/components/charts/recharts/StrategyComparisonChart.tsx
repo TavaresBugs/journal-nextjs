@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
+import { GlassCard } from '@/components/ui';
 
 interface StrategyComparisonChartProps {
     trades: Trade[];
@@ -21,18 +22,18 @@ interface StrategyMetric {
 
 // Color functions based on thresholds
 const getWinRateColor = (winRate: number) => {
-    if (winRate >= 60) return '#10b981'; // emerald
+    if (winRate >= 60) return '#00c853'; // zorin-accent
     if (winRate >= 40) return '#f59e0b'; // amber
     return '#ef4444'; // red
 };
 
 const getPnLColor = (pnl: number) => {
-    return pnl >= 0 ? '#10b981' : '#ef4444';
+    return pnl >= 0 ? '#00c853' : '#ef4444';
 };
 
 const getRRColor = (rr: number | null) => {
     if (rr === null) return '#6b7280';
-    if (rr >= 2) return '#10b981';
+    if (rr >= 2) return '#00c853';
     if (rr >= 1) return '#f59e0b';
     return '#ef4444';
 };
@@ -102,21 +103,21 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
 
     if (trades.length === 0) {
         return (
-            <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+            <GlassCard className="p-8">
                 <h3 className="text-base font-medium text-gray-400 mb-8">Análise Comparativa de Estratégias</h3>
                 <div className="h-[300px] flex items-center justify-center text-gray-500">
                     Nenhum trade registrado ainda
                 </div>
-            </div>
+            </GlassCard>
         );
     }
 
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-6">
+        <GlassCard className="p-6">
             <h3 className="text-base font-medium text-gray-400 mb-6">Análise Comparativa de Estratégias</h3>
             
             {/* Header */}
-            <div className="grid grid-cols-4 gap-4 mb-4 text-xs text-gray-500 uppercase tracking-wider font-medium border-b border-gray-800 pb-2">
+            <div className="grid grid-cols-4 gap-4 mb-4 text-xs text-gray-500 uppercase tracking-wider font-medium border-b border-white/5 pb-2">
                 <div>Estratégia</div>
                 <div>Win Rate</div>
                 <div>P&L</div>
@@ -128,7 +129,7 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
                 {strategyMetrics.map((metric) => (
                     <div 
                         key={metric.strategy}
-                        className="grid grid-cols-4 gap-4 items-center py-3 px-2 rounded-lg hover:bg-gray-800/30 transition-colors group"
+                        className="grid grid-cols-4 gap-4 items-center py-3 px-2 rounded-lg hover:bg-white/5 transition-colors group"
                     >
                         {/* Strategy Name */}
                         <div className="flex flex-col">
@@ -179,7 +180,7 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
                                         }}
                                     />
                                 )}
-                                <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-600" />
+                                <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10" />
                             </div>
                             <span 
                                 className="text-sm font-bold min-w-[80px] text-right"
@@ -212,14 +213,14 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
             </div>
             
             {/* Footer Summary */}
-            <div className="mt-6 pt-4 border-t border-gray-800 flex flex-wrap gap-4 text-xs text-gray-500">
+            <div className="mt-6 pt-4 border-t border-white/5 flex flex-wrap gap-4 text-xs text-gray-500">
                 <span>
                     Total: <span className="text-gray-300 font-medium">{trades.length} trades</span>
                 </span>
                 {strategyMetrics.length > 0 && (
                     <>
                         <span>
-                            Melhor: <span className="text-emerald-400 font-medium">{strategyMetrics[0]?.strategy}</span>
+                            Melhor: <span className="text-zorin-accent font-medium">{strategyMetrics[0]?.strategy}</span>
                         </span>
                         {strategyMetrics.length > 1 && strategyMetrics[strategyMetrics.length - 1].pnl < 0 && (
                             <span>
@@ -229,6 +230,6 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
                     </>
                 )}
             </div>
-        </div>
+        </GlassCard>
     );
 }

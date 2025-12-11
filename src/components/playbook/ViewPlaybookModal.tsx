@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, Button } from '@/components/ui';
+import { Modal, Button, GlassCard } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { PlaybookReviewTab } from './PlaybookReviewTab';
 import type { Playbook, Trade } from '@/types';
@@ -49,7 +49,7 @@ export function ViewPlaybookModal({
             headerActions={
                 onEdit && activeTab === 'info' ? (
                     <Button
-                        variant="gold"
+                        variant="zorin-ghost"
                         size="sm"
                         onClick={() => {
                             onEdit(playbook);
@@ -82,8 +82,8 @@ export function ViewPlaybookModal({
                         
                         <div className="space-y-4">
                             {playbook.ruleGroups?.map((group) => (
-                                <div key={group.id} className="bg-gray-800/30 rounded-lg border border-gray-700 overflow-hidden">
-                                    <div className="px-4 py-2 bg-gray-900/50 border-b border-gray-700 flex items-center gap-2">
+                                <GlassCard key={group.id} className="bg-zorin-bg/30 border-white/5 overflow-hidden">
+                                    <div className="px-4 py-2 bg-zorin-bg/50 border-b border-white/5 flex items-center gap-2">
                                         <span className="text-gray-500">☰</span>
                                         <span className="font-medium text-gray-200">{group.name}</span>
                                     </div>
@@ -91,7 +91,7 @@ export function ViewPlaybookModal({
                                         {group.rules.length > 0 ? (
                                             group.rules.map((rule, index) => (
                                                 <div key={index} className="flex items-start gap-3 text-sm text-gray-300">
-                                                    <span className="text-emerald-500 mt-0.5">✓</span>
+                                                    <span className="text-zorin-accent mt-0.5">✓</span>
                                                     <span className="leading-relaxed">{rule}</span>
                                                 </div>
                                             ))
@@ -99,7 +99,7 @@ export function ViewPlaybookModal({
                                             <p className="text-sm text-gray-500 italic">Nenhuma regra definida.</p>
                                         )}
                                     </div>
-                                </div>
+                                </GlassCard>
                             ))}
                         </div>
                     </div>

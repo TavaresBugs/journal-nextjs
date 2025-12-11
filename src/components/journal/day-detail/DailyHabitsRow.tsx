@@ -1,7 +1,9 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import type { DailyRoutine } from '@/types';
+import { GlassCard } from '@/components/ui';
+import { CustomCheckbox } from '@/components/checklist/CustomCheckbox';
 
 interface DailyHabitsRowProps {
   currentRoutine: DailyRoutine | null;
@@ -23,52 +25,62 @@ const habits = [
  * Memoized to prevent unnecessary re-renders
  */
 const DailyHabitsRowComponent = ({ currentRoutine, onToggleHabit }: DailyHabitsRowProps) => {
+  // Optimistic UI state
+  const [optimisticRoutine, setOptimisticRoutine] = useState<DailyRoutine | null>(currentRoutine);
+
+  // Sync with prop when it changes (server response)
+  useEffect(() => {
+    setOptimisticRoutine(currentRoutine);
+  }, [currentRoutine]);
+
+  const handleToggle = (key: keyof Omit<DailyRoutine, 'id' | 'accountId' | 'date' | 'createdAt' | 'updatedAt'>) => {
+    // Optimistic update
+    setOptimisticRoutine(prev => {
+      if (!prev) return null; // Should ideally handle 'new' routine creation optimistically too, but tricky without ID
+      return { ...prev, [key]: !prev[key] };
+    });
+    
+    // Call actual handler
+    onToggleHabit(key);
+  };
+
   return (
-    <div className="flex flex-wrap gap-3 justify-center">
+    <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
       {habits.map((habit) => {
-        const isChecked = currentRoutine?.[habit.key] || false;
+        // Use optimistic state if available, fallback to props
+        const isChecked = optimisticRoutine ? optimisticRoutine[habit.key] : (currentRoutine?.[habit.key] || false);
+        
+        // Handle case where optimistic state might be null initially if creating new routine
+        // If currentRoutine is null, we can't fully support optimistic UI for the *first* click easily 
+        // without mimicking the object structure. 
+        // fallback: if no routine exists yet, rely on props (slower first click, but subsequent are fast)
+        // or: create a fake empty routine object
+        
         return (
-          <button
+          <GlassCard
             key={habit.key}
-            onClick={() => onToggleHabit(habit.key)}
+            onClick={() => handleToggle(habit.key)}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-lg border transition-all
+              flex items-center justify-center gap-2 px-2 py-2 cursor-pointer transition-all duration-200 group
               ${
                 isChecked
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
-                  : 'bg-gray-800/30 border-gray-700 text-gray-400 hover:border-gray-600'
+                  ? 'bg-zorin-accent/10 border-zorin-accent/50 shadow-[0_0_10px_rgba(0,200,83,0.1)]'
+                  : 'bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/30 hover:bg-zorin-bg/40'
               }
             `}
           >
-            <div
-              className={`
-                w-5 h-5 rounded flex items-center justify-center border
-                ${
-                  isChecked
-                    ? 'bg-emerald-500 border-emerald-500 text-black'
-                    : 'border-gray-600'
-                }
-              `}
-            >
-              {isChecked && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              )}
+            <CustomCheckbox
+              checked={isChecked}
+              onChange={() => handleToggle(habit.key)}
+              id={`habit-${habit.key}`}
+            />
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{habit.icon}</span>
+              <span className={`text-sm font-medium transition-colors ${isChecked ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                {habit.label}
+              </span>
             </div>
-            <span className="text-lg">{habit.icon}</span>
-            <span className="text-sm font-medium">{habit.label}</span>
-          </button>
+          </GlassCard>
         );
       })}
     </div>

@@ -26,7 +26,7 @@ const SettingsIcon = () => (
         strokeWidth="2" 
         strokeLinecap="round" 
         strokeLinejoin="round"
-        className="text-green-500"
+        className="text-[#bde6fb]"
     >
         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
         <circle cx="12" cy="12" r="3"/>
@@ -146,7 +146,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
                         
                         {/* Moedas */}
                         <section>
-                            <h3 className="text-lg font-semibold text-green-500 mb-3 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
                                 💰 Moedas
                             </h3>
                             <div className="flex gap-2 mb-2">
@@ -183,7 +183,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
 
                         {/* Alavancagem */}
                         <section>
-                            <h3 className="text-lg font-semibold text-green-500 mb-3 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-3 flex items-center gap-2">
                                 ⚖️ Alavancagem
                             </h3>
                             <div className="flex gap-2 mb-2">
@@ -228,7 +228,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
                         
                         {/* Ativos & Multiplicadores */}
                         <section>
-                            <h3 className="text-lg font-semibold text-green-500 mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
                                 📊 Ativos & Multiplicadores
                             </h3>
                             
@@ -278,7 +278,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
 
                         {/* Tipos de Entrada (Setups) - Full width now since Estratégias is removed */}
                         <section>
-                            <h3 className="text-lg font-semibold text-green-500 mb-4 flex items-center gap-2">
+                            <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
                                 🎯 Tipos de Entrada (Setups)
                             </h3>
                             <div className="flex gap-2 mb-4">

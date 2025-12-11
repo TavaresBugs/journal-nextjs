@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
 
@@ -39,7 +40,7 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
     if (trades.length === 0) return null;
 
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+        <GlassCard className="p-8">
             <h3 className="text-base font-medium text-gray-400 mb-8">Win Rate por Dia</h3>
             <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -68,13 +69,14 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
                         {data.map((entry, index) => (
                             <Cell 
                                 key={`cell-${index}`} 
-                                fill={entry.winRate >= 50 ? '#22c55e' : '#ef4444'} 
+                                fill={entry.winRate >= 50 ? '#00c853' : '#ef4444'} 
                                 fillOpacity={0.8}
                             />
                         ))}
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>
-        </div>
+
+        </GlassCard>
     );
 }

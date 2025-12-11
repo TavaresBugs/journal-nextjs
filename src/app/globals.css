@@ -37,12 +37,13 @@
   --color-cyan-900: #154038; /* Darker Mint/Teal */
   --color-cyan-950: #0d2b26;
 
-  /* Zorin Glass Design System Tokens */
-  --color-zorin-bg: #1e1e2d;
-  --color-zorin-surface: #2a2a3c;
-  --color-zorin-accent: #00c853;
-  --color-zorin-danger: #ff5252;
-  --color-zorin-glass: rgba(21, 21, 33, 0.7);
+  /* Zorin Glass Design System Tokens (Golden Standard - Gunmetal Green) */
+  --color-zorin-bg: #20282d;       /* Gunmetal Green - Modal/Card backgrounds */
+  --color-zorin-surface: #2a3238;  /* Surface - Hovers and list items */
+  --color-zorin-ice: #bde6fb;      /* Ice Blue - Icons and subtle borders */
+  --color-zorin-accent: #00c853;   /* Neon Green - ONLY action buttons */
+  --color-zorin-danger: #ff5252;   /* Danger Red - Delete/Close */
+  --color-zorin-glass: rgba(32, 40, 45, 0.7);  /* Gunmetal Green with transparency */
   --color-zorin-glass-border: rgba(255, 255, 255, 0.05);
 }
 

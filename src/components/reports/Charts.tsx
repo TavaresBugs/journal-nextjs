@@ -46,7 +46,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
             />
 
             {/* Separator */}
-            <div className="border-t border-gray-800/50"></div>
+            <div className="border-t border-white/5"></div>
 
             {/* Section: Distribution Analysis */}
             <div className="space-y-6">
@@ -60,7 +60,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
             </div>
 
             {/* Separator */}
-            <div className="border-t border-gray-800/50"></div>
+            <div className="border-t border-white/5"></div>
 
             {/* Section: Performance Over Time */}
             <div className="space-y-6">
@@ -74,7 +74,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
             </div>
 
             {/* Separator */}
-            <div className="border-t border-gray-800/50"></div>
+            <div className="border-t border-white/5"></div>
 
             {/* Section: Asset & Timing Analysis */}
             <div className="space-y-6">
@@ -88,7 +88,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
             </div>
 
             {/* Separator */}
-            <div className="border-t border-gray-800/50"></div>
+            <div className="border-t border-white/5"></div>
 
             {/* Section: Monthly Performance */}
             <div className="space-y-6">
@@ -99,7 +99,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
             </div>
 
             {/* Separator */}
-            <div className="border-t border-gray-800/50"></div>
+            <div className="border-t border-white/5"></div>
 
             {/* Section: Risk Analysis */}
             <div className="space-y-6">

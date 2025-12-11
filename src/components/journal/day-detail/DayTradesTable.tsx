@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import type { Trade, JournalEntry } from '@/types';
-import { Button } from '@/components/ui';
+import { Button, GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
 
@@ -42,23 +42,25 @@ const DayTradesTableComponent = ({
   reviewsMap = {},
 }: DayTradesTableProps) => {
   return (
-    <div className="bg-gray-900/30 border border-gray-800 rounded-xl overflow-hidden">
+    <GlassCard className="overflow-hidden p-0 bg-zorin-bg/30 border-white/5">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-800/50 text-xs text-gray-400 uppercase tracking-wider">
+          <tr className="bg-zorin-surface/50 text-xs text-gray-400 uppercase tracking-wider">
             <th className="px-4 py-3 text-center w-24">
               <div className="flex items-center justify-center gap-2">
                 <span>DIÁRIO</span>
-                <button
+                <Button
+                  variant="gradient-success"
+                  size="icon"
                   onClick={onNewEntry}
-                  className="w-5 h-5 rounded flex items-center justify-center bg-emerald-500 hover:bg-emerald-400 text-black transition-colors shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                  className="w-5 h-5 rounded flex items-center justify-center shadow-[0_0_10px_rgba(0,200,83,0.3)] bg-zorin-accent hover:bg-zorin-accent-hover text-white border-0"
                   title="Novo Diário"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
-                </button>
+                </Button>
               </div>
             </th>
             <th className="px-4 py-3 text-center">AÇÕES</th>
@@ -69,19 +71,19 @@ const DayTradesTableComponent = ({
             <th className="px-4 py-3 text-center">DURAÇÃO</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-800">
+        <tbody className="divide-y divide-white/5">
           {/* Standalone Entries */}
           {standaloneEntries.map((entry) => {
              const reviewStatus = reviewsMap[entry.id];
              return (
             <tr
               key={entry.id}
-              className="hover:bg-gray-800/30 transition-colors group"
+              className="hover:bg-zorin-surface/50 transition-colors group"
             >
               <td className="px-4 py-3 text-center">
                 <div className="relative inline-block">
                   <Button
-                    variant="success"
+                    variant="zorin-success"
                     size="icon"
                     onClick={() => onPreviewEntry ? onPreviewEntry(entry) : onEditEntry(entry)}
                     className="w-8 h-8 mx-auto"
@@ -109,7 +111,7 @@ const DayTradesTableComponent = ({
               <td className="px-4 py-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                   <Button
-                    variant="gold"
+                    variant="zorin-warning"
                     size="icon"
                     onClick={() => onEditEntry(entry)}
                     className="w-8 h-8"
@@ -118,7 +120,7 @@ const DayTradesTableComponent = ({
                     ✏️
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="zorin-danger"
                     size="icon"
                     onClick={() => onDeleteEntry(entry.id)}
                     className="w-8 h-8"
@@ -142,7 +144,7 @@ const DayTradesTableComponent = ({
                 -
               </td>
               <td className="px-4 py-3 text-center text-gray-300 font-medium">
-                <span className="font-bold text-gray-200 bg-gray-700/50 px-2 py-1 rounded">
+                <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
                   {entry.asset || 'Diário'}
                 </span>
               </td>
@@ -182,12 +184,12 @@ const DayTradesTableComponent = ({
             return (
               <tr
                 key={trade.id}
-                className="hover:bg-gray-800/30 transition-colors group"
+                className="hover:bg-zorin-surface/50 transition-colors group"
               >
                 <td className="px-4 py-3 text-center">
                   <div className="relative inline-block">
                     <Button
-                      variant={journalEntry ? "success" : "ghost"}
+                      variant={journalEntry ? "zorin-success" : "zorin-ghost"}
                       size="icon"
                       onClick={() => onJournalClick(trade, !journalEntry)}
                       className={`w-8 h-8 mx-auto ${!journalEntry ? 'opacity-40 border border-gray-600 hover:opacity-70' : ''}`}
@@ -235,7 +237,7 @@ const DayTradesTableComponent = ({
                   <div className="flex items-center justify-center gap-2">
                     {/* Edit Trade Button */}
                     <Button
-                      variant="gold"
+                      variant="zorin-warning"
                       size="icon"
                       onClick={() => onEditTrade?.(trade)}
                       className={`w-8 h-8 ${!onEditTrade ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -246,7 +248,7 @@ const DayTradesTableComponent = ({
                     </Button>
                     {/* Delete Trade Button */}
                     <Button
-                      variant="danger"
+                      variant="zorin-danger"
                       size="icon"
                       onClick={() => onDeleteTrade(trade.id)}
                       className="w-8 h-8"
@@ -264,7 +266,7 @@ const DayTradesTableComponent = ({
                     <div
                       className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
                         trade.type === "Long"
-                          ? "bg-green-500/20 text-green-400"
+                          ? "bg-zorin-accent/20 text-zorin-accent"
                           : "bg-red-500/20 text-red-400"
                       }`}
                     >
@@ -287,7 +289,7 @@ const DayTradesTableComponent = ({
                   <span
                     className={
                       trade.pnl && trade.pnl >= 0
-                        ? "text-green-400"
+                        ? "text-zorin-accent"
                         : "text-red-400"
                     }
                   >
@@ -295,7 +297,7 @@ const DayTradesTableComponent = ({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center text-gray-300 font-medium">
-                  <span className="font-bold text-gray-200 bg-gray-700/50 px-2 py-1 rounded">
+                  <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
                     {trade.symbol}
                   </span>
                 </td>
@@ -311,7 +313,7 @@ const DayTradesTableComponent = ({
 
         </tbody>
       </table>
-    </div>
+    </GlassCard>
   );
 };
 

@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
 import { AreaSeries, IChartApi, ISeriesApi } from 'lightweight-charts';
@@ -99,19 +100,19 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
     
     if (trades.length === 0) {
         return (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-cyan-400 mb-6">
+            <GlassCard className="p-8 flex flex-col items-center justify-center min-h-[400px]">
+                <h3 className="text-lg font-bold text-zorin-accent mb-6">
                     Drawdown Chart (Queda desde o Pico)
                 </h3>
-                <div className="h-[400px] flex items-center justify-center text-gray-500">
+                <div className="text-gray-500">
                     Nenhum trade registrado ainda
                 </div>
-            </div>
+            </GlassCard>
         );
     }
     
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+        <GlassCard className="p-8">
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-base font-medium text-gray-400">
                     Drawdown
@@ -144,6 +145,7 @@ export function DrawdownChartLightweight({ trades, initialBalance, accountCreate
                     <div className="text-gray-500">Perigo</div>
                 </div>
             </div>
-        </div>
+
+        </GlassCard>
     );
 }

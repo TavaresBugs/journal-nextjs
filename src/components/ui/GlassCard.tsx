@@ -37,8 +37,8 @@ export function GlassCard({
     return (
         <div
             className={cn(
-                // Glassmorphism Base - Transparent with blur
-                "bg-[#151521]/70 backdrop-blur-md",
+                // Glassmorphism Base - Zorin Midnight with transparency
+                "bg-zorin-bg/70 backdrop-blur-md",
                 // Border - Subtle white edge
                 "border border-white/5",
                 // Shape
@@ -48,7 +48,7 @@ export function GlassCard({
                 // Padding
                 paddingStyles[padding],
                 // Hover Effects
-                hover && "hover:bg-[#151521]/80 hover:border-white/10 transition-all duration-300 cursor-pointer",
+                hover && "hover:bg-zorin-bg/80 hover:border-white/10 transition-all duration-300 cursor-pointer",
                 // Glow Effect
                 glow && "hover:shadow-[0_0_30px_rgba(0,200,83,0.15)]",
                 className
@@ -89,7 +89,7 @@ export function GlassCardTitle({ children, className = '', icon }: GlassCardTitl
             "text-xl font-bold text-gray-100 flex items-center gap-2",
             className
         )}>
-            {icon && <span className="text-[#00c853]">{icon}</span>}
+            {icon && <span className="text-[#bde6fb]">{icon}</span>}
             {children}
         </h3>
     );

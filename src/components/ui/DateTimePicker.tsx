@@ -107,7 +107,7 @@ export function CustomCalendar({ selected, onSelect, onClose }: CalendarProps) {
                     <button
                         type="button"
                         onClick={goToPrevMonth}
-                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:bg-gray-700 rounded-lg transition-colors"
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:bg-gray-700 rounded-lg transition-colors focus:outline-none"
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M15 18l-6-6 6-6" />
@@ -116,7 +116,7 @@ export function CustomCalendar({ selected, onSelect, onClose }: CalendarProps) {
                     <button
                         type="button"
                         onClick={goToNextMonth}
-                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:bg-gray-700 rounded-lg transition-colors"
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-400 hover:bg-gray-700 rounded-lg transition-colors focus:outline-none"
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 18l6-6-6-6" />
@@ -143,7 +143,7 @@ export function CustomCalendar({ selected, onSelect, onClose }: CalendarProps) {
                         disabled={!item.isCurrentMonth}
                         onClick={() => item.isCurrentMonth && handleDayClick(item.day)}
                         className={`
-                            h-10 w-10 mx-auto flex items-center justify-center rounded-lg text-sm font-medium transition-colors
+                            h-10 w-10 mx-auto flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus:outline-none
                             ${!item.isCurrentMonth 
                                 ? 'text-gray-600 cursor-default' 
                                 : isSelected(item.day)
@@ -228,7 +228,7 @@ export function DatePickerInput({
                     onClick={() => setIsOpen(!isOpen)}
                     readOnly
                     placeholder="dd/mm/aaaa"
-                    className="w-full pl-3 pr-10 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm
+                    className="w-full pl-3 pr-10 py-2 bg-[#232b32] border border-gray-700 rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
                                placeholder-gray-500 cursor-pointer transition-all duration-200"
                 />
@@ -331,7 +331,7 @@ export function TimePickerInput({
                     onClick={() => setIsOpen(true)}
                     readOnly
                     placeholder="HH:mm"
-                    className="w-full pl-3 pr-10 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm
+                    className="w-full pl-3 pr-10 py-2 bg-[#232b32] border border-gray-700 rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
                                placeholder-gray-500 cursor-pointer"
                 />
@@ -367,7 +367,7 @@ export function TimePickerInput({
                                         type="button"
                                         data-value={i}
                                         onClick={() => handleHourChange(i)}
-                                        className={`w-14 h-10 flex items-center justify-center text-lg snap-center transition-all ${
+                                        className={`w-14 h-10 flex items-center justify-center text-lg snap-center transition-all focus:outline-none ${
                                             hours === i 
                                                 ? 'text-cyan-400 font-bold scale-110' 
                                                 : 'text-gray-500 hover:text-gray-300'
@@ -395,7 +395,7 @@ export function TimePickerInput({
                                         type="button"
                                         data-value={i}
                                         onClick={() => handleMinuteChange(i)}
-                                        className={`w-14 h-10 flex items-center justify-center text-lg snap-center transition-all ${
+                                        className={`w-14 h-10 flex items-center justify-center text-lg snap-center transition-all focus:outline-none ${
                                             minutes === i 
                                                 ? 'text-cyan-400 font-bold scale-110' 
                                                 : 'text-gray-500 hover:text-gray-300'
@@ -412,7 +412,7 @@ export function TimePickerInput({
                         <button
                             type="button"
                             onClick={() => setIsOpen(false)}
-                            className="mt-4 w-full py-2 text-cyan-400 font-semibold hover:text-cyan-300 transition-colors"
+                            className="mt-4 w-full py-2 text-cyan-400 font-semibold hover:text-cyan-300 transition-colors focus:outline-none"
                         >
                             Confirmar
                         </button>

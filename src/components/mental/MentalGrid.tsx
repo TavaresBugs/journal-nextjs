@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { GlassCard, Button } from '@/components/ui';
 import { 
     getMentalEntries, 
     saveMentalEntry, 
@@ -164,11 +165,11 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-white/5">
+            <GlassCard className="overflow-x-auto border-white/5">
                 <table className="w-full text-sm">
                     {/* Header */}
                     <thead>
-                        <tr className="bg-black/30 border-b border-white/5">
+                        <tr className="bg-zorin-bg/50 border-b border-white/5">
                             <th className="px-3 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">Data</th>
                             <th className="px-3 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Gatilho</th>
                             <th className="px-3 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Emoção</th>
@@ -180,7 +181,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
 
                     <tbody>
                         {/* New Entry Row */}
-                        <tr className="bg-green-500/5 border-b border-white/5">
+                        <tr className="bg-zorin-primary/5 border-b border-white/5">
                             <td className="px-3 py-2 text-gray-500 text-xs">Novo</td>
                             <td className="px-1 py-1">
                                 <input
@@ -188,7 +189,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                                     value={newEntry.triggerEvent}
                                     onChange={(e) => setNewEntry(prev => ({ ...prev, triggerEvent: e.target.value }))}
                                     placeholder="O que aconteceu?"
-                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-green-500/50 focus:outline-none"
+                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-zorin-primary/50 focus:outline-none"
                                 />
                             </td>
                             <td className="px-1 py-1 relative">
@@ -200,22 +201,22 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                                         handleSearch('emotion', e.target.value);
                                     }}
                                     placeholder="Medo, Ganância..."
-                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-green-500/50 focus:outline-none"
+                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-zorin-primary/50 focus:outline-none"
                                 />
                                 {/* Autocomplete Dropdown */}
                                 {activeField === 'emotion' && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                    <GlassCard className="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto" glow>
                                         {suggestions.map(profile => (
                                             <button
                                                 key={profile.id}
                                                 onClick={() => handleSelectSuggestion(profile)}
-                                                className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center justify-between gap-2"
+                                                className="w-full px-3 py-2 text-left hover:bg-white/5 flex items-center justify-between gap-2"
                                             >
                                                 <span className="text-sm text-gray-200 truncate">{profile.description}</span>
                                                 {getZoneBadge(profile.zone)}
                                             </button>
                                         ))}
-                                    </div>
+                                    </GlassCard>
                                 )}
                             </td>
                             <td className="px-1 py-1 relative">
@@ -227,29 +228,29 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                                         handleSearch('behavior', e.target.value);
                                     }}
                                     placeholder="O que fez?"
-                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-green-500/50 focus:outline-none"
+                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm placeholder-gray-600 focus:border-zorin-primary/50 focus:outline-none"
                                 />
                                 {/* Autocomplete Dropdown */}
                                 {activeField === 'behavior' && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+                                    <GlassCard className="absolute top-full left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto" glow>
                                         {suggestions.map(profile => (
                                             <button
                                                 key={profile.id}
                                                 onClick={() => handleSelectSuggestion(profile)}
-                                                className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center justify-between gap-2"
+                                                className="w-full px-3 py-2 text-left hover:bg-white/5 flex items-center justify-between gap-2"
                                             >
                                                 <span className="text-sm text-gray-200 truncate">{profile.description}</span>
                                                 {getZoneBadge(profile.zone)}
                                             </button>
                                         ))}
-                                    </div>
+                                    </GlassCard>
                                 )}
                             </td>
                             <td className="px-1 py-1">
                                 <select
                                     value={newEntry.zoneDetected}
                                     onChange={(e) => setNewEntry(prev => ({ ...prev, zoneDetected: e.target.value }))}
-                                    className="w-full px-2 py-1 bg-transparent border border-white/5 rounded text-gray-200 text-sm focus:border-green-500/50 focus:outline-none"
+                                    className="w-full px-2 py-1 bg-zorin-bg border border-white/5 rounded text-gray-200 text-sm focus:border-zorin-primary/50 focus:outline-none"
                                 >
                                     <option value="" className="bg-gray-800">Zona</option>
                                     <option value="A-Game" className="bg-gray-800">A-Game</option>
@@ -258,12 +259,14 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                                 </select>
                             </td>
                             <td className="px-3 py-1 text-center">
-                                <button
+                                <Button
                                     onClick={handleAddEntry}
-                                    className="px-3 py-1 bg-green-500/20 text-green-400 rounded text-xs font-semibold hover:bg-green-500/30 transition-colors"
+                                    variant="zorin-ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
                                 >
                                     +
-                                </button>
+                                </Button>
                             </td>
                         </tr>
 
@@ -309,19 +312,21 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                                     {getZoneBadge(entry.zoneDetected)}
                                 </td>
                                 <td className="px-3 py-2 text-center">
-                                    <button
+                                    <Button
                                         onClick={() => handleDelete(entry.id)}
-                                        className="text-red-400 hover:text-red-300 text-sm"
+                                        variant="zorin-ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 text-red-400 hover:text-red-300"
                                         title="Excluir"
                                     >
                                         ×
-                                    </button>
+                                    </Button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-            </div>
+            </GlassCard>
 
             {/* Legend */}
             <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">

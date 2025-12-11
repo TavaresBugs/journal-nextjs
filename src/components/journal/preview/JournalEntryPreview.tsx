@@ -42,13 +42,13 @@ const JournalEntryPreviewComponent = ({
 
   const CustomHeader = (
     <div className="flex items-center justify-between w-full pr-4">
-      <h2 className="text-xl font-bold text-gray-100">📖 Visualizar Diário</h2>
+      <h2 className="text-xl font-bold text-zorin-ice">📖 Visualizar Diário</h2>
       <div className="flex items-center gap-2">
         <div className="relative">
           <Button 
             onClick={() => setShowComments(!showComments)} 
             variant="purple"
-            size="sm"
+            size="md"
           >
             {showComments ? '👁️‍🗨️ Esconder Comentários' : '💬 Ver Comentários'}
           </Button>
@@ -56,10 +56,10 @@ const JournalEntryPreviewComponent = ({
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
           )}
         </div>
-        <Button onClick={onShare} variant="info" size="sm" disabled={isSharingLoading}>
+        <Button onClick={onShare} variant="info" size="md" disabled={isSharingLoading}>
           {isSharingLoading ? '⏳' : '📤'} <span className="hidden sm:inline">Compartilhar</span>
         </Button>
-        <Button onClick={onEdit} variant="gold" size="sm">
+        <Button onClick={onEdit} variant="gold" size="md">
           ✏️ <span className="hidden sm:inline">Editar</span>
         </Button>
       </div>

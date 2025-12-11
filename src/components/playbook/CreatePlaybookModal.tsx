@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, Input, Button } from '@/components/ui';
+import { Modal, Input, Button, GlassCard } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import type { RuleGroup } from '@/types';
 
@@ -132,12 +132,12 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="📖 Create Playbook" maxWidth="3xl">
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-gray-700">
+            <div className="flex gap-2 mb-6 border-b border-white/5">
                 <button
                     onClick={() => setActiveTab('general')}
                     className={`px-6 py-3 font-medium transition-all ${
                         activeTab === 'general'
-                            ? 'text-emerald-400 border-b-2 border-emerald-400'
+                            ? 'text-zorin-accent border-b-2 border-zorin-accent'
                             : 'text-gray-400 hover:text-gray-300'
                     }`}
                 >
@@ -147,7 +147,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                     onClick={() => setActiveTab('rules')}
                     className={`px-6 py-3 font-medium transition-all ${
                         activeTab === 'rules'
-                            ? 'text-emerald-400 border-b-2 border-emerald-400'
+                            ? 'text-zorin-accent border-b-2 border-zorin-accent'
                             : 'text-gray-400 hover:text-gray-300'
                     }`}
                 >
@@ -167,7 +167,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                         <label className="block text-sm font-medium text-gray-300 mb-3">
                             Escolha um ícone
                         </label>
-                        <div className="grid grid-cols-10 gap-2 p-4 bg-gray-800/30 rounded-lg border border-gray-700 max-h-40 overflow-y-auto">
+                        <GlassCard className="grid grid-cols-10 gap-2 p-4 bg-zorin-bg/30 border-white/5 max-h-40 overflow-y-auto custom-scrollbar">
                             {EMOJI_LIST.map((emoji) => (
                                 <button
                                     key={emoji}
@@ -181,7 +181,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                     {emoji}
                                 </button>
                             ))}
-                        </div>
+                        </GlassCard>
                     </div>
 
                     {/* Color Selection */}
@@ -222,7 +222,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
-                            className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-vertical"
+                            className="w-full px-4 py-2.5 bg-black/20 backdrop-blur-sm border border-white/10 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-zorin-accent resize-vertical transition-all"
                         />
                     </div>
                 </div>
@@ -240,7 +240,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                     {/* Rule Groups */}
                     <div className="space-y-4">
                         {ruleGroups.map((group) => (
-                            <div key={group.id} className="bg-gray-800/30 rounded-lg border border-gray-700 p-4">
+                            <GlassCard key={group.id} className="bg-zorin-bg/30 border-white/5 p-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-sm font-medium text-gray-300 flex items-center gap-2">
                                         <span className="text-gray-500">☰</span> {group.name}
@@ -251,21 +251,21 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                         const isEditing = editingRule?.groupId === group.id && editingRule?.index === index;
                                         
                                         return (
-                                            <div key={index} className="flex items-center gap-2 bg-gray-900/50 p-2 rounded group/rule">
+                                            <div key={index} className="flex items-center gap-2 bg-zorin-bg/50 p-2 rounded group/rule border border-white/5">
                                                 <span className="text-gray-500 text-xs">☰</span>
                                                 
                                                 {isEditing ? (
                                                     <>
-                                                        <input
+                                                        <Input
                                                             type="text"
                                                             value={editingRuleText}
                                                             onChange={(e) => setEditingRuleText(e.target.value)}
                                                             onKeyPress={(e) => e.key === 'Enter' && saveEditingRule()}
-                                                            className="flex-1 px-2 py-1 text-sm bg-gray-800 border border-emerald-500 rounded text-gray-300 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                                            className="flex-1 h-8 text-sm"
                                                             autoFocus
                                                         />
                                                         <Button
-                                                            variant="gradient-success"
+                                                            variant="zorin-primary"
                                                             size="sm"
                                                             onClick={saveEditingRule}
                                                             className="text-xs px-3 py-1 font-semibold"
@@ -273,7 +273,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                                             Salvar
                                                         </Button>
                                                         <Button
-                                                            variant="ghost"
+                                                            variant="zorin-ghost"
                                                             size="sm"
                                                             onClick={cancelEditingRule}
                                                             className="text-xs px-2 py-1"
@@ -285,19 +285,19 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                                     <>
                                                         <span className="flex-1 text-sm text-gray-300">{rule}</span>
                                                         <Button
-                                                            variant="gold"
+                                                            variant="zorin-ghost"
                                                             size="icon"
                                                             onClick={() => startEditingRule(group.id, index, rule)}
-                                                            className="w-6 h-6 text-xs"
+                                                            className="w-6 h-6 text-xs text-yellow-500 hover:text-yellow-400"
                                                             title="Editar"
                                                         >
                                                             ✏️
                                                         </Button>
                                                         <Button
-                                                            variant="danger"
+                                                            variant="zorin-ghost"
                                                             size="icon"
                                                             onClick={() => removeRule(group.id, index)}
-                                                            className="w-6 h-6 text-xs"
+                                                            className="w-6 h-6 text-xs text-red-500 hover:text-red-400"
                                                             title="Deletar"
                                                         >
                                                             🗑️
@@ -309,19 +309,19 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                     })}
                                 </div>
                                 <div className="flex gap-2">
-                                    <input
+                                    <Input
                                         type="text"
                                         placeholder="Criar nova regra"
                                         value={newRuleInputs[group.id] || ''}
                                         onChange={(e) => setNewRuleInputs({ ...newRuleInputs, [group.id]: e.target.value })}
                                         onKeyPress={(e) => e.key === 'Enter' && addRuleToGroup(group.id)}
-                                        className="flex-1 px-3 py-2 text-sm bg-gray-900/50 border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                        className="flex-1 h-10"
                                     />
-                                    <Button variant="gradient-success" size="sm" onClick={() => addRuleToGroup(group.id)}>
+                                    <Button variant="zorin-primary" size="sm" onClick={() => addRuleToGroup(group.id)}>
                                         + Criar nova regra
                                     </Button>
                                 </div>
-                            </div>
+                            </GlassCard>
                         ))}
                     </div>
                 </div>
@@ -331,7 +331,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
             <div className="flex gap-3 pt-6 mt-6 border-t border-gray-700">
                 <Button
                     type="button"
-                    variant="gradient-danger"
+                    variant="danger"
                     onClick={() => {
                         handleReset();
                         onClose();
@@ -342,7 +342,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                 </Button>
                 <Button
                     type="button"
-                    variant="gradient-success"
+                    variant="zorin-primary"
                     onClick={handleSubmit}
                     className="flex-1 font-extrabold"
                     disabled={!name.trim() || isSaving}

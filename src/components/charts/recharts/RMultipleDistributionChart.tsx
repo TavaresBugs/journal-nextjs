@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
 
@@ -50,14 +51,15 @@ export function RMultipleDistributionChart({ trades }: RMultipleDistributionChar
         return order.map(range => ({
             range,
             count: distribution[range],
-            color: range.includes('-') ? '#ef4444' : '#22c55e'
+            color: range.includes('-') ? '#ef4444' : '#00c853'
         }));
     }, [trades]);
 
     if (trades.length === 0) return null;
 
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+
+        <GlassCard className="p-8">
             <h3 className="text-base font-medium text-gray-400 mb-2">Múltiplos R</h3>
             <p className="text-xs text-gray-500 mb-6">
                 Mostra a eficiência dos seus trades em relação ao risco inicial.
@@ -80,6 +82,7 @@ export function RMultipleDistributionChart({ trades }: RMultipleDistributionChar
                     </Bar>
                 </BarChart>
             </ResponsiveContainer>
-        </div>
+
+        </GlassCard>
     );
 }

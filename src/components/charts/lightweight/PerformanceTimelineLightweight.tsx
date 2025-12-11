@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
 import { HistogramSeries, IChartApi, ISeriesApi } from 'lightweight-charts';
@@ -28,7 +29,7 @@ export function PerformanceTimelineLightweight({ trades }: PerformanceTimelineLi
             .map(([date, pnl]) => ({
                 time: date,
                 value: pnl,
-                color: pnl >= 0 ? '#22c55e' : '#ef4444',
+                color: pnl >= 0 ? '#00c853' : '#ef4444',
             }))
             .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
             
@@ -63,19 +64,19 @@ export function PerformanceTimelineLightweight({ trades }: PerformanceTimelineLi
     
     if (trades.length === 0) {
         return (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-cyan-400 mb-6">
+            <GlassCard className="p-8 flex flex-col items-center justify-center min-h-[400px]">
+                <h3 className="text-lg font-bold text-zorin-accent mb-6">
                     Performance Timeline (Últimos 30 Dias)
                 </h3>
-                <div className="h-[400px] flex items-center justify-center text-gray-500">
+                <div className="text-gray-500">
                     Nenhum trade nos últimos 30 dias
                 </div>
-            </div>
+            </GlassCard>
         );
     }
     
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+        <GlassCard className="p-8">
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-base font-medium text-gray-400">
                     Timeline de Performance
@@ -89,6 +90,6 @@ export function PerformanceTimelineLightweight({ trades }: PerformanceTimelineLi
                 height={400}
                 onChartReady={onChartReady}
             />
-        </div>
+        </GlassCard>
     );
 }

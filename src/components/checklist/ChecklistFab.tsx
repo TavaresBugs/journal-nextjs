@@ -15,7 +15,7 @@ export function ChecklistFab({ onTradeStart }: ChecklistFabProps) {
             {/* Floating Action Button */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transition-all duration-300 flex items-center justify-center group hover:scale-110"
+                className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-zorin-accent hover:bg-zorin-accent/90 text-white shadow-lg shadow-zorin-accent/30 hover:shadow-zorin-accent/50 transition-all duration-300 flex items-center justify-center group hover:scale-110"
                 title="Pre-Flight Checklist"
             >
                 {/* Checklist Icon */}
@@ -36,7 +36,7 @@ export function ChecklistFab({ onTradeStart }: ChecklistFabProps) {
                 </svg>
 
                 {/* Pulse animation ring */}
-                <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-20" />
+                <span className="absolute inset-0 rounded-full bg-zorin-accent animate-ping opacity-20" />
             </button>
 
             {/* Modal */}

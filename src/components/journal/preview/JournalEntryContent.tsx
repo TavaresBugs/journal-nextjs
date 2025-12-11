@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import type { Trade, JournalEntry } from '@/types';
@@ -127,7 +128,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
           {/* Header Info */}
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-bold text-gray-100">{entry.title}</h2>
+              <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
               <div className="text-gray-400 text-sm mt-1">
                 {(() => {
                   // entry.date é apenas YYYY-MM-DD sem hora
@@ -140,21 +141,21 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
           </div>
 
           {/* Trades Info */}
-          <div className="bg-cyan-950/30 border border-cyan-900/50 rounded-lg p-4">
-            <h3 className="text-cyan-400 text-sm font-medium mb-2">
-              Trades Vinculados {linkedTrades.length > 0 && <span className="text-cyan-300">({linkedTrades.length})</span>}
+          <GlassCard className="p-4 bg-[#1b292b]/60 backdrop-blur-md border border-[#00c853]/50 shadow-[0_0_15px_rgba(0,200,83,0.15)] hover:shadow-[0_0_20px_rgba(0,200,83,0.2)] transition-shadow duration-300">
+            <h3 className="text-zorin-accent text-sm font-medium mb-2">
+              Trades Vinculados {linkedTrades.length > 0 && <span className="text-white/60">({linkedTrades.length})</span>}
             </h3>
             {linkedTrades.length > 0 ? (
               <div className="space-y-2 max-h-[150px] overflow-y-auto">
                 {linkedTrades.map((trade) => (
-                  <div key={trade.id} className="bg-gray-800/50 border border-gray-700 rounded-lg p-2 flex items-center flex-wrap gap-1 text-sm">
+                  <GlassCard key={trade.id} className="p-2 flex items-center flex-wrap gap-1 text-sm bg-zorin-bg/50 border-white/5">
                     <span className="text-gray-400">
                       {dayjs(trade.entryDate).format('DD/MM')} {trade.entryTime?.substring(0, 5)}
                     </span>
                     <span className="text-gray-200 font-medium">{trade.symbol}</span>
                     <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
                       trade.type === 'Long'
-                        ? 'bg-green-500/20 text-green-400'
+                        ? 'bg-zorin-accent/20 text-zorin-accent'
                         : 'bg-red-500/20 text-red-400'
                     }`}>
                       {trade.type}
@@ -171,24 +172,24 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
                       )}
                     </span>
                     {trade.pnl !== undefined && (
-                      <span className={`text-xs font-bold ${trade.pnl > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <span className={`text-xs font-bold ${trade.pnl > 0 ? 'text-zorin-accent' : 'text-red-400'}`}>
                         {formatCurrency(trade.pnl)}
                       </span>
                     )}
-                  </div>
+                  </GlassCard>
                 ))}
               </div>
             ) : (
               <p className="text-gray-400 text-sm italic">Nenhum trade vinculado a esta entrada.</p>
             )}
-          </div>
+          </GlassCard>
 
           {/* Images Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {timeframes.map(tf => {
               const tfImages = images[tf.key] || [];
               return (
-                <div key={tf.key} className="aspect-video bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700 relative group">
+                <GlassCard key={tf.key} className="aspect-video relative group p-0 overflow-hidden bg-zorin-bg/50 border-gray-700">
                   <div className="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] font-medium text-cyan-400 z-10">
                     {tf.label} {tfImages.length > 1 && `(${tfImages.length})`}
                   </div>
@@ -208,7 +209,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
                       <span className="text-gray-700 text-2xl font-bold opacity-20 select-none">{tf.label}</span>
                     </div>
                   )}
-                </div>
+                </GlassCard>
               );
             })}
           </div>
@@ -219,17 +220,17 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
               <h3 className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <span>🧠</span> Estado Emocional
               </h3>
-              <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 text-gray-200">
+              <GlassCard className="p-3 bg-zorin-bg/50 border-white/10 text-gray-200">
                 {entry.emotion || <span className="text-gray-500 italic">Não informado</span>}
-              </div>
+              </GlassCard>
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-medium text-gray-400 flex items-center gap-2">
                 <span>🔍</span> Análise
               </h3>
-              <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-800 text-gray-200 whitespace-pre-wrap min-h-[120px]">
+              <GlassCard className="p-4 bg-zorin-bg/50 border-white/10 text-gray-200 whitespace-pre-wrap min-h-[120px]">
                 {entry.analysis || <span className="text-gray-500 italic">Sem análise registrada</span>}
-              </div>
+              </GlassCard>
             </div>
           </div>
 
@@ -240,22 +241,22 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
             </h3>
             <div className="grid gap-4">
               <div className="space-y-2">
-                 <h4 className="text-xs font-bold text-green-400 uppercase tracking-wider">Acertos Técnicos</h4>
-                 <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 text-gray-200 text-sm whitespace-pre-wrap">
+                 <h4 className="text-xs font-bold text-zorin-accent uppercase tracking-wider">Acertos Técnicos</h4>
+                 <GlassCard className="p-3 bg-zorin-bg/50 border-white/10 text-gray-200 text-sm whitespace-pre-wrap">
                     {parsedNotes.technicalWins || <span className="text-gray-500 italic">Não preenchido</span>}
-                 </div>
+                 </GlassCard>
               </div>
               <div className="space-y-2">
                  <h4 className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Pontos a Melhorar</h4>
-                 <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 text-gray-200 text-sm whitespace-pre-wrap">
+                 <GlassCard className="p-3 bg-zorin-bg/50 border-white/10 text-gray-200 text-sm whitespace-pre-wrap">
                     {parsedNotes.improvements || <span className="text-gray-500 italic">Não preenchido</span>}
-                 </div>
+                 </GlassCard>
               </div>
               <div className="space-y-2">
                  <h4 className="text-xs font-bold text-red-400 uppercase tracking-wider">Erros/Indisciplina</h4>
-                 <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 text-gray-200 text-sm whitespace-pre-wrap">
+                 <GlassCard className="p-3 bg-zorin-bg/50 border-white/10 text-gray-200 text-sm whitespace-pre-wrap">
                     {parsedNotes.errors || <span className="text-gray-500 italic">Não preenchido</span>}
-                 </div>
+                 </GlassCard>
               </div>
             </div>
           </div>
@@ -263,8 +264,8 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
 
         {/* Right Side: Mentor Review */}
         {showComments && (
-          <div className="space-y-6 animate-in slide-in-from-right-4 duration-500 fade-in border-l border-gray-800 pl-6 h-full">
-             <div id="mentor-review-section" className="bg-gray-900/30 p-6 rounded-lg border border-gray-800 h-full flex flex-col">
+          <div id="mentor-review-section" className="space-y-6 animate-in slide-in-from-right-4 duration-500 fade-in border-l border-gray-800 pl-6 h-full">
+             <GlassCard className="p-6 bg-zorin-bg/30 border-white/5 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                  <h3 className="text-lg font-bold text-purple-400 flex items-center gap-2">
                     <span>💬</span> Comentários do Mentor
@@ -346,8 +347,8 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
                         Este é o espaço onde o seu mentor revisa sua performance.
                     </p>
                 </div>
-              </div>
-            </div>
+                </div>
+              </GlassCard>
           </div>
         )}
       </div>

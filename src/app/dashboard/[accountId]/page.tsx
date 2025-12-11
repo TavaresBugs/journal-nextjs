@@ -24,7 +24,7 @@ import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { ChecklistFab } from '@/components/checklist';
 import { MentalButton } from '@/components/mental';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, GlassCard } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { NotificationBell } from '@/components/notifications';
 import { ImportModal } from '@/components/import/ImportModal';
@@ -663,14 +663,14 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                 {/* Unified Metrics Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {/* Row 1 - Basic Metrics */}
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Profit Factor</div>
                                         <div className="text-2xl font-bold text-gray-100">{metrics.profitFactor.toFixed(2)}</div>
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
                                         </div>
-                                    </div>
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    </GlassCard>
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Média de Lucro</div>
                                         <div className="text-2xl font-bold text-green-400">
                                             {formatCurrency(metrics.avgWin, currentAccount.currency)}
@@ -678,8 +678,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                                         </div>
-                                    </div>
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    </GlassCard>
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Média de Perda</div>
                                         <div className="text-2xl font-bold text-red-400">
                                             {formatCurrency(metrics.avgLoss, currentAccount.currency)}
@@ -687,8 +687,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
                                         </div>
-                                    </div>
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    </GlassCard>
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Max Drawdown</div>
                                         <div className="text-2xl font-bold text-yellow-400">
                                             {formatCurrency(metrics.maxDrawdown, currentAccount.currency)}
@@ -696,11 +696,11 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 16 14"/></svg>
                                         </div>
-                                    </div>
+                                    </GlassCard>
 
                                     {/* Row 2 - Advanced Metrics */}
                                     {/* Row 2 - Advanced Metrics */}
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Índice Sharpe</div>
                                         <div className={`text-2xl font-bold ${
                                             advancedMetrics.sharpe >= 2 ? 'text-green-400' : 
@@ -712,9 +712,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                                         </div>
-                                    </div>
+                                    </GlassCard>
 
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Índice Calmar</div>
                                         <div className={`text-2xl font-bold ${
                                             advancedMetrics.calmar >= 3 ? 'text-green-400' : 
@@ -726,9 +726,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                                         </div>
-                                    </div>
+                                    </GlassCard>
 
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Tempo Médio (G/P)</div>
                                         <div className={`text-xl font-bold ${
                                             advancedMetrics.holdTime.avgWinnerTime > advancedMetrics.holdTime.avgLoserTime ? 'text-green-400' : 'text-red-400'
@@ -738,9 +738,9 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                                         </div>
-                                    </div>
+                                    </GlassCard>
 
-                                    <div className="bg-gray-800/30 rounded-lg p-4 border border-gray-700 relative overflow-hidden">
+                                    <GlassCard className="p-4 relative overflow-hidden">
                                         <div className="text-xs text-gray-400 uppercase tracking-wider mb-2">Sequência Atual</div>
                                         <div className={`text-2xl font-bold ${
                                             advancedMetrics.streaks.currentStreak.type === 'win' ? 'text-green-400' : 
@@ -752,7 +752,7 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                         <div className="absolute top-4 right-4 text-gray-600">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                                         </div>
-                                    </div>
+                                    </GlassCard>
                                 </div>
                                 
                                 {/* Additional Info Row */}

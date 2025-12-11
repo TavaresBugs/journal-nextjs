@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -21,7 +21,7 @@ export function Button({
     ...props 
 }: ButtonProps) {
     
-    const baseStyles = "inline-flex items-center justify-center rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed";
+    const baseStyles = "inline-flex items-center justify-center rounded-lg transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
     
     const variants = {
         // Standard "Neutral Dark" style with Cyan hover effect (requested by user)
@@ -58,13 +58,18 @@ export function Button({
         purple: "bg-purple-500/10 text-purple-500 border border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] font-black",
         
         // Zorin Glass - Neon Green Primary Action
-        'zorin-primary': "bg-[#00c853] hover:bg-[#00e05a] text-black font-semibold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
+        'zorin-primary': "bg-[#00c853] hover:bg-[#00e05a] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
         
         // Zorin Glass - Outline variant
         'zorin-outline': "bg-transparent border border-[#00c853] text-[#00c853] hover:bg-[#00c853]/10 font-medium",
         
         // Zorin Glass - Ghost variant
         'zorin-ghost': "bg-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5 focus:ring-gray-600 font-medium",
+
+        // Zorin Glass - Filled/Neon variants (Restoring visual weight)
+        'zorin-success': "bg-[#00c853]/10 text-[#00c853] border border-[#00c853] hover:shadow-[0_0_20px_rgba(0,200,83,0.4)] font-bold",
+        'zorin-danger': "bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] font-bold",
+        'zorin-warning': "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] font-bold",
     };
 
     const sizes = {
@@ -79,7 +84,7 @@ export function Button({
     // For now, let's trust the size prop or className overrides.
 
     // Determine if we should apply the progressive fill effect
-    const isProgressive = variant === 'danger' || variant === 'success' || variant === 'warning' || variant === 'info' || variant === 'ghost-success' || variant === 'gold' || variant === 'purple';
+    const isProgressive = variant === 'danger' || variant === 'success' || variant === 'warning' || variant === 'info' || variant === 'ghost-success' || variant === 'gold' || variant === 'purple' || variant === 'zorin-success' || variant === 'zorin-danger' || variant === 'zorin-warning';
 
     return (
         <button 
@@ -101,6 +106,9 @@ export function Button({
                     variant === 'info' ? 'bg-blue-500' :
                     variant === 'gold' ? 'bg-yellow-500' :
                     variant === 'purple' ? 'bg-purple-500' :
+                    variant === 'zorin-success' ? 'bg-[#00c853]' :
+                    variant === 'zorin-danger' ? 'bg-[#ef4444]' :
+                    variant === 'zorin-warning' ? 'bg-[#f59e0b]' :
                     'bg-orange-500'
                 }`} />
             )}

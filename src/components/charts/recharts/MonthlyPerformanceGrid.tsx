@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
+import { GlassCard } from '@/components/ui';
 import dayjs from 'dayjs';
 
 interface MonthlyPerformanceGridProps {
@@ -36,10 +37,10 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
     if (trades.length === 0) return null;
 
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8 overflow-x-auto">
+        <GlassCard className="p-8 overflow-x-auto">
             <h3 className="text-base font-medium text-gray-400 mb-8">Histórico Mensal</h3>
             <table className="w-full text-sm text-left text-gray-400">
-                <thead className="text-xs text-gray-500 uppercase bg-gray-800/50">
+                <thead className="text-xs text-gray-500 uppercase bg-zorin-bg-secondary">
                     <tr>
                         <th className="px-4 py-3 rounded-tl-lg">Ano</th>
                         {monthlyData.months.map(month => (
@@ -52,7 +53,7 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
                     {monthlyData.sortedYears.map(year => {
                         const yearTotal = Object.values(monthlyData.data[year] || {}).reduce((a, b) => a + b, 0);
                         return (
-                            <tr key={year} className="border-b border-gray-800 hover:bg-gray-800/30">
+                            <tr key={year} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                                 <td className="px-4 py-4 font-medium text-gray-300">{year}</td>
                                 {monthlyData.months.map((month, monthIndex) => {
                                     const value = monthlyData.data[year]?.[monthIndex] || 0;
@@ -63,7 +64,7 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
                                             {hasValue ? (
                                                 <span className={`px-2 py-1 rounded text-xs font-medium ${
                                                     value >= 0 
-                                                        ? 'bg-green-500/10 text-green-400' 
+                                                        ? 'bg-zorin-accent/10 text-zorin-accent' 
                                                         : 'bg-red-500/10 text-red-400'
                                                 }`}>
                                                     {formatCurrency(value, currency)}
@@ -74,7 +75,7 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
                                         </td>
                                     );
                                 })}
-                                <td className={`px-4 py-4 text-right font-bold ${yearTotal >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                <td className={`px-4 py-4 text-right font-bold ${yearTotal >= 0 ? 'text-zorin-accent' : 'text-red-400'}`}>
                                     {formatCurrency(yearTotal, currency)}
                                 </td>
                             </tr>
@@ -82,6 +83,6 @@ export function MonthlyPerformanceGrid({ trades, currency }: MonthlyPerformanceG
                     })}
                 </tbody>
             </table>
-        </div>
+        </GlassCard>
     );
 }

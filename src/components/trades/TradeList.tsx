@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Button } from '@/components/ui';
+import { Button, GlassCard, Input } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -141,16 +141,16 @@ export function TradeList({
         <div className="space-y-4">
             {/* Filtro de Ativos com Datalist */}
             <div className="flex items-center gap-3">
-                <label className="text-sm text-gray-400">Filtrar Ativo:</label>
-                <input
+                <Input
                     list="assets-filter-list"
+                    label="Filtrar Ativo"
                     value={filterAsset}
                     onChange={(e) => {
                         setFilterAsset(e.target.value);
                         handlePageChange(1); // Reset pagination on filter change
                     }}
                     placeholder="TODOS OS ATIVOS"
-                    className="px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all uppercase"
+                    className="uppercase"
                 />
                 <datalist id="assets-filter-list">
                     <option value="TODOS OS ATIVOS" />
@@ -161,7 +161,7 @@ export function TradeList({
             </div>
 
             {/* Tabela */}
-            <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden backdrop-blur-sm">
+            <GlassCard className="p-0 overflow-hidden bg-zorin-bg/30 border-white/5">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -185,7 +185,7 @@ export function TradeList({
                                 <th className="px-3 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">STATUS</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="divide-y divide-white/5">
                             {currentTrades.map((trade) => {
                                 const isProfit = (trade.pnl || 0) > 0;
                                 const isLoss = (trade.pnl || 0) < 0;
@@ -205,7 +205,7 @@ export function TradeList({
                                         {/* DIÁRIO */}
                                         <td className="px-3 py-3 text-center">
                                             <Button 
-                                                variant="success"
+                                                variant="zorin-success"
                                                 size="icon"
                                                 onClick={() => onViewDay?.(trade.entryDate)}
                                                 className="w-8 h-8 mx-auto"
@@ -228,7 +228,7 @@ export function TradeList({
                                         <td className="px-3 py-3">
                                             <div className="flex items-center justify-center gap-2">
                                                 <Button 
-                                                    variant="gold"
+                                                    variant="zorin-warning"
                                                     size="icon"
                                                     onClick={() => onEditTrade?.(trade)}
                                                     className="w-8 h-8"
@@ -237,7 +237,7 @@ export function TradeList({
                                                     ✏️
                                                 </Button>
                                                 <Button 
-                                                    variant="danger"
+                                                    variant="zorin-danger"
                                                     size="icon"
                                                     onClick={() => onDeleteTrade?.(trade.id)}
                                                     className="w-8 h-8"
@@ -275,7 +275,7 @@ export function TradeList({
 
                                         {/* ATIVO */}
                                         <td className="px-3 py-3 text-center">
-                                            <span className="font-bold text-gray-200 bg-gray-700/50 px-2 py-1 rounded">
+                                            <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
                                                 {trade.symbol}
                                             </span>
                                         </td>
@@ -284,7 +284,7 @@ export function TradeList({
                                         <td className="px-3 py-3 text-center">
                                             <div className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded ${
                                                 trade.type === 'Long' 
-                                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                                                    ? 'bg-zorin-accent/20 text-zorin-accent border border-zorin-accent/30' 
                                                     : 'bg-red-500/20 text-red-400 border border-red-500/30'
                                             }`}>
                                                 <span>{trade.type}</span>
@@ -304,7 +304,7 @@ export function TradeList({
 
                                         {/* P/L */}
                                         <td className="px-3 py-3 text-center font-mono font-medium">
-                                            <span className={isProfit ? 'text-green-400' : isLoss ? 'text-red-400' : 'text-gray-400'}>
+                                            <span className={isProfit ? 'text-zorin-accent' : isLoss ? 'text-red-400' : 'text-gray-400'}>
                                                 {formatCurrency(trade.pnl || 0, currency)}
                                             </span>
                                         </td>
@@ -360,7 +360,7 @@ export function TradeList({
 
                 {/* Paginação */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between px-4 py-3 border-t border-gray-700/50 bg-gray-800/50">
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-white/5 bg-zorin-surface/30">
                         <div className="text-sm text-gray-400">
                             {isServerSide ? (
                                 // For server side, calculation is slightly different as we don't have all items
@@ -370,42 +370,44 @@ export function TradeList({
                             )}
                         </div>
                         <div className="flex gap-2">
-                            <button
+                            <Button
+                                variant="zorin-ghost"
+                                size="sm"
                                 onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                                 disabled={currentPage === 1}
-                                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
+                                className="px-3 py-1 font-semibold"
                             >
                                 Anterior
-                            </button>
+                            </Button>
                             <div className="flex items-center gap-1">
                                 {getPageNumbers().map((page, index) => (
-                                    <button
+                                    <Button
                                         key={index}
+                                        variant={currentPage === page ? "zorin-primary" : "zorin-ghost"}
+                                        size="sm"
                                         onClick={() => typeof page === 'number' && handlePageChange(page)}
                                         disabled={typeof page !== 'number'}
-                                        className={`w-8 h-8 flex items-center justify-center text-sm rounded transition-colors ${
-                                            currentPage === page
-                                                ? 'bg-cyan-600 text-white font-medium'
-                                                : typeof page === 'number' 
-                                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                                                    : 'text-gray-500 cursor-default'
+                                        className={`w-8 h-8 p-0 flex items-center justify-center font-bold ${
+                                            typeof page !== 'number' ? 'cursor-default opacity-50' : ''
                                         }`}
                                     >
                                         {page}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
-                            <button
+                            <Button
+                                variant="zorin-ghost"
+                                size="sm"
                                 onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed rounded transition-colors"
+                                className="px-3 py-1 font-semibold"
                             >
                                 Próxima
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )}
-            </div>
+            </GlassCard>
 
             {/* Modals */}
             {selectedTradeForJournal && (

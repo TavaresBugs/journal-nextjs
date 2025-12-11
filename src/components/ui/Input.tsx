@@ -28,14 +28,14 @@ export function Input({
             <input
                 id={id}
                 className={cn(
-                    // Glass base - dark transparent background
-                    "w-full px-3 py-2 bg-black/20 backdrop-blur-sm border rounded-lg",
+                    // Glass base - Specific user requested color
+                    "w-full px-3 py-2 bg-[#232b32] border rounded-lg",
                     // Text
-                    "text-gray-200 text-sm placeholder-gray-500",
-                    // Focus - Green accent ring
-                    "focus:outline-none focus:ring-1 focus:ring-[#00c853] focus:border-transparent transition-all duration-200",
+                    "text-gray-100 text-sm placeholder-gray-500",
+                    // Focus - Cyan focus to match DatePicker
+                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200",
                     // Error state
-                    error ? 'border-red-500' : 'border-white/10',
+                    error ? 'border-red-500' : 'border-gray-700',
                     // Number input fixes
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
                     "[color-scheme:dark]",
@@ -73,14 +73,14 @@ export function Textarea({ label, error, className = '', ...props }: TextareaPro
             <textarea
                 id={textareaId}
                 className={cn(
-                    // Glass base - dark transparent background
-                    "w-full px-4 py-2.5 bg-black/20 backdrop-blur-sm border rounded-lg",
+                    // Glass base - Specific user requested color
+                    "w-full px-4 py-2.5 bg-[#232b32] border rounded-lg",
                     // Text
-                    "text-gray-200 placeholder-gray-500",
-                    // Focus - Green accent ring
-                    "focus:outline-none focus:ring-1 focus:ring-[#00c853] focus:border-transparent transition-all duration-200 resize-vertical",
+                    "text-gray-100 placeholder-gray-500",
+                    // Focus - Cyan focus to match DatePicker
+                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 resize-vertical",
                     // Error state
-                    error ? "border-red-500" : "border-white/10",
+                    error ? "border-red-500" : "border-gray-700",
                     className
                 )}
                 {...props}

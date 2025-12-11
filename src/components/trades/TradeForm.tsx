@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
-import { Input, Button } from '@/components/ui';
+import { Input, Button, GlassCard } from '@/components/ui';
 import { DatePickerInput, TimePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
@@ -335,8 +335,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         onClick={() => setExitPrice('')}
                         className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
                             isTradeOpen
-                                ? 'bg-yellow-500/20 text-yellow-300 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20'
-                                : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:bg-gray-800'
+                                ? 'bg-amber-500/20 text-amber-300 border-2 border-amber-500/50 shadow-lg shadow-amber-500/20'
+                                : 'bg-[#232b32] text-gray-400 border border-gray-700 hover:bg-[#2a343c]'
                         }`}
                     >
                         🟡 Em Aberto
@@ -346,8 +346,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         onClick={() => setExitPrice(entryPrice || '0')}
                         className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
                             !isTradeOpen
-                                ? 'bg-green-500/20 text-green-300 border-2 border-green-500/50 shadow-lg shadow-green-500/20'
-                                : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:bg-gray-800'
+                                ? 'bg-zorin-accent/20 text-zorin-accent border-2 border-zorin-accent/50 shadow-lg shadow-zorin-accent/20'
+                                : 'bg-[#232b32] text-gray-400 border border-gray-700 hover:bg-[#2a343c]'
                         }`}
                     >
                         🟢 Finalizado
@@ -356,20 +356,19 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             )}
 
             {/* ===== BLOCO 1: CONDIÇÕES DE MERCADO ===== */}
-            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+            <GlassCard className="p-4">
                 <SectionHeader icon="📊" title="Condições de Mercado" />
                 
                 <div className="space-y-3">
                     {/* Market Condition + Strategy */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Condição</label>
-                            <input
+                            <Input
+                                label="Condição"
                                 list="market-conditions-list"
                                 value={marketConditionV2}
                                 onChange={(e) => setMarketConditionV2(e.target.value)}
                                 placeholder="Tendência, Lateral..."
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                             />
                             <datalist id="market-conditions-list">
                                 {MARKET_CONDITIONS_V2.map((cond) => (
@@ -378,19 +377,17 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             </datalist>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Estratégia</label>
                             <div className="relative">
-                                <input
+                                <Input
+                                    label="Estratégia"
                                     list="strategies-list"
                                     value={strategy}
                                     onChange={(e) => setStrategy(e.target.value)}
                                     placeholder="MMBM, AMD..."
-                                    className={`w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 ${
-                                        playbooks.find(p => p.name === strategy) ? 'pl-8' : ''
-                                    }`}
+                                    className={`${playbooks.find(p => p.name === strategy) ? 'pl-8' : ''}`}
                                 />
                                 {playbooks.find(p => p.name === strategy) && (
-                                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm" style={{ color: playbooks.find(p => p.name === strategy)?.color }}>
+                                    <div className="absolute left-2.5 top-[38px] -translate-y-1/2 text-sm" style={{ color: playbooks.find(p => p.name === strategy)?.color }}>
                                         {playbooks.find(p => p.name === strategy)?.icon}
                                     </div>
                                 )}
@@ -406,40 +403,36 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     {/* Timeframes + Setup */}
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">TF Análise</label>
-                            <input
+                            <Input
+                                label="TF Análise"
                                 list="htf-list"
                                 value={tfAnalise}
                                 onChange={(e) => setTfAnalise(e.target.value)}
                                 placeholder="H4"
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="htf-list">
                                 <option value="Monthly" /><option value="Weekly" /><option value="Daily" /><option value="H4" /><option value="H1" /><option value="M15" />
                             </datalist>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">TF Entrada</label>
-                            <input
+                            <Input
+                                label="TF Entrada"
                                 list="ltf-list"
                                 value={tfEntrada}
                                 onChange={(e) => setTfEntrada(e.target.value)}
                                 placeholder="M15"
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="ltf-list">
                                 <option value="H1" /><option value="M15" /><option value="M5" /><option value="M3" /><option value="M1" />
                             </datalist>
-
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Setup</label>
-                            <input
+                            <Input
+                                label="Setup"
                                 list="setups-list"
                                 value={setup}
                                 onChange={(e) => setSetup(e.target.value)}
                                 placeholder="ST+RE"
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="setups-list">
                                 {setups.map((s) => (<option key={s} value={s} />))}
@@ -461,8 +454,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="block text-xs font-medium text-gray-400 mb-1.5">Confluências</label>
-                            <div 
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 flex flex-wrap gap-1.5 items-center min-h-[38px]"
+                            <div
+                                className="w-full px-3 py-2 bg-[#232b32] border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-transparent flex flex-wrap gap-1.5 items-center min-h-[38px] transition-all duration-200"
                                 onClick={() => document.getElementById('tags-input')?.focus()}
                             >
                                 {tagsList.map((tag, index) => (
@@ -493,13 +486,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             </div>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Avaliação</label>
-                            <input
+                            <Input
+                                label="Avaliação"
                                 list="entry-quality-list"
                                 value={entryQuality}
                                 onChange={(e) => setEntryQuality(e.target.value)}
                                 placeholder="🌟 Picture Perfect..."
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                             />
                             <datalist id="entry-quality-list">
                                 {ENTRY_QUALITY_OPTIONS.map((opt) => (
@@ -509,24 +501,24 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     </div>
                 </div>
-            </div>
+            </GlassCard>
 
             {/* ===== BLOCO 2: FINANCEIRO ===== */}
-            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+            <GlassCard className="p-4">
                 <SectionHeader icon="💰" title="Dados Financeiros" />
                 
                 <div className="space-y-3">
                     {/* Ativo, Lote, Direção */}
                     <div className="grid grid-cols-3 gap-3">
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Ativo</label>
-                            <input
+                            <Input
+                                label="Ativo"
                                 list="assets-list"
                                 value={symbol}
                                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
                                 placeholder="EURUSD"
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm uppercase placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                                 required
+                                className="uppercase"
                             />
                             <datalist id="assets-list">
                                 {assets.map((asset) => (<option key={asset.symbol} value={asset.symbol} />))}
@@ -534,13 +526,12 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                         <Input label="Lote" type="number" step="0.01" value={lot} onChange={(e) => setLot(e.target.value)} placeholder="1.0" required />
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-1.5">Direção</label>
-                            <input
+                            <Input
+                                label="Direção"
                                 list="direction-list"
                                 value={type}
                                 onChange={(e) => setType(e.target.value as 'Long' | 'Short')}
                                 placeholder="Long/Short"
-                                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-100 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
                             />
                             <datalist id="direction-list">
                                 <option value="Long" /><option value="Short" />
@@ -609,10 +600,10 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     )}
                 </div>
-            </div>
+            </GlassCard>
 
             {/* ===== BLOCO 3: DATA E HORA ===== */}
-            <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700/50">
+            <GlassCard className="p-4">
                 <SectionHeader icon="📅" title="Data e Hora" />
                 
                 <div className="space-y-3">
@@ -641,32 +632,24 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     )}
                 </div>
-            </div>
+            </GlassCard>
 
             {/* Submit Button */}
             <div className="flex gap-3">
                 {mode === 'edit' && onCancel && (
-                    <Button type="button" onClick={onCancel} variant="gradient-danger" className="flex-1">
+                    <Button type="button" onClick={onCancel} variant="zorin-ghost" className="flex-1">
                         Cancelar
                     </Button>
                 )}
-                <button
+                <Button
                     type="submit"
+                    variant="zorin-primary"
+                    isLoading={isSaving}
                     disabled={isSaving}
-                    className={`flex-1 py-3 px-4 bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-semibold rounded-lg transition-all shadow-lg shadow-green-500/30 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className="flex-1"
                 >
-                    {isSaving ? (
-                        <span className="flex items-center justify-center gap-2">
-                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Salvando...
-                        </span>
-                    ) : (
-                        mode === 'edit' ? 'Salvar' : 'Registrar Trade'
-                    )}
-                </button>
+                    {mode === 'edit' ? 'Salvar' : 'Registrar Trade'}
+                </Button>
             </div>
         </form>
     );

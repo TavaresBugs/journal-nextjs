@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { CircularProgress } from '@/components/ui/CircularProgress';
+import { GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import type { Trade } from '@/types';
 
@@ -500,22 +501,22 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
     return (
         <div className="space-y-6">
             {/* View Mode Tabs */}
-            <div className="grid grid-cols-3 gap-2 p-1 bg-gray-800/50 rounded-xl">
+            <GlassCard className="grid grid-cols-3 gap-2 p-1 bg-zorin-bg/30 border-white/5">
                 {VIEW_FILTERS.map(filter => (
                     <button
                         key={filter.id}
                         onClick={() => setViewMode(filter.id)}
                         className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                             viewMode === filter.id
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
+                                ? 'bg-zorin-accent/10 text-zorin-accent border border-zorin-accent/30 shadow-[0_0_10px_rgba(0,200,83,0.1)]'
+                                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
                         }`}
                     >
                         <span>{filter.icon}</span>
                         <span>{filter.label}</span>
                     </button>
                 ))}
-            </div>
+            </GlassCard>
 
             {/* ===== HTF CARDS VIEW with Hierarchical Drill-Down ===== */}
             {viewMode === 'htf' && (
@@ -593,10 +594,10 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {hierarchicalMetrics.map((htf) => (
-                                    <div
+                                    <GlassCard
                                         key={htf.htf}
                                         onClick={() => setDrillPath({ htf })}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 hover:border-indigo-500/50 transition-all cursor-pointer group"
+                                        className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm font-bold border border-indigo-500/30 whitespace-nowrap">
@@ -632,8 +633,8 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Ver {htf.sessionBreakdown.length} sessões <span className="text-lg">→</span>
                                             </span>
                                         </div>
-                                    </div>
-                                ))}
+                                        </GlassCard>
+                                    ))}
                             </div>
                         </>
                     )}
@@ -646,10 +647,10 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {drillPath.htf!.sessionBreakdown.map((sess) => (
-                                    <div
+                                    <GlassCard
                                         key={sess.session}
                                         onClick={() => setDrillPath({ ...drillPath, session: sess })}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 hover:border-emerald-500/50 transition-all cursor-pointer group"
+                                        className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-lg text-sm font-bold border border-emerald-500/30 whitespace-nowrap">
@@ -685,8 +686,8 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Ver {sess.conditionBreakdown.length} condições <span className="text-lg">→</span>
                                             </span>
                                         </div>
-                                    </div>
-                                ))}
+                                        </GlassCard>
+                                    ))}
                             </div>
                         </>
                     )}
@@ -699,10 +700,10 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {drillPath.session!.conditionBreakdown.map((cond) => (
-                                    <div
+                                    <GlassCard
                                         key={cond.condition}
                                         onClick={() => setDrillPath({ ...drillPath, condition: cond })}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 hover:border-amber-500/50 transition-all cursor-pointer group"
+                                        className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-amber-500/20 text-amber-300 rounded-lg text-sm font-bold border border-amber-500/30 whitespace-nowrap">
@@ -739,8 +740,8 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Ver {cond.tagBreakdown.length} confluências <span className="text-lg">→</span>
                                             </span>
                                         </div>
-                                    </div>
-                                ))}
+                                        </GlassCard>
+                                    ))}
                             </div>
                         </>
                     )}
@@ -753,10 +754,10 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {drillPath.condition!.tagBreakdown.map((tag) => (
-                                    <div
+                                    <GlassCard
                                         key={tag.tagCombo}
                                         onClick={() => setDrillPath({ ...drillPath, tag })}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 hover:border-purple-500/50 transition-all cursor-pointer group"
+                                        className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-bold border border-purple-500/30 whitespace-nowrap truncate max-w-[200px]" title={tag.tagCombo}>
@@ -792,8 +793,8 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Ver {tag.ltfBreakdown.length} TF entrada <span className="text-lg">→</span>
                                             </span>
                                         </div>
-                                    </div>
-                                ))}
+                                        </GlassCard>
+                                    ))}
                             </div>
                         </>
                     )}
@@ -806,10 +807,10 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {drillPath.tag!.ltfBreakdown.map((ltf) => (
-                                    <div
+                                    <GlassCard
                                         key={ltf.ltf}
                                         onClick={() => setDrillPath({ ...drillPath, ltf })}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 hover:border-cyan-500/50 transition-all cursor-pointer group"
+                                        className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-cyan-500/20 text-cyan-300 rounded-lg text-sm font-bold border border-cyan-500/30 whitespace-nowrap">
@@ -845,7 +846,7 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Ver {ltf.qualityBreakdown.length} qualidades <span className="text-lg">→</span>
                                             </span>
                                         </div>
-                                    </div>
+                                    </GlassCard>
                                 ))}
                             </div>
                         </>
@@ -859,9 +860,9 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                             </h4>
                             <div className="grid grid-cols-1 gap-3">
                                 {drillPath.ltf!.qualityBreakdown.map((q) => (
-                                    <div
+                                    <GlassCard
                                         key={q.quality}
-                                        className="bg-gray-800/50 rounded-xl py-3 px-4 border border-gray-700 cursor-default"
+                                        className="bg-zorin-bg/30 border-white/5 cursor-default"
                                     >
                                         <div className="flex items-center gap-6">
                                             <span className="px-4 py-2 bg-gray-700/50 text-gray-300 rounded-lg text-sm font-bold border border-gray-600 whitespace-nowrap">
@@ -898,7 +899,7 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                                                 Fim da análise
                                             </span>
                                         </div>
-                                    </div>
+                                    </GlassCard>
                                 ))}
                             </div>
                         </>

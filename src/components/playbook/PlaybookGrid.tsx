@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Trade, Playbook } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
-import { CircularProgress, Button } from '@/components/ui';
+import { CircularProgress, Button, GlassCard } from '@/components/ui';
 
 interface PlaybookGridProps {
     trades: Trade[];
@@ -142,12 +142,12 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                 const color = strategy.playbook?.color || '#9ca3af';
 
                 return (
-                    <div 
+                    <GlassCard 
                         key={strategy.name}
-                        className="bg-gray-800/50 rounded-2xl border border-gray-700 overflow-hidden transition-all duration-300 hover:border-gray-600"
+                        className="bg-zorin-bg/30 border-white/5 hover:border-white/10 p-0 overflow-hidden transition-all duration-300"
                     >
                         {/* Header */}
-                        <div className="p-5 border-b border-gray-700/50">
+                        <div className="p-5 border-b border-white/5">
                             <div className="flex items-start justify-between mb-2">
                                 <div className="flex items-center gap-3 flex-1">
                                     <div 
@@ -175,25 +175,25 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                                 {strategy.playbook && (
                                     <div className="flex gap-1">
                                         <Button 
-                                            variant="gold"
+                                            variant="zorin-ghost"
                                             size="icon"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onEdit?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8"
+                                            className="w-8 h-8 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
                                             title="Editar"
                                         >
                                             ✏️
                                         </Button>
                                         <Button 
-                                            variant="info"
+                                            variant="zorin-ghost"
                                             size="icon"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onShare?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8"
+                                            className="w-8 h-8 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10"
                                             title="Compartilhar"
                                         >
                                             🌐
@@ -279,7 +279,7 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </GlassCard>
                 );
             })}
         </div>

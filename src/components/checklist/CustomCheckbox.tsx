@@ -27,17 +27,17 @@ export function CustomCheckbox({ checked, onChange, label, id }: CustomCheckboxP
                 className="sr-only peer"
             />
             
-            {/* Custom checkbox visual - Midnight Green Theme */}
+            {/* Custom checkbox visual - Zorin Deep Glass Theme */}
             <div 
                 className={`
                     relative w-6 h-6 rounded-md flex items-center justify-center
                     transition-all duration-200 ease-out
                     border-2
                     ${checked 
-                        ? 'bg-green-500 border-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' 
-                        : 'bg-transparent border-gray-500 group-hover:border-green-500'
+                        ? 'bg-zorin-accent border-zorin-accent shadow-[0_0_10px_rgba(0,200,83,0.4)]' 
+                        : 'bg-zorin-bg/20 border-white/10 group-hover:border-zorin-ice'
                     }
-                    peer-focus-visible:ring-2 peer-focus-visible:ring-green-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#0f0f14]
+                    peer-focus-visible:ring-2 peer-focus-visible:ring-zorin-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-zorin-bg
                 `}
             >
                 {/* Check icon with animation */}

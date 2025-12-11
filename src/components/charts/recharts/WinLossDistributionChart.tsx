@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 
 interface WinLossDistributionChartProps {
@@ -32,7 +33,7 @@ export function WinLossDistributionChart({ trades }: WinLossDistributionChartPro
     if (trades.length === 0) return null;
 
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+        <GlassCard className="p-8">
             <h3 className="text-base font-medium text-gray-400 mb-8">Distribuição Win/Loss</h3>
             <ResponsiveContainer width="100%" height={350}>
                 <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -58,10 +59,10 @@ export function WinLossDistributionChart({ trades }: WinLossDistributionChartPro
                         itemStyle={{ color: '#f3f4f6' }}
                         formatter={(value: number, name: string) => [value, name === 'wins' ? 'Wins' : 'Losses']}
                     />
-                    <Bar dataKey="wins" name="Wins" stackId="a" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="wins" name="Wins" stackId="a" fill="#00c853" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="losses" name="Losses" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
             </ResponsiveContainer>
-        </div>
+        </GlassCard>
     );
 }

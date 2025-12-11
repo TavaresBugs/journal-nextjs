@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useRef } from 'react';
 import { LightweightChartWrapper } from '../LightweightChartWrapper';
+import { GlassCard } from '@/components/ui';
 import type { Trade } from '@/types';
 import dayjs from 'dayjs';
 import { AreaSeries, LineSeries, LineStyle, IChartApi, ISeriesApi } from 'lightweight-charts';
@@ -119,8 +120,8 @@ export function EquityCurveLightweight({
         if (!areaSeriesRef.current || !baselineSeriesRef.current) return;
 
         // Update colors based on profit status
-        const color = isProfit ? '#22c55e' : '#ef4444'; // Green or Red
-        const topColor = isProfit ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+        const color = isProfit ? '#00c853' : '#ef4444'; // Zorin Green or Red
+        const topColor = isProfit ? 'rgba(0, 200, 83, 0.4)' : 'rgba(239, 68, 68, 0.4)';
         
         areaSeriesRef.current.applyOptions({
             lineColor: color,
@@ -149,14 +150,14 @@ export function EquityCurveLightweight({
     
     if (trades.length === 0) {
         return (
-            <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-cyan-400 mb-6">
+            <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-zorin-accent mb-6">
                     Curva de Capital (Equity Curve)
                 </h3>
                 <div className="h-[450px] flex items-center justify-center text-gray-500">
                     Nenhum trade registrado ainda
                 </div>
-            </div>
+            </GlassCard>
         );
     }
     
@@ -165,7 +166,7 @@ export function EquityCurveLightweight({
     const pnlPercent = initialBalance !== 0 ? ((pnl / initialBalance) * 100).toFixed(2) : '0.00';
     
     return (
-        <div className="bg-gray-900/30 backdrop-blur-sm border border-gray-800/50 rounded-2xl p-8">
+        <GlassCard className="p-8">
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-base font-medium text-gray-400">
                     Curva de Capital
@@ -176,8 +177,8 @@ export function EquityCurveLightweight({
                         <span className="text-gray-300 font-medium">{formatCurrency(initialBalance, currency)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isProfit ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                        <span className={`font-medium ${isProfit ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className={`w-2 h-2 rounded-full ${isProfit ? 'bg-zorin-accent' : 'bg-red-400'}`}></div>
+                        <span className={`font-medium ${isProfit ? 'text-zorin-accent' : 'text-red-400'}`}>
                             {isProfit ? '+' : ''}{pnlPercent}%
                         </span>
                     </div>
@@ -188,6 +189,6 @@ export function EquityCurveLightweight({
                 height={450}
                 onChartReady={onChartReady}
             />
-        </div>
+        </GlassCard>
     );
 }

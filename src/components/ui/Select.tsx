@@ -38,15 +38,15 @@ export function Select({
             <select
                 id={id}
                 className={cn(
-                    // Glass base - transparent dark background
-                    "w-full px-3 py-2 bg-black/20 backdrop-blur-sm",
+                    // Glass base - Specific user requested color
+                    "w-full px-3 py-2 bg-[#232b32] backdrop-blur-sm",
                     // Border
                     "border rounded-lg",
-                    error ? 'border-red-500' : 'border-white/10',
+                    error ? 'border-red-500' : 'border-gray-700',
                     // Text
-                    "text-gray-200 text-sm",
-                    // Focus - Green accent ring
-                    "focus:outline-none focus:ring-1 focus:ring-[#00c853] focus:border-transparent",
+                    "text-gray-100 text-sm",
+                    // Focus - Cyan focus to match DatePicker
+                    "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent",
                     // Transition
                     "transition-all duration-200",
                     // Cursor

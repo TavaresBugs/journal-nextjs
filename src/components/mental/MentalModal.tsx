@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal } from '@/components/ui';
+import { Modal, GlassCard } from '@/components/ui';
+import { Tabs } from '@/components/ui/Tabs';
 import { saveMentalLog, type MentalLog } from '@/services/mentalService';
 import { PerformanceGauge } from './PerformanceGauge';
 import { MentalGrid } from './MentalGrid';
@@ -43,11 +44,7 @@ const WIZARD_STEPS = [
     { id: 6, title: 'Sua Verdade', subtitle: 'Respire fundo e internalize' },
 ];
 
-const TABS = [
-    { id: 'wizard' as TabId, label: 'Resolver Agora', icon: '🎯' },
-    { id: 'diary' as TabId, label: 'Diário & Performance', icon: '📊' },
-    { id: 'profiles' as TabId, label: 'Meus Perfis', icon: '👤' },
-];
+
 
 export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
     const [activeTab, setActiveTab] = useState<TabId>('wizard');
@@ -150,31 +147,23 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
 
     const selectedMood = MOOD_OPTIONS.find(m => m.value === moodTag);
 
+    const TABS = [
+        { id: 'wizard', label: 'Resolver Agora', icon: '🎯' },
+        { id: 'diary', label: 'Diário & Performance', icon: '📊' },
+        { id: 'profiles', label: 'Meus Perfis', icon: '👤' },
+    ];
+
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="" maxWidth="4xl">
             <div className="min-h-[500px]">
                 {/* Tabs Navigation */}
-                <div className="grid grid-cols-3 border-b border-white/10 mb-6">
-                    {TABS.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`px-4 py-3 text-sm font-medium transition-all relative text-center ${
-                                activeTab === tab.id
-                                    ? 'text-green-400'
-                                    : 'text-gray-400 hover:text-gray-200'
-                            }`}
-                        >
-                            <span className="flex items-center justify-center gap-2">
-                                <span>{tab.icon}</span>
-                                <span>{tab.label}</span>
-                            </span>
-                            {activeTab === tab.id && (
-                                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-500" />
-                            )}
-                        </button>
-                    ))}
-                </div>
+                <Tabs 
+                    tabs={TABS} 
+                    activeTab={activeTab} 
+                    onChange={(id) => setActiveTab(id as TabId)} 
+                />
+                
+                <div className="mt-6">
 
                 {/* Tab Content */}
                 <div className="relative">
@@ -185,7 +174,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                             {currentStep > 0 && (
                                 <div className="h-1 bg-gray-800 rounded-full overflow-hidden mb-6">
                                     <div 
-                                        className="h-full bg-green-500 transition-all duration-500 ease-out"
+                                        className="h-full bg-zorin-accent transition-all duration-500 ease-out"
                                         style={{ width: `${(currentStep / 6) * 100}%` }}
                                     />
                                 </div>
@@ -216,23 +205,27 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                                             <button
                                                 key={mood.value}
                                                 onClick={() => handleMoodSelect(mood.value)}
-                                                className={`p-4 rounded-xl border text-left transition-all duration-200 group
-                                                    ${moodTag === mood.value 
-                                                        ? 'bg-green-500/10 border-green-500/40' 
-                                                        : 'bg-black/20 border-white/5 hover:border-green-500/40 hover:bg-black/30'
-                                                    }`}
+                                                className="text-left group"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-2xl">{mood.emoji}</span>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-100 group-hover:text-green-400 transition-colors">
-                                                            {mood.label}
-                                                        </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {mood.description}
+                                                <GlassCard 
+                                                    className={`h-full p-4 transition-all duration-200 ${
+                                                        moodTag === mood.value 
+                                                            ? 'bg-zorin-accent/10 border-zorin-accent/40 ring-1 ring-zorin-accent/20' 
+                                                            : 'hover:bg-zorin-bg/50 hover:border-zorin-accent/20'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-2xl">{mood.emoji}</span>
+                                                        <div>
+                                                            <div className="font-semibold text-gray-100 group-hover:text-zorin-accent transition-colors">
+                                                                {mood.label}
+                                                            </div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {mood.description}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </GlassCard>
                                             </button>
                                         ))}
                                     </div>
@@ -245,7 +238,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                                             value={getCurrentValue()}
                                             onChange={(e) => setCurrentValue(e.target.value)}
                                             placeholder={getPlaceholder(currentStep)}
-                                            className="w-full h-56 p-4 bg-black/20 border border-white/5 rounded-xl text-gray-100 placeholder-gray-500 resize-none focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/30 transition-all"
+                                            className="w-full h-56 p-4 bg-black/20 border border-white/5 rounded-xl text-gray-100 placeholder-gray-500 resize-none focus:outline-none focus:border-zorin-primary/50 focus:ring-1 focus:ring-zorin-primary/30 transition-all backdrop-blur-sm"
                                             autoFocus
                                         />
                                         <p className="text-xs text-gray-500 mt-2 text-center">
@@ -305,7 +298,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                                             disabled={!canProceed()}
                                             className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
                                                 canProceed()
-                                                    ? 'bg-[#00c853] hover:bg-[#00e676] text-white'
+                                                    ? 'bg-zorin-accent hover:bg-zorin-accent/90 text-black'
                                                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                                             }`}
                                         >
@@ -319,7 +312,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                                             className={`px-8 py-2 rounded-lg font-semibold transition-all duration-200 ${
                                                 isSaving
                                                     ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                                    : 'bg-[#00c853] hover:bg-[#00e676] text-white'
+                                                    : 'bg-zorin-accent hover:bg-zorin-accent/90 text-black'
                                             }`}
                                         >
                                             {isSaving ? 'Salvando...' : '✓ Salvar e Fechar'}
@@ -360,6 +353,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                         </div>
                     )}
                 </div>
+            </div>
             </div>
         </Modal>
     );

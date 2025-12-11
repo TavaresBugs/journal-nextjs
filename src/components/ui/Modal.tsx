@@ -61,15 +61,15 @@ export function Modal({ isOpen, onClose, title, headerActions, children, maxWidt
             <div
                 className={cn(
                     maxWidthClasses[maxWidth],
-                    "w-full bg-linear-to-br from-gray-900 to-gray-800",
-                    "border border-gray-700 rounded-2xl shadow-2xl",
+                    "w-full bg-zorin-bg",
+                    "border border-white/10 rounded-2xl shadow-2xl",
                     "max-h-[90vh] flex flex-col transform transition-all duration-200"
                 )}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
                 {title && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700 shrink-0">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
                         {typeof title === 'string' ? (
                             <h2 className="text-xl font-bold text-gray-100">{title}</h2>
                         ) : (

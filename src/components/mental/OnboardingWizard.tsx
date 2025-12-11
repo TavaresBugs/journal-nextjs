@@ -108,7 +108,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                 <GlassCardContent>
                     <p className="text-gray-300 mb-6">
                         Olá! Para começar a mapear seu jogo mental, 
-                        qual é o seu <strong className="text-[#00c853]">maior desafio</strong> hoje?
+                        qual é o seu <strong className="text-zorin-accent">maior desafio</strong> hoje?
                     </p>
 
                     {/* Options Grid */}
@@ -120,14 +120,14 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
                                 className={`
                                     p-4 rounded-xl border text-left transition-all duration-300
                                     ${selectedOption === option.id
-                                        ? 'bg-[#00c853]/20 border-[#00c853] shadow-lg shadow-green-500/20'
-                                        : 'bg-black/20 border-white/10 hover:border-white/20 hover:bg-black/30'
+                                        ? 'bg-zorin-accent/20 border-zorin-accent shadow-lg shadow-zorin-accent/20'
+                                        : 'bg-zorin-bg/30 border-white/10 hover:border-white/20 hover:bg-zorin-bg/50'
                                     }
                                 `}
                             >
                                 <div className="text-3xl mb-2">{option.emoji}</div>
                                 <h3 className={`font-bold mb-1 ${
-                                    selectedOption === option.id ? 'text-[#00c853]' : 'text-white'
+                                    selectedOption === option.id ? 'text-zorin-accent' : 'text-white'
                                 }`}>
                                     {option.title}
                                 </h3>

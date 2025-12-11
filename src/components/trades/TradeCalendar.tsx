@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { groupTradesByDay, formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
+import { GlassCard } from '@/components/ui';
 import dayjs from 'dayjs';
 
 interface TradeCalendarProps {
@@ -47,6 +48,13 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
         calendarDays.push(currentDay);
         currentDay = currentDay.add(1, 'day');
     }
+
+    // Check if the last week (last 7 days) contains only days from the next month
+    const lastWeek = calendarDays.slice(35, 42);
+    const isLastWeekNextMonth = lastWeek.every(day => day.month() !== currentMonth);
+    
+    // If last week is entirely next month, just use 5 weeks (35 days)
+    const displayDays = isLastWeekNextMonth ? calendarDays.slice(0, 35) : calendarDays;
     
     // Group trades by day
     const tradesByDay = groupTradesByDay(trades);
@@ -69,17 +77,17 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                 statusText = 'WIN';
                 statusColor = 'text-green-500';
                 textClass = 'text-green-400';
-                bgClass = 'bg-green-900/10 border-green-500/30 hover:border-green-500/50';
+                bgClass = 'bg-[#1f2e2f] border-green-500/20 hover:border-green-500/50';
             } else if (totalPnL < 0) {
                 statusText = 'LOSS';
                 statusColor = 'text-red-500';
                 textClass = 'text-red-400';
-                bgClass = 'bg-red-900/10 border-red-500/30 hover:border-red-500/50';
+                bgClass = 'bg-[#2a262c] border-red-500/20 hover:border-red-500/50';
             } else {
                 statusText = 'B/E';
                 statusColor = 'text-gray-400';
                 textClass = 'text-gray-400';
-                bgClass = 'bg-gray-800/20 border-gray-800 hover:border-gray-700';
+                bgClass = 'bg-[#212930] border-gray-800 hover:border-gray-700';
             }
         }
         
@@ -148,7 +156,7 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
     };
     
     return (
-        <div className="w-full">
+        <GlassCard className="w-full p-6">
             {/* Month/Year Header */}
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-gray-100 capitalize">
@@ -183,7 +191,7 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                 ))}
                 
                 {/* Calendar days */}
-                {calendarDays.map((date, index) => {
+                {displayDays.map((date, index) => {
                     const isCurrentMonth = date.month() === currentMonth;
                     const isToday = date.isSame(dayjs(), 'day');
                     const stats = getDayStats(date);
@@ -195,9 +203,9 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                     
                     if (!hasTrades && hasJournal) {
                         // Style for days with ONLY journal entries but no trades
-                        bgClass = 'bg-cyan-900/10 border-cyan-500/30 hover:border-cyan-500/50';
+                        bgClass = 'bg-[#212930] border-cyan-500/30 hover:border-cyan-500/50';
                     } else if (!hasTrades && !hasJournal && isCurrentMonth) {
-                        bgClass = 'bg-gray-800/20 border-gray-800 hover:border-gray-700';
+                        bgClass = 'bg-[#212930] border-gray-800 hover:border-gray-700';
                     }
 
                     return (
@@ -207,14 +215,19 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                             className={`
                                 min-h-[120px] min-w-[100px] h-auto p-3 rounded-xl border transition-all relative flex flex-col items-center justify-between touch-manipulation
                                 ${bgClass}
-                                ${isToday ? 'ring-2 ring-cyan-500' : ''}
+                                ${isToday ? 'border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : ''}
                                 ${hasTrades || hasJournal || isCurrentMonth ? 'hover:border-cyan-500 cursor-pointer' : ''}
                                 ${!isCurrentMonth ? 'opacity-30' : ''}
                             `}
                         >
                             {/* Day number */}
-                            <div className={`text-sm font-medium ${isCurrentMonth ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {date.date()}
+                            <div className={`text-sm font-medium w-full flex justify-between items-start mb-2 ${isCurrentMonth ? 'text-gray-400' : 'text-gray-600'}`}>
+                                <span>{date.date()}</span>
+                                {isToday && (
+                                    <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20 uppercase tracking-wider">
+                                        Hoje
+                                    </span>
+                                )}
                             </div>
                             
                             {/* Content */}
@@ -261,6 +274,6 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                     );
                 })}
             </div>
-        </div>
+        </GlassCard>
     );
 }

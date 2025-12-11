@@ -66,13 +66,13 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
                     {/* Gradient for B-Game zone (middle-sides) */}
                     <linearGradient id="bGameGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                         <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#00c853" stopOpacity="0.4" />
                     </linearGradient>
                     
                     {/* Gradient for A-Game zone (center - Peak) */}
                     <radialGradient id="aGameGradient" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0.3" />
+                        <stop offset="0%" stopColor="#00c853" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#00c853" stopOpacity="0.3" />
                     </radialGradient>
 
                     {/* Glow filter for pointer */}
@@ -90,7 +90,7 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
 
                 {/* Zone labels at top */}
                 <text x="70" y="25" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">C-GAME</text>
-                <text x="200" y="25" fill="#22c55e" fontSize="11" fontWeight="bold" textAnchor="middle">A-GAME</text>
+                <text x="200" y="25" fill="#00c853" fontSize="11" fontWeight="bold" textAnchor="middle">A-GAME</text>
                 <text x="330" y="25" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">C-GAME</text>
 
                 {/* C-Game Left Zone (Burnout) */}
@@ -117,7 +117,7 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
                 />
                 <path
                     d="M 170 180 L 170 45 Q 185 35 200 32 Q 215 35 230 45 L 230 180 Z"
-                    fill="#22c55e"
+                    fill="#00c853"
                     opacity="0.4"
                 />
 
@@ -149,7 +149,7 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
 
                 {/* Zone tick marks */}
                 <line x1="140" y1="175" x2="140" y2="185" stroke="#6b7280" strokeWidth="1" />
-                <line x1="200" y1="175" x2="200" y2="185" stroke="#22c55e" strokeWidth="2" />
+                <line x1="200" y1="175" x2="200" y2="185" stroke="#00c853" strokeWidth="2" />
                 <line x1="260" y1="175" x2="260" y2="185" stroke="#6b7280" strokeWidth="1" />
 
                 {/* Pointer (triangle) */}
@@ -157,7 +157,7 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
                     <g filter="url(#glow)">
                         <polygon
                             points={`${pointerX},${pointerY - 8} ${pointerX - 8},${pointerY + 8} ${pointerX + 8},${pointerY + 8}`}
-                            fill={position > 0.3 ? '#22c55e' : position < -0.3 ? '#ef4444' : '#f97316'}
+                            fill={position > 0.3 ? '#00c853' : position < -0.3 ? '#ef4444' : '#f97316'}
                             stroke="white"
                             strokeWidth="1"
                             className="transition-all duration-500"
@@ -168,7 +168,7 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
                             y1={pointerY + 8}
                             x2={pointerX}
                             y2="180"
-                            stroke={position > 0.3 ? '#22c55e' : position < -0.3 ? '#ef4444' : '#f97316'}
+                            stroke={position > 0.3 ? '#00c853' : position < -0.3 ? '#ef4444' : '#f97316'}
                             strokeWidth="2"
                             strokeDasharray="4 2"
                             opacity="0.5"
