@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: "Gerenciador profissional de trades multi-contas",
 };
 
-import { ToastProvider } from "@/contexts/ToastContext";
+import { ToastProvider } from "@/providers/ToastProvider";
 import { ClientProviders } from "@/components/layout/ClientProviders";
 
 export default function RootLayout({

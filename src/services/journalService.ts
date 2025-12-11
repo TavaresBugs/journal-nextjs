@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { handleServiceError } from '@/lib/errorHandler';
-import { base64ToBlob, ensureFreshImageUrl } from '@/lib/utils';
+import { base64ToBlob, ensureFreshImageUrl } from '@/lib/utils/general';
 import { JournalEntry } from '@/types';
 import { DBJournalEntry, DBJournalImage, DBJournalEntryTrade } from '@/types/database';
 import { getCurrentUserId } from './accountService';

@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from '@/types';
-import { base64ToBlob } from '@/lib/utils';
+import { base64ToBlob } from '@/lib/utils/general';
 import { saveAccount, getCurrentUserId } from './accountService';
 import { saveTrade } from './tradeService';
 import { saveJournalEntry } from './journalService';

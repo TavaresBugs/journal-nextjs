@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { getErrorMessage } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/utils/general';
 import { validatePassword, getStrengthColor, getStrengthLabel } from '@/lib/password-validator';
 
 export default function LoginPage() {

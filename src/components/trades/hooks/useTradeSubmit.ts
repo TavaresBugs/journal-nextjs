@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
 import { calculateRMultiple } from '@/lib/timeframeUtils';
 import { handleServiceError } from '@/lib/errorHandler';

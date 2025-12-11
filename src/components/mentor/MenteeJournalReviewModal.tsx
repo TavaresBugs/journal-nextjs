@@ -5,7 +5,7 @@ import { Modal, Button } from '@/components/ui';
 import type { Trade, JournalEntry } from '@/types';
 import { JournalEntryContent } from '@/components/journal/preview';
 import { createReview, getReviewsForJournalEntry, type MentorReview } from '@/services/reviewService';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MenteeJournalReviewModalProps {

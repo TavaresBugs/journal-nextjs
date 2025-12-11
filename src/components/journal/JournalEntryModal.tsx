@@ -4,11 +4,11 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useTradeStore } from '@/store/useTradeStore';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
 import { getTradesByIds } from '@/services/tradeService';
-import { ensureFreshImageUrl } from '@/lib/utils';
+import { ensureFreshImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
 
 interface JournalEntryModalProps {

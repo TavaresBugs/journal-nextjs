@@ -17,7 +17,7 @@ import {
     getQualityIcon,
     getConditionIcon,
     getSessionIcon
-} from '@/utils/playbookUtils';
+} from '@/lib/utils/playbook';
 
 // Build nested metrics: HTF -> Tag Combination -> LTF
 function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {

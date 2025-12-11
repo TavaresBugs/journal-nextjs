@@ -10,7 +10,7 @@ import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { isAdmin } from '@/services/adminService';
 import { isMentor } from '@/services/mentor/inviteService';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { usePrefetchCommunityData } from '@/hooks/useCommunityData';
 import { usePrefetchAdminData } from '@/hooks/useAdminData';
 import { usePrefetchMentorData } from '@/hooks/useMentorData';

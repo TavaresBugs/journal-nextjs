@@ -5,7 +5,7 @@ import { Modal, Input, Button } from '@/components/ui';
 import type { Account } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useAccountStore } from '@/store/useAccountStore';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 
 interface CreateAccountModalProps {
   isOpen: boolean;

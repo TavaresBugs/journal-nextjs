@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
-import { ensureFreshImageUrl } from '@/lib/utils';
+import { ensureFreshImageUrl } from '@/lib/utils/general';
 import type { JournalEntry, JournalImage } from '@/types';
 
 // Mapeamento de timeframes para labels em português

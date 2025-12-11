@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { identifyDayTrades, calculateMonthlyTax, enrichTradesWithCosts, TaxCostsConfig, TaxableTrade } from '../taxService';
+import { identifyDayTrades, calculateMonthlyTax, enrichTradesWithCosts, TaxCostsConfig, TaxableTrade } from '@/services/taxService';
 import { Trade } from '@/types';
 
 // Mock Trade Helper

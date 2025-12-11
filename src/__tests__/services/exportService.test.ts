@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { exportAllData } from '../exportService';
+import { exportAllData } from '@/services/exportService';
 import { supabase } from '@/lib/supabase';
 
 // Mock supabase

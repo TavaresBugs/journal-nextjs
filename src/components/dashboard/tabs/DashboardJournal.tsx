@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { TradeList } from '@/components/trades/TradeList';
 import { Trade } from '@/types';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 
 interface DashboardJournalProps {
     trades: Trade[];

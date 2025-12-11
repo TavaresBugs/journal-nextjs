@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validatePassword, getStrengthColor, getStrengthLabel } from '../password-validator';
+import { validatePassword, getStrengthColor, getStrengthLabel } from '@/lib/password-validator';
 
 describe('password-validator.ts', () => {
     describe('validatePassword', () => {

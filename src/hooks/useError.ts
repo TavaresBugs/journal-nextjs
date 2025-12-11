@@ -1,4 +1,4 @@
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { getErrorMessage } from '@/lib/errors';
 import { useCallback } from 'react';
 

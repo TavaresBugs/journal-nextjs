@@ -1,5 +1,5 @@
 import React, { ButtonHTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/general';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: 'primary' | 'secondary' | 'outline' | 'outline-danger' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning';

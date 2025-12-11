@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/general';
 import { memo, useEffect, useState } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'loading';

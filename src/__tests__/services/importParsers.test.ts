@@ -1,7 +1,7 @@
 
 import { describe, it, expect } from 'vitest';
-import { detectColumnMapping, transformTrades, ColumnMapping } from '../importParsers';
-import { RawTradeData } from '../importService';
+import { detectColumnMapping, transformTrades, ColumnMapping } from '@/services/importParsers';
+import { RawTradeData } from '@/services/importService';
 
 describe('importParsers', () => {
         it('detects standard MetaTrader English headers', () => {

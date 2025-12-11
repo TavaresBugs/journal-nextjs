@@ -10,7 +10,7 @@ import {
     getTimeframePriority,
     getConditionLabel,
     getQualityLabel
-} from '@/utils/playbookUtils';
+} from '@/lib/utils/playbook';
 import type {
     PlaybookReviewTabProps,
     ViewMode,

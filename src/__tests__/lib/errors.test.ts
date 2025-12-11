@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AppError, getErrorMessage, toAppError } from '../errors';
+import { AppError, getErrorMessage, toAppError } from '@/lib/errors';
 
 describe('AppError', () => {
   it('should create an AppError with message and statusCode', () => {

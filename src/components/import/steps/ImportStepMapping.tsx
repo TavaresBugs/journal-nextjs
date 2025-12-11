@@ -3,7 +3,7 @@ import { ColumnMapper } from '../ColumnMapper';
 import { ColumnMapping, convertToNYTime } from '@/services/importParsers';
 import { RawTradeData, parseTradeDate } from '@/services/importService';
 import { Account } from '@/types';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/general';
 import { format } from 'date-fns-tz';
 import { Button } from '@/components/ui';
 

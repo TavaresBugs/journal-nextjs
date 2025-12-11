@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { getSeedsByCategory, type MentalSeedProfile } from '@/consts/mentalSeeds';
+import { getSeedsByCategory, type MentalSeedProfile } from '@/constants/mental';
 
 // Types
 export interface MentalProfile {

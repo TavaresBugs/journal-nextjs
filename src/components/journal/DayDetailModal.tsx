@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Modal, Button } from "@/components/ui";
 import type { Trade, DailyRoutine, JournalEntry } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
-import { useToast } from "@/contexts/ToastContext";
+import { useToast } from "@/providers/ToastProvider";
 import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
 import { DailyHabitsRow, DayStatsCards, DayTradesTable } from "@/components/journal/day-detail";
 import dayjs from "dayjs";

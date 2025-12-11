@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccountStore } from '@/store/useAccountStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from '@/providers/ToastProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { CreateAccountModal } from '@/components/accounts/CreateAccountModal';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';

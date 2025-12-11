@@ -8,7 +8,7 @@ import {
     parseNinjaTraderPrice,
     parseNinjaTraderMoney
 } from './importService';
-import { calculateSession } from '@/utils/tradeUtils';
+import { calculateSession } from '@/lib/utils/trade';
 import { Trade } from '@/types';
 
 export interface ColumnMapping {

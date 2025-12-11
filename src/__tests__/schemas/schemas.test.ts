@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { loginSchema, registerSchema } from '../authSchema';
-import { tradeSchema } from '../tradeSchema';
-import { journalSchema } from '../journalSchema';
+import { loginSchema, registerSchema } from '@/schemas/authSchema';
+import { tradeSchema } from '@/schemas/tradeSchema';
+import { journalSchema } from '@/schemas/journalSchema';
 
 describe('Auth Schemas', () => {
   it('should validate correct login data', () => {

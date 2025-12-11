@@ -4,7 +4,7 @@ import {
     determineTradeOutcome, 
     formatCurrency,
     groupTradesByDay 
-} from '../calculations';
+} from '@/lib/calculations';
 import type { Trade } from '@/types';
 
 // ============================================

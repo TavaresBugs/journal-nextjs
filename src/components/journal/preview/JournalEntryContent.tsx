@@ -6,7 +6,7 @@ import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import type { Trade, JournalEntry } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '@/services/reviewService';
-import { ensureFreshImageUrl } from '@/lib/utils';
+import { ensureFreshImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
 
 interface JournalEntryContentProps {
