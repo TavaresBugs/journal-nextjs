@@ -1,23 +1,24 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import dayjs from 'dayjs';
 import { Input, Button, GlassCard } from '@/components/ui';
 import { DatePickerInput, TimePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
-import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
-import { useToast } from '@/contexts/ToastContext';
 import { 
-    detectSession, 
-    validateAlignment, 
-    calculateRMultiple,
     getSessionEmoji,
     formatRMultiple,
     getRMultipleColor
 } from '@/lib/timeframeUtils';
+
+// Import hooks
+import { 
+    useTradeForm,
+    useTradeSubmit,
+    MARKET_CONDITIONS_V2,
+    ENTRY_QUALITY_OPTIONS,
+} from './hooks';
 
 interface TradeFormProps {
     accountId: string;
@@ -26,81 +27,6 @@ interface TradeFormProps {
     initialData?: Partial<Trade>;
     mode?: 'create' | 'edit';
 }
-
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
-
-const getNYDateTime = (dateStr?: string, timeStr?: string) => {
-    // Dados já estão armazenados como NY time, apenas retornar diretamente
-    if (!dateStr) {
-        // Para novos trades, usar horário NY atual
-        const now = new Date();
-        const nyNow = toZonedTime(now, 'America/New_York');
-        return { 
-            date: formatTz(nyNow, 'yyyy-MM-dd', { timeZone: 'America/New_York' }), 
-            time: formatTz(nyNow, 'HH:mm', { timeZone: 'America/New_York' }) 
-        };
-    }
-    // Para trades existentes, retornar valores armazenados (já são NY)
-    return {
-        date: dateStr,
-        time: timeStr ? timeStr.substring(0, 5) : '' // Remove seconds if present
-    };
-};
-
-// REMOVED: getUTCDateTime - data is already stored as NY time, no conversion needed
-
-const MARKET_CONDITIONS_V2 = [
-    '📈 Tendência de Alta',
-    '📉 Tendência de Baixa', 
-    '↔️ Lateralidade',
-    '⚡ Rompimento'
-];
-
-const ENTRY_QUALITY_OPTIONS = [
-    '🌟 Picture Perfect',
-    '✅ Nice ST',
-    '➖ Normal ST',
-    '⚠️ Ugly ST'
-];
-
-// Map display values to database values
-const mapEntryQualityToDb = (value: string): 'picture-perfect' | 'nice' | 'normal' | 'ugly' | undefined => {
-    if (value.includes('Picture Perfect')) return 'picture-perfect';
-    if (value.includes('Nice')) return 'nice';
-    if (value.includes('Normal')) return 'normal';
-    if (value.includes('Ugly')) return 'ugly';
-    return undefined;
-};
-
-// Reverse mapping: DB value -> Display value
-const mapEntryQualityFromDb = (value?: string): string => {
-    switch (value) {
-        case 'picture-perfect': return '🌟 Picture Perfect';
-        case 'nice': return '✅ Nice ST';
-        case 'normal': return '➖ Normal ST';
-        case 'ugly': return '⚠️ Ugly ST';
-        default: return '';
-    }
-};
-
-const mapMarketConditionToDb = (value: string): 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout' | undefined => {
-    if (value.includes('Alta')) return 'bull-trend';
-    if (value.includes('Baixa')) return 'bear-trend';
-    if (value.includes('Lateralidade')) return 'ranging';
-    if (value.includes('Rompimento')) return 'breakout';
-    return undefined;
-};
-
-// Reverse mapping: DB value -> Display value
-const mapMarketConditionFromDb = (value?: string): string => {
-    switch (value) {
-        case 'bull-trend': return '📈 Tendência de Alta';
-        case 'bear-trend': return '📉 Tendência de Baixa';
-        case 'ranging': return '↔️ Lateralidade';
-        case 'breakout': return '⚡ Rompimento';
-        default: return '';
-    }
-};
 
 // Section Header Component
 const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
@@ -113,217 +39,36 @@ const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
     const { assets, strategies, setups } = useSettingsStore();
     const { playbooks } = usePlaybookStore();
-    const { showToast } = useToast();
     
-    const nyEntry = getNYDateTime(initialData?.entryDate, initialData?.entryTime);
-    const nyExit = getNYDateTime(initialData?.exitDate, initialData?.exitTime);
+    // Use extracted hooks for state and logic
+    const { state, setters, computed, resetForm } = useTradeForm(initialData);
+    const { isSaving, handleSubmit: submitHandler } = useTradeSubmit({
+        accountId,
+        mode,
+        onSubmit,
+        onCancel,
+        onSuccess: resetForm,
+    });
 
-    // Market Conditions
-    const [marketCondition, setMarketCondition] = useState(initialData?.marketCondition || '');
-    const [tfAnalise, setTfAnalise] = useState(initialData?.tfAnalise || '');
-    const [tfEntrada, setTfEntrada] = useState(initialData?.tfEntrada || '');
-    const [tagsList, setTagsList] = useState<string[]>(initialData?.tags ? initialData.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
-    const [tagInput, setTagInput] = useState('');
-    const [strategy, setStrategy] = useState(initialData?.strategy || '');
-    const [setup, setSetup] = useState(initialData?.setup || '');
+    // Destructure for easier access in JSX (maintains compatibility with existing code)
+    const {
+        marketCondition, tfAnalise, tfEntrada, tagsList, tagInput,
+        strategy, setup, entryQuality, marketConditionV2,
+        symbol, type, entryPrice, stopLoss, takeProfit, exitPrice,
+        lot, commission, swap, entryDate, entryTime, exitDate, exitTime
+    } = state;
 
-    // Entry Telemetry (v2) - now using string for datalist compatibility
-    // Use reverse mapping to convert DB values to display values
-    const [entryQuality, setEntryQuality] = useState(mapEntryQualityFromDb(initialData?.entry_quality));
-    const [marketConditionV2, setMarketConditionV2] = useState(mapMarketConditionFromDb(initialData?.market_condition_v2));
+    const {
+        setMarketCondition, setTfAnalise, setTfEntrada, setTagsList, setTagInput,
+        setStrategy, setSetup, setEntryQuality, setMarketConditionV2,
+        setSymbol, setType, setEntryPrice, setStopLoss, setTakeProfit, setExitPrice,
+        setLot, setCommission, setSwap, setEntryDate, setEntryTime, setExitDate, setExitTime
+    } = setters;
 
-    // Financial
-    const [symbol, setSymbol] = useState(initialData?.symbol || '');
-    const [type, setType] = useState<'Long' | 'Short' | ''>(initialData?.type || '');
-    const [entryPrice, setEntryPrice] = useState(initialData?.entryPrice?.toString() || '');
-    const [stopLoss, setStopLoss] = useState(initialData?.stopLoss?.toString() || '');
-    const [takeProfit, setTakeProfit] = useState(initialData?.takeProfit?.toString() || '');
-    const [exitPrice, setExitPrice] = useState(initialData?.exitPrice?.toString() || '');
-    const [lot, setLot] = useState(initialData?.lot?.toString() || '');
-    const [commission, setCommission] = useState(initialData?.commission ? Math.abs(initialData.commission).toString() : '');
-    const [swap, setSwap] = useState(initialData?.swap?.toString() || '');
-    
-    // DateTime
-    const [entryDate, setEntryDate] = useState(nyEntry.date);
-    const [entryTime, setEntryTime] = useState(nyEntry.time);
-    const [exitDate, setExitDate] = useState(nyExit.date);
-    const [exitTime, setExitTime] = useState(nyExit.time);
+    const { isTradeOpen, detectedSession, alignmentResult, rMultiplePreview, estimates } = computed;
 
-    // Update form when initialData changes (fix for Edit Modal)
-    useEffect(() => {
-        if (initialData) {
-            const nyEntry = getNYDateTime(initialData.entryDate, initialData.entryTime);
-            const nyExit = getNYDateTime(initialData.exitDate, initialData.exitTime);
-
-            setMarketCondition(initialData.marketCondition || '');
-            setTfAnalise(initialData.tfAnalise || '');
-            setTfEntrada(initialData.tfEntrada || '');
-            setTagsList(initialData.tags ? initialData.tags.split(',').map(t => t.trim()).filter(Boolean) : []);
-            setStrategy(initialData.strategy || '');
-            setSetup(initialData.setup || '');
-            setEntryQuality(mapEntryQualityFromDb(initialData.entry_quality));
-            setMarketConditionV2(mapMarketConditionFromDb(initialData.market_condition_v2));
-            setSymbol(initialData.symbol || '');
-            setType(initialData.type || '');
-            setEntryPrice(initialData.entryPrice?.toString() || '');
-            setStopLoss(initialData.stopLoss?.toString() || '');
-            setTakeProfit(initialData.takeProfit?.toString() || '');
-            setExitPrice(initialData.exitPrice?.toString() || '');
-            setLot(initialData.lot?.toString() || '');
-            setCommission(initialData.commission ? Math.abs(initialData.commission).toString() : '');
-            setSwap(initialData.swap?.toString() || '');
-            setEntryDate(nyEntry.date);
-            setEntryTime(nyEntry.time);
-            setExitDate(nyExit.date);
-            setExitTime(nyExit.time);
-        }
-    }, [initialData]);
-
-    const isTradeOpen = !exitPrice || exitPrice === '';
-    const [isSaving, setIsSaving] = useState(false);
-
-    // Telemetry
-    const detectedSession = useMemo(() => {
-        if (entryDate && entryTime) {
-            return detectSession(entryDate, entryTime, -3);
-        }
-        return 'Off-Hours' as const;
-    }, [entryDate, entryTime]);
-
-    const alignmentResult = useMemo(() => {
-        return validateAlignment(tfAnalise, tfEntrada);
-    }, [tfAnalise, tfEntrada]);
-
-    const rMultiplePreview = useMemo(() => {
-        if (!entryPrice || !exitPrice || !stopLoss || !type) return null;
-        return calculateRMultiple(
-            parseFloat(entryPrice),
-            parseFloat(exitPrice),
-            parseFloat(stopLoss),
-            type as 'Long' | 'Short'
-        );
-    }, [entryPrice, exitPrice, stopLoss, type]);
-    
-    const calculateEstimates = () => {
-        if (!entryPrice || !lot || !stopLoss || !takeProfit) {
-            return { risk: 0, reward: 0 };
-        }
-        const entry = parseFloat(entryPrice);
-        const sl = parseFloat(stopLoss);
-        const tp = parseFloat(takeProfit);
-        const lotSize = parseFloat(lot);
-        const asset = assets.find(a => a.symbol === symbol.toUpperCase());
-        const assetMultiplier = asset ? asset.multiplier : 1;
-        const risk = Math.abs((entry - sl) * lotSize * assetMultiplier);
-        const reward = Math.abs((tp - entry) * lotSize * assetMultiplier);
-        return { risk, reward };
-    };
-    
-    const estimates = calculateEstimates();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (isSaving) return;
-
-        if (!type || (type !== 'Long' && type !== 'Short')) {
-            showToast('Por favor, selecione a direção (Long ou Short)', 'error');
-            return;
-        }
-
-        setIsSaving(true);
-
-        try {
-            const asset = assets.find(a => a.symbol === symbol.toUpperCase());
-            const assetMultiplier = asset ? asset.multiplier : 1;
-
-            const tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'> = {
-                userId: '',
-                accountId,
-                symbol: symbol.toUpperCase(),
-                type: type as 'Long' | 'Short',
-                entryPrice: parseFloat(entryPrice),
-                stopLoss: stopLoss ? parseFloat(stopLoss) : 0,
-                takeProfit: takeProfit ? parseFloat(takeProfit) : 0,
-                exitPrice: exitPrice ? parseFloat(exitPrice) : undefined,
-                lot: parseFloat(lot),
-                commission: commission ? -Math.abs(parseFloat(commission)) : 0, 
-                swap: swap ? parseFloat(swap) : 0,
-                // Save dates directly as NY time (no UTC conversion)
-                entryDate: entryDate,
-                entryTime: entryTime || undefined,
-                exitDate: exitDate || undefined,
-                exitTime: exitTime || undefined,
-                tfAnalise: tfAnalise || undefined,
-                tfEntrada: tfEntrada || undefined,
-                tags: tagsList.length > 0 ? tagsList.join(', ') : '#SemConfluencias',
-                strategy: strategy || undefined,
-                setup: setup || undefined,
-                marketCondition: marketCondition as Trade['marketCondition'] || undefined,
-                session: entryTime ? detectedSession : undefined,
-                htfAligned: (tfAnalise && tfEntrada) ? alignmentResult.valid : undefined,
-                rMultiple: undefined,
-                pnl: undefined,
-                outcome: 'pending',
-                // Entry Telemetry (v2) - map display values to DB values
-                entry_quality: mapEntryQualityToDb(entryQuality),
-                market_condition_v2: mapMarketConditionToDb(marketConditionV2),
-            };
-
-            if (exitPrice) {
-                const tempTrade = { ...tradeData, exitPrice: parseFloat(exitPrice) } as Trade;
-                const pnl = calculateTradePnL(tempTrade, assetMultiplier);
-                tradeData.pnl = pnl;
-                tradeData.outcome = determineTradeOutcome({ ...tempTrade, pnl } as Trade);
-                
-                const rMult = calculateRMultiple(
-                    parseFloat(entryPrice),
-                    parseFloat(exitPrice),
-                    parseFloat(stopLoss),
-                    type as 'Long' | 'Short'
-                );
-                tradeData.rMultiple = rMult ?? undefined;
-            }
-
-            await onSubmit(tradeData);
-            
-            if (mode === 'edit') {
-                // Close modal first, then show toast
-                onCancel?.();
-                setTimeout(() => showToast('Trade atualizado com sucesso!', 'success'), 100);
-            } else {
-                showToast('Seu trade foi adicionado com sucesso!', 'success');
-                // Reset form only for create mode
-                setMarketCondition('');
-                setSymbol('');
-                setType('');
-                setEntryPrice('');
-                setStopLoss('');
-                setTakeProfit('');
-                setExitPrice('');
-                setLot('');
-                setCommission('');
-                setSwap('');
-                setEntryDate(dayjs().format('YYYY-MM-DD'));
-                setEntryTime('');
-                setExitDate('');
-                setExitTime('');
-                setTfAnalise('');
-                setTfEntrada('');
-                setTagsList([]);
-                setTagInput('');
-                setStrategy('');
-                setSetup('');
-                setEntryQuality('');
-                setMarketConditionV2('');
-            }
-        } catch (error) {
-            console.error('Error saving trade:', error);
-            showToast('Erro ao salvar trade', 'error');
-        } finally {
-            setIsSaving(false);
-        }
-    };
+    // Wrap form submit to pass state and computed values
+    const handleSubmit = (e: React.FormEvent) => submitHandler(e, state, computed);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">

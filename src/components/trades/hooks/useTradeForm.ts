@@ -146,7 +146,7 @@ export interface TradeFormSetters {
     setMarketCondition: (v: string) => void;
     setTfAnalise: (v: string) => void;
     setTfEntrada: (v: string) => void;
-    setTagsList: (v: string[]) => void;
+    setTagsList: React.Dispatch<React.SetStateAction<string[]>>;
     setTagInput: (v: string) => void;
     setStrategy: (v: string) => void;
     setSetup: (v: string) => void;
