@@ -476,3 +476,56 @@ export interface Notification {
     read: boolean;
     data?: unknown; // Flexible data payload (MentorInvite, ReviewContext, etc)
 }
+
+// ============================================
+// LABORATORY TYPES
+// ============================================
+
+export type ExperimentStatus = 'em_aberto' | 'testando' | 'validado' | 'descartado';
+
+export type EmotionalState = 
+    | 'confiante' 
+    | 'ansioso' 
+    | 'fomo' 
+    | 'disciplinado' 
+    | 'frustrado' 
+    | 'euforico' 
+    | 'neutro';
+
+export interface LaboratoryImage {
+    id: string;
+    experimentId: string;
+    imageUrl: string;
+    description?: string;
+    uploadedAt: string;
+}
+
+export interface LaboratoryExperiment {
+    id: string;
+    userId: string;
+    title: string;
+    description?: string;
+    status: ExperimentStatus;
+    category?: string;
+    expectedWinRate?: number;
+    expectedRiskReward?: number;
+    promotedToPlaybook: boolean;
+    images: LaboratoryImage[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface LaboratoryRecap {
+    id: string;
+    userId: string;
+    tradeId?: string;
+    title: string;
+    whatWorked?: string;
+    whatFailed?: string;
+    emotionalState?: EmotionalState;
+    lessonsLearned?: string;
+    images: string[];
+    createdAt: string;
+    // Joined data
+    trade?: TradeLite;
+}

@@ -28,6 +28,7 @@ import { TradeCalendar } from '@/components/trades/TradeCalendar';
 import { DashboardOverview } from '@/components/dashboard/tabs/DashboardOverview';
 import { DashboardJournal } from '@/components/dashboard/tabs/DashboardJournal';
 import { DashboardPlaybooks } from '@/components/dashboard/tabs/DashboardPlaybooks';
+import { DashboardLaboratory } from '@/components/dashboard/tabs/DashboardLaboratory';
 import { DashboardModals } from '@/components/dashboard/DashboardModals';
 
 // Types and Utilities
@@ -314,6 +315,7 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
         { id: 'lista', label: 'Histórico', icon: '📋' },
         { id: 'calendario', label: 'Calendário', icon: '📅' },
         { id: 'playbook', label: 'Playbook', icon: '📖' },
+        { id: 'laboratorio', label: 'Laboratório', icon: '🧪' },
         { id: 'relatorios', label: 'Relatórios', icon: '📊' },
     ];
 
@@ -548,6 +550,28 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                             onDeletePlaybook={handleDeletePlaybook}
                             onViewPlaybook={setViewingPlaybook}
                             onSharePlaybook={setSharingPlaybook}
+                        />
+                    </TabPanel>
+
+                    <TabPanel value="laboratorio" activeTab={activeTab}>
+                        <DashboardLaboratory
+                            trades={allHistory.map(t => ({
+                                id: t.id,
+                                symbol: t.symbol,
+                                type: t.type,
+                                entryDate: t.entryDate,
+                                entryTime: t.entryTime,
+                                exitDate: t.exitDate,
+                                exitTime: t.exitTime,
+                                pnl: t.pnl,
+                                outcome: t.outcome,
+                                entryPrice: t.entryPrice,
+                                exitPrice: t.exitPrice,
+                                stopLoss: t.stopLoss,
+                                takeProfit: t.takeProfit,
+                                lot: t.lot,
+                                accountId: t.accountId,
+                            }))}
                         />
                     </TabPanel>
 
