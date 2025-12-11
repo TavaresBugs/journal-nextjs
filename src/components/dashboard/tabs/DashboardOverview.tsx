@@ -1,11 +1,26 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from '@/components/ui';
-import { Trade, Playbook } from '@/types';
+import { Trade, TradeMetrics } from '@/types';
 import {
     formatCurrency,
     formatTimeMinutes
 } from '@/lib/calculations';
 import dynamic from 'next/dynamic';
+
+interface AdvancedMetrics {
+    sharpe: number;
+    calmar: number;
+    holdTime: {
+        avgWinnerTime: number;
+        avgLoserTime: number;
+        avgAllTrades: number;
+    };
+    streaks: {
+        maxWinStreak: number;
+        maxLossStreak: number;
+        currentStreak: { type: 'win' | 'loss' | 'none'; count: number };
+    };
+}
 
 const Charts = dynamic(() => import('@/components/reports/Charts').then(mod => mod.Charts), {
     ssr: false,
@@ -13,8 +28,8 @@ const Charts = dynamic(() => import('@/components/reports/Charts').then(mod => m
 });
 
 interface DashboardOverviewProps {
-    metrics: any; // Using any for now as metrics type is inferred in page
-    advancedMetrics: any;
+    metrics: TradeMetrics;
+    advancedMetrics: AdvancedMetrics;
     allHistory: Trade[];
     currency: string;
     initialBalance: number;

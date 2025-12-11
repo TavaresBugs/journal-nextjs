@@ -44,7 +44,7 @@ interface DashboardModalsProps {
     setSharingPlaybook: (playbook: Playbook | null) => void;
 
     // Handlers
-    handleCreateTrade: (tradeData: any) => Promise<void>;
+    handleCreateTrade: (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
     handleUpdateTrade: (trade: Trade) => Promise<void>;
     handleDeleteTrade: (tradeId: string) => Promise<void>;
     handleEditTrade: (trade: Trade) => void; // Used by DayDetailModal

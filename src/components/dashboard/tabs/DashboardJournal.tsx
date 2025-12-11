@@ -6,7 +6,6 @@ import { useToast } from '@/contexts/ToastContext';
 
 interface DashboardJournalProps {
     trades: Trade[];
-    allHistory: Trade[];
     currency: string;
     totalCount: number;
     currentPage: number;
@@ -23,7 +22,6 @@ interface DashboardJournalProps {
 
 export function DashboardJournal({
     trades,
-    allHistory,
     currency,
     totalCount,
     currentPage,

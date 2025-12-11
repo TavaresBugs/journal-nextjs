@@ -473,7 +473,6 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                     <TabPanel value="lista" activeTab={activeTab}>
                         <DashboardJournal
                             trades={trades}
-                            allHistory={allHistory as unknown as Trade[]}
                             currency={currentAccount.currency}
                             totalCount={totalCount}
                             currentPage={currentPage}
