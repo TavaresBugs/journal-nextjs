@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
+import { PageSkeleton } from '@/components/ui/PageSkeleton';
 import { useAccountStore } from '@/store/useAccountStore';
 import { 
     getPublicPlaybooks,
@@ -65,12 +66,7 @@ function PlaybooksGrid({
     loading: boolean;
 }) {
     if (loading) {
-        return (
-            <div className="text-gray-400 py-12 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-                Carregando playbooks...
-            </div>
-        );
+        return <PageSkeleton />;
     }
 
     if (playbooks.length === 0) {

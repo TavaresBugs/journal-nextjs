@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
+import { PageSkeleton } from '@/components/ui/PageSkeleton';
 import { 
     getAllUsers, 
     getAdminStats, 
@@ -87,12 +88,7 @@ function UserTable({
     };
 
     if (loading) {
-        return (
-            <div className="text-gray-400 py-12 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-                Carregando usuários...
-            </div>
-        );
+        return <PageSkeleton />;
     }
 
     if (users.length === 0) {
