@@ -22,7 +22,14 @@ interface JournalEntryModalProps {
   startEditing?: boolean;
   hasMentor?: boolean;
   hasUnreadComments?: boolean;
+  onEntrySelect?: (id: string) => void;
 }
+
+// Enhanced type for Optimistic UI
+type OptimisticEntry = JournalEntry & {
+  _isPending?: boolean;
+  _optimisticImages?: Record<string, string[]>;
+};
 
 /**
  * Main orchestrator component for journal entry modal.
@@ -38,6 +45,7 @@ interface JournalEntryModalProps {
  * @param startEditing - Whether to start in edit mode (default: false)
  * @param hasMentor - Whether the user has an active mentor
  * @param hasUnreadComments - Whether there are unread comments for this entry/trade
+ * @param onEntrySelect - Callback when a new entry is created to select it
  */
 export function JournalEntryModal({
   isOpen,
@@ -49,7 +57,8 @@ export function JournalEntryModal({
   availableTrades = [],
   startEditing = false,
   hasMentor = false,
-  hasUnreadComments = false
+  hasUnreadComments = false,
+  onEntrySelect
 }: JournalEntryModalProps) {
   const { addEntry, updateEntry } = useJournalStore();
   const { trades: allTrades } = useTradeStore();
@@ -107,6 +116,21 @@ export function JournalEntryModal({
 
   const [isEditing, setIsEditing] = useState(startEditing || !existingEntry);
   const [isSharingLoading, setIsSharingLoading] = useState(false);
+  
+  // Optimistic UI State
+  const [optimisticEntry, setOptimisticEntry] = useState<OptimisticEntry | null>(null);
+
+  // Reset optimistic state when real entry updates (synced with server)
+  // Reset optimistic state when real entry updates (synced with server)
+  useEffect(() => {
+    // If we have an existing entry (ID matches or just presence for new creation)
+    if (existingEntry) {
+        // If we were in optimistic mode, clear it
+        if (optimisticEntry) {
+            setOptimisticEntry(null);
+        }
+    }
+  }, [existingEntry, optimisticEntry]);
 
   // Handle share functionality
   const handleShare = async () => {
@@ -141,6 +165,42 @@ export function JournalEntryModal({
     // Show loading toast
     showToast('Salvando entrada...', 'loading', 0);
 
+    // Optimistic Update Preparation
+    const baseEntryForOptimistic: JournalEntry = existingEntry || {
+        id: 'temp-optimistic-id',
+        userId: '',
+        accountId: targetAccountId,
+        date: data.date,
+        title: data.title,
+        asset: data.asset,
+        tradeIds: data.tradeIds || [],
+        images: [], // Will be mapped below
+        emotion: data.emotion,
+        analysis: data.analysis,
+        notes: JSON.stringify({
+          technicalWins: data.technicalWins,
+          improvements: data.improvements,
+          errors: data.errors
+        }),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+
+    // Construct Optimistic Entry with pending flag and images
+    const newOptimisticEntry: OptimisticEntry = {
+        ...baseEntryForOptimistic,
+        ...data, // overwrite with form data
+        tradeIds: data.tradeIds || [],
+        // Explicitly set images to empty array or existing images to avoid type error
+        // The actual images for preview will be taken from _optimisticImages
+        images: existingEntry?.images || [], 
+        _isPending: true,
+        _optimisticImages: data.images as Record<string, string[]>
+    };
+
+    setOptimisticEntry(newOptimisticEntry);
+    setIsEditing(false); // Close form immediately to show preview
+
     try {
       const entryData = {
         userId: '',
@@ -164,15 +224,16 @@ export function JournalEntryModal({
       if (existingEntry) {
         await updateEntry({ ...existingEntry, ...entryData });
         showToast('Entrada atualizada com sucesso!', 'success');
-        setIsEditing(false);
       } else {
         await addEntry(entryData);
         showToast('Entrada salva com sucesso!', 'success');
-        onClose();
       }
     } catch (error) {
       console.error('Error saving entry:', error);
       showToast('Erro ao salvar entrada', 'error');
+      // Revert optimistic update on error and go back to edit mode
+      setOptimisticEntry(null);
+      setIsEditing(true); 
     }
   };
 
@@ -219,11 +280,11 @@ export function JournalEntryModal({
 
   if (!isOpen) return null;
 
-  // Show preview mode if we have an existing entry and not editing
-  if (!isEditing && existingEntry) {
+  // Show preview mode if we have an existing entry (or optimistic) and not editing
+  if (!isEditing && (existingEntry || optimisticEntry)) {
     return (
       <JournalEntryPreview
-        entry={existingEntry}
+        entry={(optimisticEntry || existingEntry)!}
         linkedTrades={linkedTrades}
         onClose={onClose}
         onEdit={() => setIsEditing(true)}

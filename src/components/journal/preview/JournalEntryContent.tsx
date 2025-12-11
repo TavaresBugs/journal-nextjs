@@ -9,8 +9,14 @@ import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '
 import { ensureFreshImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
 
+// Extended interface for Optimistic UI
+interface ExtendedJournalEntry extends JournalEntry {
+  _isPending?: boolean;
+  _optimisticImages?: Record<string, string[]>;
+}
+
 interface JournalEntryContentProps {
-  entry: JournalEntry;
+  entry: JournalEntry | ExtendedJournalEntry;
   linkedTrades?: Trade[];
   showComments?: boolean;
 }
@@ -19,6 +25,9 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
   const { user } = useAuth();
   const [previewImageKey, setPreviewImageKey] = useState<string | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
+  
+  const isPending = (entry as ExtendedJournalEntry)._isPending;
+  const optimisticImages = (entry as ExtendedJournalEntry)._optimisticImages;
 
   // Reviews State
   const [reviews, setReviews] = useState<MentorReview[]>([]);
@@ -26,7 +35,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
 
   // Fetch reviews when sidebar is opened
   useEffect(() => {
-    if (showComments && entry.id) {
+    if (showComments && entry.id && !isPending) {
       // eslint-disable-next-line
       setIsLoadingReviews(true);
       getReviewsForJournalEntry(entry.id)
@@ -45,7 +54,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
         .catch(err => console.error('Error fetching reviews:', err))
         .finally(() => setIsLoadingReviews(false));
     }
-  }, [showComments, entry.id, user]);
+  }, [showComments, entry.id, user, isPending]);
 
   // Group reviews
   const corrections = reviews.filter(r => r.reviewType === 'correction');
@@ -66,7 +75,12 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
 
   // Parse images and ensure all URLs are complete
   const images: Record<string, string[]> = {};
-  if (entry.images && Array.isArray(entry.images)) {
+  
+  if (optimisticImages) {
+    // OPTIMISTIC PREVIEW: Use local base64 images
+    Object.assign(images, optimisticImages);
+  } else if (entry.images && Array.isArray(entry.images)) {
+    // STANDARD VIEW: Use server images
     const sortedImages = [...entry.images].sort((a, b) => a.displayOrder - b.displayOrder);
     sortedImages.forEach(img => {
       if (!images[img.timeframe]) images[img.timeframe] = [];
@@ -128,7 +142,9 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
           {/* Header Info */}
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
+              </div>
               <div className="text-gray-400 text-sm mt-1">
                 {(() => {
                   // entry.date é apenas YYYY-MM-DD sem hora

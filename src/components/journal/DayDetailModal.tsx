@@ -52,8 +52,8 @@ export function DayDetailModal({
 
   const [selectedTradeForJournal, setSelectedTradeForJournal] =
     useState<Trade | null>(null);
-  const [selectedEntryForEdit, setSelectedEntryForEdit] =
-    useState<JournalEntry | null>(null);
+  const [selectedEntryId, setSelectedEntryId] =
+    useState<string | null>(null);
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
   const [startModalEditing, setStartModalEditing] = useState(false);
 
@@ -147,27 +147,27 @@ export function DayDetailModal({
   const handleJournalClick = useCallback((trade: Trade, startEditing: boolean = true) => {
     const entry = getEntryByTradeId(trade.id);
     setSelectedTradeForJournal(trade);
-    setSelectedEntryForEdit(entry || null);
+    setSelectedEntryId(entry?.id || null);
     setStartModalEditing(startEditing);
     setIsJournalModalOpen(true);
   }, [getEntryByTradeId]);
 
   const handleStandaloneEntryClick = useCallback(() => {
     setSelectedTradeForJournal(null);
-    setSelectedEntryForEdit(null);
+    setSelectedEntryId(null);
     setStartModalEditing(true);
     setIsJournalModalOpen(true);
   }, []);
 
   const handleEditEntry = useCallback((entry: JournalEntry) => {
-    setSelectedEntryForEdit(entry);
+    setSelectedEntryId(entry.id);
     setSelectedTradeForJournal(null);
     setStartModalEditing(true);
     setIsJournalModalOpen(true);
   }, []);
 
   const handlePreviewEntry = useCallback((entry: JournalEntry) => {
-    setSelectedEntryForEdit(entry);
+    setSelectedEntryId(entry.id);
     setSelectedTradeForJournal(null);
     setStartModalEditing(false);
     setIsJournalModalOpen(true);
@@ -197,6 +197,12 @@ export function DayDetailModal({
     const formatted = date ? dayjs(date).format("dddd, DD/MM/YYYY") : "";
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   }, [date]);
+
+  // Derive selected entry from ID
+  const selectedEntryForEdit = useMemo(() => 
+    selectedEntryId ? entries.find((e) => e.id === selectedEntryId) || null : null,
+    [entries, selectedEntryId]
+  );
 
   return (
     <>
@@ -258,25 +264,29 @@ export function DayDetailModal({
         <JournalEntryModal
           key={
             selectedTradeForJournal?.id ||
-            selectedEntryForEdit?.id ||
+            selectedEntryId ||
             "new-entry"
           }
           isOpen={isJournalModalOpen}
           onClose={() => {
             setIsJournalModalOpen(false);
             setSelectedTradeForJournal(null);
-            setSelectedEntryForEdit(null);
+            setSelectedEntryId(null);
           }}
           trade={selectedTradeForJournal}
           existingEntry={selectedEntryForEdit || undefined}
           initialDate={date}
           accountId={accountId}
           availableTrades={trades}
+          // Fix for infinite loading state on new entries:
+          // When a new entry is created, we select it immediately so the modal 
+          // knows it's no longer "pending" creation, but "viewing" an existing entry.
+          onEntrySelect={(id) => setSelectedEntryId(id)}
           startEditing={startModalEditing}
           hasMentor={hasMentor}
           hasUnreadComments={(() => {
             const tradeId = selectedTradeForJournal?.id;
-            const entryId = selectedEntryForEdit?.id;
+            const entryId = selectedEntryId;
             // Check review status for trade OR entry
             if (tradeId && reviewsMap[tradeId]?.hasUnread) return true;
             if (entryId && reviewsMap[entryId]?.hasUnread) return true;

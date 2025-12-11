@@ -16,7 +16,7 @@ interface JournalStore {
 
     // Journal Actions
     loadEntries: (accountId: string) => Promise<void>;
-    addEntry: (entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+    addEntry: (entry: Omit<JournalEntry, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string | undefined>;
     updateEntry: (entry: JournalEntry) => Promise<void>;
     removeEntry: (id: string) => Promise<void>;
     removeEntryByTradeId: (tradeId: string) => void;
@@ -64,11 +64,13 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
                     entries: [newEntry, ...state.entries],
                     isLoading: false
                 }));
+                return newEntry.id;
             } else {
                 throw new Error('Failed to save journal entry');
             }
         } catch (error) {
             set({ error: (error as Error).message, isLoading: false });
+            return undefined;
         }
     },
 
