@@ -1,17 +1,5 @@
-import React, { useEffect } from 'react';
-
-export interface ColumnMapping {
-  entryDate: string;
-  symbol: string;
-  direction: string;
-  volume: string;
-  entryPrice: string;
-  exitDate: string;
-  exitPrice: string;
-  profit: string;
-  commission: string;
-  swap: string;
-}
+import React from 'react';
+import { ColumnMapping } from '@/services/importParsers';
 
 interface ColumnMapperProps {
   headers: string[];
@@ -49,45 +37,6 @@ const FIELD_LABELS: Record<keyof ColumnMapping, string> = {
 };
 
 export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, mapping, onChange }) => {
-
-  // Auto-map on first load // Auto-map columns when headers change
-  // Auto-map columns when headers change
-  useEffect(() => {
-    const newMapping = { ...mapping };
-    let hasChanges = false;
-
-    headers.forEach(header => {
-      const lowerHeader = header.toLowerCase().trim();
-      
-      // Helper to set mapping if empty
-      const tryMap = (key: keyof ColumnMapping, keywords: string[]) => {
-        if (!newMapping[key] && keywords.some(k => lowerHeader.includes(k))) {
-            // Avoid mapping 'Time' to Exit Time if it's the first Time column (usually Entry)
-            // But here we iterate headers.
-            // Simple heuristic: if we already have entryDate, maybe map exitDate?
-            // Existing logic matches specific keywords.
-            newMapping[key] = header;
-            hasChanges = true;
-        }
-      };
-
-      tryMap('entryDate', ['time', 'date', 'data', 'hora', 'entry time', 'time (entry)']);
-      tryMap('entryPrice', ['price', 'preço', 'entry price', 'price (entry)']);
-      tryMap('symbol', ['symbol', 'ativo', 'par']);
-      tryMap('direction', ['type', 'tipo', 'direction', 'direção']);
-      tryMap('volume', ['volume', 'lots', 'lotes', 'size', 'tamanho']);
-      tryMap('exitDate', ['exit time', 'time (exit)', 'fechamento']);
-      tryMap('exitPrice', ['exit price', 'price (exit)']);
-      tryMap('profit', ['profit', 'lucro', 'pnl', 'resultado']);
-      tryMap('commission', ['commission', 'comissão', 'taxas']);
-      tryMap('swap', ['swap']);
-    });
-
-    if (hasChanges) {
-        onChange(newMapping);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headers]);
 
   const handleChange = (field: keyof ColumnMapping, value: string) => {
     onChange({
