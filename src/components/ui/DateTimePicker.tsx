@@ -368,36 +368,155 @@ export function DatePickerInput({
 }
 
 
-// iOS-style wheel picker for time (hours 0-23, minutes 0-59)
+// iOS-style wheel picker for time with manual input support
 export function TimePickerInput({
     label,
     value,
     onChange,
     required = false,
     className = '',
+    error,
+    onBlur: externalOnBlur,
 }: {
     label: string;
     value: string; // HH:mm format
     onChange: (value: string) => void;
     required?: boolean;
     className?: string;
+    error?: string;
+    onBlur?: () => void;
 }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [localInputValue, setLocalInputValue] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [isInvalid, setIsInvalid] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const hoursRef = useRef<HTMLDivElement>(null);
     const minutesRef = useRef<HTMLDivElement>(null);
     
     // Parse current value
     const [hours, minutes] = value ? value.split(':').map(Number) : [0, 0];
+    
+    // Display value: use local state when editing, otherwise from props
+    const displayValue = isEditing ? localInputValue : (value || '');
+
+    /**
+     * Parse time input string to hour and minute
+     * Accepts: HH:mm, H:mm, HH:m, Hmm, HHmm
+     */
+    const parseTimeInput = (text: string): { hour: number; minute: number } | null => {
+        const cleanText = text.replace(/\s/g, '');
+        
+        // Try HH:mm or H:mm format
+        const colonMatch = cleanText.match(/^(\d{1,2}):(\d{1,2})$/);
+        if (colonMatch) {
+            const hour = parseInt(colonMatch[1], 10);
+            const minute = parseInt(colonMatch[2], 10);
+            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                return { hour, minute };
+            }
+            return null;
+        }
+        
+        // Try HHmm or Hmm format (without colon)
+        if (/^\d{3,4}$/.test(cleanText)) {
+            let hour: number, minute: number;
+            if (cleanText.length === 4) {
+                hour = parseInt(cleanText.substring(0, 2), 10);
+                minute = parseInt(cleanText.substring(2, 4), 10);
+            } else {
+                // 3 digits: assume H:mm
+                hour = parseInt(cleanText.substring(0, 1), 10);
+                minute = parseInt(cleanText.substring(1, 3), 10);
+            }
+            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                return { hour, minute };
+            }
+        }
+        
+        return null;
+    };
+    
+    /**
+     * Format hour and minute to HH:mm string
+     */
+    const formatTime = (hour: number, minute: number): string => {
+        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+    };
 
     const handleHourChange = (h: number) => {
         const newMinutes = minutes || 0;
-        onChange(`${String(h).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`);
+        onChange(formatTime(h, newMinutes));
     };
 
     const handleMinuteChange = (m: number) => {
         const newHours = hours || 0;
-        onChange(`${String(newHours).padStart(2, '0')}:${String(m).padStart(2, '0')}`);
+        onChange(formatTime(newHours, m));
+    };
+    
+    // Handle focus: enter editing mode
+    const handleFocus = () => {
+        setIsEditing(true);
+        setLocalInputValue(value || '');
+        setIsInvalid(false);
+    };
+    
+    // Handle input change with auto-formatting
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let newValue = e.target.value;
+        
+        // Remove non-digit and non-colon characters
+        newValue = newValue.replace(/[^\d:]/g, '');
+        
+        // Auto-add colon after 2 digits if no colon present
+        if (newValue.length === 2 && !newValue.includes(':') && localInputValue.length < newValue.length) {
+            newValue = newValue + ':';
+        }
+        
+        // Limit to 5 characters (HH:mm)
+        if (newValue.length > 5) {
+            newValue = newValue.substring(0, 5);
+        }
+        
+        setLocalInputValue(newValue);
+        setIsInvalid(false);
+    };
+    
+    // Handle blur: validate and apply
+    const handleBlur = () => {
+        setIsEditing(false);
+        
+        if (!localInputValue || localInputValue.trim() === '') {
+            // Allow clearing the value
+            onChange('');
+            setIsInvalid(false);
+            externalOnBlur?.();
+            return;
+        }
+        
+        const parsed = parseTimeInput(localInputValue);
+        if (parsed) {
+            onChange(formatTime(parsed.hour, parsed.minute));
+            setIsInvalid(false);
+        } else {
+            setIsInvalid(true);
+        }
+        
+        externalOnBlur?.();
+    };
+    
+    // Handle keyboard
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleBlur();
+            setIsOpen(false);
+        } else if (e.key === 'Escape') {
+            setIsEditing(false);
+            setLocalInputValue(value || '');
+            setIsInvalid(false);
+            setIsOpen(false);
+        }
     };
 
     // Scroll to selected value when picker opens
@@ -436,13 +555,19 @@ export function TimePickerInput({
             <div className="relative">
                 <input
                     type="text"
-                    value={value || ''}
-                    onClick={() => setIsOpen(true)}
-                    readOnly
+                    value={displayValue}
+                    onFocus={handleFocus}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
                     placeholder="HH:mm"
-                    className="w-full pl-3 pr-10 py-2 bg-[#232b32] border border-gray-700 rounded-lg text-gray-100 text-sm
-                               focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-                               placeholder-gray-500 cursor-pointer"
+                    maxLength={5}
+                    className={`w-full pl-3 pr-10 py-2 bg-[#232b32] border rounded-lg text-gray-100 text-sm
+                               focus:outline-none focus:ring-2 focus:border-transparent
+                               placeholder-gray-500 transition-all duration-200
+                               ${(isInvalid || error)
+                                   ? 'border-red-500 focus:ring-red-500' 
+                                   : 'border-gray-700 focus:ring-cyan-500'}`}
                 />
                 {/* Clock Icon */}
                 <button
@@ -528,6 +653,11 @@ export function TimePickerInput({
                     </div>
                 )}
             </div>
+            {(error || isInvalid) && (
+                <span className="text-xs text-red-400">
+                    {error || 'Horário inválido. Use o formato HH:mm'}
+                </span>
+            )}
         </div>
     );
 }
