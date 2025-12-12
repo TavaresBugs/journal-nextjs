@@ -479,7 +479,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                 <div className="space-y-3">
                     {/* Entry DateTime */}
                     <div className="grid grid-cols-2 gap-3">
-                        <DatePickerInput label="Data Entrada" value={entryDate} onChange={setEntryDate} required />
+                        <DatePickerInput 
+                            label="Data Entrada" 
+                            value={entryDate} 
+                            onChange={setEntryDate} 
+                            onBlur={() => handleFieldBlur('entryDate')}
+                            error={getError('entryDate')}
+                            required 
+                        />
                         <TimePickerInput label="Hora Entrada" value={entryTime} onChange={setEntryTime} />
                     </div>
 
@@ -497,7 +504,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                     {/* Exit DateTime (only if finalized) */}
                     {!isTradeOpen && (
                         <div className="grid grid-cols-2 gap-3">
-                            <DatePickerInput label="Data Saída" value={exitDate} onChange={setExitDate} />
+                            <DatePickerInput 
+                                label="Data Saída" 
+                                value={exitDate} 
+                                onChange={setExitDate} 
+                                onBlur={() => handleFieldBlur('exitDate')}
+                                error={getError('exitDate')}
+                            />
                             <TimePickerInput label="Hora Saída" value={exitTime} onChange={setExitTime} />
                         </div>
                     )}

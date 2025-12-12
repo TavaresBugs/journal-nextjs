@@ -170,6 +170,8 @@ export function DatePickerInput({
     required = false,
     className = '',
     openDirection = 'top',
+    error,
+    onBlur,
 }: {
     label: string;
     value: string; // yyyy-MM-dd format
@@ -177,6 +179,8 @@ export function DatePickerInput({
     required?: boolean;
     className?: string;
     openDirection?: 'top' | 'bottom';
+    error?: string;
+    onBlur?: () => void;
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [localInputValue, setLocalInputValue] = useState('');
@@ -280,6 +284,9 @@ export function DatePickerInput({
         } else {
             setIsInvalid(true);
         }
+        
+        // Call external onBlur if provided
+        onBlur?.();
     };
     
     // Handle Enter key to submit
@@ -324,7 +331,7 @@ export function DatePickerInput({
                     className={`w-full pl-3 pr-10 py-2 bg-[#232b32] border rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:border-transparent
                                placeholder-gray-500 transition-all duration-200
-                               ${isInvalid 
+                               ${(isInvalid || error)
                                    ? 'border-red-500 focus:ring-red-500' 
                                    : 'border-gray-700 focus:ring-cyan-500'}`}
                 />
@@ -351,8 +358,10 @@ export function DatePickerInput({
                     </div>
                 )}
             </div>
-            {isInvalid && (
-                <span className="text-xs text-red-400">Data inválida. Use o formato DD/MM/AAAA</span>
+            {(error || isInvalid) && (
+                <span className="text-xs text-red-400">
+                    {error || 'Data inválida. Use o formato DD/MM/AAAA'}
+                </span>
             )}
         </div>
     );
