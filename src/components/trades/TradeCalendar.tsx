@@ -49,12 +49,8 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
         currentDay = currentDay.add(1, 'day');
     }
 
-    // Check if the last week (last 7 days) contains only days from the next month
-    const lastWeek = calendarDays.slice(35, 42);
-    const isLastWeekNextMonth = lastWeek.every(day => day.month() !== currentMonth);
-    
-    // If last week is entirely next month, just use 5 weeks (35 days)
-    const displayDays = isLastWeekNextMonth ? calendarDays.slice(0, 35) : calendarDays;
+    // Always display all 42 days (6 weeks) for consistent height
+    const displayDays = calendarDays;
     
     // Group trades by day
     const tradesByDay = groupTradesByDay(trades);

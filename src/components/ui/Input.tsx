@@ -4,11 +4,13 @@ import { cn } from '@/lib/utils/general';
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
     error?: string;
+    warning?: string;
 }
 
 export function Input({
     label,
     error,
+    warning,
     className = '',
     ...props
 }: InputProps) {
@@ -34,8 +36,12 @@ export function Input({
                     "text-gray-100 text-sm placeholder-gray-500",
                     // Focus - Cyan focus to match DatePicker
                     "focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200",
-                    // Error state
-                    error ? 'border-red-500' : 'border-gray-700',
+                    // Error/Warning state
+                    error 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : warning 
+                            ? 'border-amber-500 focus:ring-amber-500' 
+                            : 'border-gray-700',
                     // Number input fixes
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
                     "[color-scheme:dark]",
@@ -46,6 +52,9 @@ export function Input({
             />
             {error && (
                 <span className="text-xs text-red-400">{error}</span>
+            )}
+            {!error && warning && (
+                <span className="text-xs text-amber-400">{warning}</span>
             )}
         </div>
     );

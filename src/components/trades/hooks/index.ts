@@ -10,3 +10,6 @@ export { mapEntryQualityToDb, mapEntryQualityFromDb, mapMarketConditionToDb, map
 
 export { useTradeSubmit } from './useTradeSubmit';
 export type { UseTradeSubmitOptions, UseTradeSubmitReturn } from './useTradeSubmit';
+
+export { useTradeValidation } from './useTradeValidation';
+export type { UseTradeValidationReturn, TradeValidationInput } from './useTradeValidation';

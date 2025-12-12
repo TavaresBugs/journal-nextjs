@@ -76,24 +76,24 @@ export function CustomCalendar({ selected, onSelect, onClose }: CalendarProps) {
         );
     };
 
-    // Build calendar grid
-    const calendarDays: { day: number; isCurrentMonth: boolean }[] = [];
+    // Build calendar grid - ALWAYS 42 cells (6 weeks) for consistent height
+    const TOTAL_CALENDAR_CELLS = 42;
+    const calendarDays: { day: number; isCurrentMonth: boolean; monthOffset: number }[] = [];
     
     // Previous month trailing days
     for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-        calendarDays.push({ day: prevMonthDays - i, isCurrentMonth: false });
+        calendarDays.push({ day: prevMonthDays - i, isCurrentMonth: false, monthOffset: -1 });
     }
     
     // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
-        calendarDays.push({ day, isCurrentMonth: true });
+        calendarDays.push({ day, isCurrentMonth: true, monthOffset: 0 });
     }
     
-    // Next month leading days - only fill to complete the last week
-    const totalCells = Math.ceil(calendarDays.length / 7) * 7;
-    const remainingCells = totalCells - calendarDays.length;
+    // Next month leading days - ALWAYS fill to 42 cells for consistent height
+    const remainingCells = TOTAL_CALENDAR_CELLS - calendarDays.length;
     for (let day = 1; day <= remainingCells; day++) {
-        calendarDays.push({ day, isCurrentMonth: false });
+        calendarDays.push({ day, isCurrentMonth: false, monthOffset: 1 });
     }
 
     return (
@@ -162,7 +162,7 @@ export function CustomCalendar({ selected, onSelect, onClose }: CalendarProps) {
     );
 }
 
-// DatePickerInput wrapper
+// DatePickerInput wrapper with manual input support
 export function DatePickerInput({
     label,
     value,
@@ -179,17 +179,13 @@ export function DatePickerInput({
     openDirection?: 'top' | 'bottom';
 }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [localInputValue, setLocalInputValue] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [isInvalid, setIsInvalid] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     
     const dateValue = value ? new Date(value + 'T00:00:00') : undefined;
     
-    const handleSelect = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        onChange(`${year}-${month}-${day}`);
-    };
-
     // Format display value in Brazilian format
     const formatDisplayDate = (date: Date) => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -198,7 +194,101 @@ export function DatePickerInput({
         return `${day}/${month}/${year}`;
     };
     
-    const displayValue = dateValue ? formatDisplayDate(dateValue) : '';
+    // Derive display value: use local state when editing, otherwise from props
+    const displayValue = isEditing ? localInputValue : (dateValue ? formatDisplayDate(dateValue) : '');
+    
+    // Parse DD/MM/YYYY input to Date
+    const parseDateInput = (text: string): Date | null => {
+        // Clean up the input and extract parts
+        const cleanText = text.replace(/\s/g, '');
+        
+        // Accept formats: DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+        const match = cleanText.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+        if (!match) return null;
+        
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10);
+        const year = parseInt(match[3], 10);
+        
+        // Basic validation
+        if (month < 1 || month > 12) return null;
+        if (day < 1 || day > 31) return null;
+        if (year < 1900 || year > 2100) return null;
+        
+        // Create date and validate it's a real date
+        const date = new Date(year, month - 1, day);
+        if (
+            date.getFullYear() !== year ||
+            date.getMonth() !== month - 1 ||
+            date.getDate() !== day
+        ) {
+            return null; // Invalid date like 31/02/2025
+        }
+        
+        return date;
+    };
+    
+    // Handle calendar selection
+    const handleSelect = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        onChange(`${year}-${month}-${day}`);
+    };
+    
+    // Handle input focus - start editing mode
+    const handleFocus = () => {
+        setIsEditing(true);
+        setLocalInputValue(dateValue ? formatDisplayDate(dateValue) : '');
+    };
+    
+    // Handle manual input change
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let text = e.target.value;
+        
+        // Auto-add slashes for better UX
+        // Only if user is typing forward (not backspacing)
+        if (text.length === 2 && !text.includes('/')) {
+            text = text + '/';
+        } else if (text.length === 5 && text.charAt(2) === '/' && !text.slice(3).includes('/')) {
+            text = text + '/';
+        }
+        
+        setLocalInputValue(text);
+        
+        // Clear invalid state while typing
+        setIsInvalid(false);
+    };
+    
+    // Handle blur - validate and submit
+    const handleBlur = () => {
+        setIsEditing(false);
+        
+        if (!localInputValue) {
+            // Empty input is valid (clears the date)
+            setIsInvalid(false);
+            return;
+        }
+        
+        const parsedDate = parseDateInput(localInputValue);
+        if (parsedDate) {
+            const year = parsedDate.getFullYear();
+            const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(parsedDate.getDate()).padStart(2, '0');
+            onChange(`${year}-${month}-${day}`);
+            setIsInvalid(false);
+        } else {
+            setIsInvalid(true);
+        }
+    };
+    
+    // Handle Enter key to submit
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleBlur();
+        }
+    };
 
     // Close on outside click
     useEffect(() => {
@@ -225,12 +315,18 @@ export function DatePickerInput({
                 <input
                     type="text"
                     value={displayValue}
-                    onClick={() => setIsOpen(!isOpen)}
-                    readOnly
+                    onFocus={handleFocus}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
                     placeholder="dd/mm/aaaa"
-                    className="w-full pl-3 pr-10 py-2 bg-[#232b32] border border-gray-700 rounded-lg text-gray-100 text-sm
-                               focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent
-                               placeholder-gray-500 cursor-pointer transition-all duration-200"
+                    maxLength={10}
+                    className={`w-full pl-3 pr-10 py-2 bg-[#232b32] border rounded-lg text-gray-100 text-sm
+                               focus:outline-none focus:ring-2 focus:border-transparent
+                               placeholder-gray-500 transition-all duration-200
+                               ${isInvalid 
+                                   ? 'border-red-500 focus:ring-red-500' 
+                                   : 'border-gray-700 focus:ring-cyan-500'}`}
                 />
                 {/* Calendar Icon */}
                 <button
@@ -255,9 +351,13 @@ export function DatePickerInput({
                     </div>
                 )}
             </div>
+            {isInvalid && (
+                <span className="text-xs text-red-400">Data inválida. Use o formato DD/MM/AAAA</span>
+            )}
         </div>
     );
 }
+
 
 // iOS-style wheel picker for time (hours 0-23, minutes 0-59)
 export function TimePickerInput({

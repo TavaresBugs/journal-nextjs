@@ -6,6 +6,7 @@ import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
+import { useToast } from '@/providers/ToastProvider';
 import { 
     getSessionEmoji,
     formatRMultiple,
@@ -16,8 +17,10 @@ import {
 import { 
     useTradeForm,
     useTradeSubmit,
+    useTradeValidation,
     MARKET_CONDITIONS_V2,
     ENTRY_QUALITY_OPTIONS,
+    type TradeValidationInput,
 } from './hooks';
 
 interface TradeFormProps {
@@ -39,6 +42,7 @@ const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
     const { assets, strategies, setups } = useSettingsStore();
     const { playbooks } = usePlaybookStore();
+    const { showToast } = useToast();
     
     // Use extracted hooks for state and logic
     const { state, setters, computed, resetForm } = useTradeForm(initialData);
@@ -67,8 +71,55 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
 
     const { isTradeOpen, detectedSession, alignmentResult, rMultiplePreview, estimates } = computed;
 
-    // Wrap form submit to pass state and computed values
-    const handleSubmit = (e: React.FormEvent) => submitHandler(e, state, computed);
+    // Validation hook
+    const { 
+        validateForm, 
+        validateSingleField,
+        getError, 
+        getWarning,
+        clearAllErrors 
+    } = useTradeValidation();
+
+    // Build validation input from form state
+    const buildValidationInput = (): TradeValidationInput => ({
+        type: state.type,
+        entryPrice: state.entryPrice,
+        exitPrice: state.exitPrice,
+        stopLoss: state.stopLoss,
+        takeProfit: state.takeProfit,
+        lot: state.lot,
+        entryDate: state.entryDate,
+        entryTime: state.entryTime,
+        exitDate: state.exitDate,
+        exitTime: state.exitTime,
+        symbol: state.symbol,
+    });
+
+    // Validate single field on blur
+    const handleFieldBlur = (field: keyof TradeValidationInput) => {
+        validateSingleField(field, state[field] as string, buildValidationInput());
+    };
+
+    // Wrap form submit with validation
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        // Clear previous errors
+        clearAllErrors();
+        
+        // Validate all fields
+        const result = validateForm(buildValidationInput());
+        
+        if (!result.isValid) {
+            // Show toast with error count
+            const errorCount = result.errors.length;
+            showToast(`Corrija ${errorCount} erro${errorCount !== 1 ? 's' : ''} antes de salvar`, 'error');
+            return;
+        }
+        
+        // Pass to original submit handler
+        submitHandler(e, state, computed);
+    };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -261,22 +312,36 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 list="assets-list"
                                 value={symbol}
                                 onChange={(e) => setSymbol(e.target.value.toUpperCase())}
+                                onBlur={() => handleFieldBlur('symbol')}
                                 placeholder="EURUSD"
                                 required
                                 className="uppercase"
+                                error={getError('symbol')}
                             />
                             <datalist id="assets-list">
                                 {assets.map((asset) => (<option key={asset.symbol} value={asset.symbol} />))}
                             </datalist>
                         </div>
-                        <Input label="Lote" type="number" step="0.01" value={lot} onChange={(e) => setLot(e.target.value)} placeholder="1.0" required />
+                        <Input 
+                            label="Lote" 
+                            type="number" 
+                            step="0.01" 
+                            value={lot} 
+                            onChange={(e) => setLot(e.target.value)} 
+                            onBlur={() => handleFieldBlur('lot')}
+                            placeholder="1.0" 
+                            required 
+                            error={getError('lot')}
+                        />
                         <div>
                             <Input
                                 label="Direção"
                                 list="direction-list"
                                 value={type}
                                 onChange={(e) => setType(e.target.value as 'Long' | 'Short')}
+                                onBlur={() => handleFieldBlur('type')}
                                 placeholder="Long/Short"
+                                error={getError('type')}
                             />
                             <datalist id="direction-list">
                                 <option value="Long" /><option value="Short" />
@@ -286,14 +351,49 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
 
                     {/* Entry, SL, TP */}
                     <div className="grid grid-cols-3 gap-3">
-                        <Input label="Preço Entrada" type="number" step="0.00001" value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)} required />
-                        <Input label="Stop Loss" type="number" step="0.00001" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} />
-                        <Input label="Take Profit" type="number" step="0.00001" value={takeProfit} onChange={(e) => setTakeProfit(e.target.value)} />
+                        <Input 
+                            label="Preço Entrada" 
+                            type="number" 
+                            step="0.00001" 
+                            value={entryPrice} 
+                            onChange={(e) => setEntryPrice(e.target.value)} 
+                            onBlur={() => handleFieldBlur('entryPrice')}
+                            required 
+                            error={getError('entryPrice')}
+                        />
+                        <Input 
+                            label="Stop Loss" 
+                            type="number" 
+                            step="0.00001" 
+                            value={stopLoss} 
+                            onChange={(e) => setStopLoss(e.target.value)} 
+                            onBlur={() => handleFieldBlur('stopLoss')}
+                            error={getError('stopLoss')}
+                            warning={getWarning('stopLoss')}
+                        />
+                        <Input 
+                            label="Take Profit" 
+                            type="number" 
+                            step="0.00001" 
+                            value={takeProfit} 
+                            onChange={(e) => setTakeProfit(e.target.value)} 
+                            onBlur={() => handleFieldBlur('takeProfit')}
+                            error={getError('takeProfit')}
+                            warning={getWarning('takeProfit')}
+                        />
                     </div>
 
                     {/* Exit Price (only if finalized) */}
                     {!isTradeOpen && (
-                        <Input label="Preço Saída" type="number" step="0.00001" value={exitPrice} onChange={(e) => setExitPrice(e.target.value)} />
+                        <Input 
+                            label="Preço Saída" 
+                            type="number" 
+                            step="0.00001" 
+                            value={exitPrice} 
+                            onChange={(e) => setExitPrice(e.target.value)} 
+                            onBlur={() => handleFieldBlur('exitPrice')}
+                            error={getError('exitPrice')}
+                        />
                     )}
 
                     {/* Costs (always visible) */}
