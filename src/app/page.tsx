@@ -7,6 +7,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useToast } from '@/providers/ToastProvider';
 import { useAuth } from '@/hooks/useAuth';
 import { CreateAccountModal } from '@/components/accounts/CreateAccountModal';
+import { AccountSelectionSkeleton } from '@/components/accounts/AccountSelectionSkeleton';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import type { Account } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
@@ -95,14 +96,7 @@ export default function HomePage() {
   };
   
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">{authLoading ? 'Autenticando...' : 'Carregando...'}</p>
-        </div>
-      </div>
-    );
+    return <AccountSelectionSkeleton />;
   }
   
   return (

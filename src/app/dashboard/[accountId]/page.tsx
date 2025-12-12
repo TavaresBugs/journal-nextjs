@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAccountStore } from '@/store/useAccountStore';
@@ -30,6 +30,7 @@ import { DashboardJournal } from '@/components/dashboard/tabs/DashboardJournal';
 import { DashboardPlaybooks } from '@/components/dashboard/tabs/DashboardPlaybooks';
 import { DashboardLaboratory } from '@/components/dashboard/tabs/DashboardLaboratory';
 import { DashboardModals } from '@/components/dashboard/DashboardModals';
+import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 
 // Types and Utilities
 import type { Trade, Playbook } from '@/types';
@@ -45,11 +46,11 @@ import {
 // Validate if accountId is a valid UUID
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default function DashboardPage({ params, searchParams }: { params: Promise<{ accountId: string }>, searchParams: Promise<{ date?: string }> }) {
+export default function DashboardPage({ params, searchParams }: { params: { accountId: string }, searchParams: { date?: string } }) {
     const router = useRouter();
-    // Unwrap params Promise using React.use()
-    const { accountId } = use(params);
-    const { date: queryDate } = use(searchParams);
+    // Get params directly (not Promises in client components)
+    const { accountId } = params;
+    const { date: queryDate } = searchParams;
 
     // State Management
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance, updateAccount } = useAccountStore();
@@ -296,14 +297,7 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
     if (!uuidRegex.test(accountId)) return null;
 
     if (isLoading || !currentAccount) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto mb-4"></div>
-                    <p className="text-gray-400">Carregando...</p>
-                </div>
-            </div>
-        );
+        return <DashboardSkeleton />;
     }
 
     const pnl = currentAccount.currentBalance - currentAccount.initialBalance;
