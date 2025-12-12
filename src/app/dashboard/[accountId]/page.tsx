@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAccountStore } from '@/store/useAccountStore';
@@ -46,11 +46,11 @@ import {
 // Validate if accountId is a valid UUID
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export default function DashboardPage({ params, searchParams }: { params: { accountId: string }, searchParams: { date?: string } }) {
+export default function DashboardPage({ params, searchParams }: { params: Promise<{ accountId: string }>, searchParams: Promise<{ date?: string }> }) {
     const router = useRouter();
-    // Get params directly (not Promises in client components)
-    const { accountId } = params;
-    const { date: queryDate } = searchParams;
+    // Next.js 15+: params and searchParams are Promises, use React.use() to unwrap
+    const { accountId } = use(params);
+    const { date: queryDate } = use(searchParams);
 
     // State Management
     const { accounts, currentAccount, setCurrentAccount, updateAccountBalance, updateAccount } = useAccountStore();

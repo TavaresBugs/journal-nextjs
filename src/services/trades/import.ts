@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { parse, isValid } from 'date-fns';
 
 export interface RawTradeData {
@@ -35,17 +35,35 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = e.target?.result;
         if (!data) throw new Error('File is empty');
 
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
+        let rows: unknown[][] = [];
 
-        // Convert sheet to array of arrays to handle custom parsing
-        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
+        // Detect if file is CSV based on extension or content
+        const isCSV = file.name.endsWith('.csv') || file.type === 'text/csv';
+        
+        if (isCSV) {
+          // Parse CSV manually
+          const textDecoder = new TextDecoder('utf-8');
+          const text = textDecoder.decode(data as ArrayBuffer);
+          const lines = text.split(/\r?\n/);
+          rows = lines.map(line => line.split(',').map(cell => cell.trim()));
+        } else {
+          // Parse XLSX with exceljs
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(data as ArrayBuffer);
+          const worksheet = workbook.getWorksheet(1);
+          if (!worksheet) throw new Error('No worksheet found');
+
+          worksheet.eachRow((row, rowNumber) => {
+            const rowValues = row.values as unknown[];
+            // ExcelJS row.values is 1-indexed, so we slice from index 1
+            rows[rowNumber - 1] = rowValues.slice(1);
+          });
+        }
 
         // 1. Find "Positions" section
         let positionsRowIndex = -1;
@@ -370,8 +388,11 @@ export const parseTradeDate = (dateStr: string | number): Date | null => {
 
     // If it's a number (Excel serial date)
     if (typeof dateStr === 'number') {
-        const date = XLSX.SSF.parse_date_code(dateStr);
-        return new Date(date.y, date.m - 1, date.d, date.H, date.M, date.S);
+        // Excel serial date: days since 1900-01-01 (with 1900 leap year bug)
+        // 25569 = days between 1900-01-01 and 1970-01-01
+        const utcDays = dateStr - 25569;
+        const utcMs = utcDays * 86400 * 1000;
+        return new Date(utcMs);
     }
     
     if (typeof dateStr === 'string') {
