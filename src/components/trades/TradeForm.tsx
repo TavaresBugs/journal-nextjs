@@ -383,8 +383,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         />
                     </div>
 
-                    {/* Exit Price (only if finalized) */}
-                    {!isTradeOpen && (
+                    {/* Exit Price (always shown in edit mode, or when finalized in create mode) */}
+                    {(mode === 'edit' || !isTradeOpen) && (
                         <Input 
                             label="Preço Saída" 
                             type="number" 
@@ -501,8 +501,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     )}
 
-                    {/* Exit DateTime (only if finalized) */}
-                    {!isTradeOpen && (
+                    {/* Exit DateTime (always shown in edit mode, or when finalized in create mode) */}
+                    {(mode === 'edit' || !isTradeOpen) && (
                         <div className="grid grid-cols-2 gap-3">
                             <DatePickerInput 
                                 label="Data Saída" 

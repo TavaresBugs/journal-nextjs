@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import dayjs from 'dayjs';
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { 
     detectSession, 
@@ -85,28 +84,9 @@ export function mapMarketConditionFromDb(value?: string): string {
 // Helpers
 // ============================================
 
-/**
- * Get NY timezone date/time from stored values
- */
-export function getNYDateTime(dateStr?: string, timeStr?: string): { date: string; time: string } {
-    if (!dateStr) {
-        return { date: dayjs().format('YYYY-MM-DD'), time: '' };
-    }
-    
-    try {
-        const nyTimeZone = 'America/New_York';
-        const dateTimeStr = timeStr ? `${dateStr}T${timeStr}` : dateStr;
-        const dateObj = new Date(dateTimeStr);
-        const nyDate = toZonedTime(dateObj, nyTimeZone);
-        
-        return {
-            date: formatTz(nyDate, 'yyyy-MM-dd', { timeZone: nyTimeZone }),
-            time: timeStr ? formatTz(nyDate, 'HH:mm', { timeZone: nyTimeZone }) : ''
-        };
-    } catch {
-        return { date: dateStr, time: timeStr || '' };
-    }
-}
+// NOTE: getNYDateTime was removed - it was causing incorrect timezone conversion
+// when loading trades for edit. Dates are stored as naive strings (user's local time)
+// and should be used directly without any timezone conversion.
 
 // ============================================
 // Types
@@ -191,9 +171,6 @@ export interface TradeFormComputedValues {
  */
 export function useTradeForm(initialData?: Partial<Trade>) {
     const { assets } = useSettingsStore();
-    
-    const nyEntry = getNYDateTime(initialData?.entryDate, initialData?.entryTime);
-    const nyExit = getNYDateTime(initialData?.exitDate, initialData?.exitTime);
 
     // Market Conditions
     const [marketCondition, setMarketCondition] = useState(initialData?.marketCondition || '');
@@ -219,18 +196,16 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     const [commission, setCommission] = useState(initialData?.commission ? Math.abs(initialData.commission).toString() : '');
     const [swap, setSwap] = useState(initialData?.swap?.toString() || '');
     
-    // DateTime
-    const [entryDate, setEntryDate] = useState(nyEntry.date);
-    const [entryTime, setEntryTime] = useState(nyEntry.time);
-    const [exitDate, setExitDate] = useState(nyExit.date);
-    const [exitTime, setExitTime] = useState(nyExit.time);
+    // DateTime - use values directly, no timezone conversion needed
+    // Dates are stored as naive strings representing user's local time
+    const [entryDate, setEntryDate] = useState(initialData?.entryDate || dayjs().format('YYYY-MM-DD'));
+    const [entryTime, setEntryTime] = useState(initialData?.entryTime || '');
+    const [exitDate, setExitDate] = useState(initialData?.exitDate || '');
+    const [exitTime, setExitTime] = useState(initialData?.exitTime || '');
 
     // Sync form when initialData changes (important for Edit Modal)
     useEffect(() => {
         if (initialData) {
-            const nyEntry = getNYDateTime(initialData.entryDate, initialData.entryTime);
-            const nyExit = getNYDateTime(initialData.exitDate, initialData.exitTime);
-
             setMarketCondition(initialData.marketCondition || '');
             setTfAnalise(initialData.tfAnalise || '');
             setTfEntrada(initialData.tfEntrada || '');
@@ -248,10 +223,11 @@ export function useTradeForm(initialData?: Partial<Trade>) {
             setLot(initialData.lot?.toString() || '');
             setCommission(initialData.commission ? Math.abs(initialData.commission).toString() : '');
             setSwap(initialData.swap?.toString() || '');
-            setEntryDate(nyEntry.date);
-            setEntryTime(nyEntry.time);
-            setExitDate(nyExit.date);
-            setExitTime(nyExit.time);
+            // Use values directly - no timezone conversion
+            setEntryDate(initialData.entryDate || dayjs().format('YYYY-MM-DD'));
+            setEntryTime(initialData.entryTime || '');
+            setExitDate(initialData.exitDate || '');
+            setExitTime(initialData.exitTime || '');
         }
     }, [initialData]);
 
