@@ -20,10 +20,20 @@ Um diário de trading profissional construído com Next.js 16, React 19 e Supaba
 | **Mentor System** | ✅ Completo     | Convites, visualização, reviews        |
 | **Admin Panel**   | ✅ Completo     | RBAC, Audit logs, Aprovação            |
 | **Import/Export** | ✅ Completo     | NinjaTrader, MetaTrader, Excel         |
+| **Laboratory**    | ✅ Completo     | Recaps diários e semanais              |
 | **Testes**        | 🟡 Em progresso | Vitest configurado, cobertura básica   |
 | **AI Features**   | 📋 Planejado    | Roadmap Q2 2025                        |
 
 > **17/17 Tasks Jules concluídas** • Última atualização: Dezembro 2024
+
+### 🆕 Features Recentes (v1.3.0)
+
+- ✅ **Weekly Recap System** - Review semanal com multi-select de trades
+- ✅ **Validação Inteligente** - Errors vs Warnings com mensagens específicas
+- ✅ **Image Lightbox** - Zoom com pinch-to-zoom e pan livre
+- ✅ **Bloqueio de Scroll** - Hook reutilizável para modais
+- ✅ **Calendário Padronizado** - 42 células, input manual de data/hora
+- ✅ **Timezone Fix** - Horários como NY time, badge de sessão correto
 
 ---
 
@@ -292,6 +302,8 @@ Configure as variáveis de ambiente no dashboard do Vercel.
 | --------------------------------------- | ---------------------------------------------- |
 | [📐 Arquitetura](docs/ARCHITECTURE.md)  | Estrutura completa, fluxos de dados, diagramas |
 | [🗺️ Roadmap](docs/ROADMAP.md)           | Análise competitiva, roadmap até Q4 2025       |
+| [🗄️ Database](docs/DATABASE.md)         | Schema completo, tabelas, RLS policies         |
+| [📋 Changelog](CHANGELOG.md)            | Histórico de versões e mudanças                |
 | [🚧 Features](docs/PENDING_FEATURES.md) | Features pendentes por prioridade              |
 | [📋 TODO](docs/TODO.md)                 | Tarefas do dia-a-dia                           |
 | [🤖 Jules Tasks](docs/JULES_TASKS.md)   | Histórico das 17 tasks automatizadas           |
