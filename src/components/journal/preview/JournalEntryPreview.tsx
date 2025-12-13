@@ -49,8 +49,12 @@ const JournalEntryPreviewComponent = ({
             onClick={() => setShowComments(!showComments)} 
             variant="purple"
             size="md"
+            aria-label={showComments ? 'Esconder comentários' : 'Ver comentários'}
           >
-            {showComments ? '👁️‍🗨️ Esconder Comentários' : '💬 Ver Comentários'}
+            {showComments ? '👁️‍🗨️' : '💬'}
+            <span className="hidden sm:inline ml-1">
+              {showComments ? 'Esconder' : 'Ver Comentários'}
+            </span>
           </Button>
           {hasUnreadComments && !showComments && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />

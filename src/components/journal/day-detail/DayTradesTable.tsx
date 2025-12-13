@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { Button, GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
@@ -26,6 +26,8 @@ interface DayTradesTableProps {
  * Component for displaying trades and journal entries table
  * Shows standalone entries and trades with action buttons
  * Memoized to prevent unnecessary re-renders
+ * 
+ * Mobile UX: Horizontal scroll enabled with visual indicators
  */
 const DayTradesTableComponent = ({
   trades,
@@ -41,9 +43,28 @@ const DayTradesTableComponent = ({
   hasMentor = false,
   reviewsMap = {},
 }: DayTradesTableProps) => {
+  // Scroll hint disappears after 3 seconds
+  const [showScrollHint, setShowScrollHint] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowScrollHint(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <GlassCard className="overflow-hidden p-0 bg-zorin-bg/30 border-white/5">
-      <table className="w-full">
+    <GlassCard className="relative p-0 bg-zorin-bg/30 border-white/5">
+      {/* Horizontal scroll wrapper for mobile */}
+      <div 
+        className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-600"
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          scrollSnapType: 'x proximity',
+        }}
+        role="region"
+        aria-label="Tabela de trades com scroll horizontal"
+        tabIndex={0}
+      >
+        <table className="w-full min-w-[700px]">
         <thead>
           <tr className="bg-zorin-surface/50 text-xs text-gray-400 uppercase tracking-wider">
             <th className="px-4 py-3 text-center w-24">
@@ -63,12 +84,12 @@ const DayTradesTableComponent = ({
                 </Button>
               </div>
             </th>
-            <th className="px-4 py-3 text-center">AÇÕES</th>
-            <th className="px-4 py-3 text-center">TIPO</th>
-            <th className="px-4 py-3 text-center">P/L</th>
-            <th className="px-4 py-3 text-center">SÍMBOLO</th>
-            <th className="px-4 py-3 text-center">VOLUME</th>
-            <th className="px-4 py-3 text-center">DURAÇÃO</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">AÇÕES</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">TIPO</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">P/L</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">SÍMBOLO</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">VOLUME</th>
+            <th className="px-4 py-3 text-center whitespace-nowrap">DURAÇÃO</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-white/5">
@@ -80,7 +101,7 @@ const DayTradesTableComponent = ({
               key={entry.id}
               className="hover:bg-zorin-surface/50 transition-colors group"
             >
-              <td className="px-4 py-3 text-center">
+              <td className="px-4 py-3 text-center whitespace-nowrap">
                 <div className="relative inline-block">
                   <Button
                     variant="zorin-success"
@@ -108,7 +129,7 @@ const DayTradesTableComponent = ({
                   )}
                 </div>
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className="px-4 py-3 text-center whitespace-nowrap">
                 <div className="flex items-center justify-center gap-2">
                   <Button
                     variant="zorin-warning"
@@ -130,7 +151,7 @@ const DayTradesTableComponent = ({
                   </Button>
                 </div>
               </td>
-              <td className="px-4 py-3 text-center">
+              <td className="px-4 py-3 text-center whitespace-nowrap">
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] text-gray-500">
                     #{entry.id.slice(0, 13)}
@@ -140,16 +161,16 @@ const DayTradesTableComponent = ({
                   </span>
                 </div>
               </td>
-              <td className="px-4 py-3 text-center font-bold text-gray-500">
+              <td className="px-4 py-3 text-center font-bold text-gray-500 whitespace-nowrap">
                 -
               </td>
-              <td className="px-4 py-3 text-center text-gray-300 font-medium">
+              <td className="px-4 py-3 text-center text-gray-300 font-medium whitespace-nowrap">
                 <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
                   {entry.asset || 'Diário'}
                 </span>
               </td>
-              <td className="px-4 py-3 text-center text-gray-400">-</td>
-              <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs">
+              <td className="px-4 py-3 text-center text-gray-400 whitespace-nowrap">-</td>
+              <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs whitespace-nowrap">
                 -
               </td>
             </tr>
@@ -186,7 +207,7 @@ const DayTradesTableComponent = ({
                 key={trade.id}
                 className="hover:bg-zorin-surface/50 transition-colors group"
               >
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="relative inline-block">
                     <Button
                       variant={journalEntry ? "zorin-success" : "zorin-ghost"}
@@ -233,7 +254,7 @@ const DayTradesTableComponent = ({
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="flex items-center justify-center gap-2">
                     {/* Edit Trade Button */}
                     <Button
@@ -258,7 +279,7 @@ const DayTradesTableComponent = ({
                     </Button>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="flex flex-col items-center">
                     <span className="text-[10px] text-gray-500">
                       #{trade.id.slice(0, 13)}
@@ -285,7 +306,7 @@ const DayTradesTableComponent = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-center font-bold">
+                <td className="px-4 py-3 text-center font-bold whitespace-nowrap">
                   <span
                     className={
                       trade.pnl && trade.pnl >= 0
@@ -296,15 +317,15 @@ const DayTradesTableComponent = ({
                     {formatCurrency(trade.pnl || 0)}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center text-gray-300 font-medium">
+                <td className="px-4 py-3 text-center text-gray-300 font-medium whitespace-nowrap">
                   <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
                     {trade.symbol}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-center text-gray-400">
+                <td className="px-4 py-3 text-center text-gray-400 whitespace-nowrap">
                   {trade.lot}
                 </td>
-                <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs">
+                <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs whitespace-nowrap">
                   {duration}
                 </td>
               </tr>
@@ -313,6 +334,35 @@ const DayTradesTableComponent = ({
 
         </tbody>
       </table>
+      </div>
+      
+      {/* Fade indicator - mobile only, suggests more content to the right */}
+      <div 
+        className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none 
+                   bg-gradient-to-l from-zorin-bg/80 to-transparent 
+                   md:hidden transition-opacity"
+        aria-hidden="true"
+      />
+      
+      {/* Scroll hint - disappears after 3 seconds */}
+      {showScrollHint && (
+        <div className="absolute bottom-2 right-2 text-xs text-gray-400 animate-pulse md:hidden pointer-events-none flex items-center gap-1">
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="12" 
+            height="12" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Arraste para ver mais
+        </div>
+      )}
     </GlassCard>
   );
 };
