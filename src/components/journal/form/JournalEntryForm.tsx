@@ -7,6 +7,7 @@ import { DatePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
 import { TimeframeImageGrid } from '@/components/shared';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
@@ -78,6 +79,9 @@ export function JournalEntryForm({
   // Trade management - support multiple trades
   const [trades, setTrades] = useState<Trade[]>(initialLinkedTrades);
   const [isLinkTradeModalOpen, setIsLinkTradeModalOpen] = useState(false);
+  
+  // Block body scroll when link trade modal is open
+  useBlockBodyScroll(isLinkTradeModalOpen);
   
   // Image management
   const initialImages = initialData?.images || {};

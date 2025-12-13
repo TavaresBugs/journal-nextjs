@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils/general';
+import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
 
 interface ModalProps {
     isOpen: boolean;
@@ -14,17 +15,8 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, headerActions, children, maxWidth = 'lg' }: ModalProps) {
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
-
-        return () => {
-            document.body.style.overflow = 'unset';
-        };
-    }, [isOpen]);
+    // Block body scroll when modal is open
+    useBlockBodyScroll(isOpen);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {

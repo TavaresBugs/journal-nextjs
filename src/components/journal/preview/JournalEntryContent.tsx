@@ -6,6 +6,7 @@ import { formatCurrency } from '@/lib/calculations';
 import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import type { Trade, JournalEntry } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
+import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
 import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '@/services/journal/review';
 import { ensureFreshImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
@@ -27,6 +28,9 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
   const [previewImageKey, setPreviewImageKey] = useState<string | null>(null);
   const [previewImageIndex, setPreviewImageIndex] = useState(0);
   const [showZoomHint, setShowZoomHint] = useState(true);
+  
+  // Block body scroll when lightbox is open
+  useBlockBodyScroll(!!previewImageKey);
   
   const isPending = (entry as ExtendedJournalEntry)._isPending;
   const optimisticImages = (entry as ExtendedJournalEntry)._optimisticImages;

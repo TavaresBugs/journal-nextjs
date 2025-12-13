@@ -2,6 +2,7 @@
 
 import { createPortal } from 'react-dom';
 import Image from 'next/image';
+import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
 
 interface ImageData {
   key: string;
@@ -28,7 +29,10 @@ export function ImageLightbox({
   onNext,
   onPrev
 }: ImageLightboxProps) {
-  if (typeof document === 'undefined' || currentIndex < 0 || currentIndex >= images.length) {
+  const isOpen = currentIndex >= 0 && currentIndex < images.length;
+  useBlockBodyScroll(isOpen);
+
+  if (typeof document === 'undefined' || !isOpen) {
     return null;
   }
 
