@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Input, Button } from '@/components/ui';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Modal, Input, Button, GlassCard } from '@/components/ui';
 import type { EmotionalState, TradeLite } from '@/types';
 import { CreateRecapData } from '@/store/useLaboratoryStore';
+import { formatCurrency } from '@/lib/calculations';
+import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface CreateRecapModalProps {
     isOpen: boolean;
@@ -30,8 +33,13 @@ export function CreateRecapModal({
     trades,
     isLoading = false
 }: CreateRecapModalProps) {
+    // Review type toggle
+    const [reviewType, setReviewType] = useState<'daily' | 'weekly'>('daily');
+    
+    // Form state
     const [title, setTitle] = useState('');
     const [tradeId, setTradeId] = useState('');
+    const [selectedTradeIds, setSelectedTradeIds] = useState<string[]>([]);
     const [whatWorked, setWhatWorked] = useState('');
     const [whatFailed, setWhatFailed] = useState('');
     const [emotionalState, setEmotionalState] = useState<EmotionalState | ''>('');
@@ -40,10 +48,55 @@ export function CreateRecapModal({
     const [previews, setPreviews] = useState<string[]>([]);
     const [tradeSearch, setTradeSearch] = useState('');
     const [showTradeDropdown, setShowTradeDropdown] = useState(false);
+    
+    // Week selection
+    const [selectedWeek, setSelectedWeek] = useState(() => {
+        const now = new Date();
+        return format(now, "yyyy-'W'ww");
+    });
+    
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Filter trades based on search
+    // Parse week string to dates
+    const weekDates = useMemo(() => {
+        try {
+            const [year, week] = selectedWeek.split('-W').map(Number);
+            const firstDayOfYear = new Date(year, 0, 1);
+            const daysToAdd = (week - 1) * 7;
+            const weekStart = startOfWeek(new Date(firstDayOfYear.getTime() + daysToAdd * 24 * 60 * 60 * 1000), { locale: ptBR });
+            const weekEnd = endOfWeek(weekStart, { locale: ptBR });
+            return { weekStart, weekEnd };
+        } catch {
+            return { weekStart: new Date(), weekEnd: new Date() };
+        }
+    }, [selectedWeek]);
+
+    // Filter trades for weekly review
+    const weekTrades = useMemo(() => {
+        if (reviewType !== 'weekly') return [];
+        return trades.filter(trade => {
+            const tradeDate = parseISO(trade.entryDate);
+            return tradeDate >= weekDates.weekStart && tradeDate <= weekDates.weekEnd;
+        });
+    }, [trades, weekDates, reviewType]);
+
+    // Calculate stats for selected trades
+    const weekStats = useMemo(() => {
+        const selected = weekTrades.filter(t => selectedTradeIds.includes(t.id));
+        const wins = selected.filter(t => t.outcome === 'win').length;
+        const total = selected.length;
+        const totalPnL = selected.reduce((sum, t) => sum + (t.pnl || 0), 0);
+        
+        return {
+            count: total,
+            total: weekTrades.length,
+            winRate: total > 0 ? (wins / total) * 100 : 0,
+            totalPnL,
+        };
+    }, [weekTrades, selectedTradeIds]);
+
+    // Filter trades based on search (for daily)
     const filteredTrades = trades.filter(trade => 
         trade.symbol.toLowerCase().includes(tradeSearch.toLowerCase()) ||
         trade.entryDate.includes(tradeSearch)
@@ -86,6 +139,12 @@ export function CreateRecapModal({
         setShowTradeDropdown(false);
     };
 
+    const toggleTradeSelection = (id: string) => {
+        setSelectedTradeIds(prev => 
+            prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+        );
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -93,7 +152,11 @@ export function CreateRecapModal({
 
         const data: CreateRecapData = {
             title: title.trim(),
-            tradeId: tradeId || undefined,
+            reviewType,
+            tradeId: reviewType === 'daily' ? (tradeId || undefined) : undefined,
+            tradeIds: reviewType === 'weekly' ? selectedTradeIds : undefined,
+            weekStartDate: reviewType === 'weekly' ? format(weekDates.weekStart, 'yyyy-MM-dd') : undefined,
+            weekEndDate: reviewType === 'weekly' ? format(weekDates.weekEnd, 'yyyy-MM-dd') : undefined,
             whatWorked: whatWorked.trim() || undefined,
             whatFailed: whatFailed.trim() || undefined,
             emotionalState: emotionalState || undefined,
@@ -108,12 +171,14 @@ export function CreateRecapModal({
         setTitle('');
         setTradeId('');
         setTradeSearch('');
+        setSelectedTradeIds([]);
         setWhatWorked('');
         setWhatFailed('');
         setEmotionalState('');
         setLessonsLearned('');
         setSelectedFiles([]);
         setPreviews([]);
+        setReviewType('daily');
     };
 
     const handleClose = () => {
@@ -122,62 +187,187 @@ export function CreateRecapModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="📝 Novo Recap" maxWidth="xl">
+        <Modal isOpen={isOpen} onClose={handleClose} title="📝 Novo Recap" maxWidth="4xl">
             <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Review Type Toggle */}
+                <div className="flex flex-col sm:flex-row gap-3 p-4 bg-gray-800/30 rounded-xl border border-white/5">
+                    <label className="text-sm font-medium text-gray-400 sm:w-32">Tipo de Review:</label>
+                    <div className="flex flex-wrap gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                                type="radio"
+                                name="reviewType"
+                                value="daily"
+                                checked={reviewType === 'daily'}
+                                onChange={() => setReviewType('daily')}
+                                className="w-4 h-4 text-cyan-500 border-gray-600 focus:ring-cyan-500"
+                            />
+                            <span className={`text-sm ${reviewType === 'daily' ? 'text-cyan-400' : 'text-gray-400'}`}>
+                                📅 Review Diário
+                            </span>
+                            <span className="text-xs text-gray-500">(1 trade ou sessão)</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                                type="radio"
+                                name="reviewType"
+                                value="weekly"
+                                checked={reviewType === 'weekly'}
+                                onChange={() => setReviewType('weekly')}
+                                className="w-4 h-4 text-cyan-500 border-gray-600 focus:ring-cyan-500"
+                            />
+                            <span className={`text-sm ${reviewType === 'weekly' ? 'text-cyan-400' : 'text-gray-400'}`}>
+                                📊 Review Semanal
+                            </span>
+                            <span className="text-xs text-gray-500">(múltiplos trades)</span>
+                        </label>
+                    </div>
+                </div>
+
                 {/* Title */}
                 <Input
                     label="Título do Recap"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Ex: Análise do trade EURUSD 11/12"
+                    placeholder={reviewType === 'daily' 
+                        ? "Ex: Análise do trade EURUSD 11/12" 
+                        : "Ex: Review Semana 50 - Dezembro 2024"
+                    }
                     required
                 />
 
-                {/* Trade Link */}
-                <div className="relative" ref={dropdownRef}>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Vincular a um Trade (opcional)
-                    </label>
-                    <input
-                        type="text"
-                        value={tradeSearch}
-                        onChange={(e) => {
-                            setTradeSearch(e.target.value);
-                            setShowTradeDropdown(true);
-                            if (e.target.value === '') setTradeId('');
-                        }}
-                        onFocus={() => setShowTradeDropdown(true)}
-                        placeholder="Buscar por ativo ou data..."
-                        className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                    />
-                    
-                    {showTradeDropdown && filteredTrades.length > 0 && (
-                        <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-auto">
-                            {filteredTrades.map(trade => (
-                                <button
-                                    key={trade.id}
-                                    type="button"
-                                    onClick={() => selectTrade(trade)}
-                                    className="w-full px-4 py-3 text-left hover:bg-gray-700/50 flex items-center gap-3 border-b border-gray-700/50 last:border-0"
-                                >
-                                    <span className={`font-medium ${trade.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
-                                        {trade.type}
-                                    </span>
-                                    <span className="text-white">{trade.symbol}</span>
-                                    <span className="text-gray-400 text-sm">{trade.entryDate}</span>
-                                    {trade.outcome && (
-                                        <span className={`ml-auto text-sm ${
-                                            trade.outcome === 'win' ? 'text-green-400' : 
-                                            trade.outcome === 'loss' ? 'text-red-400' : 'text-yellow-400'
-                                        }`}>
-                                            {trade.outcome === 'win' ? '✓' : trade.outcome === 'loss' ? '✗' : '⬤'}
+                {/* Trade Link - Daily Mode */}
+                {reviewType === 'daily' && (
+                    <div className="relative" ref={dropdownRef}>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">
+                            Vincular a um Trade (opcional)
+                        </label>
+                        <input
+                            type="text"
+                            value={tradeSearch}
+                            onChange={(e) => {
+                                setTradeSearch(e.target.value);
+                                setShowTradeDropdown(true);
+                                if (e.target.value === '') setTradeId('');
+                            }}
+                            onFocus={() => setShowTradeDropdown(true)}
+                            placeholder="Buscar por ativo ou data..."
+                            className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                        />
+                        
+                        {showTradeDropdown && filteredTrades.length > 0 && (
+                            <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-auto">
+                                {filteredTrades.map(trade => (
+                                    <button
+                                        key={trade.id}
+                                        type="button"
+                                        onClick={() => selectTrade(trade)}
+                                        className="w-full px-4 py-3 text-left hover:bg-gray-700/50 flex items-center gap-3 border-b border-gray-700/50 last:border-0"
+                                    >
+                                        <span className={`font-medium ${trade.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
+                                            {trade.type}
                                         </span>
-                                    )}
-                                </button>
-                            ))}
+                                        <span className="text-white">{trade.symbol}</span>
+                                        <span className="text-gray-400 text-sm">{trade.entryDate}</span>
+                                        {trade.outcome && (
+                                            <span className={`ml-auto text-sm ${
+                                                trade.outcome === 'win' ? 'text-green-400' : 
+                                                trade.outcome === 'loss' ? 'text-red-400' : 'text-yellow-400'
+                                            }`}>
+                                                {trade.outcome === 'win' ? '✓' : trade.outcome === 'loss' ? '✗' : '⬤'}
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Week Selection and Trade Multi-Select - Weekly Mode */}
+                {reviewType === 'weekly' && (
+                    <GlassCard className="p-4 space-y-4 bg-gray-800/30 border-white/5">
+                        {/* Week Selector */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Semana de Análise
+                            </label>
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="week"
+                                    value={selectedWeek}
+                                    onChange={(e) => setSelectedWeek(e.target.value)}
+                                    className="px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                                />
+                                <span className="text-sm text-gray-400">
+                                    {format(weekDates.weekStart, 'dd/MM', { locale: ptBR })} - {format(weekDates.weekEnd, 'dd/MM', { locale: ptBR })}
+                                </span>
+                            </div>
                         </div>
-                    )}
-                </div>
+
+                        {/* Trades Multi-Select */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Trades da Semana (selecione para incluir)
+                            </label>
+                            
+                            {weekTrades.length > 0 ? (
+                                <>
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                                        {weekTrades.map(trade => (
+                                            <label
+                                                key={trade.id}
+                                                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                                                    selectedTradeIds.includes(trade.id)
+                                                        ? 'bg-cyan-500/10 border-cyan-500/50'
+                                                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedTradeIds.includes(trade.id)}
+                                                    onChange={() => toggleTradeSelection(trade.id)}
+                                                    className="w-4 h-4 rounded border-gray-600 text-cyan-500 focus:ring-cyan-500"
+                                                />
+                                                <div className="flex-1 flex items-center justify-between text-sm">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`font-medium ${trade.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {trade.type}
+                                                        </span>
+                                                        <span className="text-white">{trade.symbol}</span>
+                                                        <span className="text-gray-400">
+                                                            {format(parseISO(trade.entryDate), 'dd/MM HH:mm', { locale: ptBR })}
+                                                        </span>
+                                                    </div>
+                                                    <span className={(trade.pnl ?? 0) > 0 ? 'text-green-400 font-medium' : 'text-red-400 font-medium'}>
+                                                        {(trade.pnl ?? 0) > 0 ? '+' : ''}{formatCurrency(trade.pnl ?? 0)}
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    
+                                    {/* Stats Footer */}
+                                    <div className="mt-3 p-3 bg-white/5 rounded-lg flex flex-wrap items-center justify-between gap-2 text-sm">
+                                        <span className="text-gray-400">
+                                            {weekStats.count} de {weekStats.total} trades
+                                        </span>
+                                        <span className="text-gray-300">
+                                            Win Rate: <span className={weekStats.winRate >= 50 ? 'text-green-400' : 'text-red-400'}>{weekStats.winRate.toFixed(0)}%</span>
+                                        </span>
+                                        <span className={weekStats.totalPnL > 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>
+                                            {weekStats.totalPnL > 0 ? '+' : ''}{formatCurrency(weekStats.totalPnL)}
+                                        </span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-8 text-gray-500">
+                                    <p>Nenhum trade encontrado nesta semana</p>
+                                </div>
+                            )}
+                        </div>
+                    </GlassCard>
+                )}
 
                 {/* What Worked / What Failed */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,7 +380,7 @@ export function CreateRecapModal({
                             onChange={(e) => setWhatWorked(e.target.value)}
                             placeholder="Pontos positivos do trade..."
                             className="w-full px-4 py-3 bg-gray-800/50 border border-green-700/30 rounded-xl text-white placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors resize-none"
-                            rows={3}
+                            rows={5}
                         />
                     </div>
                     <div>
@@ -202,7 +392,7 @@ export function CreateRecapModal({
                             onChange={(e) => setWhatFailed(e.target.value)}
                             placeholder="O que poderia melhorar..."
                             className="w-full px-4 py-3 bg-gray-800/50 border border-red-700/30 rounded-xl text-white placeholder-gray-500 focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors resize-none"
-                            rows={3}
+                            rows={5}
                         />
                     </div>
                 </div>
@@ -239,9 +429,12 @@ export function CreateRecapModal({
                     <textarea
                         value={lessonsLearned}
                         onChange={(e) => setLessonsLearned(e.target.value)}
-                        placeholder="O que você aprendeu com este trade..."
+                        placeholder={reviewType === 'daily' 
+                            ? "O que você aprendeu com este trade..." 
+                            : "O que você aprendeu nesta semana de trading..."
+                        }
                         className="w-full px-4 py-3 bg-gray-800/50 border border-cyan-700/30 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors resize-none"
-                        rows={4}
+                        rows={6}
                     />
                 </div>
 
@@ -303,7 +496,7 @@ export function CreateRecapModal({
                     <Button 
                         type="submit" 
                         variant="gradient-success" 
-                        disabled={!title.trim() || isLoading}
+                        disabled={!title.trim() || isLoading || (reviewType === 'weekly' && selectedTradeIds.length === 0)}
                     >
                         {isLoading ? 'Salvando...' : 'Criar Recap'}
                     </Button>

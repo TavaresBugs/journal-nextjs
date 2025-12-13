@@ -29,7 +29,11 @@ export interface UpdateExperimentData extends CreateExperimentData {
 
 export interface CreateRecapData {
     title: string;
-    tradeId?: string;
+    tradeId?: string;           // For daily review (single trade)
+    tradeIds?: string[];        // For weekly review (multiple trades)
+    reviewType?: 'daily' | 'weekly';
+    weekStartDate?: string;
+    weekEndDate?: string;
     whatWorked?: string;
     whatFailed?: string;
     emotionalState?: EmotionalState;
@@ -580,18 +584,37 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                 .from('laboratory_recaps')
                 .insert({
                     user_id: user.id,
-                    trade_id: data.tradeId || null,
+                    trade_id: data.reviewType === 'daily' ? (data.tradeId || null) : null,
                     title: data.title,
                     what_worked: data.whatWorked,
                     what_failed: data.whatFailed,
                     emotional_state: data.emotionalState,
                     lessons_learned: data.lessonsLearned,
                     images: imageUrls,
+                    review_type: data.reviewType || 'daily',
+                    week_start_date: data.weekStartDate || null,
+                    week_end_date: data.weekEndDate || null,
                 })
                 .select()
                 .single();
 
             if (insertError) throw insertError;
+
+            // If weekly review, insert trade relationships
+            if (data.reviewType === 'weekly' && data.tradeIds && data.tradeIds.length > 0) {
+                const relationships = data.tradeIds.map(tradeId => ({
+                    recap_id: insertedData.id,
+                    trade_id: tradeId,
+                }));
+                
+                const { error: relError } = await supabase
+                    .from('laboratory_recap_trades')
+                    .insert(relationships);
+                
+                if (relError) {
+                    console.warn('Error inserting recap trade relationships:', relError);
+                }
+            }
 
             const newRecap = mapRecapFromDB(insertedData);
             set({ 
