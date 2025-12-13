@@ -488,7 +488,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             error={getError('entryDate')}
                             required 
                         />
-                        <TimePickerInput label="Hora Entrada" value={entryTime} onChange={setEntryTime} />
+                        <TimePickerInput 
+                            label="Hora Entrada" 
+                            value={entryTime} 
+                            onChange={setEntryTime} 
+                            onBlur={() => handleFieldBlur('entryTime')}
+                            error={getError('entryTime')}
+                        />
                     </div>
 
                     {/* Session Badge */}
@@ -512,7 +518,13 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 onBlur={() => handleFieldBlur('exitDate')}
                                 error={getError('exitDate')}
                             />
-                            <TimePickerInput label="Hora Saída" value={exitTime} onChange={setExitTime} />
+                            <TimePickerInput 
+                                label="Hora Saída" 
+                                value={exitTime} 
+                                onChange={setExitTime} 
+                                onBlur={() => handleFieldBlur('exitTime')}
+                                error={getError('exitTime')}
+                            />
                         </div>
                     )}
                 </div>

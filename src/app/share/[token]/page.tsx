@@ -7,6 +7,8 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { supabase } from '@/lib/supabase';
 import { ensureFreshImageUrl } from '@/lib/utils/general';
 import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
+import { MarketConditionsCard, type MarketConditionsCardProps } from '@/components/shared/MarketConditionsCard';
+import { mapMarketConditionFromDb, mapEntryQualityFromDb } from '@/components/trades/hooks/useTradeForm';
 import type { JournalEntry, JournalImage } from '@/types';
 
 // Mapeamento de timeframes para labels em português
@@ -27,6 +29,7 @@ export default function SharePage() {
     
     const [entry, setEntry] = useState<JournalEntry | null>(null);
     const [images, setImages] = useState<JournalImage[]>([]);
+    const [tradeContext, setTradeContext] = useState<MarketConditionsCardProps | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
@@ -139,6 +142,58 @@ export default function SharePage() {
                     createdAt: img.created_at,
                 }));
                 setImages(mappedImages);
+
+                // Fetch linked trade for Market Conditions display
+                if (entryData.trade_id) {
+                    const { data: tradeData } = await supabase
+                        .from('trades')
+                        .select('market_condition_v2, strategy, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality')
+                        .eq('id', entryData.trade_id)
+                        .single();
+                    
+                    if (tradeData) {
+                        // Parse confluences from comma-separated string to array
+                        const confluencesArray = tradeData.tags
+                            ? tradeData.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+                            : [];
+
+                        // Fetch playbook icon if strategy is set
+                        let strategyIcon: string | undefined;
+                        if (tradeData.strategy) {
+                            const { data: playbookData } = await supabase
+                                .from('playbooks')
+                                .select('icon')
+                                .eq('name', tradeData.strategy)
+                                .single();
+                            strategyIcon = playbookData?.icon || undefined;
+                        }
+
+                        // Check if there's any data worth showing
+                        const hasData = tradeData.market_condition_v2 ||
+                            tradeData.strategy ||
+                            tradeData.tf_analise ||
+                            tradeData.tf_entrada ||
+                            tradeData.setup ||
+                            tradeData.htf_aligned !== null ||
+                            confluencesArray.length > 0 ||
+                            tradeData.entry_quality;
+
+                        if (hasData) {
+                            setTradeContext({
+                                condition: mapMarketConditionFromDb(tradeData.market_condition_v2) || undefined,
+                                strategy: tradeData.strategy || undefined,
+                                strategyIcon,
+                                tfAnalise: tradeData.tf_analise || undefined,
+                                tfEntrada: tradeData.tf_entrada || undefined,
+                                setup: tradeData.setup || undefined,
+                                htfAligned: tradeData.htf_aligned ?? undefined,
+                                confluences: confluencesArray.length > 0 ? confluencesArray : undefined,
+                                evaluation: mapEntryQualityFromDb(tradeData.entry_quality) || undefined,
+                            });
+                        }
+                    }
+                }
+
                 setLoading(false);
             } catch (err) {
                 console.error('Error loading shared entry:', err);
@@ -204,7 +259,14 @@ export default function SharePage() {
                     </div>
                 </div>
 
-                {/* Images Grid */}
+                {/* Market Conditions Section */}
+                {tradeContext && (
+                    <div className="mb-8">
+                        <MarketConditionsCard {...tradeContext} />
+                    </div>
+                )}
+
+                {/* Analyses (Images) Section */}
                 {images.length > 0 && (
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold text-gray-200 mb-4">📸 Análises</h2>

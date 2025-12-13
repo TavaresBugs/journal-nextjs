@@ -150,6 +150,15 @@ export function validateDates(
                     message: ERROR_MESSAGES.DATE_SEQUENCE,
                     code: 'DATE_SEQUENCE',
                 });
+                // If dates are the same, the issue is with the time
+                // Add error to exitTime field for better UX
+                if (exitDate === entryDate) {
+                    errors.push({
+                        field: 'exitTime',
+                        message: ERROR_MESSAGES.DATE_SEQUENCE,
+                        code: 'DATE_SEQUENCE',
+                    });
+                }
             }
         }
     }
