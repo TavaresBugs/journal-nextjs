@@ -439,7 +439,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
 
           {/* Zoomable Image Container */}
           <div 
-            className="relative w-full h-full flex items-center justify-center p-12"
+            className="absolute inset-0 flex items-center justify-center"
             onClick={e => e.stopPropagation()}
           >
             <TransformWrapper
@@ -448,9 +448,13 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
               maxScale={4}
               doubleClick={{ mode: 'reset' }}
               wheel={{ step: 0.1 }}
-              panning={{ disabled: false }}
+              panning={{ 
+                disabled: false,
+                velocityDisabled: true,
+              }}
               limitToBounds={false}
               centerOnInit={true}
+              centerZoomedOut={true}
               onTransformed={(_, state) => {
                 // Update zoom indicator in the DOM
                 const indicator = document.getElementById('zoom-indicator');
@@ -471,29 +475,23 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
                     wrapperStyle={{
                       width: '100%',
                       height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      userSelect: 'none',
-                      WebkitUserSelect: 'none',
-                      touchAction: 'none',
-                    }}
-                    contentStyle={{
-                      cursor: 'grab',
-                      userSelect: 'none',
                     }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={allImages[currentLightboxIndex]?.url}
                       alt="Preview"
-                      className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl select-none"
-                      draggable={false}
                       style={{ 
+                        maxWidth: '100vw',
+                        maxHeight: '85vh',
+                        objectFit: 'contain',
+                        borderRadius: '0.5rem',
                         userSelect: 'none',
                         WebkitUserDrag: 'none',
                         touchAction: 'none',
+                        cursor: 'grab',
                       } as React.CSSProperties}
+                      draggable={false}
                     />
                   </TransformComponent>
                   
