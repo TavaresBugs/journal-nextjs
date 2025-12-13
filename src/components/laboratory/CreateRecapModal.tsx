@@ -89,7 +89,8 @@ export function CreateRecapModal({
     // Calculate stats for selected trades
     const weekStats = useMemo(() => {
         const selected = weekTrades.filter(t => selectedTradeIds.includes(t.id));
-        const wins = selected.filter(t => t.outcome === 'win').length;
+        // Calculate wins based on P&L (positive = win), not outcome field
+        const wins = selected.filter(t => (t.pnl ?? 0) > 0).length;
         const total = selected.length;
         const totalPnL = selected.reduce((sum, t) => sum + (t.pnl || 0), 0);
         
