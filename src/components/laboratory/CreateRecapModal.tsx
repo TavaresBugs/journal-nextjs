@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Modal, Input, Button, GlassCard, Tabs } from '@/components/ui';
+import { CustomCheckbox } from '@/components/checklist/CustomCheckbox';
 import type { EmotionalState, TradeLite } from '@/types';
 import { CreateRecapData } from '@/store/useLaboratoryStore';
 import { formatCurrency } from '@/lib/calculations';
@@ -293,19 +294,18 @@ export function CreateRecapModal({
                                 <>
                                     <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                                         {weekTrades.map(trade => (
-                                            <label
+                                            <div
                                                 key={trade.id}
+                                                onClick={() => toggleTradeSelection(trade.id)}
                                                 className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                                                     selectedTradeIds.includes(trade.id)
-                                                        ? 'bg-cyan-500/10 border-cyan-500/50'
-                                                        : 'bg-white/5 border-white/10 hover:bg-white/10'
+                                                        ? 'bg-zorin-accent/10 border-zorin-accent/50 shadow-[0_0_10px_rgba(0,200,83,0.15)]'
+                                                        : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
                                                 }`}
                                             >
-                                                <input
-                                                    type="checkbox"
+                                                <CustomCheckbox
                                                     checked={selectedTradeIds.includes(trade.id)}
                                                     onChange={() => toggleTradeSelection(trade.id)}
-                                                    className="w-4 h-4 rounded border-gray-600 text-cyan-500 focus:ring-cyan-500"
                                                 />
                                                 <div className="flex-1 flex items-center justify-between text-sm">
                                                     <div className="flex items-center gap-2">
@@ -321,7 +321,7 @@ export function CreateRecapModal({
                                                         {(trade.pnl ?? 0) > 0 ? '+' : ''}{formatCurrency(trade.pnl ?? 0)}
                                                     </span>
                                                 </div>
-                                            </label>
+                                            </div>
                                         ))}
                                     </div>
                                     
