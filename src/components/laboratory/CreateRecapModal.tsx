@@ -303,10 +303,12 @@ export function CreateRecapModal({
                                                         : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
                                                 }`}
                                             >
-                                                <CustomCheckbox
-                                                    checked={selectedTradeIds.includes(trade.id)}
-                                                    onChange={() => toggleTradeSelection(trade.id)}
-                                                />
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                    <CustomCheckbox
+                                                        checked={selectedTradeIds.includes(trade.id)}
+                                                        onChange={() => toggleTradeSelection(trade.id)}
+                                                    />
+                                                </div>
                                                 <div className="flex-1 flex items-center justify-between text-sm">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`font-medium ${trade.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
