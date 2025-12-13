@@ -1,12 +1,17 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Modal, Input, Button, GlassCard } from '@/components/ui';
+import { Modal, Input, Button, GlassCard, Tabs } from '@/components/ui';
 import type { EmotionalState, TradeLite } from '@/types';
 import { CreateRecapData } from '@/store/useLaboratoryStore';
 import { formatCurrency } from '@/lib/calculations';
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+const REVIEW_TYPE_TABS = [
+    { id: 'daily', label: 'Review Diário', icon: '📅' },
+    { id: 'weekly', label: 'Review Semanal', icon: '📊' },
+];
 
 interface CreateRecapModalProps {
     isOpen: boolean;
@@ -189,40 +194,12 @@ export function CreateRecapModal({
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="📝 Novo Recap" maxWidth="4xl">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Review Type Toggle */}
-                <div className="flex flex-col sm:flex-row gap-3 p-4 bg-gray-800/30 rounded-xl border border-white/5">
-                    <label className="text-sm font-medium text-gray-400 sm:w-32">Tipo de Review:</label>
-                    <div className="flex flex-wrap gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="reviewType"
-                                value="daily"
-                                checked={reviewType === 'daily'}
-                                onChange={() => setReviewType('daily')}
-                                className="w-4 h-4 text-cyan-500 border-gray-600 focus:ring-cyan-500"
-                            />
-                            <span className={`text-sm ${reviewType === 'daily' ? 'text-cyan-400' : 'text-gray-400'}`}>
-                                📅 Review Diário
-                            </span>
-                            <span className="text-xs text-gray-500">(1 trade ou sessão)</span>
-                        </label>
-                        <label className="flex items-center gap-2 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="reviewType"
-                                value="weekly"
-                                checked={reviewType === 'weekly'}
-                                onChange={() => setReviewType('weekly')}
-                                className="w-4 h-4 text-cyan-500 border-gray-600 focus:ring-cyan-500"
-                            />
-                            <span className={`text-sm ${reviewType === 'weekly' ? 'text-cyan-400' : 'text-gray-400'}`}>
-                                📊 Review Semanal
-                            </span>
-                            <span className="text-xs text-gray-500">(múltiplos trades)</span>
-                        </label>
-                    </div>
-                </div>
+                {/* Review Type Toggle - Modern Tabs */}
+                <Tabs
+                    tabs={REVIEW_TYPE_TABS}
+                    activeTab={reviewType}
+                    onChange={(tabId) => setReviewType(tabId as 'daily' | 'weekly')}
+                />
 
                 {/* Title */}
                 <Input
