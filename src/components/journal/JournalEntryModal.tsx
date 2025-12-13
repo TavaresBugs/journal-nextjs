@@ -5,6 +5,7 @@ import type { Trade, JournalEntry } from '@/types';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useTradeStore } from '@/store/useTradeStore';
 import { useToast } from '@/providers/ToastProvider';
+import { useImageCache } from '@/hooks/useImageCache';
 import { JournalEntryPreview } from './preview';
 import { JournalEntryForm, type FormSubmissionData } from './form';
 import { getTradesByIds } from '@/services/trades/trade';
@@ -117,10 +118,26 @@ export function JournalEntryModal({
   const [isEditing, setIsEditing] = useState(startEditing || !existingEntry);
   const [isSharingLoading, setIsSharingLoading] = useState(false);
   
+  // Image cache for cleanup when modal closes
+  const imageCache = useImageCache();
+  
   // Optimistic UI State
   const [optimisticEntry, setOptimisticEntry] = useState<OptimisticEntry | null>(null);
 
-  // Reset optimistic state when real entry updates (synced with server)
+  // Cleanup image cache when modal closes
+  useEffect(() => {
+    const entryId = existingEntry?.id || 'new-entry';
+    
+    return () => {
+      // Clear cached images for this journal entry when modal closes
+      const cleared = imageCache.clear((key) => key.includes(entryId) || key.startsWith('upload'));
+      if (cleared > 0 && process.env.NODE_ENV === 'development') {
+        console.log(`[JournalEntryModal] Cleanup: cleared ${cleared} cached images on close`);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingEntry?.id]);
+
   // Reset optimistic state when real entry updates (synced with server)
   useEffect(() => {
     // If we have an existing entry (ID matches or just presence for new creation)

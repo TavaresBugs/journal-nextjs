@@ -342,6 +342,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 onBlur={() => handleFieldBlur('type')}
                                 placeholder="Long/Short"
                                 error={getError('type')}
+                                autoComplete="off"
                             />
                             <datalist id="direction-list">
                                 <option value="Long" /><option value="Short" />

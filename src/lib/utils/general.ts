@@ -56,6 +56,43 @@ export function getSupabaseStorageUrl(path: string, bucket: string = JOURNAL_IMA
 }
 
 /**
+ * Get a cached image URL with TTL-based versioning.
+ * 
+ * Uses hour-based timestamps to leverage browser cache while still
+ * allowing updates. Images are cached for the duration of the TTL,
+ * reducing unnecessary refetches.
+ * 
+ * @param urlOrPath - The image URL or storage path
+ * @param ttlSeconds - Cache TTL in seconds (default: 3600 = 1 hour)
+ * @returns URL with TTL-based cache version
+ */
+export function getCachedImageUrl(urlOrPath: string, ttlSeconds: number = 3600): string {
+    if (!urlOrPath) return urlOrPath;
+
+    let fullUrl = urlOrPath;
+
+    // If it's not a complete URL, build the full Supabase Storage URL
+    if (!urlOrPath.startsWith('http')) {
+        fullUrl = getSupabaseStorageUrl(urlOrPath);
+    }
+
+    try {
+        const urlObj = new URL(fullUrl);
+        // Remove old cache-busting parameters
+        urlObj.searchParams.delete('t');
+        urlObj.searchParams.delete('v');
+        // Add TTL-based version (changes every TTL period)
+        const version = Math.floor(Date.now() / (ttlSeconds * 1000));
+        urlObj.searchParams.set('v', version.toString());
+        return urlObj.toString();
+    } catch {
+        const base = fullUrl.split('?')[0];
+        const version = Math.floor(Date.now() / (ttlSeconds * 1000));
+        return `${base}?v=${version}`;
+    }
+}
+
+/**
  * Ensures an image URL is complete and has a fresh cache-busting parameter.
  * 
  * Handles three scenarios:
@@ -63,24 +100,20 @@ export function getSupabaseStorageUrl(path: string, bucket: string = JOURNAL_IMA
  * 2. Storage path only (no http) - Builds full Supabase URL then adds cache buster
  * 3. Empty/invalid - Returns as-is
  * 
- * This forces the browser to fetch the newest version of the image
- * instead of serving a cached (potentially outdated) version.
+ * ⚠️ Note: This forces a fresh fetch on every call. For better performance,
+ * consider using getCachedImageUrl() with a TTL for static images.
  * 
  * @param urlOrPath - The image URL or storage path to process
  * @returns Full URL with a fresh timestamp parameter
  */
 export function ensureFreshImageUrl(urlOrPath: string): string {
-    console.log('[ensureFreshImageUrl] Called with:', urlOrPath?.substring(0, 100));
     if (!urlOrPath) return urlOrPath;
 
     let fullUrl = urlOrPath;
 
     // If it's not a complete URL, build the full Supabase Storage URL
     if (!urlOrPath.startsWith('http')) {
-        // It's just a path - build full URL
-        console.log('[ensureFreshImageUrl] Input is path, not URL:', urlOrPath);
         fullUrl = getSupabaseStorageUrl(urlOrPath);
-        console.log('[ensureFreshImageUrl] Built full URL:', fullUrl);
     }
 
     try {
@@ -97,3 +130,4 @@ export function ensureFreshImageUrl(urlOrPath: string): string {
         return `${base}?v=${Date.now()}`;
     }
 }
+

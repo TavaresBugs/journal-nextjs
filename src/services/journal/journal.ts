@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { handleServiceError } from '@/lib/errorHandler';
 import { base64ToBlob, ensureFreshImageUrl } from '@/lib/utils/general';
+import { compressToWebP, base64ToFile } from '@/lib/utils/imageCompression';
 import { JournalEntry } from '@/types';
 import { DBJournalEntry, DBJournalImage, DBJournalEntryTrade } from '@/types/database';
 import { getCurrentUserId } from '@/services/core/account';
@@ -160,48 +161,82 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                     const base64 = base64Array[i];
                     if (typeof base64 === 'string' && base64.startsWith('data:image')) {
                         try {
-                            const blob = base64ToBlob(base64);
-                            const mimeMatch = base64.match(/data:(.*?);base64/);
-                            const mime = mimeMatch ? mimeMatch[1] : 'image/png';
-                            const ext = mime.split('/')[1] || 'png';
+                            // Convert base64 to File for WebP compression
+                            const file = base64ToFile(base64, `image-${timeframe}-${i}.png`);
+                            
+                            // Compress to WebP + JPEG
+                            const compressed = await compressToWebP(file, {
+                                maxWidth: 1920,
+                                maxHeight: 1080,
+                                qualityWebP: 0.8,
+                                qualityJpeg: 0.85,
+                            });
 
                             // Organize by Year/Month/Day
                             const [year, month, day] = entry.date.split('-');
                             const sanitizedAsset = (entry.asset || 'Diario').replace(/[^a-zA-Z0-9]/g, '-');
-                            // Use Asset-Timeframe-Index-ShortID in filename for readability and uniqueness in the shared Day folder
                             const shortId = entry.id.slice(0, 8);
-                            const fileName = `${userId}/${entry.accountId}/${year}/${month}/${day}/${sanitizedAsset}-${timeframe}-${i}-${shortId}.${ext}`;
-                            keptFileNames.add(fileName);
-
-                            const { error: uploadError } = await supabase.storage
+                            const basePath = `${userId}/${entry.accountId}/${year}/${month}/${day}/${sanitizedAsset}-${timeframe}-${i}-${shortId}`;
+                            
+                            // Upload WebP (primary format)
+                            const webpFileName = `${basePath}.webp`;
+                            keptFileNames.add(webpFileName);
+                            
+                            const { error: webpError } = await supabase.storage
                                 .from('journal-images')
-                                .upload(fileName, blob, {
-                                    contentType: mime,
+                                .upload(webpFileName, compressed.webp, {
+                                    contentType: 'image/webp',
                                     upsert: true
                                 });
 
-                            if (uploadError) {
-                                handleServiceError(uploadError, `journalService.uploadImage.${timeframe}`, { severity: 'warn' });
-                                continue;
+                            if (webpError) {
+                                handleServiceError(webpError, `journalService.uploadWebP.${timeframe}`, { severity: 'warn' });
                             }
 
-                            const { data: { publicUrl } } = supabase.storage
+                            // Upload JPEG fallback
+                            const jpegFileName = `${basePath}.jpg`;
+                            keptFileNames.add(jpegFileName);
+                            
+                            const { error: jpegError } = await supabase.storage
                                 .from('journal-images')
-                                .getPublicUrl(fileName);
+                                .upload(jpegFileName, compressed.jpeg, {
+                                    contentType: 'image/jpeg',
+                                    upsert: true
+                                });
 
-                            // Add timestamp to URL to bypass browser cache after update
-                            const publicUrlWithCacheBuster = `${publicUrl}?t=${new Date().getTime()}`;
+                            if (jpegError) {
+                                handleServiceError(jpegError, `journalService.uploadJPEG.${timeframe}`, { severity: 'warn' });
+                            }
+
+                            // Get public URLs
+                            const { data: { publicUrl: webpUrl } } = supabase.storage
+                                .from('journal-images')
+                                .getPublicUrl(webpFileName);
+
+                            const { data: { publicUrl: jpegUrl } } = supabase.storage
+                                .from('journal-images')
+                                .getPublicUrl(jpegFileName);
+
+                            // Store WebP URL (smaller) with cache buster
+                            // Browser will load WebP if supported, otherwise we have JPEG available
+                            const primaryUrl = `${webpUrl}?t=${new Date().getTime()}`;
 
                             imagesToSave.push({
                                 id: crypto.randomUUID(),
                                 user_id: userId,
                                 journal_entry_id: entry.id,
-                                url: publicUrlWithCacheBuster,
-                                path: fileName,
+                                url: primaryUrl,
+                                path: webpFileName,
                                 timeframe: timeframe,
                                 display_order: displayOrder++,
                                 created_at: new Date().toISOString()
                             });
+
+                            // Log compression stats in development
+                            if (process.env.NODE_ENV === 'development') {
+                                const savings = ((1 - compressed.compressedSizeWebP / compressed.originalSize) * 100).toFixed(1);
+                                console.log(`[Journal] Image ${timeframe}-${i}: ${(compressed.originalSize / 1024).toFixed(0)}KB → ${(compressed.compressedSizeWebP / 1024).toFixed(0)}KB (-${savings}%)`);
+                            }
                         } catch (err) {
                             handleServiceError(err, `journalService.processImage.${timeframe}`, { severity: 'warn' });
                         }

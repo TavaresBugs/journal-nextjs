@@ -65,6 +65,7 @@ const ImageUploadZoneComponent = ({
             src={images[images.length - 1]}
             alt={timeframe.label}
             className="w-full h-full object-cover"
+            loading="lazy"
           />
 
           {/* Delete Button - Removes last image */}
