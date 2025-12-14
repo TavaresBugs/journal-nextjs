@@ -10,7 +10,8 @@ import { useToast } from '@/providers/ToastProvider';
 import { 
     getSessionEmoji,
     formatRMultiple,
-    getRMultipleColor
+    getRMultipleColor,
+    getTimeframeAlignment
 } from '@/lib/timeframeUtils';
 
 // Import hooks
@@ -237,16 +238,19 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         </div>
                     </div>
 
-                    {/* Alignment Badge */}
-                    {tfAnalise && tfEntrada && (
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
-                            alignmentResult.valid
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        }`}>
-                            {alignmentResult.valid ? '✓ HTF Aligned' : `⚠ Máx: ${alignmentResult.recommendedEntryTF}`}
-                        </div>
-                    )}
+                    {/* Alignment Badge - 3 states: ST Aligned, ST+RE Aligned, ST+RE+… */}
+                    {tfAnalise && tfEntrada && (() => {
+                        const alignment = getTimeframeAlignment(tfAnalise, tfEntrada);
+                        return (
+                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
+                                alignment.isWarning
+                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                    : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            }`}>
+                                {alignment.isWarning ? '⚠️ ' : '✓ '}{alignment.label}
+                            </div>
+                        );
+                    })()}
                     {/* Confluências + Avaliação */}
                     <div className="grid grid-cols-2 gap-3">
                         <div>

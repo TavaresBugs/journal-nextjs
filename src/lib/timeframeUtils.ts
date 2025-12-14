@@ -55,6 +55,61 @@ const ALIGNMENT_TABLE: Record<string, string> = {
     'M15': '1m',
 };
 
+// ============================================
+// 3-STATE ALIGNMENT LOGIC
+// ============================================
+
+export type AlignmentStatus = 'ST_ALIGNED' | 'ST_RE_ALIGNED' | 'ST_RE_PLUS_ALERT';
+
+export interface TimeframeAlignmentResult {
+    status: AlignmentStatus;
+    label: 'ST Aligned' | 'ST + RE Aligned' | 'ST + RE + …';
+    isWarning: boolean;
+}
+
+/**
+ * Lookup table for PD Array TF → Entry TF alignment states
+ * Based on professional ICT/SMC methodology
+ */
+const ALIGNMENT_MAP: Record<string, Record<string, AlignmentStatus>> = {
+    'Monthly': { 'Daily': 'ST_ALIGNED', '4H': 'ST_RE_ALIGNED', '1H': 'ST_RE_PLUS_ALERT', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    'Weekly':  { '4H': 'ST_ALIGNED', '1H': 'ST_RE_ALIGNED', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    'Daily':   { '1H': 'ST_ALIGNED', '15m': 'ST_RE_ALIGNED', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    '4H':      { '15m': 'ST_ALIGNED', '5m': 'ST_RE_ALIGNED', '1m': 'ST_RE_PLUS_ALERT' },
+    '1H':      { '5m': 'ST_ALIGNED', '1m': 'ST_RE_ALIGNED' },
+    '15m':     { '1m': 'ST_ALIGNED' },
+};
+
+/**
+ * Get timeframe alignment status between PD Array TF (context) and Entry TF
+ * 
+ * @param pdArrayTf - PD Array / Analysis timeframe (e.g., 'Daily', '4H')
+ * @param entryTf - Entry timeframe (e.g., '15m', '5m')
+ * @returns Alignment result with status, label, and warning flag
+ * 
+ * @example
+ * getTimeframeAlignment('Daily', '15m') // { status: 'ST_RE_ALIGNED', label: 'ST + RE Aligned', isWarning: false }
+ * getTimeframeAlignment('Daily', '5m')  // { status: 'ST_RE_PLUS_ALERT', label: 'ST + RE + …', isWarning: true }
+ */
+export function getTimeframeAlignment(
+    pdArrayTf: string,
+    entryTf: string
+): TimeframeAlignmentResult {
+    const tfMap = ALIGNMENT_MAP[pdArrayTf];
+    const status: AlignmentStatus = tfMap?.[entryTf] ?? 'ST_RE_PLUS_ALERT';
+
+    const label = 
+        status === 'ST_ALIGNED'
+            ? 'ST Aligned'
+            : status === 'ST_RE_ALIGNED'
+            ? 'ST + RE Aligned'
+            : 'ST + RE + …';
+
+    const isWarning = status === 'ST_RE_PLUS_ALERT';
+
+    return { status, label, isWarning };
+}
+
 /**
  * Timeframe hierarchy for comparison (higher number = higher TF)
  */

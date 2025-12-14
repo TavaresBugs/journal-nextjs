@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { getTimeframeAlignment } from '@/lib/timeframeUtils';
 
 /**
  * Props for MarketConditionsCard - read-only display of trade context
@@ -133,19 +134,22 @@ export function MarketConditionsCard({
                     </div>
                 </div>
 
-                {/* Row 3: HTF Aligned | Avaliação ST | (empty or future field) */}
+                {/* Row 3: Alignment Badge | Avaliação ST */}
                 <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Alinhamento HTF</span>
+                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Alinhamento</span>
                     <div className="h-[42px] flex items-center">
-                        {htfAligned !== undefined ? (
-                            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-                                htfAligned
-                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            }`}>
-                                {htfAligned ? '✓ HTF Aligned' : '⚠ HTF Misaligned'}
-                            </div>
-                        ) : (
+                        {tfAnalise && tfEntrada ? (() => {
+                            const alignment = getTimeframeAlignment(tfAnalise, tfEntrada);
+                            return (
+                                <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                                    alignment.isWarning
+                                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                }`}>
+                                    {alignment.isWarning ? '⚠️ ' : '✓ '}{alignment.label}
+                                </div>
+                            );
+                        })() : (
                             <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-600 h-[42px] flex items-center w-full">
                                 —
                             </div>
