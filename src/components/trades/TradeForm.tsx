@@ -337,6 +337,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             placeholder="1.0" 
                             required 
                             error={getError('lot')}
+                            autoComplete="off"
                         />
                         <div>
                             <Input
@@ -366,6 +367,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onBlur={() => handleFieldBlur('entryPrice')}
                             required 
                             error={getError('entryPrice')}
+                            autoComplete="off"
                         />
                         <Input 
                             label="Stop Loss" 
@@ -376,6 +378,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onBlur={() => handleFieldBlur('stopLoss')}
                             error={getError('stopLoss')}
                             warning={getWarning('stopLoss')}
+                            autoComplete="off"
                         />
                         <Input 
                             label="Take Profit" 
@@ -386,6 +389,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onBlur={() => handleFieldBlur('takeProfit')}
                             error={getError('takeProfit')}
                             warning={getWarning('takeProfit')}
+                            autoComplete="off"
                         />
                     </div>
 
@@ -399,13 +403,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onChange={(e) => setExitPrice(e.target.value)} 
                             onBlur={() => handleFieldBlur('exitPrice')}
                             error={getError('exitPrice')}
+                            autoComplete="off"
                         />
                     )}
 
                     {/* Costs (always visible) */}
                     <div className="grid grid-cols-2 gap-3">
-                        <Input label="Corretagem ($)" type="number" step="0.01" min="0" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="0.00" />
-                        <Input label="Swap ($)" type="number" step="0.01" value={swap} onChange={(e) => setSwap(e.target.value)} placeholder="-1.50" />
+                        <Input label="Corretagem ($)" type="number" step="0.01" min="0" value={commission} onChange={(e) => setCommission(e.target.value)} placeholder="0.00" autoComplete="off" />
+                        <Input label="Swap ($)" type="number" step="0.01" value={swap} onChange={(e) => setSwap(e.target.value)} placeholder="-1.50" autoComplete="off" />
                     </div>
 
                     {/* Estimates - Neon Stat Cards */}
