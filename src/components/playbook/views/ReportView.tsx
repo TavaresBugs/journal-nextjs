@@ -1,7 +1,7 @@
 'use client';
 
 import { formatCurrency } from '@/lib/calculations';
-import { getPdArrayIcon } from '@/lib/utils/playbook';
+import { getPdArrayIcon, getConditionIcon } from '@/lib/utils/playbook';
 import type { HtfNestedMetric } from '@/types/playbookTypes';
 
 interface ReportViewProps {
@@ -12,6 +12,7 @@ interface ReportViewProps {
 export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
     const allSetups: Array<{
         htf: string;
+        condition?: string;
         pdArray?: string;
         tagCombo: string;
         ltf: string;
@@ -23,6 +24,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
             tagData.ltfBreakdown.forEach(ltfData => {
                 allSetups.push({
                     htf: htfMetric.htf,
+                    condition: ltfData.condition,
                     pdArray: tagData.pdArray,
                     tagCombo: tagData.tagCombo,
                     ltf: ltfData.ltf,
@@ -85,18 +87,22 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                                     </div>
                                 </div>
                                 
-                                {/* Flow Line: HTF → PD Array → Confluências → LTF */}
+                                {/* Flow Line: HTF → Condição → PD Array → LTF */}
                                 <div className="flex flex-wrap items-center gap-2 text-sm mb-3 bg-gray-900/40 rounded-lg px-3 py-2">
                                     <span className="text-indigo-300 font-semibold">🕐 {setup.htf}</span>
                                     <span className="text-gray-500">→</span>
+                                    {setup.condition && (
+                                        <>
+                                            <span className="text-sky-300 font-medium">{getConditionIcon(setup.condition)} {setup.condition}</span>
+                                            <span className="text-gray-500">→</span>
+                                        </>
+                                    )}
                                     {setup.pdArray && (
                                         <>
                                             <span className="text-amber-300 font-medium">{getPdArrayIcon(setup.pdArray)} {setup.pdArray}</span>
                                             <span className="text-gray-500">→</span>
                                         </>
                                     )}
-                                    <span className="text-purple-300 font-medium">🏷️ {setup.tagCombo}</span>
-                                    <span className="text-gray-500">→</span>
                                     <span className="text-cyan-300 font-semibold">{setup.ltf}</span>
                                 </div>
                                 

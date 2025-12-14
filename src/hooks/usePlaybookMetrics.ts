@@ -22,12 +22,13 @@ import {
 // Build nested metrics: HTF -> PD Array + Tag Combination -> LTF
 function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
     // Group by: HTF -> (pdArray + tagCombo combined key) -> LTF
-    const htfMap = new Map<string, Map<string, Map<string, { wins: number; losses: number; pnl: number; rMultiples: number[]; pdArray: string }>>>();
+    const htfMap = new Map<string, Map<string, Map<string, { wins: number; losses: number; pnl: number; rMultiples: number[]; pdArray: string; conditions: Map<string, number> }>>>();
 
     trades.forEach(trade => {
         const htf = trade.tfAnalise || 'N/A';
         const ltf = trade.tfEntrada || 'N/A';
         const pdArray = trade.pdArray || 'N/A';
+        const condition = trade.market_condition_v2 || 'N/A';
         // Treat full tag combination as single unit (sorted alphabetically)
         const tagCombo = trade.tags
             ? (trade.tags === '#SemConfluencias' ? 'Sem Confluências' : trade.tags.split(',').map(t => t.trim()).filter(Boolean).sort().join(' + '))
@@ -44,12 +45,15 @@ function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
         const tagMap = htfMap.get(htf)!;
         if (!tagMap.has(comboKey)) tagMap.set(comboKey, new Map());
         const ltfMap = tagMap.get(comboKey)!;
-        if (!ltfMap.has(ltf)) ltfMap.set(ltf, { wins: 0, losses: 0, pnl: 0, rMultiples: [], pdArray });
+        if (!ltfMap.has(ltf)) ltfMap.set(ltf, { wins: 0, losses: 0, pnl: 0, rMultiples: [], pdArray, conditions: new Map() });
 
         const stats = ltfMap.get(ltf)!;
         if (isWin) stats.wins++;
         else if (isLoss) stats.losses++;
         stats.pnl += pnl;
+        
+        // Track condition frequency
+        stats.conditions.set(condition, (stats.conditions.get(condition) || 0) + 1);
 
         // Calculate R-Multiple: use rMultiple if available, otherwise calculate from stopLoss
         let rMultiple = trade.rMultiple;
@@ -98,9 +102,20 @@ function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
                 const avgRR = stats.rMultiples.length > 0
                     ? stats.rMultiples.reduce((a, b) => a + b, 0) / stats.rMultiples.length
                     : null;
+                
+                // Find most frequent condition
+                let mostFrequentCondition: string | undefined;
+                let maxConditionCount = 0;
+                stats.conditions.forEach((count, cond) => {
+                    if (count > maxConditionCount && cond !== 'N/A') {
+                        maxConditionCount = count;
+                        mostFrequentCondition = cond;
+                    }
+                });
 
                 ltfBreakdown.push({
                     ltf,
+                    condition: mostFrequentCondition,
                     wins: stats.wins,
                     losses: stats.losses,
                     pnl: stats.pnl,

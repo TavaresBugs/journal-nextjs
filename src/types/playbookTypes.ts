@@ -10,6 +10,7 @@ export type ViewMode = 'htf' | 'heatmap' | 'report';
 // Nested metrics interface: HTF -> Tag Combo -> LTF (legacy for heatmap)
 export interface LtfMetric {
     ltf: string;
+    condition?: string; // Market condition (Bullish/Bearish/Ranging)
     wins: number;
     losses: number;
     pnl: number;
