@@ -73,12 +73,11 @@ export interface TimeframeAlignmentResult {
  */
 const ALIGNMENT_MAP: Record<string, Record<string, AlignmentStatus>> = {
     'Monthly': { 'Daily': 'ST_ALIGNED', '4H': 'ST_RE_ALIGNED', '1H': 'ST_RE_PLUS_ALERT', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    'Weekly':  { 'Daily': 'ST_ALIGNED', '4H': 'ST_RE_ALIGNED', '1H': 'ST_RE_PLUS_ALERT', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    'Daily':   { '4H': 'ST_ALIGNED', '1H': 'ST_RE_ALIGNED', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    '4H':      { '1H': 'ST_ALIGNED', '15m': 'ST_RE_ALIGNED', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    '1H':      { '15m': 'ST_ALIGNED', '5m': 'ST_RE_ALIGNED', '1m': 'ST_RE_PLUS_ALERT' },
-    '15m':     { '5m': 'ST_ALIGNED', '1m': 'ST_RE_ALIGNED' },
-    '5m':      { '1m': 'ST_ALIGNED' },
+    'Weekly':  { '4H': 'ST_ALIGNED', '1H': 'ST_RE_ALIGNED', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    'Daily':   { '1H': 'ST_ALIGNED', '15m': 'ST_RE_ALIGNED', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    '4H':      { '15m': 'ST_ALIGNED', '5m': 'ST_RE_ALIGNED', '1m': 'ST_RE_PLUS_ALERT' },
+    '1H':      { '5m': 'ST_ALIGNED', '1m': 'ST_RE_ALIGNED' },
+    '15m':     { '1m': 'ST_ALIGNED' },
 };
 
 /**
