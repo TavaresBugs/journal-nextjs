@@ -49,8 +49,8 @@ export function ViewPlaybookModal({
             headerActions={
                 onEdit && activeTab === 'info' ? (
                     <Button
-                        variant="zorin-ghost"
-                        size="sm"
+                        variant="gold"
+                        size="md"
                         onClick={() => {
                             onEdit(playbook);
                             handleClose();
