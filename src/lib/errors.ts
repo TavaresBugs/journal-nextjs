@@ -1,12 +1,40 @@
+export enum ErrorCode {
+  // Database
+  DB_QUERY_FAILED = 'DB_QUERY_FAILED',
+  DB_NOT_FOUND = 'DB_NOT_FOUND',
+  DB_CONSTRAINT_VIOLATION = 'DB_CONSTRAINT_VIOLATION',
+
+  // Auth
+  AUTH_UNAUTHORIZED = 'AUTH_UNAUTHORIZED',
+  AUTH_FORBIDDEN = 'AUTH_FORBIDDEN',
+
+  // Validation
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+
+  // Network
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  TIMEOUT_ERROR = 'TIMEOUT_ERROR',
+
+  // Unknown
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
 export class AppError extends Error {
   public readonly statusCode: number;
-  public readonly code?: string;
+  public readonly code: ErrorCode;
+  public readonly metadata?: Record<string, any>;
 
-  constructor(message: string, statusCode: number = 500, code?: string) {
+  constructor(
+    message: string,
+    code: ErrorCode = ErrorCode.UNKNOWN_ERROR,
+    statusCode: number = 500,
+    metadata?: Record<string, any>
+  ) {
     super(message);
     this.name = 'AppError';
     this.statusCode = statusCode;
     this.code = code;
+    this.metadata = metadata;
   }
 }
 
@@ -37,12 +65,12 @@ export function toAppError(error: unknown, defaultMessage = 'An unexpected error
   }
 
   if (error instanceof Error) {
-    return new AppError(error.message, 500);
+    return new AppError(error.message, ErrorCode.UNKNOWN_ERROR, 500);
   }
 
   if (typeof error === 'string') {
-    return new AppError(error, 500);
+    return new AppError(error, ErrorCode.UNKNOWN_ERROR, 500);
   }
 
-  return new AppError(defaultMessage, 500);
+  return new AppError(defaultMessage, ErrorCode.UNKNOWN_ERROR, 500);
 }
