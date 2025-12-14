@@ -143,45 +143,47 @@ export default function SharePage() {
                 }));
                 setImages(mappedImages);
 
-                // Fetch linked trade for Market Conditions display
-                if (entryData.trade_id) {
-                    const { data: tradeData } = await supabase
-                        .from('trades')
-                        .select('market_condition_v2, strategy, strategy_icon, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality, pd_array')
-                        .eq('id', entryData.trade_id)
-                        .single();
+                // Fetch linked trade via Bridge (RPC)
+                // Fetch linked trade via Bridge (RPC)
+                const { data: bridgeResponse, error: bridgeError } = await supabase
+                    .rpc('get_shared_entry_bridge', { token_input: token });
+
+                if (bridgeError) {
+                    console.error('[SharePage] Bridge RPC error:', bridgeError);
+                } else if (bridgeResponse?.error) {
+                    console.error('[SharePage] Bridge logic error:', bridgeResponse.error);
+                } else if (bridgeResponse?.data) {
+                    const tradeData = bridgeResponse.data;
                     
-                    if (tradeData) {
-                        // Parse confluences from comma-separated string to array
-                        const confluencesArray = tradeData.tags
-                            ? tradeData.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
-                            : [];
+                    const confluencesArray = tradeData.tags
+                        ? tradeData.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+                        : [];
 
-                        // Check if there's any data worth showing
-                        const hasData = tradeData.market_condition_v2 ||
-                            tradeData.strategy ||
-                            tradeData.tf_analise ||
-                            tradeData.tf_entrada ||
-                            tradeData.setup ||
-                            tradeData.htf_aligned !== null ||
-                            confluencesArray.length > 0 ||
-                            tradeData.entry_quality ||
-                            tradeData.pd_array;
+                    const hasData = Boolean(
+                        tradeData.market_condition_v2 ||
+                        tradeData.strategy ||
+                        tradeData.tf_analise ||
+                        tradeData.tf_entrada ||
+                        tradeData.setup ||
+                        tradeData.htf_aligned !== null ||
+                        confluencesArray.length > 0 ||
+                        tradeData.entry_quality ||
+                        tradeData.pd_array
+                    );
 
-                        if (hasData) {
-                            setTradeContext({
-                                condition: mapMarketConditionFromDb(tradeData.market_condition_v2) || undefined,
-                                strategy: tradeData.strategy || undefined,
-                                strategyIcon: tradeData.strategy_icon || undefined,
-                                tfAnalise: tradeData.tf_analise || undefined,
-                                tfEntrada: tradeData.tf_entrada || undefined,
-                                setup: tradeData.setup || undefined,
-                                htfAligned: tradeData.htf_aligned ?? undefined,
-                                confluences: confluencesArray.length > 0 ? confluencesArray : undefined,
-                                evaluation: mapEntryQualityFromDb(tradeData.entry_quality) || undefined,
-                                pdArray: tradeData.pd_array || undefined,
-                            });
-                        }
+                    if (hasData) {
+                        setTradeContext({
+                            condition: mapMarketConditionFromDb(tradeData.market_condition_v2) || undefined,
+                            strategy: tradeData.strategy || undefined,
+                            strategyIcon: tradeData.strategy_icon || undefined,
+                            tfAnalise: tradeData.tf_analise || undefined,
+                            tfEntrada: tradeData.tf_entrada || undefined,
+                            setup: tradeData.setup || undefined,
+                            htfAligned: tradeData.htf_aligned ?? undefined,
+                            confluences: confluencesArray.length > 0 ? confluencesArray : undefined,
+                            evaluation: mapEntryQualityFromDb(tradeData.entry_quality) || undefined,
+                            pdArray: tradeData.pd_array || undefined,
+                        });
                     }
                 }
 
