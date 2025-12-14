@@ -167,6 +167,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 value={marketConditionV2}
                                 onChange={(e) => setMarketConditionV2(e.target.value)}
                                 placeholder="Tendência, Lateral..."
+                                autoComplete="off"
                             />
                             <datalist id="market-conditions-list">
                                 {MARKET_CONDITIONS_V2.map((cond) => (
@@ -182,6 +183,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                     value={strategy}
                                     onChange={(e) => setStrategy(e.target.value)}
                                     placeholder="MMBM, AMD..."
+                                    autoComplete="off"
                                     className={`${playbooks.find(p => p.name === strategy) ? 'pl-8' : ''}`}
                                 />
                                 {playbooks.find(p => p.name === strategy) && (
@@ -207,6 +209,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 value={tfAnalise}
                                 onChange={(e) => setTfAnalise(e.target.value)}
                                 placeholder="H4"
+                                autoComplete="off"
                             />
                             <datalist id="htf-list">
                                 <option value="Monthly" /><option value="Weekly" /><option value="Daily" /><option value="H4" /><option value="H1" /><option value="M15" />
@@ -219,6 +222,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 value={tfEntrada}
                                 onChange={(e) => setTfEntrada(e.target.value)}
                                 placeholder="M15"
+                                autoComplete="off"
                             />
                             <datalist id="ltf-list">
                                 <option value="H1" /><option value="M15" /><option value="M5" /><option value="M3" /><option value="M1" />
@@ -231,6 +235,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 value={setup}
                                 onChange={(e) => setSetup(e.target.value)}
                                 placeholder="ST+RE"
+                                autoComplete="off"
                             />
                             <datalist id="setups-list">
                                 {setups.map((s) => (<option key={s} value={s} />))}
@@ -293,6 +298,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 value={entryQuality}
                                 onChange={(e) => setEntryQuality(e.target.value)}
                                 placeholder="🌟 Picture Perfect..."
+                                autoComplete="off"
                             />
                             <datalist id="entry-quality-list">
                                 {ENTRY_QUALITY_OPTIONS.map((opt) => (

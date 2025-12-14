@@ -319,33 +319,90 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                 {/* Header */}
                 <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
                     <div className="container mx-auto px-6 py-6" style={{ maxWidth: '1200px' }}>
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => router.push('/')}
-                                    leftIcon={
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
-                                            <path d="m12 19-7-7 7-7"/>
-                                            <path d="M19 12H5"/>
+                        <div className="flex flex-col gap-3 mb-6">
+                            {/* Linha 1: Voltar + Título + Ícones (desktop) */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => router.push('/')}
+                                        leftIcon={
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:-translate-x-1 transition-transform">
+                                                <path d="m12 19-7-7 7-7"/>
+                                                <path d="M19 12H5"/>
+                                            </svg>
+                                        }
+                                    >
+                                        Voltar
+                                    </Button>
+                                    <div className="h-6 w-px bg-gray-700 hidden sm:block"></div>
+                                    <div className="min-w-0">
+                                        <h1 className="text-xl sm:text-2xl font-bold text-gray-100 truncate">{currentAccount.name}</h1>
+                                        <p className="text-sm text-gray-400">{currentAccount.currency} • {currentAccount.leverage}</p>
+                                    </div>
+                                </div>
+
+                                {/* Ícones - apenas desktop (md+) */}
+                                <div className="hidden md:flex items-center gap-2">
+                                    {isAdminUser && (
+                                        <Link href="/admin" prefetch>
+                                            <div onMouseEnter={prefetchAdmin}>
+                                                <Button variant="primary" size="icon" title="Painel Admin" className="w-12 h-12 rounded-xl flex-shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
+                                                        <path d="m9 12 2 2 4-4"/>
+                                                    </svg>
+                                                </Button>
+                                            </div>
+                                        </Link>
+                                    )}
+
+                                    {(isMentorUser || isAdminUser) && (
+                                        <Link href="/mentor" prefetch>
+                                            <div onMouseEnter={prefetchMentor}>
+                                                <Button variant="primary" size="icon" title="Mentoria" className="w-12 h-12 rounded-xl flex-shrink-0">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                                        <circle cx="9" cy="7" r="4"/>
+                                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                    </svg>
+                                                </Button>
+                                            </div>
+                                        </Link>
+                                    )}
+
+                                    <Link href="/comunidade" prefetch>
+                                        <div onMouseEnter={prefetchCommunity}>
+                                            <Button variant="primary" size="icon" title="Comunidade" className="w-12 h-12 rounded-xl flex-shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <circle cx="12" cy="12" r="10"/>
+                                                    <path d="M2 12h20"/>
+                                                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                                </svg>
+                                            </Button>
+                                        </div>
+                                    </Link>
+
+                                    <NotificationBell />
+                                    <MentalButton />
+
+                                    <Button variant="primary" size="icon" onClick={() => setIsSettingsModalOpen(true)} title="Configurações" className="w-12 h-12 rounded-xl flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow">
+                                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
                                         </svg>
-                                    }
-                                >
-                                    Voltar
-                                </Button>
-                                <div className="h-6 w-px bg-gray-700"></div>
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-100">{currentAccount.name}</h1>
-                                    <p className="text-sm text-gray-400">{currentAccount.currency} • {currentAccount.leverage}</p>
+                                    </Button>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            {/* Linha 2: Ícones - apenas mobile (< md) com scroll horizontal */}
+                            <div className="flex md:hidden items-center gap-2 overflow-x-auto pb-1 -mx-2 px-2">
                                 {isAdminUser && (
                                     <Link href="/admin" prefetch>
                                         <div onMouseEnter={prefetchAdmin}>
-                                            <Button variant="primary" size="icon" title="Painel Admin" className="w-12 h-12 rounded-xl">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <Button variant="primary" size="icon" title="Painel Admin" className="w-11 h-11 rounded-xl flex-shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/>
                                                     <path d="m9 12 2 2 4-4"/>
                                                 </svg>
@@ -357,8 +414,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                 {(isMentorUser || isAdminUser) && (
                                     <Link href="/mentor" prefetch>
                                         <div onMouseEnter={prefetchMentor}>
-                                            <Button variant="primary" size="icon" title="Mentoria" className="w-12 h-12 rounded-xl">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <Button variant="primary" size="icon" title="Mentoria" className="w-11 h-11 rounded-xl flex-shrink-0">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                                     <circle cx="9" cy="7" r="4"/>
                                                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
@@ -371,8 +428,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
 
                                 <Link href="/comunidade" prefetch>
                                     <div onMouseEnter={prefetchCommunity}>
-                                        <Button variant="primary" size="icon" title="Comunidade" className="w-12 h-12 rounded-xl">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <Button variant="primary" size="icon" title="Comunidade" className="w-11 h-11 rounded-xl flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="12" cy="12" r="10"/>
                                                 <path d="M2 12h20"/>
                                                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -384,8 +441,8 @@ export default function DashboardPage({ params, searchParams }: { params: Promis
                                 <NotificationBell />
                                 <MentalButton />
 
-                                <Button variant="primary" size="icon" onClick={() => setIsSettingsModalOpen(true)} title="Configurações" className="w-12 h-12 rounded-xl">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow">
+                                <Button variant="primary" size="icon" onClick={() => setIsSettingsModalOpen(true)} title="Configurações" className="w-11 h-11 rounded-xl flex-shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin-slow">
                                         <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
