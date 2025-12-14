@@ -36,6 +36,7 @@ export interface Trade {
     tfEntrada?: string; // LTF (ex: M5)
     tags?: string | null; // PDArrays, contexto
     strategy?: string; // Estratégia
+    strategyIcon?: string; // Ícone do playbook
     setup?: string; // Setup específico
     notes?: string; // Notas/contexto
 
@@ -86,6 +87,7 @@ export interface TradeLite {
     lot: number;
     tags?: string | null;
     strategy?: string;
+    strategyIcon?: string;
     setup?: string;
     // Timeframes for analytics
     tfAnalise?: string;

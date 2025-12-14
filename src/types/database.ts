@@ -30,6 +30,7 @@ export interface DBTrade {
   tf_entrada?: string;
   tags?: string | null;
   strategy?: string;
+  strategy_icon?: string;
   setup?: string;
   notes?: string;
   entry_date: string;

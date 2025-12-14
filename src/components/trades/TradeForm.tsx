@@ -49,6 +49,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     const { isSaving, handleSubmit: submitHandler } = useTradeSubmit({
         accountId,
         mode,
+        playbooks,
         onSubmit,
         onCancel,
         onSuccess: resetForm,

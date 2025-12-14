@@ -6,7 +6,7 @@ import { useToast } from '@/providers/ToastProvider';
 import { calculateTradePnL, determineTradeOutcome } from '@/lib/calculations';
 import { calculateRMultiple } from '@/lib/timeframeUtils';
 import { handleServiceError } from '@/lib/errorHandler';
-import type { Trade } from '@/types';
+import type { Trade, Playbook } from '@/types';
 import { 
     mapEntryQualityToDb, 
     mapMarketConditionToDb,
@@ -21,6 +21,7 @@ import {
 export interface UseTradeSubmitOptions {
     accountId: string;
     mode: 'create' | 'edit';
+    playbooks?: Playbook[];  // For strategy icon lookup
     onSubmit: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => void | Promise<void>;
     onCancel?: () => void;
     onSuccess?: () => void;
@@ -55,7 +56,7 @@ export interface UseTradeSubmitReturn {
  * });
  */
 export function useTradeSubmit(options: UseTradeSubmitOptions): UseTradeSubmitReturn {
-    const { accountId, mode, onSubmit, onCancel, onSuccess } = options;
+    const { accountId, mode, playbooks, onSubmit, onCancel, onSuccess } = options;
     const { assets } = useSettingsStore();
     const { showToast } = useToast();
     
@@ -102,6 +103,9 @@ export function useTradeSubmit(options: UseTradeSubmitOptions): UseTradeSubmitRe
                 tfEntrada: state.tfEntrada || undefined,
                 tags: state.tagsList.length > 0 ? state.tagsList.join(', ') : '#SemConfluencias',
                 strategy: state.strategy || undefined,
+                strategyIcon: state.strategy && playbooks 
+                    ? playbooks.find(p => p.name === state.strategy)?.icon 
+                    : undefined,
                 setup: state.setup || undefined,
                 marketCondition: state.marketCondition as Trade['marketCondition'] || undefined,
                 session: state.entryTime ? computed.detectedSession : undefined,
@@ -145,7 +149,7 @@ export function useTradeSubmit(options: UseTradeSubmitOptions): UseTradeSubmitRe
         } finally {
             setIsSaving(false);
         }
-    }, [isSaving, accountId, assets, mode, onSubmit, onCancel, onSuccess, showToast]);
+    }, [isSaving, accountId, assets, playbooks, mode, onSubmit, onCancel, onSuccess, showToast]);
 
     return {
         isSaving,

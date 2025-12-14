@@ -147,7 +147,7 @@ export default function SharePage() {
                 if (entryData.trade_id) {
                     const { data: tradeData } = await supabase
                         .from('trades')
-                        .select('market_condition_v2, strategy, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality')
+                        .select('market_condition_v2, strategy, strategy_icon, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality')
                         .eq('id', entryData.trade_id)
                         .single();
                     
@@ -156,17 +156,6 @@ export default function SharePage() {
                         const confluencesArray = tradeData.tags
                             ? tradeData.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
                             : [];
-
-                        // Fetch playbook icon if strategy is set
-                        let strategyIcon: string | undefined;
-                        if (tradeData.strategy) {
-                            const { data: playbookData } = await supabase
-                                .from('playbooks')
-                                .select('icon')
-                                .eq('name', tradeData.strategy)
-                                .single();
-                            strategyIcon = playbookData?.icon || undefined;
-                        }
 
                         // Check if there's any data worth showing
                         const hasData = tradeData.market_condition_v2 ||
@@ -182,7 +171,7 @@ export default function SharePage() {
                             setTradeContext({
                                 condition: mapMarketConditionFromDb(tradeData.market_condition_v2) || undefined,
                                 strategy: tradeData.strategy || undefined,
-                                strategyIcon,
+                                strategyIcon: tradeData.strategy_icon || undefined,
                                 tfAnalise: tradeData.tf_analise || undefined,
                                 tfEntrada: tradeData.tf_entrada || undefined,
                                 setup: tradeData.setup || undefined,
