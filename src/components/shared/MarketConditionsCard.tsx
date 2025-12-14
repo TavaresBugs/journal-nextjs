@@ -68,8 +68,8 @@ export function MarketConditionsCard({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Row 1: Condition | Strategy | Confluences */}
                 <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Condição</span>
-                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center gap-2 h-[42px]">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5 text-center">Condição</span>
+                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center justify-center gap-3 h-[42px] text-center">
                         {condition ? (
                             <span>{condition}</span>
                         ) : (
@@ -79,8 +79,8 @@ export function MarketConditionsCard({
                 </div>
 
                 <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Estratégia</span>
-                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center gap-2 h-[42px]">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5 text-center">Estratégia</span>
+                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center justify-center gap-3 h-[42px] text-center">
                         {strategy ? (
                             <>
                                 {strategyIcon && <span>{strategyIcon}</span>}
@@ -136,8 +136,8 @@ export function MarketConditionsCard({
 
                 {/* Row 3: Alignment Badge | Avaliação ST */}
                 <div>
-                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Alinhamento</span>
-                    <div className="h-[42px] flex items-center">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5 text-center">Alinhamento</span>
+                    <div className="h-[42px] flex items-center justify-center">
                         {tfAnalise && tfEntrada ? (() => {
                             const alignment = getTimeframeAlignment(tfAnalise, tfEntrada);
                             return (
@@ -150,7 +150,7 @@ export function MarketConditionsCard({
                                 </div>
                             );
                         })() : (
-                            <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-600 h-[42px] flex items-center w-full">
+                            <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-600 h-[42px] flex items-center justify-center w-full">
                                 —
                             </div>
                         )}
@@ -158,8 +158,8 @@ export function MarketConditionsCard({
                 </div>
 
                 <div className="md:col-span-2">
-                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5">Avaliação ST</span>
-                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center gap-2 h-[42px]">
+                    <span className="text-xs text-gray-500 uppercase tracking-wider block mb-1.5 text-center">Avaliação ST</span>
+                    <div className="px-3 py-2.5 bg-gray-900/50 rounded-lg border border-gray-700 text-sm text-gray-200 flex items-center justify-center gap-3 h-[42px] text-center">
                         {evaluation ? (
                             <span>{evaluation}</span>
                         ) : (
