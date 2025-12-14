@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Modal } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
+import { Tabs } from '@/components/ui/Tabs';
 import { CustomCheckbox } from './CustomCheckbox';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
+import { ArgumentsCalculator } from './ArgumentsCalculator';
 import type { Playbook, RuleGroup } from '@/types';
 
 interface ChecklistModalProps {
@@ -13,9 +15,17 @@ interface ChecklistModalProps {
     onTradeStart?: () => void;
 }
 
+const CHECKLIST_TABS = [
+    { id: 'rules', label: 'Checklist & Regras', icon: '📋' },
+    { id: 'arguments', label: 'Argumentos', icon: '⚖️' }
+];
+
 export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModalProps) {
     const { playbooks, loadPlaybooks, isLoading } = usePlaybookStore();
     
+    // Tab State: 'rules' | 'arguments'
+    const [activeTab, setActiveTab] = useState<'rules' | 'arguments'>('rules');
+
     // Selected playbook ID
     const [selectedPlaybookId, setSelectedPlaybookId] = useState<string>('');
     
@@ -29,10 +39,11 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
         }
     }, [isOpen, playbooks.length, loadPlaybooks]);
 
-    // Handle close with state reset
+    // Reset tab on close
     const handleClose = () => {
         setSelectedPlaybookId('');
         setCheckedRules({});
+        setActiveTab('rules'); // Reset tab
         onClose();
     };
 
@@ -48,13 +59,18 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
         }
 
         return selectedPlaybook.ruleGroups.every((group: RuleGroup) => {
+            // Ignore "Critérios de Saída" from validation as they are informational
+            if (group.name.toLowerCase().includes('saída') || group.name.toLowerCase().includes('exit')) {
+                return true;
+            }
+
             if (!group.rules || group.rules.length === 0) return true;
             const groupChecks = checkedRules[group.id] || {};
             return group.rules.every((_, index) => groupChecks[index] === true);
         });
     }, [selectedPlaybook, checkedRules]);
 
-    // Total rules count for progress display
+    // Total rules count for progress display (excluding exit/info criteria)
     const { totalRules, checkedCount } = useMemo(() => {
         if (!selectedPlaybook) return { totalRules: 0, checkedCount: 0 };
         
@@ -62,6 +78,10 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
         let checked = 0;
         
         selectedPlaybook.ruleGroups.forEach((group: RuleGroup) => {
+            // Skip counting info/exit groups for the progress bar
+            const isExitCriteria = group.name.toLowerCase().includes('saída') || group.name.toLowerCase().includes('exit');
+            if (isExitCriteria) return;
+
             if (group.rules) {
                 total += group.rules.length;
                 const groupChecks = checkedRules[group.id] || {};
@@ -92,138 +112,168 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
             onTradeStart();
         } else {
             console.log('Trade Liberado! 🚀');
-            alert('✅ Trade Liberado! Checklist completo.');
         }
         handleClose();
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="✅ Pre-Flight Checklist" maxWidth="2xl">
+        <Modal isOpen={isOpen} onClose={handleClose} title="✅ Pre-Flight Checklist" maxWidth="4xl">
             <div className="space-y-6">
-                {/* Playbook Selector */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                        Selecione o Playbook
-                    </label>
-                    <select
-                        value={selectedPlaybookId}
-                        onChange={(e) => handlePlaybookChange(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                        disabled={isLoading}
-                    >
-                        <option value="">
-                            {isLoading ? 'Carregando...' : '-- Escolha uma estratégia --'}
-                        </option>
-                        {playbooks.map((playbook: Playbook) => (
-                            <option key={playbook.id} value={playbook.id}>
-                                {playbook.icon} {playbook.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                
+                {/* Tab Switcher - Using Standard Tabs Component */}
+                <Tabs tabs={CHECKLIST_TABS} activeTab={activeTab} onChange={(id) => setActiveTab(id as 'rules' | 'arguments')} />
 
-                {/* Checklist Content */}
-                {selectedPlaybook && (
-                    <div className="space-y-4">
-                        {/* Progress indicator */}
-                        {totalRules > 0 && (
-                            <div className="flex items-center gap-3">
-                                <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
-                                    <div 
-                                        className="h-full bg-emerald-500 transition-all duration-300"
-                                        style={{ width: `${(checkedCount / totalRules) * 100}%` }}
-                                    />
-                                </div>
-                                <span className="text-sm text-gray-400">
-                                    {checkedCount}/{totalRules}
-                                </span>
-                            </div>
-                        )}
-
-                        {/* Rule Groups */}
-                        {selectedPlaybook.ruleGroups.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">
-                                Este playbook não possui regras configuradas.
-                            </p>
-                        ) : (
-                            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                                {selectedPlaybook.ruleGroups.map((group: RuleGroup) => (
-                                    <div key={group.id} className="space-y-2">
-                                        {/* Group Title */}
-                                        <div className="flex items-center gap-3 py-2 mt-2 first:mt-0">
-                                            <div className="flex-1 h-px bg-gray-700/50" />
-                                            <span className="text-xs font-bold text-green-500 uppercase tracking-widest">
-                                                {group.name}
-                                            </span>
-                                            <div className="flex-1 h-px bg-gray-700/50" />
-                                        </div>
-
-                                        {/* Rules */}
-                                        {group.rules && group.rules.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {group.rules.map((rule, index) => {
-                                                    const isChecked = checkedRules[group.id]?.[index] || false;
-                                                    return (
-                                                        <div
-                                                            key={`${group.id}-${index}`}
-                                                            onClick={() => handleRuleToggle(group.id, index)}
-                                                            className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${
-                                                                isChecked
-                                                                    ? 'bg-green-500/10 border-green-500/30'
-                                                                    : 'bg-black/20 border-white/5 hover:border-green-500/40 hover:bg-black/30'
-                                                            }`}
-                                                        >
-                                                            <CustomCheckbox
-                                                                checked={isChecked}
-                                                                onChange={() => handleRuleToggle(group.id, index)}
-                                                                id={`rule-${group.id}-${index}`}
-                                                            />
-                                                            <span className={`text-sm flex-1 transition-colors duration-200 ${
-                                                                isChecked ? 'text-white' : 'text-gray-200'
-                                                            }`}>
-                                                                {rule}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <p className="text-gray-500 text-sm italic pl-4">
-                                                Nenhuma regra neste grupo
-                                            </p>
-                                        )}
-                                    </div>
+                {/* Content switching */}
+                {activeTab === 'arguments' ? (
+                    <ArgumentsCalculator />
+                ) : (
+                    <>
+                        {/* Playbook Selector */}
+                        <div>
+                           <label className="block text-sm font-medium text-gray-300 mb-2">
+                                Selecione o Playbook
+                            </label>
+                            <select
+                                value={selectedPlaybookId}
+                                onChange={(e) => handlePlaybookChange(e.target.value)}
+                                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                                disabled={isLoading}
+                            >
+                                <option value="">
+                                    {isLoading ? 'Carregando...' : '-- Escolha uma estratégia --'}
+                                </option>
+                                {playbooks.map((playbook: Playbook) => (
+                                    <option key={playbook.id} value={playbook.id}>
+                                        {playbook.icon} {playbook.name}
+                                    </option>
                                 ))}
+                            </select>
+                        </div>
+
+                        {/* Checklist Content */}
+                        {selectedPlaybook && (
+                            <div className="space-y-4">
+                                {/* Progress indicator */}
+                                {totalRules > 0 && (
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-emerald-500 transition-all duration-300"
+                                                style={{ width: `${(checkedCount / totalRules) * 100}%` }}
+                                            />
+                                        </div>
+                                        <span className="text-sm text-gray-400">
+                                            {checkedCount}/{totalRules}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Rule Groups */}
+                                {selectedPlaybook.ruleGroups.length === 0 ? (
+                                    <p className="text-gray-400 text-center py-4">
+                                        Este playbook não possui regras configuradas.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                                        {selectedPlaybook.ruleGroups.map((group: RuleGroup) => {
+                                            const isExitCriteria = group.name.toLowerCase().includes('saída') || group.name.toLowerCase().includes('exit');
+                                            
+                                            return (
+                                                <div key={group.id} className="space-y-2">
+                                                    {/* Group Title */}
+                                                    <div className="flex items-center gap-3 py-2 mt-2 first:mt-0">
+                                                        <div className="flex-1 h-px bg-gray-700/50" />
+                                                        <span className={`text-xs font-bold uppercase tracking-widest ${
+                                                            isExitCriteria ? 'text-blue-400' : 'text-green-500'
+                                                        }`}>
+                                                            {group.name} {isExitCriteria && '(Informativo)'}
+                                                        </span>
+                                                        <div className="flex-1 h-px bg-gray-700/50" />
+                                                    </div>
+
+                                                    {/* Rules */}
+                                                    {group.rules && group.rules.length > 0 ? (
+                                                        <div className="space-y-2">
+                                                            {group.rules.map((rule, index) => {
+                                                                // If it's exit criteria, render as Info Card
+                                                                if (isExitCriteria) {
+                                                                    return (
+                                                                        <div 
+                                                                            key={`${group.id}-${index}`}
+                                                                            className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20"
+                                                                        >
+                                                                            <span className="text-blue-400 mt-0.5">ℹ️</span>
+                                                                            <span className="text-sm text-gray-300">{rule}</span>
+                                                                        </div>
+                                                                    );
+                                                                }
+
+                                                                // Standard Checkbox Rule
+                                                                const isChecked = checkedRules[group.id]?.[index] || false;
+                                                                return (
+                                                                    <div
+                                                                        key={`${group.id}-${index}`}
+                                                                        onClick={() => handleRuleToggle(group.id, index)}
+                                                                        className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-200 group ${
+                                                                            isChecked
+                                                                                ? 'bg-green-500/10 border-green-500/30'
+                                                                                : 'bg-black/20 border-white/5 hover:border-green-500/40 hover:bg-black/30'
+                                                                        }`}
+                                                                    >
+                                                                        <CustomCheckbox
+                                                                            checked={isChecked}
+                                                                            onChange={() => handleRuleToggle(group.id, index)}
+                                                                            id={`rule-${group.id}-${index}`}
+                                                                        />
+                                                                        <span className={`text-sm flex-1 transition-colors duration-200 ${
+                                                                            isChecked ? 'text-white' : 'text-gray-200'
+                                                                        }`}>
+                                                                            {rule}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-gray-500 text-sm italic pl-4">
+                                                            Nenhuma regra neste grupo
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         )}
-                    </div>
-                )}
 
-                {/* Empty state when no playbook selected */}
-                {!selectedPlaybook && (
-                    <div className="text-center py-8">
-                        <div className="text-4xl mb-3">📋</div>
-                        <p className="text-gray-400">
-                            Selecione um playbook para ver o checklist
-                        </p>
-                    </div>
-                )}
+                        {/* Empty state */}
+                        {!selectedPlaybook && (
+                            <div className="text-center py-8">
+                                <div className="text-4xl mb-3">📋</div>
+                                <p className="text-gray-400">
+                                    Selecione um playbook para ver o checklist
+                                </p>
+                            </div>
+                        )}
 
-                {/* Action Button */}
-                <div className="pt-4 border-t border-gray-700">
-                    <Button
-                        variant="gradient-success"
-                        onClick={handleConfirm}
-                        disabled={!allRulesChecked}
-                        className={`w-full py-3 text-lg font-semibold transition-all duration-300 ${
-                            allRulesChecked 
-                                ? 'opacity-100' 
-                                : 'opacity-50 cursor-not-allowed'
-                        }`}
-                    >
-                        {allRulesChecked ? '🚀 Liberar Trade' : '⏳ Complete o Checklist'}
-                    </Button>
-                </div>
+                        {/* Action Button */}
+                        <div className="pt-4 border-t border-gray-700">
+                            <Button
+                                variant="gradient-success"
+                                onClick={handleConfirm}
+                                disabled={!allRulesChecked}
+                                className={`w-full py-3 text-lg font-semibold transition-all duration-300 ${
+                                    allRulesChecked 
+                                        ? 'opacity-100 hover:scale-[1.02] shadow-lg shadow-emerald-500/20' 
+                                        : 'opacity-50 cursor-not-allowed'
+                                }`}
+                            >
+                                {allRulesChecked ? '➕ Adicionar Trade' : '⏳ Complete o Checklist'}
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
         </Modal>
     );

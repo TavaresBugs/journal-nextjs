@@ -315,28 +315,29 @@ Q4 2025 ────────────────────────
 
 Estas funcionalidades foram desenvolvidas além do roadmap original:
 
-| Feature                   | Status       | Arquivo/Local                                         |
-| ------------------------- | ------------ | ----------------------------------------------------- |
-| Google OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
-| GitHub OAuth              | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
-| Sistema de Playbooks      | ✅ Concluído | `src/components/playbook/*`                           |
-| Gráficos Recharts         | ✅ Concluído | `src/components/charts/recharts/*`                    |
-| Lightweight Charts        | ✅ Concluído | `src/components/charts/lightweight/*`                 |
-| Compartilhamento Journals | ✅ Concluído | `src/app/share/*`, migration 003                      |
-| Dark Mode                 | ✅ Concluído | CSS com tema Zorin                                    |
-| Page de Pendentes         | ✅ Concluído | `src/app/pending/page.tsx`                            |
-| Middleware de Auth        | ✅ Concluído | `src/middleware.ts`                                   |
-| **Mentor Invites**        | ✅ Concluído | `src/services/mentor/inviteService.ts`                |
-| **Painel do Mentor**      | ✅ Concluído | `src/app/mentor/page.tsx`                             |
-| **StudentCalendarModal**  | ✅ Concluído | `src/components/mentor/StudentCalendarModal.tsx`      |
-| **NotificationBell**      | ✅ Concluído | `src/components/notifications/NotificationBell.tsx`   |
-| **NotificationsModal**    | ✅ Concluído | `src/components/notifications/NotificationsModal.tsx` |
-| **Comunidade/Playbooks**  | ✅ Concluído | `src/app/comunidade/page.tsx`                         |
-| **Leaderboard**           | ✅ Concluído | `src/services/community/leaderboardService.ts`        |
-| **Validação Zod**         | ✅ Concluído | `src/schemas/*`                                       |
-| **Testes Unitários**      | ✅ Concluído | `src/**/*.test.ts`, `vitest.config.mts`               |
-| **Security Audit**        | ✅ Concluído | `docs/SECURITY_AUDIT.md`                              |
-| **Export Backup Local**   | ✅ Concluído | `src/services/exportService.ts`                       |
+| Feature                    | Status       | Arquivo/Local                                         |
+| -------------------------- | ------------ | ----------------------------------------------------- |
+| Google OAuth               | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
+| GitHub OAuth               | ✅ Concluído | `src/lib/auth.ts`, `useAuth` hook                     |
+| Sistema de Playbooks       | ✅ Concluído | `src/components/playbook/*`                           |
+| Gráficos Recharts          | ✅ Concluído | `src/components/charts/recharts/*`                    |
+| Lightweight Charts         | ✅ Concluído | `src/components/charts/lightweight/*`                 |
+| Compartilhamento Journals  | ✅ Concluído | `src/app/share/*`, migration 003                      |
+| Dark Mode                  | ✅ Concluído | CSS com tema Zorin                                    |
+| Page de Pendentes          | ✅ Concluído | `src/app/pending/page.tsx`                            |
+| Middleware de Auth         | ✅ Concluído | `src/middleware.ts`                                   |
+| **Mentor Invites**         | ✅ Concluído | `src/services/mentor/inviteService.ts`                |
+| **Painel do Mentor**       | ✅ Concluído | `src/app/mentor/page.tsx`                             |
+| **StudentCalendarModal**   | ✅ Concluído | `src/components/mentor/StudentCalendarModal.tsx`      |
+| **NotificationBell**       | ✅ Concluído | `src/components/notifications/NotificationBell.tsx`   |
+| **NotificationsModal**     | ✅ Concluído | `src/components/notifications/NotificationsModal.tsx` |
+| **Comunidade/Playbooks**   | ✅ Concluído | `src/app/comunidade/page.tsx`                         |
+| **Leaderboard**            | ✅ Concluído | `src/services/community/leaderboardService.ts`        |
+| **Validação Zod**          | ✅ Concluído | `src/schemas/*`                                       |
+| **Testes Unitários**       | ✅ Concluído | `src/**/*.test.ts`, `vitest.config.mts`               |
+| **Security Audit**         | ✅ Concluído | `docs/SECURITY_AUDIT.md`                              |
+| **Export Backup Local**    | ✅ Concluído | `src/services/exportService.ts`                       |
+| **Checklist & Argumentos** | ✅ Concluído | `src/components/checklist/*`                          |
 
 ---
 

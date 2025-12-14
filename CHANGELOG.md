@@ -15,6 +15,35 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
+## [1.4.0] - 2025-12-14
+
+### ✨ Adicionado
+
+- **Arguments Calculator Dinâmico**:
+  - Input de texto livre para argumentos Bullish e Bearish
+  - Interface dinâmica com listas e contadores em tempo real
+  - Gráfico de probabilidade baseado na contagem de argumentos
+  - Persistência de argumentos por sessão
+- **Pre-Flight Checklist Refinado**:
+  - Toggle de abas padronizado com componente `Tabs`
+  - Critérios de Saída convertidos para cards informativos (não-bloqueantes)
+  - Layout expandido (4xl) para melhor visualização
+  - Botão "Adicionar Trade" dinâmico pós-checklist
+
+### 🎨 Melhorado
+
+- **Padronização Visual**:
+  - Componente `Tabs` unificado para Checklist e Playbook Preview
+  - Remoção de bordas indesejadas em toggles ativos
+  - Cores de destaque consistentes (Emerald para Rules, Cyan para Arguments)
+
+### 🐛 Corrigido
+
+- Crash no ChecklistModal (`handleConfirm is not defined`) resolvido
+- Estado de checkboxes do checklist restaurado corretamente
+
+---
+
 ## [1.3.0] - 2024-12-12
 
 ### ✨ Adicionado

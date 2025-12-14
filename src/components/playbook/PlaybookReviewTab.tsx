@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { GlassCard } from '@/components/ui';
+import { Tabs } from '@/components/ui/Tabs';
 import { usePlaybookMetrics } from '@/hooks/usePlaybookMetrics';
 import { HtfView, HeatmapView, ReportView, type DrillPath } from './views';
 import type { PlaybookReviewTabProps, ViewMode } from '@/types/playbookTypes';
@@ -30,23 +31,12 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
 
     return (
         <div className="space-y-6">
-            {/* View Mode Tabs */}
-            <GlassCard className="grid grid-cols-3 gap-2 p-1 bg-zorin-bg/30 border-white/5">
-                {VIEW_FILTERS.map(filter => (
-                    <button
-                        key={filter.id}
-                        onClick={() => setViewMode(filter.id)}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
-                            viewMode === filter.id
-                                ? 'bg-linear-to-r from-cyan-500/20 to-cyan-400/10 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
-                        }`}
-                    >
-                        <span>{filter.icon}</span>
-                        <span>{filter.label}</span>
-                    </button>
-                ))}
-            </GlassCard>
+            {/* View Mode Tabs - Using Standard Component */}
+            <Tabs 
+                tabs={VIEW_FILTERS} 
+                activeTab={viewMode} 
+                onChange={(id) => setViewMode(id as ViewMode)} 
+            />
 
             {/* View Content */}
             {viewMode === 'htf' && (
