@@ -115,6 +115,7 @@ export function useTradeSubmit(options: UseTradeSubmitOptions): UseTradeSubmitRe
                 outcome: 'pending',
                 entry_quality: mapEntryQualityToDb(state.entryQuality),
                 market_condition_v2: mapMarketConditionToDb(state.marketConditionV2),
+                pdArray: state.pdArray as Trade['pdArray'] || undefined,
             };
 
             // Calculate PnL if trade is closed

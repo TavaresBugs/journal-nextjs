@@ -3,21 +3,23 @@
 import { GlassCard } from '@/components/ui';
 import { CircularProgress } from '@/components/ui/CircularProgress';
 import { formatCurrency } from '@/lib/calculations';
-import { getConditionLabel, getQualityLabel } from '@/lib/utils/playbook';
+import { getConditionLabel, getPdArrayLabel } from '@/lib/utils/playbook';
 import type {
     HtfExpandedMetric,
-    SessionMetric,
     ConditionMetric,
-    TagExpandedMetric,
-    LtfExpandedMetric
+    PdArrayExpandedMetric,
+    SessionMetric,
+    LtfExpandedMetric,
+    TagMetric
 } from '@/types/playbookTypes';
 
 export interface DrillPath {
     htf?: HtfExpandedMetric;
-    session?: SessionMetric;
     condition?: ConditionMetric;
-    tag?: TagExpandedMetric;
+    pdArray?: PdArrayExpandedMetric;
+    session?: SessionMetric;
     ltf?: LtfExpandedMetric;
+    tag?: TagMetric;
 }
 
 interface HtfViewProps {
@@ -36,7 +38,7 @@ const getWinRateColor = (winRate: number) => {
 
 // Reusable metric card row
 function MetricCardContent({ 
-    totalTrades, wins, losses, pnl, winRate, avgRR, currency 
+    totalTrades, wins, losses, pnl, winRate, currency 
 }: { 
     totalTrades: number; wins: number; losses: number; pnl: number; winRate: number; avgRR: number | null; currency: string;
 }) {
@@ -85,7 +87,7 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
     return (
         <div className="space-y-2">
             {/* Breadcrumb Navigation */}
-            {(drillPath.htf || drillPath.session || drillPath.condition || drillPath.tag || drillPath.ltf) && (
+            {(drillPath.htf || drillPath.condition || drillPath.pdArray || drillPath.session || drillPath.ltf || drillPath.tag) && (
                 <div className="flex items-center justify-center gap-2 overflow-x-auto whitespace-nowrap pb-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
                     <button 
                         onClick={() => setDrillPath({})}
@@ -99,20 +101,9 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                             <span className="text-gray-600 text-xs">→</span>
                             <button 
                                 onClick={() => setDrillPath({ htf: drillPath.htf })}
-                                className="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 rounded-full text-xs font-medium transition-colors"
+                                className="px-3 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
                             >
-                                {drillPath.htf.htf}
-                            </button>
-                        </>
-                    )}
-                    {drillPath.session && (
-                        <>
-                            <span className="text-gray-600 text-xs">→</span>
-                            <button 
-                                onClick={() => setDrillPath({ htf: drillPath.htf, session: drillPath.session })}
-                                className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
-                            >
-                                {drillPath.session.icon} {drillPath.session.session}
+                                🕐 {drillPath.htf.htf}
                             </button>
                         </>
                     )}
@@ -120,29 +111,51 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                         <>
                             <span className="text-gray-600 text-xs">→</span>
                             <button 
-                                onClick={() => setDrillPath({ htf: drillPath.htf, session: drillPath.session, condition: drillPath.condition })}
+                                onClick={() => setDrillPath({ htf: drillPath.htf, condition: drillPath.condition })}
                                 className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
                             >
                                 {drillPath.condition.icon} {getConditionLabel(drillPath.condition.condition)}
                             </button>
                         </>
                     )}
-                    {drillPath.tag && (
+                    {drillPath.pdArray && (
                         <>
                             <span className="text-gray-600 text-xs">→</span>
                             <button 
-                                onClick={() => setDrillPath({ htf: drillPath.htf, session: drillPath.session, condition: drillPath.condition, tag: drillPath.tag })}
-                                className="px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
+                                onClick={() => setDrillPath({ htf: drillPath.htf, condition: drillPath.condition, pdArray: drillPath.pdArray })}
+                                className="px-3 py-1 bg-orange-500/10 text-orange-400 border border-orange-500/20 hover:bg-orange-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
                             >
-                                🏷️ {drillPath.tag.tagCombo}
+                                {drillPath.pdArray.icon} {getPdArrayLabel(drillPath.pdArray.pdArray)}
+                            </button>
+                        </>
+                    )}
+                    {drillPath.session && (
+                        <>
+                            <span className="text-gray-600 text-xs">→</span>
+                            <button 
+                                onClick={() => setDrillPath({ htf: drillPath.htf, condition: drillPath.condition, pdArray: drillPath.pdArray, session: drillPath.session })}
+                                className="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 rounded-full text-xs font-medium transition-colors flex items-center gap-1"
+                            >
+                                {drillPath.session.icon} {drillPath.session.session}
                             </button>
                         </>
                     )}
                     {drillPath.ltf && (
                         <>
                             <span className="text-gray-600 text-xs">→</span>
-                            <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded-full text-xs font-medium flex items-center gap-1">
+                            <button
+                                onClick={() => setDrillPath({ htf: drillPath.htf, condition: drillPath.condition, pdArray: drillPath.pdArray, session: drillPath.session, ltf: drillPath.ltf })}
+                                className="px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/20 rounded-full text-xs font-medium flex items-center gap-1"
+                            >
                                 📈 {drillPath.ltf.ltf}
+                            </button>
+                        </>
+                    )}
+                    {drillPath.tag && (
+                        <>
+                            <span className="text-gray-600 text-xs">→</span>
+                            <span className="px-3 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full text-xs font-medium flex items-center gap-1">
+                                🏷️ {drillPath.tag.tagCombo}
                             </span>
                         </>
                     )}
@@ -153,7 +166,7 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
             {!drillPath.htf && (
                 <>
                     <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
-                        Timeframe de Análise (HTF) → Timeframe de Entrada (LTF)
+                        Timeframe de Análise (HTF)
                     </h4>
                     <div className="grid grid-cols-1 gap-3">
                         {hierarchicalMetrics.map((htf) => (
@@ -164,47 +177,23 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                             >
                                 <div className="flex items-center gap-6">
                                     <span className="px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg text-sm font-bold border border-indigo-500/30 whitespace-nowrap">
-                                        📊 {htf.htf}
+                                        🕐 {htf.htf}
                                     </span>
                                     <MetricCardContent {...htf} currency={currency} />
                                 </div>
-                                <MetricCardFooter avgRR={htf.avgRR} nextLabel="sessões" nextCount={htf.sessionBreakdown.length} color="text-indigo-400" />
+                                <MetricCardFooter avgRR={htf.avgRR} nextLabel="condições" nextCount={htf.conditionBreakdown.length} color="text-indigo-400" />
                             </GlassCard>
                         ))}
                     </div>
                 </>
             )}
 
-            {/* Level 2: Session Cards */}
-            {drillPath.htf && !drillPath.session && (
+            {/* Level 2: Condition Cards */}
+            {drillPath.htf && !drillPath.condition && (
                 <>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">🕐 Sessões</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">📈 Condições de Mercado</h4>
                     <div className="grid grid-cols-1 gap-3">
-                        {drillPath.htf.sessionBreakdown.map((sess) => (
-                            <GlassCard
-                                key={sess.session}
-                                onClick={() => setDrillPath({ ...drillPath, session: sess })}
-                                className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
-                            >
-                                <div className="flex items-center gap-6">
-                                    <span className="px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-lg text-sm font-bold border border-emerald-500/30 whitespace-nowrap">
-                                        {sess.icon} {sess.session}
-                                    </span>
-                                    <MetricCardContent {...sess} currency={currency} />
-                                </div>
-                                <MetricCardFooter avgRR={sess.avgRR} nextLabel="condições" nextCount={sess.conditionBreakdown.length} color="text-emerald-400" />
-                            </GlassCard>
-                        ))}
-                    </div>
-                </>
-            )}
-
-            {/* Level 3: Condition Cards */}
-            {drillPath.session && !drillPath.condition && (
-                <>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">📊 Condições de Mercado</h4>
-                    <div className="grid grid-cols-1 gap-3">
-                        {drillPath.session.conditionBreakdown.map((cond) => (
+                        {drillPath.htf.conditionBreakdown.map((cond) => (
                             <GlassCard
                                 key={cond.condition}
                                 onClick={() => setDrillPath({ ...drillPath, condition: cond })}
@@ -216,31 +205,55 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                                     </span>
                                     <MetricCardContent {...cond} currency={currency} />
                                 </div>
-                                <MetricCardFooter avgRR={cond.avgRR} nextLabel="confluências" nextCount={cond.tagBreakdown.length} color="text-amber-400" />
+                                <MetricCardFooter avgRR={cond.avgRR} nextLabel="PD Arrays" nextCount={cond.pdArrayBreakdown.length} color="text-amber-400" />
                             </GlassCard>
                         ))}
                     </div>
                 </>
             )}
 
-            {/* Level 4: Tag Combo Cards */}
-            {drillPath.condition && !drillPath.tag && (
+            {/* Level 3: PD Array Cards */}
+            {drillPath.condition && !drillPath.pdArray && (
                 <>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">🏷️ Confluências</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">📍 PD Arrays</h4>
                     <div className="grid grid-cols-1 gap-3">
-                        {drillPath.condition.tagBreakdown.map((tag) => (
+                        {drillPath.condition.pdArrayBreakdown.map((pd) => (
                             <GlassCard
-                                key={tag.tagCombo}
-                                onClick={() => setDrillPath({ ...drillPath, tag })}
+                                key={pd.pdArray}
+                                onClick={() => setDrillPath({ ...drillPath, pdArray: pd })}
                                 className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
                             >
                                 <div className="flex items-center gap-6">
-                                    <span className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-lg text-sm font-bold border border-purple-500/30 whitespace-nowrap truncate max-w-[200px]" title={tag.tagCombo}>
-                                        🏷️ {tag.tagCombo}
+                                    <span className="px-4 py-2 bg-orange-500/20 text-orange-300 rounded-lg text-sm font-bold border border-orange-500/30 whitespace-nowrap">
+                                        {pd.icon} {getPdArrayLabel(pd.pdArray)}
                                     </span>
-                                    <MetricCardContent {...tag} currency={currency} />
+                                    <MetricCardContent {...pd} currency={currency} />
                                 </div>
-                                <MetricCardFooter avgRR={tag.avgRR} nextLabel="TF entrada" nextCount={tag.ltfBreakdown.length} color="text-purple-400" />
+                                <MetricCardFooter avgRR={pd.avgRR} nextLabel="sessões" nextCount={pd.sessionBreakdown.length} color="text-orange-400" />
+                            </GlassCard>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* Level 4: Session Cards */}
+            {drillPath.pdArray && !drillPath.session && (
+                <>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">🕐 Sessões</h4>
+                    <div className="grid grid-cols-1 gap-3">
+                        {drillPath.pdArray.sessionBreakdown.map((sess) => (
+                            <GlassCard
+                                key={sess.session}
+                                onClick={() => setDrillPath({ ...drillPath, session: sess })}
+                                className="bg-zorin-bg/30 border-white/5 hover:border-zorin-accent/50 transition-all cursor-pointer group"
+                            >
+                                <div className="flex items-center gap-6">
+                                    <span className="px-4 py-2 bg-emerald-500/20 text-emerald-300 rounded-lg text-sm font-bold border border-emerald-500/30 whitespace-nowrap">
+                                        {sess.icon} {sess.session}
+                                    </span>
+                                    <MetricCardContent {...sess} currency={currency} />
+                                </div>
+                                <MetricCardFooter avgRR={sess.avgRR} nextLabel="TF entrada" nextCount={sess.ltfBreakdown.length} color="text-emerald-400" />
                             </GlassCard>
                         ))}
                     </div>
@@ -248,11 +261,11 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
             )}
 
             {/* Level 5: LTF Cards */}
-            {drillPath.tag && !drillPath.ltf && (
+            {drillPath.session && !drillPath.ltf && (
                 <>
                     <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">📈 Timeframe de Entrada (LTF)</h4>
                     <div className="grid grid-cols-1 gap-3">
-                        {drillPath.tag.ltfBreakdown.map((ltf) => (
+                        {drillPath.session.ltfBreakdown.map((ltf) => (
                             <GlassCard
                                 key={ltf.ltf}
                                 onClick={() => setDrillPath({ ...drillPath, ltf })}
@@ -264,29 +277,36 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                                     </span>
                                     <MetricCardContent {...ltf} currency={currency} />
                                 </div>
-                                <MetricCardFooter avgRR={ltf.avgRR} nextLabel="qualidades" nextCount={ltf.qualityBreakdown.length} color="text-cyan-400" />
+                                <MetricCardFooter avgRR={ltf.avgRR} nextLabel="confluências" nextCount={ltf.tagBreakdown.length} color="text-cyan-400" />
                             </GlassCard>
                         ))}
                     </div>
                 </>
             )}
 
-            {/* Level 6: Quality Cards (Final Level) */}
+            {/* Level 6: Tag Cards (Final Level) */}
             {drillPath.ltf && (
                 <>
-                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">⭐ Qualidade de Entrada</h4>
+                    <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider">🏷️ Confluências</h4>
                     <div className="grid grid-cols-1 gap-3">
-                        {drillPath.ltf.qualityBreakdown.map((q) => (
-                            <GlassCard key={q.quality} className="bg-zorin-bg/30 border-white/5 cursor-default">
-                                <div className="flex items-center gap-6">
-                                    <span className="px-4 py-2 bg-gray-700/50 text-gray-300 rounded-lg text-sm font-bold border border-gray-600 whitespace-nowrap">
-                                        {q.icon} {getQualityLabel(q.quality)}
-                                    </span>
-                                    <MetricCardContent {...q} currency={currency} />
+                        {drillPath.ltf.tagBreakdown.map((tag) => (
+                            <GlassCard key={tag.tagCombo} className="bg-zorin-bg/30 border-white/5 cursor-default">
+                                <div className="flex items-start gap-4">
+                                    <div className="flex flex-wrap gap-2 max-w-[300px]">
+                                        {tag.tagCombo.split(' + ').map((t, i) => (
+                                            <span 
+                                                key={i} 
+                                                className="px-3 py-1.5 bg-purple-500/20 text-purple-300 rounded-lg text-xs font-medium border border-purple-500/30"
+                                            >
+                                                🏷️ {t}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <MetricCardContent {...tag} currency={currency} />
                                 </div>
                                 <div className="mt-4 pt-3 border-t border-gray-700/50 flex items-center justify-between">
                                     <div className="flex gap-4 text-xs text-gray-500">
-                                        <span>Avg RR: <span className="text-gray-300 font-medium">{q.avgRR ? q.avgRR.toFixed(2) + 'R' : '-'}</span></span>
+                                        <span>Avg RR: <span className="text-gray-300 font-medium">{tag.avgRR ? tag.avgRR.toFixed(2) + 'R' : '-'}</span></span>
                                     </div>
                                     <span className="text-xs text-gray-600">Fim da análise</span>
                                 </div>

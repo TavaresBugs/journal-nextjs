@@ -49,6 +49,7 @@ export interface DBTrade {
   // Entry Telemetry v2
   entry_quality?: string;
   market_condition_v2?: string;
+  pd_array?: string;
   created_at: string;
   updated_at: string;
 }

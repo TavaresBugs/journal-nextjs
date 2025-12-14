@@ -20,6 +20,7 @@ export interface LtfMetric {
 
 export interface TagComboMetric {
     tagCombo: string;
+    pdArray?: string; // Most common PD Array in this combo
     wins: number;
     losses: number;
     pnl: number;
@@ -40,7 +41,7 @@ export interface HtfNestedMetric {
     tagBreakdown: TagComboMetric[];
 }
 
-// ===== EXPANDED HIERARCHY: HTF → Session → Condition → Tags → LTF → Quality =====
+// ===== EXPANDED HIERARCHY: HTF → Condition → PD Array → Session → LTF → Tags =====
 export interface BaseStats {
     wins: number;
     losses: number;
@@ -50,34 +51,34 @@ export interface BaseStats {
     totalTrades: number;
 }
 
-export interface QualityMetric extends BaseStats {
-    quality: string;
-    icon: string;
+export interface TagMetric extends BaseStats {
+    tagCombo: string;
 }
 
 export interface LtfExpandedMetric extends BaseStats {
     ltf: string;
-    qualityBreakdown: QualityMetric[];
-}
-
-export interface TagExpandedMetric extends BaseStats {
-    tagCombo: string;
-    ltfBreakdown: LtfExpandedMetric[];
-}
-
-export interface ConditionMetric extends BaseStats {
-    condition: string;
-    icon: string;
-    tagBreakdown: TagExpandedMetric[];
+    tagBreakdown: TagMetric[];
 }
 
 export interface SessionMetric extends BaseStats {
     session: string;
     icon: string;
-    conditionBreakdown: ConditionMetric[];
+    ltfBreakdown: LtfExpandedMetric[];
+}
+
+export interface PdArrayExpandedMetric extends BaseStats {
+    pdArray: string;
+    icon: string;
+    sessionBreakdown: SessionMetric[];
+}
+
+export interface ConditionMetric extends BaseStats {
+    condition: string;
+    icon: string;
+    pdArrayBreakdown: PdArrayExpandedMetric[];
 }
 
 export interface HtfExpandedMetric extends BaseStats {
     htf: string;
-    sessionBreakdown: SessionMetric[];
+    conditionBreakdown: ConditionMetric[];
 }

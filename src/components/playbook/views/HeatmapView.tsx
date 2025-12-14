@@ -1,6 +1,6 @@
 'use client';
 
-import { getTimeframePriority } from '@/lib/utils/playbook';
+import { getTimeframePriority, getPdArrayIcon } from '@/lib/utils/playbook';
 import type { HtfNestedMetric } from '@/types/playbookTypes';
 
 interface HeatmapViewProps {
@@ -20,6 +20,7 @@ export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
     const rows: { 
         label: string; 
         htf: string; 
+        pdArray?: string;
         tagCombo: string; 
         cells: Map<string, { winRate: number; avgRR: number | null; totalTrades: number; pnl: number }> 
     }[] = [];
@@ -31,9 +32,12 @@ export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
                 allLtfs.add(ltf.ltf);
                 cells.set(ltf.ltf, { winRate: ltf.winRate, avgRR: ltf.avgRR, totalTrades: ltf.totalTrades, pnl: ltf.pnl });
             });
+            // Build label with pdArray if available
+            const pdArrayPart = tagData.pdArray ? ` · ${getPdArrayIcon(tagData.pdArray)} ${tagData.pdArray}` : '';
             rows.push({
-                label: `${htfData.htf} → ${tagData.tagCombo}`,
+                label: `${htfData.htf}${pdArrayPart} → ${tagData.tagCombo}`,
                 htf: htfData.htf,
+                pdArray: tagData.pdArray,
                 tagCombo: tagData.tagCombo,
                 cells
             });
@@ -53,7 +57,7 @@ export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
                     <thead>
                         <tr className="bg-gray-900/90">
                             <th className="px-3 py-2 text-left text-xs text-gray-500 font-medium sticky left-0 bg-gray-900/90 z-10">
-                                HTF → Confluências
+                            HTF → PD Array
                             </th>
                             {sortedLtfs.map(ltf => (
                                 <th key={ltf} className="px-3 py-2 text-center text-xs font-medium">
@@ -70,9 +74,13 @@ export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
                                 <td className="px-3 py-2 sticky left-0 bg-gray-900/90 z-10">
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-indigo-300 text-xs font-medium">{row.htf}</span>
-                                        <span className="text-purple-300 text-xs truncate max-w-[150px]" title={row.tagCombo}>
-                                            {row.tagCombo}
-                                        </span>
+                                        {row.pdArray && row.pdArray !== 'N/A' ? (
+                                            <span className="text-orange-300 text-xs flex items-center gap-1">
+                                                {getPdArrayIcon(row.pdArray)} {row.pdArray}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-500 text-xs">Sem PD Array</span>
+                                        )}
                                     </div>
                                 </td>
                                 {sortedLtfs.map(ltf => {

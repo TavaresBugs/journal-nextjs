@@ -13,6 +13,7 @@ import {
     getRMultipleColor,
     getTimeframeAlignment
 } from '@/lib/timeframeUtils';
+import { getPdArrayIcon } from '@/lib/utils/playbook';
 
 // Import hooks
 import { 
@@ -21,6 +22,7 @@ import {
     useTradeValidation,
     MARKET_CONDITIONS_V2,
     ENTRY_QUALITY_OPTIONS,
+    PD_ARRAY_OPTIONS,
     type TradeValidationInput,
 } from './hooks';
 
@@ -56,17 +58,16 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
         onSuccess: resetForm,
     });
 
-    // Destructure for easier access in JSX (maintains compatibility with existing code)
     const {
         marketCondition, tfAnalise, tfEntrada, tagsList, tagInput,
-        strategy, setup, entryQuality, marketConditionV2,
+        strategy, setup, entryQuality, marketConditionV2, pdArray,
         symbol, type, entryPrice, stopLoss, takeProfit, exitPrice,
         lot, commission, swap, entryDate, entryTime, exitDate, exitTime
     } = state;
 
     const {
         setMarketCondition, setTfAnalise, setTfEntrada, setTagsList, setTagInput,
-        setStrategy, setSetup, setEntryQuality, setMarketConditionV2,
+        setStrategy, setSetup, setEntryQuality, setMarketConditionV2, setPdArray,
         setSymbol, setType, setEntryPrice, setStopLoss, setTakeProfit, setExitPrice,
         setLot, setCommission, setSwap, setEntryDate, setEntryTime, setExitDate, setExitTime
     } = setters;
@@ -158,8 +159,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                 <SectionHeader icon="📊" title="Condições de Mercado" />
                 
                 <div className="space-y-3">
-                    {/* Market Condition + Strategy */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* Market Condition + Strategy + PD Array */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div>
                             <Input
                                 label="Condição"
@@ -193,8 +194,32 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 )}
                             </div>
                             <datalist id="strategies-list">
-                                {Array.from(new Set([...playbooks.map(p => p.name), ...strategies])).sort().map((strat) => (
-                                    <option key={strat} value={strat} />
+                                {Array.from(new Set([...playbooks.map(p => p.name), ...strategies])).sort().map((strat) => {
+                                    const pb = playbooks.find(p => p.name === strat);
+                                    return <option key={strat} value={strat}>{pb ? `${pb.icon} ${strat}` : strat}</option>;
+                                })}
+                            </datalist>
+                        </div>
+                        <div>
+                            <div className="relative">
+                                <Input
+                                    label="PD Array"
+                                    list="pd-array-list"
+                                    value={pdArray}
+                                    onChange={(e) => setPdArray(e.target.value)}
+                                    placeholder="FVG, OB..."
+                                    autoComplete="off"
+                                    className={pdArray ? 'pl-8' : ''}
+                                />
+                                {pdArray && (
+                                    <div className="absolute left-2.5 top-[38px] -translate-y-1/2 text-sm">
+                                        {getPdArrayIcon(pdArray)}
+                                    </div>
+                                )}
+                            </div>
+                            <datalist id="pd-array-list">
+                                {PD_ARRAY_OPTIONS.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                                 ))}
                             </datalist>
                         </div>

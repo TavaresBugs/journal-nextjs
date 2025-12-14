@@ -63,6 +63,7 @@ export interface Trade {
     // Entry Telemetry (v2)
     entry_quality?: 'picture-perfect' | 'nice' | 'normal' | 'ugly';
     market_condition_v2?: 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout';
+    pdArray?: PdArrayType;
 
     createdAt: string;
     updatedAt: string;
@@ -97,6 +98,7 @@ export interface TradeLite {
     // Entry Telemetry v2
     entry_quality?: 'picture-perfect' | 'nice' | 'normal' | 'ugly';
     market_condition_v2?: 'bull-trend' | 'bear-trend' | 'ranging' | 'breakout';
+    pdArray?: PdArrayType;
     session?: string;
     commission?: number;
     swap?: number;
@@ -240,6 +242,7 @@ export const DEFAULT_SETUPS = [
 
 export type TradeOutcome = 'win' | 'loss' | 'breakeven' | 'pending';
 export type TradeDirection = 'Long' | 'Short';
+export type PdArrayType = 'FVG' | 'OB' | 'MB' | 'BB' | 'Swing High' | 'Swing Low' | 'PDH' | 'PDL';
 
 export interface TradeFilters {
     accountId?: string;

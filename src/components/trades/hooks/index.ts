@@ -5,7 +5,7 @@
 
 export { useTradeForm } from './useTradeForm';
 export type { TradeFormState, TradeFormSetters, TradeFormComputedValues } from './useTradeForm';
-export { MARKET_CONDITIONS_V2, ENTRY_QUALITY_OPTIONS } from './useTradeForm';
+export { MARKET_CONDITIONS_V2, ENTRY_QUALITY_OPTIONS, PD_ARRAY_OPTIONS } from './useTradeForm';
 export { mapEntryQualityToDb, mapEntryQualityFromDb, mapMarketConditionToDb, mapMarketConditionFromDb } from './useTradeForm';
 
 export { useTradeSubmit } from './useTradeSubmit';

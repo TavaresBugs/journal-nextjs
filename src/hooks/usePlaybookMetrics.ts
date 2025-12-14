@@ -8,37 +8,43 @@ import {
     BaseStats,
     SessionMetric,
     ConditionMetric,
-    TagExpandedMetric,
+    PdArrayExpandedMetric,
     LtfExpandedMetric,
-    QualityMetric
+    TagMetric
 } from '@/types/playbookTypes';
 import {
     getTimeframePriority,
-    getQualityIcon,
     getConditionIcon,
-    getSessionIcon
+    getSessionIcon,
+    getPdArrayIcon
 } from '@/lib/utils/playbook';
 
-// Build nested metrics: HTF -> Tag Combination -> LTF
+// Build nested metrics: HTF -> PD Array + Tag Combination -> LTF
 function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
-    const htfMap = new Map<string, Map<string, Map<string, { wins: number; losses: number; pnl: number; rMultiples: number[] }>>>();
+    // Group by: HTF -> (pdArray + tagCombo combined key) -> LTF
+    const htfMap = new Map<string, Map<string, Map<string, { wins: number; losses: number; pnl: number; rMultiples: number[]; pdArray: string }>>>();
 
     trades.forEach(trade => {
         const htf = trade.tfAnalise || 'N/A';
         const ltf = trade.tfEntrada || 'N/A';
+        const pdArray = trade.pdArray || 'N/A';
         // Treat full tag combination as single unit (sorted alphabetically)
         const tagCombo = trade.tags
-            ? trade.tags.split(',').map(t => t.trim()).filter(Boolean).sort().join(' + ')
+            ? (trade.tags === '#SemConfluencias' ? 'Sem Confluências' : trade.tags.split(',').map(t => t.trim()).filter(Boolean).sort().join(' + '))
             : 'Sem Confluências';
+        
+        // Create combined key for pdArray + tagCombo (will be split later for display)
+        const comboKey = `${pdArray}|||${tagCombo}`;
+        
         const pnl = trade.pnl || 0;
         const isWin = trade.outcome === 'win';
         const isLoss = trade.outcome === 'loss';
 
         if (!htfMap.has(htf)) htfMap.set(htf, new Map());
         const tagMap = htfMap.get(htf)!;
-        if (!tagMap.has(tagCombo)) tagMap.set(tagCombo, new Map());
-        const ltfMap = tagMap.get(tagCombo)!;
-        if (!ltfMap.has(ltf)) ltfMap.set(ltf, { wins: 0, losses: 0, pnl: 0, rMultiples: [] });
+        if (!tagMap.has(comboKey)) tagMap.set(comboKey, new Map());
+        const ltfMap = tagMap.get(comboKey)!;
+        if (!ltfMap.has(ltf)) ltfMap.set(ltf, { wins: 0, losses: 0, pnl: 0, rMultiples: [], pdArray });
 
         const stats = ltfMap.get(ltf)!;
         if (isWin) stats.wins++;
@@ -74,7 +80,10 @@ function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
         const htfRMultiples: number[] = [];
         const tagBreakdown: TagComboMetric[] = [];
 
-        tagMap.forEach((ltfMap, tagCombo) => {
+        tagMap.forEach((ltfMap, comboKey) => {
+            // Extract pdArray and tagCombo from combined key
+            const [pdArray, tagCombo] = comboKey.split('|||');
+            
             let tagWins = 0, tagLosses = 0, tagPnl = 0;
             const tagRMultiples: number[] = [];
             const ltfBreakdown: LtfMetric[] = [];
@@ -115,6 +124,7 @@ function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
 
             tagBreakdown.push({
                 tagCombo,
+                pdArray: pdArray !== 'N/A' ? pdArray : undefined,
                 wins: tagWins,
                 losses: tagLosses,
                 pnl: tagPnl,
@@ -148,48 +158,48 @@ function buildNestedMetrics(trades: Trade[]): HtfNestedMetric[] {
     return result;
 }
 
-// ===== BUILD HIERARCHICAL METRICS: HTF → Session → Condition → Tags → LTF → Quality =====
+// ===== BUILD HIERARCHICAL METRICS: HTF → Condition → PD Array → Session → LTF → Tags =====
 function buildHierarchicalMetrics(trades: Trade[]): HtfExpandedMetric[] {
     // Type for the deepest stats accumulator
     type Stats = { wins: number; losses: number; pnl: number; rMultiples: number[] };
 
-    // 6-level nested map: HTF → Session → Condition → TagCombo → LTF → Quality
-    type QualityMap = Map<string, Stats>;
-    type LtfMap = Map<string, QualityMap>;
-    type TagMap = Map<string, LtfMap>;
-    type ConditionMap = Map<string, TagMap>;
-    type SessionMap = Map<string, ConditionMap>;
-    type HtfMap = Map<string, SessionMap>;
+    // 6-level nested map: HTF → Condition → PdArray → Session → LTF → TagCombo
+    type TagMap = Map<string, Stats>;
+    type LtfMap = Map<string, TagMap>;
+    type SessionMap = Map<string, LtfMap>;
+    type PdArrayMap = Map<string, SessionMap>;
+    type ConditionMap = Map<string, PdArrayMap>;
+    type HtfMap = Map<string, ConditionMap>;
 
     const htfMap: HtfMap = new Map();
 
     trades.forEach(trade => {
         const htf = trade.tfAnalise || 'N/A';
-        const session = trade.session || 'N/A';
         const condition = trade.market_condition_v2 || 'N/A';
+        const pdArray = trade.pdArray || 'N/A';
+        const session = trade.session || 'N/A';
+        const ltf = trade.tfEntrada || 'N/A';
         const tagCombo = trade.tags
             ? (trade.tags === '#SemConfluencias' ? 'Sem Confluências' : trade.tags.split(',').map(t => t.trim()).filter(Boolean).sort().join(' + '))
             : 'Sem Confluências';
-        const ltf = trade.tfEntrada || 'N/A';
-        const quality = trade.entry_quality || 'N/A';
         const pnl = trade.pnl || 0;
         const isWin = trade.outcome === 'win';
         const isLoss = trade.outcome === 'loss';
 
-        // Navigate/create the nested structure
+        // Navigate/create the nested structure: HTF → Condition → PdArray → Session → LTF → Tag
         if (!htfMap.has(htf)) htfMap.set(htf, new Map());
-        const sessionMap = htfMap.get(htf)!;
-        if (!sessionMap.has(session)) sessionMap.set(session, new Map());
-        const conditionMap = sessionMap.get(session)!;
+        const conditionMap = htfMap.get(htf)!;
         if (!conditionMap.has(condition)) conditionMap.set(condition, new Map());
-        const tagMap = conditionMap.get(condition)!;
-        if (!tagMap.has(tagCombo)) tagMap.set(tagCombo, new Map());
-        const ltfMapLocal = tagMap.get(tagCombo)!;
+        const pdArrayMap = conditionMap.get(condition)!;
+        if (!pdArrayMap.has(pdArray)) pdArrayMap.set(pdArray, new Map());
+        const sessionMap = pdArrayMap.get(pdArray)!;
+        if (!sessionMap.has(session)) sessionMap.set(session, new Map());
+        const ltfMapLocal = sessionMap.get(session)!;
         if (!ltfMapLocal.has(ltf)) ltfMapLocal.set(ltf, new Map());
-        const qualityMap = ltfMapLocal.get(ltf)!;
-        if (!qualityMap.has(quality)) qualityMap.set(quality, { wins: 0, losses: 0, pnl: 0, rMultiples: [] });
+        const tagMap = ltfMapLocal.get(ltf)!;
+        if (!tagMap.has(tagCombo)) tagMap.set(tagCombo, { wins: 0, losses: 0, pnl: 0, rMultiples: [] });
 
-        const stats = qualityMap.get(quality)!;
+        const stats = tagMap.get(tagCombo)!;
         if (isWin) stats.wins++;
         else if (isLoss) stats.losses++;
         stats.pnl += pnl;
@@ -228,95 +238,95 @@ function buildHierarchicalMetrics(trades: Trade[]): HtfExpandedMetric[] {
     // Build the result from the nested maps
     const result: HtfExpandedMetric[] = [];
 
-    htfMap.forEach((sessionMap, htf) => {
+    htfMap.forEach((conditionMap, htf) => {
         let htfWins = 0, htfLosses = 0, htfPnl = 0;
         const htfRMultiples: number[] = [];
-        const sessionBreakdown: SessionMetric[] = [];
+        const conditionBreakdown: ConditionMetric[] = [];
 
-        sessionMap.forEach((conditionMap, session) => {
-            let sessWins = 0, sessLosses = 0, sessPnl = 0;
-            const sessRMultiples: number[] = [];
-            const conditionBreakdown: ConditionMetric[] = [];
+        conditionMap.forEach((pdArrayMap, condition) => {
+            let condWins = 0, condLosses = 0, condPnl = 0;
+            const condRMultiples: number[] = [];
+            const pdArrayBreakdown: PdArrayExpandedMetric[] = [];
 
-            conditionMap.forEach((tagMap, condition) => {
-                let condWins = 0, condLosses = 0, condPnl = 0;
-                const condRMultiples: number[] = [];
-                const tagBreakdown: TagExpandedMetric[] = [];
+            pdArrayMap.forEach((sessionMap, pdArray) => {
+                let pdWins = 0, pdLosses = 0, pdPnl = 0;
+                const pdRMultiples: number[] = [];
+                const sessionBreakdown: SessionMetric[] = [];
 
-                tagMap.forEach((ltfMapLocal, tagCombo) => {
-                    let tagWins = 0, tagLosses = 0, tagPnl = 0;
-                    const tagRMultiples: number[] = [];
+                sessionMap.forEach((ltfMapLocal, session) => {
+                    let sessWins = 0, sessLosses = 0, sessPnl = 0;
+                    const sessRMultiples: number[] = [];
                     const ltfBreakdown: LtfExpandedMetric[] = [];
 
-                    ltfMapLocal.forEach((qualityMap, ltf) => {
+                    ltfMapLocal.forEach((tagMap, ltf) => {
                         let ltfWins = 0, ltfLosses = 0, ltfPnl = 0;
                         const ltfRMultiples: number[] = [];
-                        const qualityBreakdown: QualityMetric[] = [];
+                        const tagBreakdown: TagMetric[] = [];
 
-                        qualityMap.forEach((stats, quality) => {
+                        tagMap.forEach((stats, tagCombo) => {
                             ltfWins += stats.wins;
                             ltfLosses += stats.losses;
                             ltfPnl += stats.pnl;
                             ltfRMultiples.push(...stats.rMultiples);
 
-                            qualityBreakdown.push({
-                                quality,
-                                icon: getQualityIcon(quality),
+                            tagBreakdown.push({
+                                tagCombo,
                                 ...calcStats(stats.wins, stats.losses, stats.pnl, stats.rMultiples)
                             });
                         });
 
-                        qualityBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
-                        tagWins += ltfWins; tagLosses += ltfLosses; tagPnl += ltfPnl;
-                        tagRMultiples.push(...ltfRMultiples);
+                        tagBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
+                        sessWins += ltfWins; sessLosses += ltfLosses; sessPnl += ltfPnl;
+                        sessRMultiples.push(...ltfRMultiples);
 
                         ltfBreakdown.push({
                             ltf,
-                            qualityBreakdown,
+                            tagBreakdown,
                             ...calcStats(ltfWins, ltfLosses, ltfPnl, ltfRMultiples)
                         });
                     });
 
                     ltfBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
-                    condWins += tagWins; condLosses += tagLosses; condPnl += tagPnl;
-                    condRMultiples.push(...tagRMultiples);
+                    pdWins += sessWins; pdLosses += sessLosses; pdPnl += sessPnl;
+                    pdRMultiples.push(...sessRMultiples);
 
-                    tagBreakdown.push({
-                        tagCombo,
+                    sessionBreakdown.push({
+                        session,
+                        icon: getSessionIcon(session),
                         ltfBreakdown,
-                        ...calcStats(tagWins, tagLosses, tagPnl, tagRMultiples)
+                        ...calcStats(sessWins, sessLosses, sessPnl, sessRMultiples)
                     });
                 });
 
-                tagBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
-                sessWins += condWins; sessLosses += condLosses; sessPnl += condPnl;
-                sessRMultiples.push(...condRMultiples);
+                sessionBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
+                condWins += pdWins; condLosses += pdLosses; condPnl += pdPnl;
+                condRMultiples.push(...pdRMultiples);
 
-                conditionBreakdown.push({
-                    condition,
-                    icon: getConditionIcon(condition),
-                    tagBreakdown,
-                    ...calcStats(condWins, condLosses, condPnl, condRMultiples)
+                pdArrayBreakdown.push({
+                    pdArray,
+                    icon: getPdArrayIcon(pdArray),
+                    sessionBreakdown,
+                    ...calcStats(pdWins, pdLosses, pdPnl, pdRMultiples)
                 });
             });
 
-            conditionBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
-            htfWins += sessWins; htfLosses += sessLosses; htfPnl += sessPnl;
-            htfRMultiples.push(...sessRMultiples);
+            pdArrayBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
+            htfWins += condWins; htfLosses += condLosses; htfPnl += condPnl;
+            htfRMultiples.push(...condRMultiples);
 
-            sessionBreakdown.push({
-                session,
-                icon: getSessionIcon(session),
-                conditionBreakdown,
-                ...calcStats(sessWins, sessLosses, sessPnl, sessRMultiples)
+            conditionBreakdown.push({
+                condition,
+                icon: getConditionIcon(condition),
+                pdArrayBreakdown,
+                ...calcStats(condWins, condLosses, condPnl, condRMultiples)
             });
         });
 
-        sessionBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
+        conditionBreakdown.sort((a, b) => b.totalTrades - a.totalTrades);
 
         result.push({
             htf,
-            sessionBreakdown,
+            conditionBreakdown,
             ...calcStats(htfWins, htfLosses, htfPnl, htfRMultiples)
         });
     });

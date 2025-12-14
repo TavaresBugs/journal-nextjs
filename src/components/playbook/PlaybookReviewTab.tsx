@@ -38,8 +38,8 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
                         onClick={() => setViewMode(filter.id)}
                         className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
                             viewMode === filter.id
-                                ? 'bg-zorin-accent/10 text-zorin-accent border border-zorin-accent/30 shadow-[0_0_10px_rgba(0,200,83,0.1)]'
-                                : 'text-gray-400 hover:text-gray-200 hover:bg-white/5'
+                                ? 'bg-linear-to-r from-cyan-500/20 to-cyan-400/10 text-cyan-400 border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/50'
                         }`}
                     >
                         <span>{filter.icon}</span>

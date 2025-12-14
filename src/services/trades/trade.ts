@@ -51,6 +51,7 @@ export const mapTradeFromDB = (db: DBTrade): Trade => ({
     // Entry Telemetry v2
     entry_quality: db.entry_quality as Trade['entry_quality'],
     market_condition_v2: db.market_condition_v2 as Trade['market_condition_v2'],
+    pdArray: db.pd_array as Trade['pdArray'],
     createdAt: db.created_at,
     updatedAt: db.updated_at,
 });
@@ -98,6 +99,7 @@ export const mapTradeToDB = (app: Trade): DBTrade => ({
     // Entry Telemetry v2
     entry_quality: app.entry_quality,
     market_condition_v2: app.market_condition_v2,
+    pd_array: app.pdArray,
     created_at: app.createdAt,
     updated_at: new Date().toISOString(),
 });
@@ -250,6 +252,7 @@ const mapTradeLiteFromDB = (db: any): TradeLite => ({
     // Entry Telemetry v2
     entry_quality: db.entry_quality,
     market_condition_v2: db.market_condition_v2,
+    pdArray: db.pd_array,
     session: db.session,
     commission: db.commission ? Number(db.commission) : undefined,
     swap: db.swap ? Number(db.swap) : undefined,
@@ -267,7 +270,7 @@ export async function getTradeHistoryLite(accountId: string): Promise<TradeLite[
     // Select only necessary columns to reduce payload
     const { data, error } = await supabase
         .from('trades')
-        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, market_condition, entry_quality, market_condition_v2, session, user_id, commission, swap')
+        .select('id, entry_date, entry_time, exit_date, exit_time, pnl, outcome, account_id, symbol, type, entry_price, exit_price, stop_loss, take_profit, lot, tags, strategy, setup, tf_analise, tf_entrada, market_condition, entry_quality, market_condition_v2, pd_array, session, user_id, commission, swap')
         .eq('account_id', accountId)
         .eq('user_id', userId)
         .order('entry_date', { ascending: false })

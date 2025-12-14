@@ -28,6 +28,17 @@ export const ENTRY_QUALITY_OPTIONS = [
     '⚠️ Ugly ST'
 ];
 
+export const PD_ARRAY_OPTIONS = [
+    { value: 'FVG', label: '👑 Fair Value Gap (FVG)' },
+    { value: 'OB', label: '🧱 Order Block (OB)' },
+    { value: 'MB', label: '🧱 Mitigation Block (MB)' },
+    { value: 'BB', label: '🧱 Breaker Block (BB)' },
+    { value: 'Swing High', label: '📈 Swing High (PXH)' },
+    { value: 'Swing Low', label: '📉 Swing Low (PXL)' },
+    { value: 'PDH', label: '📈 Previous Daily High (PDH)' },
+    { value: 'PDL', label: '📉 Previous Daily Low (PDL)' },
+];
+
 // ============================================
 // Mappers
 // ============================================
@@ -103,6 +114,7 @@ export interface TradeFormState {
     setup: string;
     entryQuality: string;
     marketConditionV2: string;
+    pdArray: string;
     
     // Financial
     symbol: string;
@@ -132,6 +144,7 @@ export interface TradeFormSetters {
     setSetup: (v: string) => void;
     setEntryQuality: (v: string) => void;
     setMarketConditionV2: (v: string) => void;
+    setPdArray: (v: string) => void;
     setSymbol: (v: string) => void;
     setType: (v: 'Long' | 'Short' | '') => void;
     setEntryPrice: (v: string) => void;
@@ -184,6 +197,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     const [setup, setSetup] = useState(initialData?.setup || '');
     const [entryQuality, setEntryQuality] = useState(mapEntryQualityFromDb(initialData?.entry_quality));
     const [marketConditionV2, setMarketConditionV2] = useState(mapMarketConditionFromDb(initialData?.market_condition_v2));
+    const [pdArray, setPdArray] = useState(initialData?.pdArray || '');
 
     // Financial
     const [symbol, setSymbol] = useState(initialData?.symbol || '');
@@ -214,6 +228,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
             setSetup(initialData.setup || '');
             setEntryQuality(mapEntryQualityFromDb(initialData.entry_quality));
             setMarketConditionV2(mapMarketConditionFromDb(initialData.market_condition_v2));
+            setPdArray(initialData.pdArray || '');
             setSymbol(initialData.symbol || '');
             setType(initialData.type || '');
             setEntryPrice(initialData.entryPrice?.toString() || '');
@@ -296,6 +311,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
         setSetup('');
         setEntryQuality('');
         setMarketConditionV2('');
+        setPdArray('');
     }, []);
 
     return {
@@ -310,6 +326,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
             setup,
             entryQuality,
             marketConditionV2,
+            pdArray,
             symbol,
             type,
             entryPrice,
@@ -336,6 +353,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
             setSetup,
             setEntryQuality,
             setMarketConditionV2,
+            setPdArray,
             setSymbol,
             setType,
             setEntryPrice,

@@ -64,3 +64,31 @@ export const getQualityLabel = (quality: string): string => {
         default: return quality || 'N/A';
     }
 };
+
+export const getPdArrayIcon = (pdArray: string): string => {
+    switch (pdArray) {
+        case 'FVG':         return '👑';
+        case 'OB':          return '🧱';
+        case 'MB':          return '🧱';
+        case 'BB':          return '🧱';
+        case 'Swing High':  return '📈';
+        case 'Swing Low':   return '📉';
+        case 'PDH':         return '📈';
+        case 'PDL':         return '📉';
+        default:            return '📍';
+    }
+};
+
+export const getPdArrayLabel = (pdArray: string): string => {
+    switch (pdArray) {
+        case 'FVG': return 'Fair Value Gap';
+        case 'OB': return 'Order Block';
+        case 'MB': return 'Mitigation Block';
+        case 'BB': return 'Breaker Block';
+        case 'Swing High': return 'Swing High (PXH)';
+        case 'Swing Low': return 'Swing Low (PXL)';
+        case 'PDH': return 'Previous Daily High';
+        case 'PDL': return 'Previous Daily Low';
+        default: return pdArray || 'N/A';
+    }
+};

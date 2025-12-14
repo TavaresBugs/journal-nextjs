@@ -1,6 +1,7 @@
 'use client';
 
 import { formatCurrency } from '@/lib/calculations';
+import { getPdArrayIcon } from '@/lib/utils/playbook';
 import type { HtfNestedMetric } from '@/types/playbookTypes';
 
 interface ReportViewProps {
@@ -11,6 +12,7 @@ interface ReportViewProps {
 export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
     const allSetups: Array<{
         htf: string;
+        pdArray?: string;
         tagCombo: string;
         ltf: string;
         stats: { wins: number; losses: number; totalTrades: number; winRate: number; pnl: number; avgRR: number | null };
@@ -21,6 +23,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
             tagData.ltfBreakdown.forEach(ltfData => {
                 allSetups.push({
                     htf: htfMetric.htf,
+                    pdArray: tagData.pdArray,
                     tagCombo: tagData.tagCombo,
                     ltf: ltfData.ltf,
                     stats: {
@@ -72,50 +75,62 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                                 key={`${setup.htf}-${setup.tagCombo}-${setup.ltf}`}
                                 className="bg-linear-to-r from-emerald-500/10 to-transparent rounded-xl p-4 border border-emerald-500/30"
                             >
-                                <div className="flex items-start gap-3">
+                                {/* Medal + Win Rate Header */}
+                                <div className="flex items-center gap-3 mb-3">
                                     <span className="text-3xl">
                                         {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
                                     </span>
-                                    <div className="flex-1">
-                                        <div className="text-base font-bold text-white mb-2">
-                                            WIN RATE {setup.stats.winRate.toFixed(0)}% ({setup.stats.totalTrades} trades)
+                                    <div className="text-base font-bold text-white">
+                                        WIN RATE {setup.stats.winRate.toFixed(0)}% ({setup.stats.totalTrades} trades)
+                                    </div>
+                                </div>
+                                
+                                {/* Flow Line: HTF → PD Array → Confluências → LTF */}
+                                <div className="flex flex-wrap items-center gap-2 text-sm mb-3 bg-gray-900/40 rounded-lg px-3 py-2">
+                                    <span className="text-indigo-300 font-semibold">🕐 {setup.htf}</span>
+                                    <span className="text-gray-500">→</span>
+                                    {setup.pdArray && (
+                                        <>
+                                            <span className="text-amber-300 font-medium">{getPdArrayIcon(setup.pdArray)} {setup.pdArray}</span>
+                                            <span className="text-gray-500">→</span>
+                                        </>
+                                    )}
+                                    <span className="text-purple-300 font-medium">🏷️ {setup.tagCombo}</span>
+                                    <span className="text-gray-500">→</span>
+                                    <span className="text-cyan-300 font-semibold">{setup.ltf}</span>
+                                </div>
+                                
+                                {/* Stats Bar */}
+                                <div className="flex items-center gap-4 text-xs bg-gray-900/50 rounded-lg px-3 py-2 mb-3">
+                                    <span className="text-gray-400">{setup.stats.totalTrades} trades</span>
+                                    <span className="text-emerald-400 font-medium">{setup.stats.wins}W/{setup.stats.losses}L</span>
+                                    <span className={`font-medium ${setup.stats.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                        {formatCurrency(setup.stats.pnl, currency)}
+                                    </span>
+                                    {setup.stats.avgRR !== null && (
+                                        <span className={`font-medium ${setup.stats.avgRR >= 1 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                            {setup.stats.avgRR >= 0 ? '+' : ''}{setup.stats.avgRR.toFixed(2)}R
+                                        </span>
+                                    )}
+                                </div>
+                                
+                                {/* Checklist */}
+                                <div className="bg-gray-900/50 rounded-lg p-3">
+                                    <div className="text-xs font-semibold text-gray-400 mb-2">💡 CHECKLIST:</div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-gray-300">
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-emerald-400">✅</span> Análise em <span className="text-indigo-300 font-medium ml-1">{setup.htf}</span>
                                         </div>
-                                        
-                                        <div className="grid grid-cols-3 gap-2 text-xs mb-3">
-                                            <div>
-                                                <span className="text-gray-500">HTF:</span>
-                                                <span className="text-indigo-300 ml-1 font-medium">{setup.htf}</span>
+                                        {setup.pdArray && (
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-emerald-400">✅</span> PD Array: <span className="text-amber-300 font-medium ml-1">{setup.pdArray}</span>
                                             </div>
-                                            <div>
-                                                <span className="text-gray-500">Confluências:</span>
-                                                <span className="text-purple-300 ml-1 font-medium">{setup.tagCombo}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-gray-500">LTF:</span>
-                                                <span className="text-cyan-300 ml-1 font-medium">{setup.ltf}</span>
-                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-emerald-400">✅</span> Confluências: <span className="text-purple-300 font-medium ml-1">{setup.tagCombo}</span>
                                         </div>
-                                        
-                                        <div className="flex items-center gap-4 text-xs bg-gray-900/50 rounded px-3 py-2">
-                                            <span className="text-gray-500">{setup.stats.totalTrades} trades</span>
-                                            <span className="text-emerald-400">{setup.stats.wins}W/{setup.stats.losses}L</span>
-                                            <span className={setup.stats.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                                                {formatCurrency(setup.stats.pnl, currency)}
-                                            </span>
-                                            {setup.stats.avgRR !== null && (
-                                                <span className={setup.stats.avgRR >= 1 ? 'text-emerald-400' : 'text-amber-400'}>
-                                                    {setup.stats.avgRR >= 0 ? '+' : ''}{setup.stats.avgRR.toFixed(2)}R
-                                                </span>
-                                            )}
-                                        </div>
-                                        
-                                        <div className="bg-gray-900/50 rounded-lg p-3 mt-3">
-                                            <div className="text-xs font-semibold text-gray-400 mb-2">💡 CHECKLIST:</div>
-                                            <div className="space-y-1 text-xs text-gray-300">
-                                                <div>✅ Análise em {setup.htf}</div>
-                                                <div>✅ Buscar confluências: {setup.tagCombo}</div>
-                                                <div>✅ Entrar em {setup.ltf}</div>
-                                            </div>
+                                        <div className="flex items-center gap-1">
+                                            <span className="text-emerald-400">✅</span> Entrar em <span className="text-cyan-300 font-medium ml-1">{setup.ltf}</span>
                                         </div>
                                     </div>
                                 </div>
