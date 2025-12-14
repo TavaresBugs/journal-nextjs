@@ -31,7 +31,6 @@ export function hasMarketConditionsData(props: MarketConditionsCardProps): boole
         props.tfEntrada ||
         props.setup ||
         props.htfAligned !== undefined ||
-        props.htfAligned !== undefined ||
         (props.confluences && props.confluences.length > 0) ||
         props.evaluation ||
         props.pdArray
@@ -55,7 +54,7 @@ export function MarketConditionsCard({
     pdArray,
 }: MarketConditionsCardProps) {
     // Don't render if no data
-    if (!hasMarketConditionsData({ condition, strategy, tfAnalise, tfEntrada, setup, htfAligned, confluences, evaluation })) {
+    if (!hasMarketConditionsData({ condition, strategy, tfAnalise, tfEntrada, setup, htfAligned, confluences, evaluation, pdArray })) {
         return null;
     }
 
