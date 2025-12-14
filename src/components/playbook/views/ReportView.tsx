@@ -1,7 +1,7 @@
 'use client';
 
 import { formatCurrency } from '@/lib/calculations';
-import { getPdArrayIcon, getConditionIcon } from '@/lib/utils/playbook';
+import { getPdArrayIcon, getConditionIcon, getConditionLabel } from '@/lib/utils/playbook';
 import type { HtfNestedMetric } from '@/types/playbookTypes';
 
 interface ReportViewProps {
@@ -91,18 +91,14 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                                 <div className="flex flex-wrap items-center gap-2 text-sm mb-3 bg-gray-900/40 rounded-lg px-3 py-2">
                                     <span className="text-indigo-300 font-semibold">🕐 {setup.htf}</span>
                                     <span className="text-gray-500">→</span>
-                                    {setup.condition && (
-                                        <>
-                                            <span className="text-sky-300 font-medium">{getConditionIcon(setup.condition)} {setup.condition}</span>
-                                            <span className="text-gray-500">→</span>
-                                        </>
-                                    )}
-                                    {setup.pdArray && (
-                                        <>
-                                            <span className="text-amber-300 font-medium">{getPdArrayIcon(setup.pdArray)} {setup.pdArray}</span>
-                                            <span className="text-gray-500">→</span>
-                                        </>
-                                    )}
+                                    <span className="text-sky-300 font-medium">
+                                        {getConditionIcon(setup.condition || '')} {getConditionLabel(setup.condition || '')}
+                                    </span>
+                                    <span className="text-gray-500">→</span>
+                                    <span className="text-amber-300 font-medium">
+                                        {getPdArrayIcon(setup.pdArray || '')} {setup.pdArray || 'N/A'}
+                                    </span>
+                                    <span className="text-gray-500">→</span>
                                     <span className="text-cyan-300 font-semibold">{setup.ltf}</span>
                                 </div>
                                 
@@ -120,24 +116,58 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                                     )}
                                 </div>
                                 
-                                {/* Checklist */}
-                                <div className="bg-gray-900/50 rounded-lg p-3">
-                                    <div className="text-xs font-semibold text-gray-400 mb-2">💡 CHECKLIST:</div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-xs text-gray-300">
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-emerald-400">✅</span> Análise em <span className="text-indigo-300 font-medium ml-1">{setup.htf}</span>
+                                {/* Execução */}
+                                <div className="bg-gray-900/50 rounded-lg p-3 mb-2">
+                                    <div className="text-xs font-semibold text-emerald-400 mb-2">🎯 EXECUÇÃO:</div>
+                                    <div className="space-y-1 text-xs">
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-emerald-400 mt-0.5">✓</span>
+                                            <span className="text-gray-300">Confirmar estrutura em <span className="text-indigo-300 font-medium">{setup.htf}</span></span>
                                         </div>
                                         {setup.pdArray && (
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-emerald-400">✅</span> PD Array: <span className="text-amber-300 font-medium ml-1">{setup.pdArray}</span>
+                                            <div className="flex items-start gap-2">
+                                                <span className="text-emerald-400 mt-0.5">✓</span>
+                                                <span className="text-gray-300">Buscar <span className="text-amber-300 font-medium">{setup.pdArray}</span> não mitigado</span>
                                             </div>
                                         )}
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-emerald-400">✅</span> Confluências: <span className="text-purple-300 font-medium ml-1">{setup.tagCombo}</span>
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-emerald-400 mt-0.5">✓</span>
+                                            <span className="text-gray-300">Refinamento em <span className="text-cyan-300 font-medium">{setup.ltf}</span></span>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <span className="text-emerald-400">✅</span> Entrar em <span className="text-cyan-300 font-medium ml-1">{setup.ltf}</span>
+                                    </div>
+                                </div>
+                                
+                                {/* Regras */}
+                                <div className="bg-gray-900/50 rounded-lg p-3 mb-2">
+                                    <div className="text-xs font-semibold text-amber-400 mb-2">⚡ REGRAS:</div>
+                                    <div className="space-y-1 text-xs">
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-amber-400 mt-0.5">•</span>
+                                            <span className="text-gray-300">Stop além do PD Array</span>
                                         </div>
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-amber-400 mt-0.5">•</span>
+                                            <span className="text-gray-300">Mínimo 2R de RR</span>
+                                        </div>
+                                        <div className="flex items-start gap-2">
+                                            <span className="text-amber-400 mt-0.5">•</span>
+                                            <span className="text-gray-300">Operar a favor do HTF</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Confluências */}
+                                <div className="bg-gray-900/50 rounded-lg p-3">
+                                    <div className="text-xs font-semibold text-purple-400 mb-2">🏷️ CONFLUÊNCIAS:</div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {setup.tagCombo.split(' + ').map((tag, i) => (
+                                            <span 
+                                                key={i}
+                                                className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded-md text-xs font-medium border border-purple-500/30"
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
