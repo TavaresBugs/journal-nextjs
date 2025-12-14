@@ -9,6 +9,7 @@ import { ensureFreshImageUrl } from '@/lib/utils/general';
 import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
 import { MarketConditionsCard, type MarketConditionsCardProps } from '@/components/shared/MarketConditionsCard';
 import { mapMarketConditionFromDb, mapEntryQualityFromDb } from '@/components/trades/hooks/useTradeForm';
+import { SharePageSkeleton } from '@/components/skeletons/SharePageSkeleton';
 import type { JournalEntry, JournalImage } from '@/types';
 
 // Mapeamento de timeframes para labels em português
@@ -208,14 +209,7 @@ export default function SharePage() {
     })() : null;
 
     if (loading) {
-        return (
-            <div 
-                className="min-h-screen flex items-center justify-center bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url(/images/share-bg.jpg)' }}
-            >
-                <div className="text-emerald-400 text-xl">Carregando...</div>
-            </div>
-        );
+        return <SharePageSkeleton />;
     }
 
     if (error || !entry) {
