@@ -73,30 +73,78 @@ export interface TimeframeAlignmentResult {
  */
 const ALIGNMENT_MAP: Record<string, Record<string, AlignmentStatus>> = {
     'Monthly': { 'Daily': 'ST_ALIGNED', '4H': 'ST_RE_ALIGNED', '1H': 'ST_RE_PLUS_ALERT', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    'Weekly':  { '4H': 'ST_ALIGNED', '1H': 'ST_RE_ALIGNED', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    'Daily':   { '1H': 'ST_ALIGNED', '15m': 'ST_RE_ALIGNED', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
-    '4H':      { '15m': 'ST_ALIGNED', '5m': 'ST_RE_ALIGNED', '1m': 'ST_RE_PLUS_ALERT' },
-    '1H':      { '5m': 'ST_ALIGNED', '1m': 'ST_RE_ALIGNED' },
-    '15m':     { '1m': 'ST_ALIGNED' },
+    'Weekly':  { 'Daily': 'ST_ALIGNED', '4H': 'ST_RE_ALIGNED', '1H': 'ST_RE_PLUS_ALERT', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    'Daily':   { '4H': 'ST_ALIGNED', '1H': 'ST_RE_ALIGNED', '15m': 'ST_RE_PLUS_ALERT', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    '4H':      { '1H': 'ST_ALIGNED', '15m': 'ST_RE_ALIGNED', '5m': 'ST_RE_PLUS_ALERT', '1m': 'ST_RE_PLUS_ALERT' },
+    '1H':      { '15m': 'ST_ALIGNED', '5m': 'ST_RE_ALIGNED', '1m': 'ST_RE_PLUS_ALERT' },
+    '15m':     { '5m': 'ST_ALIGNED', '1m': 'ST_RE_ALIGNED' },
+    '5m':      { '1m': 'ST_ALIGNED' },
 };
+
+/**
+ * Normalize timeframe string to standard format used in ALIGNMENT_MAP
+ * Handles various input formats: H4 → 4H, M15 → 15m, M5 → 5m, M1 → 1m
+ */
+function normalizeTf(tf: string): string {
+    if (!tf) return tf;
+    
+    const trimmed = tf.trim();
+    const upper = trimmed.toUpperCase();
+    
+    // Map common variations to standard format
+    const normalizations: Record<string, string> = {
+        // Hour-based (uppercase input)
+        'H4': '4H', 'H1': '1H',
+        // Hour-based (preserve format)
+        '4H': '4H', '1H': '1H',
+        // Minute-based (MT4/MT5 format)
+        'M15': '15m', 'M5': '5m', 'M1': '1m', 'M30': '30m', 'M3': '3m',
+        // Minute-based (already lowercase)
+        '15M': '15m', '5M': '5m', '1M': '1m', '30M': '30m', '3M': '3m',
+        // Daily/Weekly/Monthly
+        'D': 'Daily', 'D1': 'Daily', 'DAILY': 'Daily',
+        'W': 'Weekly', 'W1': 'Weekly', 'WEEKLY': 'Weekly',
+        'MN': 'Monthly', 'MONTHLY': 'Monthly',
+    };
+    
+    // First try exact match, then try uppercase
+    if (normalizations[trimmed]) return normalizations[trimmed];
+    if (normalizations[upper]) return normalizations[upper];
+    
+    // Handle already-correct formats that weren't in the map
+    if (trimmed === 'Daily' || trimmed === 'Weekly' || trimmed === 'Monthly') {
+        return trimmed;
+    }
+    
+    // Handle lowercase minute formats: 15m, 5m, 1m
+    if (/^\d+m$/i.test(trimmed)) {
+        return trimmed.toLowerCase();
+    }
+    
+    return tf;
+}
 
 /**
  * Get timeframe alignment status between PD Array TF (context) and Entry TF
  * 
- * @param pdArrayTf - PD Array / Analysis timeframe (e.g., 'Daily', '4H')
- * @param entryTf - Entry timeframe (e.g., '15m', '5m')
+ * @param pdArrayTf - PD Array / Analysis timeframe (e.g., 'Daily', '4H', 'H4')
+ * @param entryTf - Entry timeframe (e.g., '15m', 'M15', '5m')
  * @returns Alignment result with status, label, and warning flag
  * 
  * @example
- * getTimeframeAlignment('Daily', '15m') // { status: 'ST_RE_ALIGNED', label: 'ST + RE Aligned', isWarning: false }
- * getTimeframeAlignment('Daily', '5m')  // { status: 'ST_RE_PLUS_ALERT', label: 'ST + RE + …', isWarning: true }
+ * getTimeframeAlignment('4H', 'M15') // { status: 'ST_ALIGNED', label: 'ST Aligned', isWarning: false }
+ * getTimeframeAlignment('Daily', '5m') // { status: 'ST_RE_PLUS_ALERT', label: 'ST + RE + …', isWarning: true }
  */
 export function getTimeframeAlignment(
     pdArrayTf: string,
     entryTf: string
 ): TimeframeAlignmentResult {
-    const tfMap = ALIGNMENT_MAP[pdArrayTf];
-    const status: AlignmentStatus = tfMap?.[entryTf] ?? 'ST_RE_PLUS_ALERT';
+    // Normalize inputs to standard format
+    const htf = normalizeTf(pdArrayTf);
+    const ltf = normalizeTf(entryTf);
+    
+    const tfMap = ALIGNMENT_MAP[htf];
+    const status: AlignmentStatus = tfMap?.[ltf] ?? 'ST_RE_PLUS_ALERT';
 
     const label = 
         status === 'ST_ALIGNED'
