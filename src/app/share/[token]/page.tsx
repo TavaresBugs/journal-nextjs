@@ -147,7 +147,7 @@ export default function SharePage() {
                 if (entryData.trade_id) {
                     const { data: tradeData } = await supabase
                         .from('trades')
-                        .select('market_condition_v2, strategy, strategy_icon, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality')
+                        .select('market_condition_v2, strategy, strategy_icon, tf_analise, tf_entrada, setup, htf_aligned, tags, entry_quality, pd_array')
                         .eq('id', entryData.trade_id)
                         .single();
                     
@@ -165,7 +165,8 @@ export default function SharePage() {
                             tradeData.setup ||
                             tradeData.htf_aligned !== null ||
                             confluencesArray.length > 0 ||
-                            tradeData.entry_quality;
+                            tradeData.entry_quality ||
+                            tradeData.pd_array;
 
                         if (hasData) {
                             setTradeContext({
@@ -178,6 +179,7 @@ export default function SharePage() {
                                 htfAligned: tradeData.htf_aligned ?? undefined,
                                 confluences: confluencesArray.length > 0 ? confluencesArray : undefined,
                                 evaluation: mapEntryQualityFromDb(tradeData.entry_quality) || undefined,
+                                pdArray: tradeData.pd_array || undefined,
                             });
                         }
                     }
@@ -230,11 +232,14 @@ export default function SharePage() {
     }
 
     return (
-        <div 
-            className="min-h-screen py-12 px-4 bg-cover bg-center bg-no-repeat bg-fixed"
-            style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url(/images/share-bg.jpg)' }}
-        >
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen py-12 px-4 relative">
+            {/* Fixed Background for better mobile support */}
+            <div 
+                className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+                style={{ backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.55)), url(/images/share-bg.jpg)' }}
+            />
+
+            <div className="max-w-4xl mx-auto relative z-10">
                 {/* Header */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-full mb-4">
