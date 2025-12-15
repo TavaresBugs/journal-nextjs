@@ -14,6 +14,7 @@ export abstract class BaseRepository<T> {
     this.logger = new Logger(`${tableName}Repository`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected async query<R>(fn: () => PromiseLike<{ data: R | null; error: any }>): Promise<Result<R, AppError>> {
     try {
       const { data, error } = await fn();

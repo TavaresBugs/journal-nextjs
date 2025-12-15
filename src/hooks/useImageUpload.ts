@@ -2,9 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageCache } from './useImageCache';
 import { 
   compressImageForPreview, 
-  shouldCompress,
-  compressToWebP,
-  type CompressedImage 
+  shouldCompress 
 } from '@/lib/utils/imageCompression';
 
 export interface ImageBlobs {
@@ -61,13 +59,12 @@ export function useImageUpload(
     contextId = 'upload', 
     enableCache = true,
     compressPreview = true,
-    compressionThresholdMB = 0.5,
-    useWebP = true
+    compressionThresholdMB = 0.5
   } = options;
   
   const [images, setImages] = useState<Record<string, string[]>>(initialImages);
   const [isCompressing, setIsCompressing] = useState(false);
-  const [webpBlobs, setWebpBlobs] = useState<ImageBlobs[]>([]);
+  const webpBlobs: ImageBlobs[] = [];
   const imageCache = useImageCache({ maxItems: 30, ttlMs: 10 * 60 * 1000 });
   
   // Track cache keys for cleanup

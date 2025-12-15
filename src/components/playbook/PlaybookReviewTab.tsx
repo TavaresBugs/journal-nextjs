@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { GlassCard } from '@/components/ui';
 import { Tabs } from '@/components/ui/Tabs';
 import { usePlaybookMetrics } from '@/hooks/usePlaybookMetrics';
 import { HtfView, HeatmapView, ReportView, type DrillPath } from './views';

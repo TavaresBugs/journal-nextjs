@@ -198,6 +198,7 @@ export function CreateExperimentModal({
                         <div className="mt-4 grid grid-cols-3 gap-3">
                             {previews.map((preview, index) => (
                                 <div key={index} className="relative group">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={preview}
                                         alt={`Preview ${index + 1}`}

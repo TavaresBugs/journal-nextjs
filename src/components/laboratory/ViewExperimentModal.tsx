@@ -98,6 +98,7 @@ export function ViewExperimentModal({
                                     rel="noopener noreferrer"
                                     className="relative group rounded-xl overflow-hidden border border-gray-700 hover:border-cyan-500 transition-colors"
                                 >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={img.imageUrl}
                                         alt={img.description || `Screenshot ${index + 1}`}

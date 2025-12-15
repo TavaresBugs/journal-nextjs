@@ -45,6 +45,7 @@ export function ExperimentCard({
             {/* Thumbnail */}
             {firstImage && (
                 <div className="relative h-32 -mx-4 -mt-4 mb-4 rounded-t-xl overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                         src={firstImage} 
                         alt={experiment.title}

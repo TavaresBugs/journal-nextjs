@@ -35,7 +35,7 @@ const JournalEntryPreviewComponent = ({
   onEdit,
   onShare,
   isSharingLoading,
-  hasMentor: _hasMentor,
+
   hasUnreadComments = false
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);

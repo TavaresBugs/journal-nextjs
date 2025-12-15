@@ -109,7 +109,7 @@ export function useTradeSubmit(options: UseTradeSubmitOptions): UseTradeSubmitRe
                 setup: state.setup || undefined,
                 marketCondition: state.marketCondition as Trade['marketCondition'] || undefined,
                 session: state.entryTime ? computed.detectedSession : undefined,
-                htfAligned: (state.tfAnalise && state.tfEntrada) ? computed.alignmentResult.valid : undefined,
+                htfAligned: (state.tfAnalise && state.tfEntrada) ? !computed.alignmentResult.isWarning : undefined,
                 rMultiple: undefined,
                 pnl: undefined,
                 outcome: 'pending',

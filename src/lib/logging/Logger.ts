@@ -8,7 +8,7 @@ export enum LogLevel {
 export class Logger {
   constructor(private context: string) {}
 
-  private log(level: LogLevel, message: string, metadata?: Record<string, any>) {
+  private log(level: LogLevel, message: string, metadata?: Record<string, unknown>) {
     const entry = {
       level,
       context: this.context,
@@ -31,19 +31,19 @@ export class Logger {
     console[consoleMethod](entry);
   }
 
-  debug(message: string, metadata?: Record<string, any>) {
+  debug(message: string, metadata?: Record<string, unknown>) {
     this.log(LogLevel.DEBUG, message, metadata);
   }
 
-  info(message: string, metadata?: Record<string, any>) {
+  info(message: string, metadata?: Record<string, unknown>) {
     this.log(LogLevel.INFO, message, metadata);
   }
 
-  warn(message: string, metadata?: Record<string, any>) {
+  warn(message: string, metadata?: Record<string, unknown>) {
     this.log(LogLevel.WARN, message, metadata);
   }
 
-  error(message: string, metadata?: Record<string, any>) {
+  error(message: string, metadata?: Record<string, unknown>) {
     this.log(LogLevel.ERROR, message, metadata);
   }
 

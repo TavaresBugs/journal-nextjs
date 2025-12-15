@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { 
     detectSession, 
-    validateAlignment, 
+    getTimeframeAlignment, 
     calculateRMultiple 
 } from '@/lib/timeframeUtils';
 import type { Trade } from '@/types';
@@ -22,21 +22,21 @@ export const MARKET_CONDITIONS_V2 = [
 ];
 
 export const ENTRY_QUALITY_OPTIONS = [
-    '🌟 Picture Perfect',
+    '🌟 Picture Perfect ST',
     '✅ Nice ST',
     '➖ Normal ST',
     '⚠️ Ugly ST'
 ];
 
 export const PD_ARRAY_OPTIONS = [
-    { value: 'FVG', label: '👑 Fair Value Gap (FVG)' },
-    { value: 'OB', label: '🧱 Order Block (OB)' },
-    { value: 'MB', label: '🧱 Mitigation Block (MB)' },
-    { value: 'BB', label: '🧱 Breaker Block (BB)' },
-    { value: 'Swing High', label: '📈 Swing High (PXH)' },
-    { value: 'Swing Low', label: '📉 Swing Low (PXL)' },
-    { value: 'PDH', label: '📈 Previous Daily High (PDH)' },
-    { value: 'PDL', label: '📉 Previous Daily Low (PDL)' },
+    { value: 'FVG', label: '👑 FVG' },
+    { value: 'MB', label: '🛡️ Mitigation Block' },
+    { value: 'OB', label: '📦 Order Block' },
+    { value: 'BB', label: '💥 Breaker' },
+    { value: 'PXH', label: '🔺 PXH' },
+    { value: 'PXL', label: '🔻 PXL' },
+    { value: 'PDH', label: '⬆️ PDH' },
+    { value: 'PDL', label: '⬇️ PDL' },
 ];
 
 // ============================================
@@ -59,7 +59,7 @@ export function mapEntryQualityToDb(value: string): 'picture-perfect' | 'nice' |
  */
 export function mapEntryQualityFromDb(value?: string): string {
     switch (value) {
-        case 'picture-perfect': return '🌟 Picture Perfect';
+        case 'picture-perfect': return '🌟 Picture Perfect ST';
         case 'nice': return '✅ Nice ST';
         case 'normal': return '➖ Normal ST';
         case 'ugly': return '⚠️ Ugly ST';
@@ -163,7 +163,7 @@ export interface TradeFormSetters {
 export interface TradeFormComputedValues {
     isTradeOpen: boolean;
     detectedSession: ReturnType<typeof detectSession>;
-    alignmentResult: ReturnType<typeof validateAlignment>;
+    alignmentResult: ReturnType<typeof getTimeframeAlignment>;
     rMultiplePreview: number | null;
     estimates: { risk: number; reward: number };
 }
@@ -220,6 +220,8 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     // Sync form when initialData changes (important for Edit Modal)
     useEffect(() => {
         if (initialData) {
+    
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setMarketCondition(initialData.marketCondition || '');
             setTfAnalise(initialData.tfAnalise || '');
             setTfEntrada(initialData.tfEntrada || '');
@@ -257,7 +259,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     }, [entryDate, entryTime]);
 
     const alignmentResult = useMemo(() => {
-        return validateAlignment(tfAnalise, tfEntrada);
+        return getTimeframeAlignment(tfAnalise, tfEntrada);
     }, [tfAnalise, tfEntrada]);
 
     const rMultiplePreview = useMemo(() => {

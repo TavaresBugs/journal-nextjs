@@ -16,11 +16,11 @@
  * - 7 days TTL
  */
 
-declare const self: ServiceWorkerGlobalScope;
+
 
 const CACHE_NAME = 'wolftab-images-v1';
 const MAX_CACHE_ITEMS = 100;
-const MAX_CACHE_SIZE_MB = 50;
+// const MAX_CACHE_SIZE_MB = 50; // TODO: Implement size limit
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Patterns for cacheable images
@@ -37,7 +37,7 @@ const CACHEABLE_PATTERNS = [
 // Install Event
 // ============================================
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('[SW] Installing image cache service worker');
   // Skip waiting to activate immediately
   self.skipWaiting();
@@ -155,14 +155,14 @@ self.addEventListener('fetch', (event) => {
 // Cache Management
 // ============================================
 
-async function enforceCacheLimits(cache: Cache): Promise<void> {
+async function enforceCacheLimits(cache) {
   const requests = await cache.keys();
   
   // If under limit, no action needed
   if (requests.length <= MAX_CACHE_ITEMS) return;
   
   // Get all cached items with their dates
-  const items: Array<{ request: Request; date: number }> = [];
+  const items = [];
   
   for (const request of requests) {
     const response = await cache.match(request);
@@ -218,7 +218,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
-async function getCacheStats(): Promise<{ count: number; sizeMB: number }> {
+async function getCacheStats() {
   const cache = await caches.open(CACHE_NAME);
   const requests = await cache.keys();
   
@@ -237,7 +237,7 @@ async function getCacheStats(): Promise<{ count: number; sizeMB: number }> {
   };
 }
 
-async function precacheImage(url: string): Promise<boolean> {
+async function precacheImage(url) {
   try {
     const cache = await caches.open(CACHE_NAME);
     const response = await fetch(url);

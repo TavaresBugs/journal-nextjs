@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { parseTradingFile, parseTradeDate, normalizeTradeType, cleanSymbol, parseHTMLReport } from '@/services/trades/import';
 
 // Mock FileReader if necessary, but jsdom usually handles it.

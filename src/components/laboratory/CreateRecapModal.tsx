@@ -448,6 +448,7 @@ export function CreateRecapModal({
                         <div className="mt-4 grid grid-cols-4 gap-2">
                             {previews.map((preview, index) => (
                                 <div key={index} className="relative group">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={preview}
                                         alt={`Preview ${index + 1}`}

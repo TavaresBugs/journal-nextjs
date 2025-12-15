@@ -67,6 +67,8 @@ async function fetchAll<T>(tableName: string, userId: string): Promise<T[]> {
  */
 export async function exportAllData(): Promise<ExportData> {
     const userId = await getCurrentUserId();
+
+
     if (!userId) {
         throw new Error('User not authenticated');
     }
@@ -244,6 +246,6 @@ export function downloadAsJSON(data: ExportData): void {
 /**
  * Placeholder for ZIP download (optional)
  */
-export function downloadAsZIP(_data: ExportData): void {
+export function downloadAsZIP(): void {
     console.warn('ZIP download not implemented yet.');
 }

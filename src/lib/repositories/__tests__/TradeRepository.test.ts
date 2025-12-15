@@ -24,7 +24,7 @@ describe('TradeRepository', () => {
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: mockTrade, error: null }),
             };
-            (mockSupabase.from as any).mockReturnValue(queryBuilder);
+            (mockSupabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(queryBuilder);
 
             const result = await repo.getByIdDomain('t1');
 
@@ -39,7 +39,7 @@ describe('TradeRepository', () => {
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: mockTrade, error: null }),
             };
-            (mockSupabase.from as any).mockReturnValue(queryBuilder);
+            (mockSupabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(queryBuilder);
 
             const result = await repo.getByIdDomain('t1', 'u1');
 
@@ -54,7 +54,7 @@ describe('TradeRepository', () => {
                 eq: vi.fn().mockReturnThis(),
                 single: vi.fn().mockResolvedValue({ data: mockTrade, error: null }),
             };
-            (mockSupabase.from as any).mockReturnValue(queryBuilder);
+            (mockSupabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(queryBuilder);
 
             const result = await repo.getByIdDomain('t1', 'u2');
 

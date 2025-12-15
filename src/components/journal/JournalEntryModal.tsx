@@ -59,7 +59,7 @@ export function JournalEntryModal({
   startEditing = false,
   hasMentor = false,
   hasUnreadComments = false,
-  onEntrySelect
+
 }: JournalEntryModalProps) {
   const { addEntry, updateEntry } = useJournalStore();
   const { trades: allTrades } = useTradeStore();

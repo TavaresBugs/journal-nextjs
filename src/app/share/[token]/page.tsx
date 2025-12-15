@@ -340,7 +340,7 @@ export default function SharePage() {
             {/* Lightbox for image preview with Zoom */}
             {lightboxImage && (
                 <div 
-                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center"
+                    className="fixed inset-0 z-100 bg-black/90 backdrop-blur-md flex items-center justify-center"
                     onClick={handleCloseLightbox}
                 >
                     {/* Close Button */}

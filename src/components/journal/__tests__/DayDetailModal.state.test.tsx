@@ -3,7 +3,7 @@ import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { useJournalStore } from '@/store/useJournalStore';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { JournalEntry, Trade } from '@/types';
-import dayjs from 'dayjs';
+
 
 // Mock dependencies
 vi.mock('@/store/useJournalStore');
@@ -13,7 +13,7 @@ vi.mock('@/providers/ToastProvider', () => ({
 
 // Mock child component to verify props
 vi.mock('@/components/journal/JournalEntryModal', () => ({
-  JournalEntryModal: ({ existingEntry, trade, initialDate }: any) => (
+  JournalEntryModal: ({ existingEntry, trade, initialDate }: { existingEntry: JournalEntry; trade: Trade; initialDate: string }) => (
     <div data-testid="journal-modal">
       <span data-testid="modal-entry-id">{existingEntry?.id}</span>
       <span data-testid="modal-trade-id">{trade?.id}</span>
@@ -26,7 +26,7 @@ vi.mock('@/components/journal/JournalEntryModal', () => ({
 vi.mock('@/components/journal/day-detail', () => ({
   DailyHabitsRow: () => <div>Habits</div>,
   DayStatsCards: () => <div>Stats</div>,
-  DayTradesTable: ({ onEditEntry, standaloneEntries }: any) => (
+  DayTradesTable: ({ onEditEntry, standaloneEntries }: { onEditEntry: (entry: JournalEntry) => void; standaloneEntries: JournalEntry[] }) => (
     <div>
       <button 
         data-testid="edit-entry-btn" 

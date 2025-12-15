@@ -76,9 +76,9 @@ const createMockSupabase = () => {
             limit: vi.fn().mockReturnValue({
               ...queryChain,
               range: vi.fn().mockResolvedValue({ data: [mockTradeData], error: null }),
-              then: async (cb: Function) => cb({ data: [mockTradeData], error: null }),
+              then: async (cb: (...args: unknown[]) => unknown) => cb({ data: [mockTradeData], error: null }),
             }),
-            then: async (cb: Function) => cb({ data: [mockTradeData], error: null }),
+            then: async (cb: (...args: unknown[]) => unknown) => cb({ data: [mockTradeData], error: null }),
           }),
         }),
       }),

@@ -22,13 +22,13 @@ export enum ErrorCode {
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code: ErrorCode;
-  public readonly metadata?: Record<string, any>;
+  public readonly metadata?: Record<string, unknown>;
 
   constructor(
     message: string,
     code: ErrorCode = ErrorCode.UNKNOWN_ERROR,
     statusCode: number = 500,
-    metadata?: Record<string, any>
+    metadata?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'AppError';
@@ -52,8 +52,8 @@ export function getErrorMessage(error: unknown): string {
   }
 
   if (typeof error === 'object' && error !== null && 'message' in error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return String((error as any).message);
+
+    return String((error as Record<string, unknown>).message);
   }
 
   return 'An unexpected error occurred';

@@ -104,6 +104,7 @@ export function SmartImage({
       <div className={`relative ${className}`}>
         {/* Blur placeholder */}
         {blurDataUrl && !isLoaded && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={blurDataUrl}
             alt=""
@@ -132,6 +133,7 @@ export function SmartImage({
     <div className={`relative ${className}`}>
       {/* Blur placeholder */}
       {blurDataUrl && !isLoaded && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={blurDataUrl}
           alt=""
@@ -142,7 +144,7 @@ export function SmartImage({
       <picture>
         {webpSrc && <source srcSet={webpSrc} type="image/webp" />}
         {jpegSrc && <source srcSet={jpegSrc} type="image/jpeg" />}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+
         <img
           src={imgSrc}
           alt={alt}

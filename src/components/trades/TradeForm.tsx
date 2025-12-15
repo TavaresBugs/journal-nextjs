@@ -10,8 +10,7 @@ import { useToast } from '@/providers/ToastProvider';
 import { 
     getSessionEmoji,
     formatRMultiple,
-    getRMultipleColor,
-    getTimeframeAlignment
+    getRMultipleColor
 } from '@/lib/timeframeUtils';
 
 // Import hooks
@@ -57,14 +56,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
     });
 
     const {
-        marketCondition, tfAnalise, tfEntrada, tagsList, tagInput,
+        tfAnalise, tfEntrada, tagsList, tagInput,
         strategy, setup, entryQuality, marketConditionV2, pdArray,
         symbol, type, entryPrice, stopLoss, takeProfit, exitPrice,
         lot, commission, swap, entryDate, entryTime, exitDate, exitTime
     } = state;
 
     const {
-        setMarketCondition, setTfAnalise, setTfEntrada, setTagsList, setTagInput,
+        setTfAnalise, setTfEntrada, setTagsList, setTagInput,
         setStrategy, setSetup, setEntryQuality, setMarketConditionV2, setPdArray,
         setSymbol, setType, setEntryPrice, setStopLoss, setTakeProfit, setExitPrice,
         setLot, setCommission, setSwap, setEntryDate, setEntryTime, setExitDate, setExitTime
@@ -209,7 +208,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
 
                 {/* Alignment Badge */}
                 {tfAnalise && tfEntrada && (() => {
-                    const alignment = getTimeframeAlignment(tfAnalise, tfEntrada);
+                    const alignment = alignmentResult;
                     return (
                         <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${
                             alignment.isWarning

@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import * as accountService from '@/services/core/account';
 import { 
     mockUserId, 
-    mockAccountId, 
+ 
     journalEntryWithTrades 
 } from '../../fixtures/journalEntry.fixtures';
 

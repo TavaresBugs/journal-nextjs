@@ -315,7 +315,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
             if (insertError) throw insertError;
 
             // Upload images if provided
-            let images: LaboratoryImage[] = [];
+            const images: LaboratoryImage[] = [];
             if (imageFiles && imageFiles.length > 0) {
                 const { urls, errors } = await uploadExperimentImages(
                     user.id, 
@@ -389,7 +389,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
             if (updateError) throw updateError;
 
             // Handle new image uploads
-            let newImages: LaboratoryImage[] = [];
+            const newImages: LaboratoryImage[] = [];
             if (newImageFiles && newImageFiles.length > 0) {
                 const { urls } = await uploadExperimentImages(user.id, data.id, newImageFiles);
 

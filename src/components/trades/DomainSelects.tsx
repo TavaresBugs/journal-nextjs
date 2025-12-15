@@ -24,7 +24,7 @@ interface DatalistInputProps {
 // ============================================
 
 const HTF_OPTIONS = ['Monthly', 'Weekly', 'Daily', 'H4', 'H1', 'M15'];
-const LTF_OPTIONS = ['H1', 'M15', 'M5', 'M3', 'M1'];
+const LTF_OPTIONS = ['Daily', 'H4', 'H1', 'M15', 'M5', 'M3', 'M1'];
 
 interface TimeframeSelectProps extends DatalistInputProps {
     type: 'htf' | 'ltf';
@@ -71,7 +71,7 @@ export function TimeframeSelect({
 // DIRECTION SELECT
 // ============================================
 
-interface DirectionSelectProps extends DatalistInputProps {}
+type DirectionSelectProps = DatalistInputProps;
 
 /**
  * Trade direction selection (Long/Short).
@@ -112,12 +112,13 @@ export function DirectionSelect({
 // ============================================
 
 export const MARKET_CONDITIONS = [
-    'Tendência de Alta', 'Tendência de Baixa', 'Range/Lateral',
-    'Alta Volatilidade', 'Baixa Volatilidade', 'Consolidação',
-    'Acumulação', 'Distribuição', 'Rompimento'
+    '↔️ Lateralidade',
+    '📈 Tendência de Alta', 
+    '📉 Tendência de Baixa', 
+    '⚡ Rompimento'
 ];
 
-interface MarketConditionSelectProps extends DatalistInputProps {}
+type MarketConditionSelectProps = DatalistInputProps;
 
 /**
  * Market condition selection input.
@@ -157,18 +158,14 @@ export function MarketConditionSelect({
 // ============================================
 
 export const PD_ARRAY_OPTIONS = [
-    { value: 'FVG', label: '📊 Fair Value Gap' },
+    { value: 'FVG', label: '👑 FVG' },
+    { value: 'MB', label: '🛡️ Mitigation Block' },
     { value: 'OB', label: '📦 Order Block' },
-    { value: 'BB', label: '🔲 Breaker Block' },
-    { value: 'MB', label: '🧱 Mitigation Block' },
-    { value: 'RJB', label: '🚫 Rejection Block' },
-    { value: 'IFVG', label: '📉 Inverse FVG' },
-    { value: 'VI', label: '🕳️ Void/Imbalance' },
-    { value: 'VG', label: '📈 Volume Gap' },
-    { value: 'BSL', label: '🔻 Buy-Side Liquidity' },
-    { value: 'SSL', label: '🔺 Sell-Side Liquidity' },
-    { value: 'EQH', label: '⚖️ Equal Highs' },
-    { value: 'EQL', label: '⚖️ Equal Lows' },
+    { value: 'BB', label: '💥 Breaker' },
+    { value: 'PXH', label: '🔺 PXH' },
+    { value: 'PXL', label: '🔻 PXL' },
+    { value: 'PDH', label: '⬆️ PDH' },
+    { value: 'PDL', label: '⬇️ PDL' },
 ];
 
 interface PdArraySelectProps extends DatalistInputProps {
@@ -223,14 +220,13 @@ export function PdArraySelect({
 // ============================================
 
 export const ENTRY_QUALITY_OPTIONS = [
-    '🌟 Picture Perfect',
-    '✅ Boa Entrada',
-    '⚠️ Entrada OK',
-    '❌ Entrada Ruim',
-    '🎯 Sniper Entry',
+    '🌟 Picture Perfect ST',
+    '✅ Nice ST',
+    '➖ Normal ST',
+    '⚠️ Ugly ST'
 ];
 
-interface EntryQualitySelectProps extends DatalistInputProps {}
+type EntryQualitySelectProps = DatalistInputProps;
 
 /**
  * Entry quality evaluation input.

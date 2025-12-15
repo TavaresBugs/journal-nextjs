@@ -76,7 +76,7 @@ describe('Journal Entry - Security & Permissions', () => {
             vi.mocked(accountService.getCurrentUserId).mockResolvedValue(mockUserId);
             
             const mockSelect = vi.fn().mockReturnValue({
-                eq: vi.fn().mockImplementation((field, value) => {
+                eq: vi.fn().mockImplementation((field) => {
                     // Simular que a query filtra por account_id e user_id
                     if (field === 'account_id') {
                         return {
@@ -108,7 +108,7 @@ describe('Journal Entry - Security & Permissions', () => {
         it('deleteJournalEntry deve filtrar por user_id', async () => {
             vi.mocked(accountService.getCurrentUserId).mockResolvedValue(mockUserId);
 
-            const mockEq = vi.fn().mockImplementation((field, value) => {
+            const mockEq = vi.fn().mockImplementation((field) => {
                 if (field === 'id') {
                     return {
                         eq: vi.fn().mockImplementation((field2, value2) => {

@@ -69,11 +69,13 @@ export default function AdminPage() {
     }, []);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadData();
     }, [loadData]);
 
     useEffect(() => {
         if (activeTab === 'logs' && logs.length === 0) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             loadLogs();
         }
     }, [activeTab, logs.length, loadLogs]);
@@ -102,7 +104,7 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:20px_20px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] bg-size-[20px_20px] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
 
             <div className="relative z-10 container mx-auto px-4 py-6 max-w-7xl">
                 {/* Header Box */}
