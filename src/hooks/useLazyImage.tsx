@@ -201,7 +201,7 @@ export function LazyImage({
   });
 
   return (
-    <div ref={ref} className={`lazy-image-container ${className}`}>
+    <div ref={ref as React.RefObject<HTMLDivElement>} className={`lazy-image-container ${className}`}>
       {isLoading && (
         <div className="lazy-image-loading absolute inset-0 flex items-center justify-center bg-gray-900/50">
           <div className="animate-spin w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full" />
