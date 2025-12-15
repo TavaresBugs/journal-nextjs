@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { AppError, getErrorMessage, toAppError } from '@/lib/errors';
+import { AppError, ErrorCode, getErrorMessage, toAppError } from '@/lib/errors';
 
 describe('AppError', () => {
-  it('should create an AppError with message and statusCode', () => {
-    const error = new AppError('Test error', 400);
+  it('should create an AppError with message and code', () => {
+    const error = new AppError('Test error', ErrorCode.VALIDATION_ERROR, 400);
     expect(error.message).toBe('Test error');
+    expect(error.code).toBe(ErrorCode.VALIDATION_ERROR);
     expect(error.statusCode).toBe(400);
     expect(error.name).toBe('AppError');
   });
@@ -14,9 +15,10 @@ describe('AppError', () => {
     expect(error.statusCode).toBe(500);
   });
 
-  it('should create an AppError with optional code', () => {
-    const error = new AppError('Test error', 400, 'TEST_CODE');
-    expect(error.code).toBe('TEST_CODE');
+  it('should create an AppError with default code', () => {
+    const error = new AppError('Test error');
+    expect(error.code).toBe(ErrorCode.UNKNOWN_ERROR);
+    expect(error.statusCode).toBe(500);
   });
 });
 
@@ -47,7 +49,7 @@ describe('getErrorMessage', () => {
 
 describe('toAppError', () => {
   it('should return the same AppError if input is AppError', () => {
-    const originalError = new AppError('Original', 404);
+    const originalError = new AppError('Original', ErrorCode.DB_NOT_FOUND, 404);
     const result = toAppError(originalError);
     expect(result).toBe(originalError);
   });
