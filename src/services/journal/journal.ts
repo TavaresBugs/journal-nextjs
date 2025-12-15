@@ -168,7 +168,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                             const compressed = await compressToWebP(file, {
                                 maxWidth: 1920,
                                 maxHeight: 1080,
-                                qualityWebP: 0.8,
+                                qualityWebP: 1.0,
                                 qualityJpeg: 0.85,
                             });
 

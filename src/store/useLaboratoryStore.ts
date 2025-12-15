@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { compressToWebP } from '@/lib/utils/imageCompression';
 import type { 
     LaboratoryExperiment, 
     LaboratoryImage, 
@@ -129,24 +130,43 @@ async function uploadExperimentImages(
     const errors: string[] = [];
 
     for (const file of files) {
-        const ext = file.name.split('.').pop() || 'png';
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
-        const path = `${userId}/experiments/${experimentId}/${fileName}`;
+        try {
+            // Convert to WebP before upload (100% quality for storage)
+            const compressed = await compressToWebP(file, {
+                qualityWebP: 1.0,
+                maxWidth: 1920,
+                maxHeight: 1080,
+            });
 
-        const { error } = await supabase.storage
-            .from('laboratory-images')
-            .upload(path, file, { cacheControl: '3600', upsert: false });
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.webp`;
+            const path = `${userId}/experiments/${experimentId}/${fileName}`;
 
-        if (error) {
-            errors.push(`Failed to upload ${file.name}: ${error.message}`);
-            continue;
+            const { error } = await supabase.storage
+                .from('laboratory-images')
+                .upload(path, compressed.webp, { 
+                    contentType: 'image/webp',
+                    cacheControl: '3600', 
+                    upsert: false 
+                });
+
+            if (error) {
+                errors.push(`Failed to upload ${file.name}: ${error.message}`);
+                continue;
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('laboratory-images')
+                .getPublicUrl(path);
+
+            urls.push(publicUrlData.publicUrl);
+
+            if (process.env.NODE_ENV === 'development') {
+                const savings = ((1 - compressed.compressedSizeWebP / compressed.originalSize) * 100).toFixed(1);
+                console.log(`[Laboratory] ${file.name}: ${(compressed.originalSize / 1024).toFixed(0)}KB → ${(compressed.compressedSizeWebP / 1024).toFixed(0)}KB (-${savings}%)`);
+            }
+        } catch (err) {
+            errors.push(`Failed to process ${file.name}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         }
-
-        const { data: publicUrlData } = supabase.storage
-            .from('laboratory-images')
-            .getPublicUrl(path);
-
-        urls.push(publicUrlData.publicUrl);
     }
 
     return { urls, errors };
@@ -160,24 +180,43 @@ async function uploadRecapImages(
     const urls: string[] = [];
 
     for (const file of files) {
-        const ext = file.name.split('.').pop() || 'png';
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.${ext}`;
-        const path = `${userId}/recaps/${recapId}/${fileName}`;
+        try {
+            // Convert to WebP before upload (100% quality for storage)
+            const compressed = await compressToWebP(file, {
+                qualityWebP: 1.0,
+                maxWidth: 1920,
+                maxHeight: 1080,
+            });
 
-        const { error } = await supabase.storage
-            .from('laboratory-images')
-            .upload(path, file, { cacheControl: '3600', upsert: false });
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}.webp`;
+            const path = `${userId}/recaps/${recapId}/${fileName}`;
 
-        if (error) {
-            console.error(`Failed to upload ${file.name}:`, error);
-            continue;
+            const { error } = await supabase.storage
+                .from('laboratory-images')
+                .upload(path, compressed.webp, { 
+                    contentType: 'image/webp',
+                    cacheControl: '3600', 
+                    upsert: false 
+                });
+
+            if (error) {
+                console.error(`Failed to upload ${file.name}:`, error);
+                continue;
+            }
+
+            const { data: publicUrlData } = supabase.storage
+                .from('laboratory-images')
+                .getPublicUrl(path);
+
+            urls.push(publicUrlData.publicUrl);
+
+            if (process.env.NODE_ENV === 'development') {
+                const savings = ((1 - compressed.compressedSizeWebP / compressed.originalSize) * 100).toFixed(1);
+                console.log(`[Laboratory Recap] ${file.name}: ${(compressed.originalSize / 1024).toFixed(0)}KB → ${(compressed.compressedSizeWebP / 1024).toFixed(0)}KB (-${savings}%)`);
+            }
+        } catch (err) {
+            console.error(`Failed to process ${file.name}:`, err);
         }
-
-        const { data: publicUrlData } = supabase.storage
-            .from('laboratory-images')
-            .getPublicUrl(path);
-
-        urls.push(publicUrlData.publicUrl);
     }
 
     return urls;

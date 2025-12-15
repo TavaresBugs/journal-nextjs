@@ -266,7 +266,7 @@ export async function compressToWebP(
   const {
     maxWidth = 1920,
     maxHeight = 1080,
-    qualityWebP = 0.8,
+    qualityWebP = 1.0,
     qualityJpeg = 0.85,
     previewQuality = 0.5,
   } = options;
