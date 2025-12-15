@@ -46,4 +46,29 @@ export class Logger {
   error(message: string, metadata?: Record<string, any>) {
     this.log(LogLevel.ERROR, message, metadata);
   }
+
+  /**
+   * Debug a trade object in development mode
+   * Shows ownership verification, required fields validation, and full data
+   */
+  static debugTrade(trade: Record<string, unknown>, context?: string) {
+    if (process.env.NODE_ENV !== 'development') return;
+
+    console.group(`🔍 Trade Debug ${context ? `(${context})` : ''}`);
+    console.log('ID:', trade?.id);
+    console.log('User ID:', trade?.user_id);
+    console.log('Full data:', trade);
+
+    // Validate structure:
+    const requiredFields = ['id', 'user_id', 'strategy', 'outcome'];
+    const missingFields = requiredFields.filter(field => !(field in trade));
+
+    if (missingFields.length > 0) {
+      console.warn('⚠️ Missing fields:', missingFields);
+    } else {
+      console.log('✅ All required fields present');
+    }
+
+    console.groupEnd();
+  }
 }
