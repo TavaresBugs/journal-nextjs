@@ -178,7 +178,7 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                             const shortId = entry.id.slice(0, 8);
                             const basePath = `${userId}/${entry.accountId}/${year}/${month}/${day}/${sanitizedAsset}-${timeframe}-${i}-${shortId}`;
                             
-                            // Upload WebP (primary format)
+                            // Upload WebP (only format - 97%+ browser support)
                             const webpFileName = `${basePath}.webp`;
                             keptFileNames.add(webpFileName);
                             
@@ -193,32 +193,12 @@ export async function saveJournalEntry(entry: JournalEntry): Promise<boolean> {
                                 handleServiceError(webpError, `journalService.uploadWebP.${timeframe}`, { severity: 'warn' });
                             }
 
-                            // Upload JPEG fallback
-                            const jpegFileName = `${basePath}.jpg`;
-                            keptFileNames.add(jpegFileName);
-                            
-                            const { error: jpegError } = await supabase.storage
-                                .from('journal-images')
-                                .upload(jpegFileName, compressed.jpeg, {
-                                    contentType: 'image/jpeg',
-                                    upsert: true
-                                });
-
-                            if (jpegError) {
-                                handleServiceError(jpegError, `journalService.uploadJPEG.${timeframe}`, { severity: 'warn' });
-                            }
-
-                            // Get public URLs
+                            // Get public URL
                             const { data: { publicUrl: webpUrl } } = supabase.storage
                                 .from('journal-images')
                                 .getPublicUrl(webpFileName);
 
-                            const { data: { publicUrl: jpegUrl } } = supabase.storage
-                                .from('journal-images')
-                                .getPublicUrl(jpegFileName);
-
-                            // Store WebP URL (smaller) with cache buster
-                            // Browser will load WebP if supported, otherwise we have JPEG available
+                            // Store WebP URL with cache buster
                             const primaryUrl = `${webpUrl}?t=${new Date().getTime()}`;
 
                             imagesToSave.push({
