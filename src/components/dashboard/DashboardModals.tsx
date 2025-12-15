@@ -4,8 +4,7 @@ import { EditTradeModal } from '@/components/trades/EditTradeModal';
 import { DayDetailModal } from '@/components/journal/DayDetailModal';
 import { ImportModal } from '@/components/import/ImportModal';
 import { SettingsModal } from '@/components/settings/SettingsModal';
-import { CreatePlaybookModal } from '@/components/playbook/CreatePlaybookModal';
-import { EditPlaybookModal } from '@/components/playbook/EditPlaybookModal';
+import { PlaybookFormModal } from '@/components/playbook/PlaybookFormModal';
 import { ViewPlaybookModal } from '@/components/playbook/ViewPlaybookModal';
 import { SharePlaybookModal } from '@/components/playbook/SharePlaybookModal';
 import { Trade, Playbook } from '@/types';
@@ -136,17 +135,19 @@ export function DashboardModals({
                 onUpdateBalance={handleUpdateBalance}
             />
 
-            <CreatePlaybookModal
+            {/* Create Playbook Modal */}
+            <PlaybookFormModal
                 isOpen={isCreatePlaybookModalOpen}
                 onClose={onCloseCreatePlaybookModal}
-                onCreatePlaybook={handlePlaybookCreated}
+                onSuccess={handlePlaybookCreated}
             />
 
-            <EditPlaybookModal
+            {/* Edit Playbook Modal */}
+            <PlaybookFormModal
                 isOpen={!!editingPlaybook}
                 onClose={() => setEditingPlaybook(null)}
                 playbook={editingPlaybook}
-                onUpdatePlaybook={handleUpdatePlaybook}
+                onSuccess={handleUpdatePlaybook}
             />
 
             <ViewPlaybookModal

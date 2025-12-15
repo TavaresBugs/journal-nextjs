@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, Input, Button, GlassCard } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
-import type { RuleGroup } from '@/types';
+import type { Playbook, RuleGroup } from '@/types';
 
-interface CreatePlaybookModalProps {
+interface PlaybookFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onCreatePlaybook: () => void;
+    onSuccess: () => void;
+    /** If provided, modal is in edit mode. Otherwise, create mode. */
+    playbook?: Playbook | null;
 }
 
 const EMOJI_LIST = [
@@ -34,8 +36,14 @@ const DEFAULT_GROUPS = [
     { id: 'exit', name: 'Critérios de saída' },
 ];
 
-export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: CreatePlaybookModalProps) {
-    const { addPlaybook } = usePlaybookStore();
+/**
+ * Unified modal for creating and editing playbooks.
+ * Pass `playbook` prop for edit mode, omit for create mode.
+ */
+export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook }: PlaybookFormModalProps) {
+    const { addPlaybook, updatePlaybook } = usePlaybookStore();
+    const isEditMode = !!playbook;
+
     const [activeTab, setActiveTab] = useState<'general' | 'rules'>('general');
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -48,6 +56,22 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
     const [editingRule, setEditingRule] = useState<{groupId: string, index: number} | null>(null);
     const [editingRuleText, setEditingRuleText] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+
+    // Populate form when editing
+    useEffect(() => {
+        if (isEditMode && playbook && isOpen) {
+            setName(playbook.name || '');
+            setDescription(playbook.description || '');
+            setSelectedIcon(playbook.icon || '📈');
+            setSelectedColor(playbook.color || '#3B82F6');
+            if (playbook.ruleGroups && playbook.ruleGroups.length > 0) {
+                setRuleGroups(playbook.ruleGroups);
+            } else {
+                setRuleGroups(DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] })));
+            }
+            setActiveTab('general');
+        }
+    }, [playbook, isEditMode, isOpen]);
 
     const addRuleToGroup = (groupId: string) => {
         const ruleText = newRuleInputs[groupId]?.trim();
@@ -100,20 +124,31 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
     const handleSubmit = async () => {
         setIsSaving(true);
         try {
-            await addPlaybook({
-                userId: '', // Will be set by the store
-                name,
-                description,
-                icon: selectedIcon,
-                color: selectedColor,
-                ruleGroups,
-            });
+            if (isEditMode && playbook) {
+                await updatePlaybook({
+                    ...playbook,
+                    name,
+                    description,
+                    icon: selectedIcon,
+                    color: selectedColor,
+                    ruleGroups,
+                });
+            } else {
+                await addPlaybook({
+                    userId: '', // Will be set by the store
+                    name,
+                    description,
+                    icon: selectedIcon,
+                    color: selectedColor,
+                    ruleGroups,
+                });
+            }
             handleReset();
-            onCreatePlaybook();
+            onSuccess();
             onClose();
         } catch (error) {
-            console.error('Error creating playbook:', error);
-            alert('Erro ao criar playbook. Tente novamente.');
+            console.error('Error saving playbook:', error);
+            alert('Erro ao salvar playbook. Tente novamente.');
         } finally {
             setIsSaving(false);
         }
@@ -129,8 +164,11 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
         setActiveTab('general');
     };
 
+    const modalTitle = isEditMode ? '✏️ Editar Playbook' : '📖 Criar Playbook';
+    const submitButtonText = isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Playbook' : 'Salvar Playbook');
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="📖 Create Playbook" maxWidth="3xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="3xl">
             {/* Tabs */}
             <div className="flex gap-2 mb-6 border-b border-white/5">
                 <button
@@ -155,7 +193,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                 </button>
             </div>
 
-            {/* Tab Content */}
+            {/* General Tab */}
             {activeTab === 'general' && (
                 <div className="space-y-6">
                     <p className="text-sm text-gray-400">
@@ -228,6 +266,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                 </div>
             )}
 
+            {/* Rules Tab */}
             {activeTab === 'rules' && (
                 <div className="space-y-6">
                     <div>
@@ -264,20 +303,10 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                                                             className="flex-1 h-8 text-sm"
                                                             autoFocus
                                                         />
-                                                        <Button
-                                                            variant="zorin-primary"
-                                                            size="sm"
-                                                            onClick={saveEditingRule}
-                                                            className="text-xs px-3 py-1 font-semibold"
-                                                        >
+                                                        <Button variant="zorin-primary" size="sm" onClick={saveEditingRule} className="text-xs px-3 py-1 font-semibold">
                                                             Salvar
                                                         </Button>
-                                                        <Button
-                                                            variant="zorin-ghost"
-                                                            size="sm"
-                                                            onClick={cancelEditingRule}
-                                                            className="text-xs px-2 py-1"
-                                                        >
+                                                        <Button variant="zorin-ghost" size="sm" onClick={cancelEditingRule} className="text-xs px-2 py-1">
                                                             ✕
                                                         </Button>
                                                     </>
@@ -347,7 +376,7 @@ export function CreatePlaybookModal({ isOpen, onClose, onCreatePlaybook }: Creat
                     className="flex-1 font-extrabold"
                     disabled={!name.trim() || isSaving}
                 >
-                    {isSaving ? 'Salvando...' : 'Salvar Playbook'}
+                    {submitButtonText}
                 </Button>
             </div>
         </Modal>
