@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { RecapCard } from './RecapCard';
-import type { LaboratoryRecap, EmotionalState } from '@/types';
+import type { LaboratoryRecap, EmotionalState, RecapLinkedType } from '@/types';
 
 interface RecapsTabProps {
     recaps: LaboratoryRecap[];
@@ -14,6 +14,15 @@ interface RecapsTabProps {
     isLoading?: boolean;
 }
 
+type LinkFilter = 'all' | 'trades' | 'journals' | 'none';
+
+const LINK_FILTERS: { value: LinkFilter; label: string; icon: string }[] = [
+    { value: 'all', label: 'Todos', icon: '📋' },
+    { value: 'trades', label: 'Trades', icon: '📊' },
+    { value: 'journals', label: 'Diários', icon: '📓' },
+    { value: 'none', label: 'Reflexões', icon: '💭' },
+];
+
 const EMOTION_FILTERS: { value: EmotionalState | 'all'; label: string; emoji?: string }[] = [
     { value: 'all', label: 'Todos' },
     { value: 'confiante', label: 'Confiante', emoji: '💪' },
@@ -22,6 +31,11 @@ const EMOTION_FILTERS: { value: EmotionalState | 'all'; label: string; emoji?: s
     { value: 'fomo', label: 'FOMO', emoji: '🔥' },
     { value: 'frustrado', label: 'Frustrado', emoji: '😤' },
 ];
+
+/** Get the effective link type from a recap (handles legacy tradeId) */
+function getRecapLinkType(recap: LaboratoryRecap): RecapLinkedType | 'none' {
+    return recap.linkedType || (recap.tradeId ? 'trade' : 'none');
+}
 
 export function RecapsTab({
     recaps,
@@ -33,12 +47,22 @@ export function RecapsTab({
 }: RecapsTabProps) {
     const [emotionFilter, setEmotionFilter] = useState<EmotionalState | 'all'>('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [showLinkedOnly, setShowLinkedOnly] = useState(false);
+    const [linkFilter, setLinkFilter] = useState<LinkFilter>('all');
 
     // Filter recaps
     const filteredRecaps = recaps.filter(recap => {
+        // Emotion filter
         if (emotionFilter !== 'all' && recap.emotionalState !== emotionFilter) return false;
-        if (showLinkedOnly && !recap.tradeId) return false;
+        
+        // Link type filter
+        if (linkFilter !== 'all') {
+            const recapLinkType = getRecapLinkType(recap);
+            if (linkFilter === 'trades' && recapLinkType !== 'trade') return false;
+            if (linkFilter === 'journals' && recapLinkType !== 'journal') return false;
+            if (linkFilter === 'none' && recapLinkType !== 'none') return false;
+        }
+        
+        // Search query
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             return (
@@ -46,11 +70,16 @@ export function RecapsTab({
                 recap.lessonsLearned?.toLowerCase().includes(query) ||
                 recap.whatWorked?.toLowerCase().includes(query) ||
                 recap.whatFailed?.toLowerCase().includes(query) ||
-                recap.trade?.symbol.toLowerCase().includes(query)
+                recap.trade?.symbol.toLowerCase().includes(query) ||
+                recap.journal?.title?.toLowerCase().includes(query)
             );
         }
         return true;
     });
+
+    // Calculate stats
+    const tradeCount = recaps.filter(r => getRecapLinkType(r) === 'trade').length;
+    const journalCount = recaps.filter(r => getRecapLinkType(r) === 'journal').length;
 
     return (
         <div className="space-y-6">
@@ -59,7 +88,7 @@ export function RecapsTab({
                 <div>
                     <h2 className="text-xl font-bold text-white">Recaps</h2>
                     <p className="text-sm text-gray-400">
-                        Analise e documente seus trades para aprender com eles
+                        Analise e documente seus trades e observações do mercado
                     </p>
                 </div>
                 <Button
@@ -84,20 +113,26 @@ export function RecapsTab({
                     />
                 </div>
 
-                {/* Linked Only Toggle */}
-                <button
-                    onClick={() => setShowLinkedOnly(!showLinkedOnly)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
-                        showLinkedOnly
-                            ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
-                            : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-gray-600'
-                    }`}
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                    Com Trade
-                </button>
+                {/* Link Type Filters */}
+                <div className="flex gap-2">
+                    {LINK_FILTERS.map(filter => (
+                        <button
+                            key={filter.value}
+                            onClick={() => setLinkFilter(filter.value)}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
+                                linkFilter === filter.value
+                                    ? filter.value === 'trades' ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                                    : filter.value === 'journals' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                                    : filter.value === 'none' ? 'bg-gray-500/20 text-gray-300 border border-gray-500/50'
+                                    : 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
+                                    : 'bg-gray-800/50 text-gray-400 border border-gray-700 hover:border-gray-600'
+                            }`}
+                        >
+                            <span>{filter.icon}</span>
+                            <span>{filter.label}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Emotion Filters */}
@@ -171,11 +206,13 @@ export function RecapsTab({
                         {filteredRecaps.length} de {recaps.length} recaps
                     </span>
                     <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                            </svg>
-                            {recaps.filter(r => r.tradeId).length} vinculados
+                        <span className="flex items-center gap-1 text-green-400">
+                            <span>📊</span>
+                            {tradeCount} trades
+                        </span>
+                        <span className="flex items-center gap-1 text-blue-400">
+                            <span>📓</span>
+                            {journalCount} diários
                         </span>
                     </div>
                 </div>

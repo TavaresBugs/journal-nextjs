@@ -7,7 +7,9 @@ import type {
     LaboratoryRecap,
     ExperimentStatus,
     EmotionalState,
-    TradeLite
+    TradeLite,
+    RecapLinkedType,
+    JournalEntryLite
 } from '@/types';
 
 // ============================================
@@ -30,8 +32,13 @@ export interface UpdateExperimentData extends CreateExperimentData {
 
 export interface CreateRecapData {
     title: string;
+    /** @deprecated Use linkedType + linkedId instead */
     tradeId?: string;           // For daily review (single trade)
     tradeIds?: string[];        // For weekly review (multiple trades)
+    /** Type of linked record (trade or journal) */
+    linkedType?: RecapLinkedType;
+    /** ID of the linked record (trade or journal entry) */
+    linkedId?: string;
     reviewType?: 'daily' | 'weekly';
     weekStartDate?: string;
     weekEndDate?: string;
@@ -101,11 +108,17 @@ function mapExperimentFromDB(
 // Helper: Map DB row to LaboratoryRecap
 // ============================================
 
-function mapRecapFromDB(row: Record<string, unknown>, trade?: TradeLite): LaboratoryRecap {
+function mapRecapFromDB(
+    row: Record<string, unknown>, 
+    trade?: TradeLite,
+    journal?: JournalEntryLite
+): LaboratoryRecap {
     return {
         id: row.id as string,
         userId: row.user_id as string,
         tradeId: row.trade_id as string | undefined,
+        linkedType: row.linked_type as RecapLinkedType | undefined,
+        linkedId: row.linked_id as string | undefined,
         title: row.title as string,
         whatWorked: row.what_worked as string | undefined,
         whatFailed: row.what_failed as string | undefined,
@@ -114,6 +127,7 @@ function mapRecapFromDB(row: Record<string, unknown>, trade?: TradeLite): Labora
         images: (row.images as string[]) || [],
         createdAt: row.created_at as string,
         trade,
+        journal,
     };
 }
 
@@ -539,7 +553,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('User not authenticated');
 
-            // Load recaps with linked trades
+            // Load recaps with linked trades (for legacy and trade links)
             const { data: recapsData, error: recapsError } = await supabase
                 .from('laboratory_recaps')
                 .select(`
@@ -566,10 +580,37 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
 
             if (recapsError) throw recapsError;
 
+            // Collect journal IDs that need to be fetched
+            const journalIds = (recapsData || [])
+                .filter(row => row.linked_type === 'journal' && row.linked_id)
+                .map(row => row.linked_id as string);
+
+            // Fetch journal entries if there are any linked
+            let journalMap: Record<string, JournalEntryLite> = {};
+            if (journalIds.length > 0) {
+                const { data: journalData } = await supabase
+                    .from('journal_entries')
+                    .select('id, date, title')
+                    .in('id', journalIds);
+
+                if (journalData) {
+                    journalMap = journalData.reduce((acc, j) => {
+                        acc[j.id] = { 
+                            id: j.id, 
+                            date: j.date, 
+                            title: j.title 
+                        };
+                        return acc;
+                    }, {} as Record<string, JournalEntryLite>);
+                }
+            }
+
             const recaps = (recapsData || []).map(row => {
                 const tradeData = row.trades as Record<string, unknown> | null;
                 let trade: TradeLite | undefined;
+                let journal: JournalEntryLite | undefined;
                 
+                // Map trade data if present (legacy or linked_type = 'trade')
                 if (tradeData) {
                     trade = {
                         id: tradeData.id as string,
@@ -590,7 +631,12 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                     };
                 }
 
-                return mapRecapFromDB(row, trade);
+                // Map journal data if linked_type is 'journal'
+                if (row.linked_type === 'journal' && row.linked_id) {
+                    journal = journalMap[row.linked_id as string];
+                }
+
+                return mapRecapFromDB(row, trade, journal);
             });
 
             set({ recaps, isLoading: false });
@@ -623,7 +669,11 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                 .from('laboratory_recaps')
                 .insert({
                     user_id: user.id,
-                    trade_id: data.reviewType === 'daily' ? (data.tradeId || null) : null,
+                    // Legacy trade_id for backward compatibility (only for trade links)
+                    trade_id: data.linkedType === 'trade' ? (data.linkedId || data.tradeId || null) : null,
+                    // New generic linking fields
+                    linked_type: data.linkedType || (data.tradeId ? 'trade' : null),
+                    linked_id: data.linkedId || (data.tradeId ? data.tradeId : null),
                     title: data.title,
                     what_worked: data.whatWorked,
                     what_failed: data.whatFailed,
@@ -677,7 +727,11 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
             const { error: updateError } = await supabase
                 .from('laboratory_recaps')
                 .update({
-                    trade_id: data.tradeId || null,
+                    // Legacy trade_id for backward compatibility
+                    trade_id: data.linkedType === 'trade' ? (data.linkedId || data.tradeId || null) : null,
+                    // New generic linking fields
+                    linked_type: data.linkedType || (data.tradeId ? 'trade' : null),
+                    linked_id: data.linkedId || (data.tradeId ? data.tradeId : null),
                     title: data.title,
                     what_worked: data.whatWorked,
                     what_failed: data.whatFailed,
@@ -694,13 +748,18 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                     if (recap.id === data.id) {
                         return {
                             ...recap,
-                            tradeId: data.tradeId,
+                            tradeId: data.linkedType === 'trade' ? data.linkedId : undefined,
+                            linkedType: data.linkedType,
+                            linkedId: data.linkedId,
                             title: data.title,
                             whatWorked: data.whatWorked,
                             whatFailed: data.whatFailed,
                             emotionalState: data.emotionalState,
                             lessonsLearned: data.lessonsLearned,
                             images: data.images || recap.images,
+                            // Clear journal/trade if link type changed
+                            trade: data.linkedType === 'trade' ? recap.trade : undefined,
+                            journal: data.linkedType === 'journal' ? recap.journal : undefined,
                         };
                     }
                     return recap;

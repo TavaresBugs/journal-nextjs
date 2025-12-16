@@ -520,10 +520,26 @@ export interface LaboratoryExperiment {
     updatedAt: string;
 }
 
+/** Lightweight journal entry for linking in recaps */
+export interface JournalEntryLite {
+    id: string;
+    date: string;
+    title?: string;
+    asset?: string;
+}
+
+/** Type of record linked to a recap */
+export type RecapLinkedType = 'trade' | 'journal';
+
 export interface LaboratoryRecap {
     id: string;
     userId: string;
+    /** @deprecated Use linkedType + linkedId instead */
     tradeId?: string;
+    /** Type of linked record (trade or journal) */
+    linkedType?: RecapLinkedType;
+    /** ID of the linked record (trade or journal entry) */
+    linkedId?: string;
     title: string;
     whatWorked?: string;
     whatFailed?: string;
@@ -533,4 +549,6 @@ export interface LaboratoryRecap {
     createdAt: string;
     // Joined data
     trade?: TradeLite;
+    journal?: JournalEntryLite;
 }
+

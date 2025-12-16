@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Modal, Input, Button, GlassCard, Tabs } from '@/components/ui';
+import { Modal, Button, GlassCard, Tabs, WeekPicker } from '@/components/ui';
 import { CustomCheckbox } from '@/components/checklist/CustomCheckbox';
-import type { EmotionalState, TradeLite } from '@/types';
+import type { EmotionalState, TradeLite, JournalEntryLite, RecapLinkedType } from '@/types';
 import { CreateRecapData } from '@/store/useLaboratoryStore';
 import { formatCurrency } from '@/lib/calculations';
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
@@ -14,11 +14,24 @@ const REVIEW_TYPE_TABS = [
     { id: 'weekly', label: 'Review Semanal', icon: '📊' },
 ];
 
+/** Unified search record for trades and journal entries */
+interface SearchRecord {
+    type: RecapLinkedType;
+    id: string;
+    label: string;
+    // Additional data for display
+    symbol?: string;
+    date: string;
+    outcome?: string;
+    title?: string;
+}
+
 interface CreateRecapModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CreateRecapData, files: File[]) => Promise<void>;
     trades: TradeLite[];
+    journalEntries?: JournalEntryLite[];
     isLoading?: boolean;
 }
 
@@ -37,6 +50,7 @@ export function CreateRecapModal({
     onClose, 
     onSubmit,
     trades,
+    journalEntries = [],
     isLoading = false
 }: CreateRecapModalProps) {
     // Review type toggle
@@ -44,7 +58,8 @@ export function CreateRecapModal({
     
     // Form state
     const [title, setTitle] = useState('');
-    const [tradeId, setTradeId] = useState('');
+    const [linkedType, setLinkedType] = useState<RecapLinkedType | undefined>();
+    const [linkedId, setLinkedId] = useState('');
     const [selectedTradeIds, setSelectedTradeIds] = useState<string[]>([]);
     const [whatWorked, setWhatWorked] = useState('');
     const [whatFailed, setWhatFailed] = useState('');
@@ -52,8 +67,8 @@ export function CreateRecapModal({
     const [lessonsLearned, setLessonsLearned] = useState('');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [previews, setPreviews] = useState<string[]>([]);
-    const [tradeSearch, setTradeSearch] = useState('');
-    const [showTradeDropdown, setShowTradeDropdown] = useState(false);
+    const [recordSearch, setRecordSearch] = useState('');
+    const [showRecordDropdown, setShowRecordDropdown] = useState(false);
     
     // Week selection
     const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -87,6 +102,88 @@ export function CreateRecapModal({
         });
     }, [trades, weekDates, reviewType]);
 
+    // Get recent records (last 7 days) for initial display
+    const recentRecords = useMemo((): SearchRecord[] => {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        const oneWeekAgoStr = oneWeekAgo.toISOString().split('T')[0];
+
+        // Recent trades
+        const recentTrades: SearchRecord[] = trades
+            .filter(t => t.entryDate >= oneWeekAgoStr)
+            .slice(0, 5)
+            .map(t => ({
+                type: 'trade' as const,
+                id: t.id,
+                label: t.symbol, // Just the symbol - badge shows [TRADE]
+                symbol: t.symbol,
+                date: t.entryDate,
+                outcome: t.outcome,
+            }));
+
+        // Recent journals
+        const recentJournals: SearchRecord[] = journalEntries
+            .filter(j => j.date >= oneWeekAgoStr)
+            .slice(0, 5)
+            .map(j => ({
+                type: 'journal' as const,
+                id: j.id,
+                label: j.asset || 'Observação', // Just the asset - badge shows [DIÁRIO]
+                date: j.date,
+                title: j.title,
+            }));
+
+        // Sort by date descending (most recent first)
+        return [...recentJournals, ...recentTrades]
+            .sort((a, b) => b.date.localeCompare(a.date))
+            .slice(0, 8);
+    }, [trades, journalEntries]);
+
+    // Unified search results (trades + journals)
+    const searchResults = useMemo((): SearchRecord[] => {
+        // If no search query, show recent records
+        if (!recordSearch || recordSearch.length < 2) {
+            return showRecordDropdown ? recentRecords : [];
+        }
+
+        const query = recordSearch.toLowerCase();
+        
+        // Filter trades matching the search
+        const matchingTrades: SearchRecord[] = trades
+            .filter(t => 
+                t.symbol.toLowerCase().includes(query) ||
+                t.entryDate.includes(query)
+            )
+            .slice(0, 5)
+            .map(t => ({
+                type: 'trade' as const,
+                id: t.id,
+                label: t.symbol,
+                symbol: t.symbol,
+                date: t.entryDate,
+                outcome: t.outcome,
+            }));
+        
+        // Filter journals matching the search
+        const matchingJournals: SearchRecord[] = journalEntries
+            .filter(j => 
+                j.title?.toLowerCase().includes(query) ||
+                j.asset?.toLowerCase().includes(query) ||
+                j.date.includes(query)
+            )
+            .slice(0, 5)
+            .map(j => ({
+                type: 'journal' as const,
+                id: j.id,
+                label: j.asset || 'Observação',
+                date: j.date,
+                title: j.title,
+            }));
+        
+        // Journals first (more recent in memory), then trades
+        return [...matchingJournals, ...matchingTrades];
+    }, [recordSearch, trades, journalEntries, showRecordDropdown, recentRecords]);
+
     // Calculate stats for selected trades
     const weekStats = useMemo(() => {
         const selected = weekTrades.filter(t => selectedTradeIds.includes(t.id));
@@ -103,17 +200,11 @@ export function CreateRecapModal({
         };
     }, [weekTrades, selectedTradeIds]);
 
-    // Filter trades based on search (for daily)
-    const filteredTrades = trades.filter(trade => 
-        trade.symbol.toLowerCase().includes(tradeSearch.toLowerCase()) ||
-        trade.entryDate.includes(tradeSearch)
-    ).slice(0, 10);
-
     // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setShowTradeDropdown(false);
+                setShowRecordDropdown(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -140,10 +231,11 @@ export function CreateRecapModal({
         setPreviews(prev => prev.filter((_, i) => i !== index));
     };
 
-    const selectTrade = (trade: TradeLite) => {
-        setTradeId(trade.id);
-        setTradeSearch(`${trade.symbol} - ${trade.entryDate} (${trade.type})`);
-        setShowTradeDropdown(false);
+    const selectRecord = (record: SearchRecord) => {
+        setLinkedType(record.type);
+        setLinkedId(record.id);
+        setRecordSearch(record.label);
+        setShowRecordDropdown(false);
     };
 
     const toggleTradeSelection = (id: string) => {
@@ -160,7 +252,8 @@ export function CreateRecapModal({
         const data: CreateRecapData = {
             title: title.trim(),
             reviewType,
-            tradeId: reviewType === 'daily' ? (tradeId || undefined) : undefined,
+            linkedType: reviewType === 'daily' ? linkedType : undefined,
+            linkedId: reviewType === 'daily' ? (linkedId || undefined) : undefined,
             tradeIds: reviewType === 'weekly' ? selectedTradeIds : undefined,
             weekStartDate: reviewType === 'weekly' ? format(weekDates.weekStart, 'yyyy-MM-dd') : undefined,
             weekEndDate: reviewType === 'weekly' ? format(weekDates.weekEnd, 'yyyy-MM-dd') : undefined,
@@ -176,8 +269,9 @@ export function CreateRecapModal({
 
     const handleReset = () => {
         setTitle('');
-        setTradeId('');
-        setTradeSearch('');
+        setLinkedType(undefined);
+        setLinkedId('');
+        setRecordSearch('');
         setSelectedTradeIds([]);
         setWhatWorked('');
         setWhatFailed('');
@@ -204,56 +298,71 @@ export function CreateRecapModal({
                 />
 
                 {/* Title */}
-                <Input
-                    label="Título do Recap"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder={reviewType === 'daily' 
-                        ? "Ex: Análise do trade EURUSD 11/12" 
-                        : "Ex: Review Semana 50 - Dezembro 2024"
-                    }
-                    required
-                />
+                <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Título do Recap
+                    </label>
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder={reviewType === 'daily' 
+                            ? "Ex: Análise do trade EURUSD 11/12" 
+                            : "Ex: Review Semana 50 - Dezembro 2024"
+                        }
+                        required
+                        className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
+                    />
+                </div>
 
-                {/* Trade Link - Daily Mode */}
+                {/* Record Link - Daily Mode */}
                 {reviewType === 'daily' && (
                     <div className="relative" ref={dropdownRef}>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
-                            Vincular a um Trade (opcional)
+                            Vincular a um registro (opcional)
                         </label>
                         <input
                             type="text"
-                            value={tradeSearch}
+                            value={recordSearch}
                             onChange={(e) => {
-                                setTradeSearch(e.target.value);
-                                setShowTradeDropdown(true);
-                                if (e.target.value === '') setTradeId('');
+                                setRecordSearch(e.target.value);
+                                setShowRecordDropdown(true);
+                                if (e.target.value === '') {
+                                    setLinkedType(undefined);
+                                    setLinkedId('');
+                                }
                             }}
-                            onFocus={() => setShowTradeDropdown(true)}
-                            placeholder="Buscar por ativo ou data..."
+                            onFocus={() => setShowRecordDropdown(true)}
+                            placeholder="Buscar por ativo, data ou diário..."
                             className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
                         />
                         
-                        {showTradeDropdown && filteredTrades.length > 0 && (
+                        {showRecordDropdown && searchResults.length > 0 && (
                             <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-auto">
-                                {filteredTrades.map(trade => (
+                                {searchResults.map(record => (
                                     <button
-                                        key={trade.id}
+                                        key={`${record.type}-${record.id}`}
                                         type="button"
-                                        onClick={() => selectTrade(trade)}
+                                        onClick={() => selectRecord(record)}
                                         className="w-full px-4 py-3 text-left hover:bg-gray-700/50 flex items-center gap-3 border-b border-gray-700/50 last:border-0"
                                     >
-                                        <span className={`font-medium ${trade.type === 'Long' ? 'text-green-400' : 'text-red-400'}`}>
-                                            {trade.type}
+                                        <span className={`text-xs font-medium px-2 py-0.5 rounded ${
+                                            record.type === 'trade' 
+                                                ? 'bg-green-500/20 text-green-400' 
+                                                : 'bg-blue-500/20 text-blue-400'
+                                        }`}>
+                                            {record.type === 'trade' ? 'TRADE' : 'DIÁRIO'}
                                         </span>
-                                        <span className="text-white">{trade.symbol}</span>
-                                        <span className="text-gray-400 text-sm">{trade.entryDate}</span>
-                                        {trade.outcome && (
-                                            <span className={`ml-auto text-sm ${
-                                                trade.outcome === 'win' ? 'text-green-400' : 
-                                                trade.outcome === 'loss' ? 'text-red-400' : 'text-yellow-400'
+                                        <span className="text-white flex-1 truncate">
+                                            {record.label}
+                                        </span>
+                                        <span className="text-gray-400 text-sm">{record.date}</span>
+                                        {record.outcome && (
+                                            <span className={`text-sm ${
+                                                record.outcome === 'win' ? 'text-green-400' : 
+                                                record.outcome === 'loss' ? 'text-red-400' : 'text-yellow-400'
                                             }`}>
-                                                {trade.outcome === 'win' ? '✓' : trade.outcome === 'loss' ? '✗' : '⬤'}
+                                                {record.outcome === 'win' ? '✓' : record.outcome === 'loss' ? '✗' : '⬤'}
                                             </span>
                                         )}
                                     </button>
@@ -271,17 +380,10 @@ export function CreateRecapModal({
                             <label className="block text-sm font-medium text-gray-300 mb-2">
                                 Semana de Análise
                             </label>
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="week"
-                                    value={selectedWeek}
-                                    onChange={(e) => setSelectedWeek(e.target.value)}
-                                    className="px-4 py-2 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-                                />
-                                <span className="text-sm text-gray-400">
-                                    {format(weekDates.weekStart, 'dd/MM', { locale: ptBR })} - {format(weekDates.weekEnd, 'dd/MM', { locale: ptBR })}
-                                </span>
-                            </div>
+                            <WeekPicker
+                                selectedWeek={selectedWeek}
+                                onWeekChange={setSelectedWeek}
+                            />
                         </div>
 
                         {/* Trades Multi-Select */}

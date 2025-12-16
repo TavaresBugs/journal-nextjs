@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Tabs, TabPanel } from '@/components/ui';
 import { 
     ExperimentsTab, 
@@ -11,7 +11,8 @@ import {
     ViewRecapModal 
 } from '@/components/laboratory';
 import { useLaboratoryStore, CreateExperimentData, CreateRecapData } from '@/store/useLaboratoryStore';
-import type { LaboratoryExperiment, LaboratoryRecap, TradeLite } from '@/types';
+import { useJournalStore } from '@/store/useJournalStore';
+import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite } from '@/types';
 
 interface DashboardLaboratoryProps {
     trades: TradeLite[];
@@ -34,7 +35,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     const [showViewRecap, setShowViewRecap] = useState(false);
     const [selectedRecap, setSelectedRecap] = useState<LaboratoryRecap | null>(null);
 
-    // Store
+    // Laboratory Store
     const {
         experiments,
         recaps,
@@ -47,6 +48,20 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
         addRecap,
         removeRecap,
     } = useLaboratoryStore();
+
+    // Journal Store - for linking recaps to journal entries
+    const { entries: journalEntries } = useJournalStore();
+
+    // Map journal entries to lightweight format for the modal
+    const journalEntriesLite: JournalEntryLite[] = useMemo(() => 
+        journalEntries.map(e => ({
+            id: e.id,
+            date: e.date,
+            title: e.title,
+            asset: e.asset,
+        })),
+        [journalEntries]
+    );
 
     // Load data on mount
     useEffect(() => {
@@ -172,6 +187,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                 onClose={() => setShowCreateRecap(false)}
                 onSubmit={handleCreateRecap}
                 trades={trades}
+                journalEntries={journalEntriesLite}
                 isLoading={isLoading}
             />
 
