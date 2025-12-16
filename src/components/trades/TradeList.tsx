@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button, GlassCard, Input } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
@@ -23,6 +23,9 @@ interface TradeListProps {
     currentPage?: number;
     itemsPerPage?: number;
     onPageChange?: (page: number) => void;
+    // External filter control
+    filterAsset?: string;
+    hideHeader?: boolean;
 }
 
 export function TradeList({ 
@@ -34,13 +37,26 @@ export function TradeList({
     totalCount,
     currentPage: controlledPage,
     itemsPerPage = 10,
-    onPageChange
+    onPageChange,
+    filterAsset: externalFilterAsset,
+    hideHeader = false
 }: TradeListProps) {
-    const [filterAsset, setFilterAsset] = useState<string>('TODOS OS ATIVOS');
+    const [internalFilterAsset, setInternalFilterAsset] = useState<string>('TODOS OS ATIVOS');
+    
+    // Use external filter if provided, otherwise internal
+    const filterAsset = externalFilterAsset !== undefined ? externalFilterAsset : internalFilterAsset;
+
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     
     // Local Pagination State (fallback)
     const [localPage, setLocalPage] = useState(1);
+    
+    // Reset local pagination when filter changes (if controlled externally)
+    useEffect(() => {
+        if (externalFilterAsset !== undefined) {
+            setLocalPage(1);
+        }
+    }, [externalFilterAsset]);
     
     // Determine mode
     const isServerSide = typeof totalCount === 'number' && typeof onPageChange === 'function';
@@ -139,26 +155,28 @@ export function TradeList({
 
     return (
         <div className="space-y-4">
-            {/* Filtro de Ativos com Datalist */}
-            <div className="flex items-center gap-3">
-                <Input
-                    list="assets-filter-list"
-                    label="Filtrar Ativo"
-                    value={filterAsset}
-                    onChange={(e) => {
-                        setFilterAsset(e.target.value);
-                        handlePageChange(1); // Reset pagination on filter change
-                    }}
-                    placeholder="TODOS OS ATIVOS"
-                    className="uppercase"
-                />
-                <datalist id="assets-filter-list">
-                    <option value="TODOS OS ATIVOS" />
-                    {uniqueAssets.map(asset => (
-                        <option key={asset} value={asset} />
-                    ))}
-                </datalist>
-            </div>
+            {/* Filtro de Ativos com Datalist - Only show if header is NOT hidden */}
+            {!hideHeader && (
+                <div className="flex items-center gap-3">
+                    <Input
+                        list="assets-filter-list"
+                        label="Filtrar Ativo"
+                        value={internalFilterAsset}
+                        onChange={(e) => {
+                            setInternalFilterAsset(e.target.value);
+                            handlePageChange(1); // Reset pagination on filter change
+                        }}
+                        placeholder="TODOS OS ATIVOS"
+                        className="uppercase"
+                    />
+                    <datalist id="assets-filter-list">
+                        <option value="TODOS OS ATIVOS" />
+                        {uniqueAssets.map(asset => (
+                            <option key={asset} value={asset} />
+                        ))}
+                    </datalist>
+                </div>
+            )}
 
             {/* Tabela */}
             <GlassCard className="p-0 overflow-hidden bg-zorin-bg/30 border-white/5">

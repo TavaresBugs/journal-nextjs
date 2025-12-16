@@ -108,8 +108,18 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
         Object.keys(tradesByDay).forEach(dateStr => {
             const dayTrades = tradesByDay[dateStr];
             const stats = calculateDayStats(dayTrades);
-            // Count ALL journal entries for this day (not just ones without trades)
-            const dayEntries = entries.filter(e => e.date === dateStr);
+            // Count journal entries for this day, excluding ones linked to today's trades
+            const dayEntries = entries.filter(e => {
+                if (e.date !== dateStr) return false;
+                
+                // If entry is linked to trades, check if it's linked to any of today's trades
+                if (e.tradeIds && e.tradeIds.length > 0) {
+                    const isLinkedToDayTrade = e.tradeIds.some(tid => dayTrades.some(dt => dt.id === tid));
+                    return !isLinkedToDayTrade;
+                }
+                
+                return true;
+            });
             
             statsMap[dateStr] = {
                 ...stats,
