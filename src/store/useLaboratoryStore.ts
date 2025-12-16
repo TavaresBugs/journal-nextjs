@@ -73,7 +73,7 @@ interface LaboratoryStore {
     // Recap actions
     loadRecaps: () => Promise<void>;
     addRecap: (data: CreateRecapData, imageFiles?: File[]) => Promise<LaboratoryRecap>;
-    updateRecap: (data: UpdateRecapData) => Promise<void>;
+    updateRecap: (data: UpdateRecapData, newImageFiles?: File[]) => Promise<void>;
     removeRecap: (id: string) => Promise<void>;
 
     // Utility
@@ -721,10 +721,22 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
         }
     },
 
-    updateRecap: async (data) => {
+    updateRecap: async (data, newImageFiles) => {
         set({ isLoading: true, error: null });
 
         try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('User not authenticated');
+
+            // Handle new image uploads
+            let finalImages: string[] = data.images || [];
+            if (newImageFiles && newImageFiles.length > 0) {
+                // Determine recap ID for storage path
+                const recapId = data.id;
+                const uploadedUrls = await uploadRecapImages(user.id, recapId, newImageFiles);
+                finalImages = [...finalImages, ...uploadedUrls];
+            }
+
             const { error: updateError } = await supabase
                 .from('laboratory_recaps')
                 .update({
@@ -738,7 +750,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                     what_failed: data.whatFailed,
                     emotional_state: data.emotionalState,
                     lessons_learned: data.lessonsLearned,
-                    images: data.images,
+                    images: finalImages,
                 })
                 .eq('id', data.id);
 
@@ -757,7 +769,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                             whatFailed: data.whatFailed,
                             emotionalState: data.emotionalState,
                             lessonsLearned: data.lessonsLearned,
-                            images: data.images || recap.images,
+                            images: finalImages,
                             // Clear journal/trade if link type changed
                             trade: data.linkedType === 'trade' ? recap.trade : undefined,
                             journal: data.linkedType === 'journal' ? recap.journal : undefined,

@@ -126,8 +126,8 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
         setShowEditRecap(true); // Open edit modal
     };
 
-    const handleUpdateRecapFromEdit = async (data: UpdateRecapData) => {
-        await updateRecap(data);
+    const handleUpdateRecapFromEdit = async (data: UpdateRecapData, files: File[]) => {
+        await updateRecap(data, files);
         setShowEditRecap(false);
         setSelectedRecap(null);
     };
@@ -232,6 +232,8 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                 }}
                 recap={selectedRecap}
                 onUpdateRecap={handleUpdateRecapFromEdit}
+                trades={trades}
+                journalEntries={journalEntriesLite}
                 isLoading={isLoading}
             />
         </>

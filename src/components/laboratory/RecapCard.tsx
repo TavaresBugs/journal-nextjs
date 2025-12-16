@@ -26,7 +26,15 @@ export function RecapCard({ recap, onView, onEdit, onDelete }: RecapCardProps) {
     const firstImage = recap.images?.[0];
 
     const formatDate = (dateStr: string) => {
-        return new Date(dateStr).toLocaleDateString('pt-BR', {
+        if (!dateStr) return '';
+        // Handle ISO string or simple YYYY-MM-DD
+        const datePart = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+        const [year, month, day] = datePart.split('-').map(Number);
+        
+        // Create date at local midnight to avoid timezone shifts
+        const date = new Date(year, month - 1, day);
+        
+        return date.toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: 'short',
             year: 'numeric',
@@ -135,7 +143,7 @@ export function RecapCard({ recap, onView, onEdit, onDelete }: RecapCardProps) {
                 <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
                     <button
                         onClick={() => onEdit(recap)}
-                        className="p-1.5 text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-amber-400 hover:bg-amber-500/10 rounded-lg transition-colors"
                         title="Editar"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
