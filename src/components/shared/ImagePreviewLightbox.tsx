@@ -116,7 +116,7 @@ export function ImagePreviewLightbox({
           initialScale={1}
           minScale={0.5}
           maxScale={4}
-          doubleClick={{ disabled: true }} // Disable default, we handle it manually
+          doubleClick={{ mode: 'reset' }} // Built-in reset on double-click
           wheel={{ step: 0.1 }}
           panning={{ 
             disabled: false,
@@ -135,15 +135,8 @@ export function ImagePreviewLightbox({
             }
           }}
         >
-          {({ zoomIn, zoomOut, resetTransform, centerView, instance }) => {
+          {({ zoomIn, zoomOut, resetTransform, instance }) => {
             const scale = instance.transformState.scale;
-            
-            const handleDoubleClick = () => {
-              // Reset to scale 1 and center
-              resetTransform();
-              // Small delay to ensure reset completes, then center
-              setTimeout(() => centerView(1, 0), 50);
-            };
             
             return (
             <>
@@ -164,7 +157,6 @@ export function ImagePreviewLightbox({
                 <img
                   src={currentImage.url}
                   alt="Preview"
-                  onDoubleClick={handleDoubleClick}
                   style={{ 
                     maxWidth: '90vw',
                     maxHeight: '85vh',

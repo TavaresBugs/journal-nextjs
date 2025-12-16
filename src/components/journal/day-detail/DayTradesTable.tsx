@@ -4,7 +4,37 @@ import { memo, useState, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
 import { Button, GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
+import { getCachedImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
+
+/**
+ * Preloads images in background so they're cached when user opens the preview.
+ * Same effect as Recap's visible thumbnails, but invisible.
+ */
+function useImagePreloader(entries: JournalEntry[]) {
+  useEffect(() => {
+    const imagesToPreload: string[] = [];
+    
+    entries.forEach(entry => {
+      if (entry.images && Array.isArray(entry.images)) {
+        // Group by timeframe and get first image of each
+        const byTimeframe: Record<string, string> = {};
+        entry.images.forEach(img => {
+          if (!byTimeframe[img.timeframe]) {
+            byTimeframe[img.timeframe] = getCachedImageUrl(img.url);
+          }
+        });
+        imagesToPreload.push(...Object.values(byTimeframe));
+      }
+    });
+
+    // Preload all images in background
+    imagesToPreload.forEach(url => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, [entries]);
+}
 
 
 interface DayTradesTableProps {
@@ -45,6 +75,15 @@ const DayTradesTableComponent = ({
 }: DayTradesTableProps) => {
   // Scroll hint disappears after 3 seconds
   const [showScrollHint, setShowScrollHint] = useState(true);
+
+  // Collect all journal entries (standalone + trade-linked) for image preloading
+  const allEntries = [
+    ...standaloneEntries,
+    ...trades.map(t => getEntryByTradeId(t.id)).filter((e): e is JournalEntry => !!e)
+  ];
+  
+  // Preload images in background (same effect as Recap's visible thumbnails)
+  useImagePreloader(allEntries);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowScrollHint(false), 3000);
