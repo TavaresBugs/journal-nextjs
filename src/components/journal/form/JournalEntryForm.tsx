@@ -149,7 +149,7 @@ export function JournalEntryForm({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="6xl">
+      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="6xl" noBackdrop>
         <form onSubmit={handleFormSubmit} className="space-y-6">
           {/* Header Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -366,7 +366,7 @@ export function JournalEntryForm({
 
       {/* Link Trade Modal */}
       {isLinkTradeModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-70 bg-black/80 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
           <GlassCard className="bg-zorin-bg border-white/10 w-full max-w-md shadow-2xl overflow-hidden p-0">
             <div className="flex items-center justify-between p-4 border-b border-white/5 bg-zorin-surface/50">
               <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2">

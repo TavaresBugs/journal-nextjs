@@ -12,9 +12,11 @@ interface ModalProps {
     headerActions?: React.ReactNode;
     children: React.ReactNode;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+    /** When true, modal has no backdrop (use for modals that open over other modals) */
+    noBackdrop?: boolean;
 }
 
-export function Modal({ isOpen, onClose, title, headerActions, children, maxWidth = 'lg' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, headerActions, children, maxWidth = 'lg', noBackdrop = false }: ModalProps) {
     // Block body scroll when modal is open
     useBlockBodyScroll(isOpen);
 
@@ -47,7 +49,10 @@ export function Modal({ isOpen, onClose, title, headerActions, children, maxWidt
 
     const modalContent = (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+            className={cn(
+                "fixed inset-0 z-50 flex items-center justify-center p-4",
+                !noBackdrop && "bg-black/30 backdrop-blur-xs"
+            )}
             onClick={onClose}
         >
             <div

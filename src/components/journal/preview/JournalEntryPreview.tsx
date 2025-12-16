@@ -76,6 +76,7 @@ const JournalEntryPreviewComponent = ({
       onClose={onClose} 
       title={CustomHeader}
       maxWidth={showComments ? 'full' : '6xl'}
+      noBackdrop
     >
       <div className="space-y-6">
         <JournalEntryContent 

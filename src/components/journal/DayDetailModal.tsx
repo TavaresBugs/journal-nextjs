@@ -21,7 +21,7 @@ interface DayDetailModalProps {
   trades: Trade[];
   accountId: string;
   onDeleteTrade: (tradeId: string) => void;
-  onEditTrade?: (trade: Trade) => void;
+  onEditTrade?: (trade: Trade, fromDayDetail?: boolean) => void;
 }
 
 /**
@@ -235,7 +235,7 @@ export function DayDetailModal({
             trades={trades}
             standaloneEntries={standaloneEntries}
             onDeleteTrade={onDeleteTrade}
-            onEditTrade={onEditTrade}
+            onEditTrade={(trade) => onEditTrade?.(trade, true)}
             onJournalClick={handleJournalClick}
             onEditEntry={handleEditEntry}
             onPreviewEntry={handlePreviewEntry}

@@ -8,6 +8,7 @@ import { CreateRecapData } from '@/store/useLaboratoryStore';
 import { formatCurrency } from '@/lib/calculations';
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import type { LaboratoryRecap } from '@/types';
 
 const REVIEW_TYPE_TABS = [
     { id: 'daily', label: 'Review Diário', icon: '📅' },
@@ -30,9 +31,11 @@ interface CreateRecapModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: CreateRecapData, files: File[]) => Promise<void>;
+    onUpdate?: (id: string, data: CreateRecapData, files: File[]) => Promise<void>;
     trades: TradeLite[];
     journalEntries?: JournalEntryLite[];
     isLoading?: boolean;
+    editingRecap?: LaboratoryRecap | null;
 }
 
 const EMOTION_OPTIONS: { value: EmotionalState; label: string; emoji: string }[] = [
@@ -49,10 +52,13 @@ export function CreateRecapModal({
     isOpen, 
     onClose, 
     onSubmit,
+    onUpdate,
     trades,
     journalEntries = [],
-    isLoading = false
+    isLoading = false,
+    editingRecap
 }: CreateRecapModalProps) {
+    const isEditMode = !!editingRecap;
     // Review type toggle
     const [reviewType, setReviewType] = useState<'daily' | 'weekly'>('daily');
     
@@ -78,6 +84,8 @@ export function CreateRecapModal({
     
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const uploadZoneRef = useRef<HTMLDivElement>(null);
+    const [carouselIndex, setCarouselIndex] = useState(0);
 
     // Parse week string to dates
     const weekDates = useMemo(() => {
@@ -200,6 +208,31 @@ export function CreateRecapModal({
         };
     }, [weekTrades, selectedTradeIds]);
 
+    // Pre-fill form when editing
+    useEffect(() => {
+        if (editingRecap) {
+            setTitle(editingRecap.title);
+            setReviewType('daily'); // Default to daily for editing existing recaps
+            setLinkedType(editingRecap.linkedType);
+            setLinkedId(editingRecap.linkedId || editingRecap.tradeId || '');
+            setWhatWorked(editingRecap.whatWorked || '');
+            setWhatFailed(editingRecap.whatFailed || '');
+            setEmotionalState(editingRecap.emotionalState || '');
+            setLessonsLearned(editingRecap.lessonsLearned || '');
+            // For existing images, we can't convert URLs back to Files
+            // but we can show previews
+            if (editingRecap.images?.length) {
+                setPreviews(editingRecap.images);
+            }
+            // Set search display for linked record
+            if (editingRecap.linkedType === 'trade' && editingRecap.trade) {
+                setRecordSearch(editingRecap.trade.symbol);
+            } else if (editingRecap.linkedType === 'journal' && editingRecap.journal) {
+                setRecordSearch(editingRecap.journal.title || 'Journal Entry');
+            }
+        }
+    }, [editingRecap]);
+
     // Close dropdown on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -229,6 +262,28 @@ export function CreateRecapModal({
     const removeFile = (index: number) => {
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
         setPreviews(prev => prev.filter((_, i) => i !== index));
+        // Adjust carousel index if needed
+        setCarouselIndex(prev => Math.max(0, Math.min(prev, previews.length - 2)));
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        for (const item of Array.from(items)) {
+            if (item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) {
+                    setSelectedFiles(prev => [...prev, file]);
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setPreviews(prev => [...prev, event.target?.result as string]);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
     };
 
     const selectRecord = (record: SearchRecord) => {
@@ -263,7 +318,11 @@ export function CreateRecapModal({
             lessonsLearned: lessonsLearned.trim() || undefined,
         };
 
-        await onSubmit(data, selectedFiles);
+        if (isEditMode && editingRecap && onUpdate) {
+            await onUpdate(editingRecap.id, data, selectedFiles);
+        } else {
+            await onSubmit(data, selectedFiles);
+        }
         handleReset();
     };
 
@@ -288,14 +347,16 @@ export function CreateRecapModal({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title="📝 Novo Recap" maxWidth="4xl">
+        <Modal isOpen={isOpen} onClose={handleClose} title={isEditMode ? `✏️ ${editingRecap?.title || 'Editar Recap'}` : "📝 Novo Recap"} maxWidth="4xl">
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Review Type Toggle - Modern Tabs */}
-                <Tabs
-                    tabs={REVIEW_TYPE_TABS}
-                    activeTab={reviewType}
-                    onChange={(tabId) => setReviewType(tabId as 'daily' | 'weekly')}
-                />
+                {/* Review Type Toggle - Modern Tabs (hidden in edit mode) */}
+                {!isEditMode && (
+                    <Tabs
+                        tabs={REVIEW_TYPE_TABS}
+                        activeTab={reviewType}
+                        onChange={(tabId) => setReviewType(tabId as 'daily' | 'weekly')}
+                    />
+                )}
 
                 {/* Title */}
                 <div>
@@ -520,7 +581,7 @@ export function CreateRecapModal({
                     />
                 </div>
 
-                {/* Image Upload */}
+                {/* Image Upload - Paste Zone with Carousel */}
                 <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
                         Screenshots
@@ -535,40 +596,152 @@ export function CreateRecapModal({
                         className="hidden"
                     />
 
-                    <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="w-full py-6 border-2 border-dashed border-gray-600 rounded-xl text-gray-400 hover:border-cyan-500 hover:text-cyan-400 transition-colors flex flex-col items-center gap-2"
+                    {/* Upload Zone - Focusable for paste */}
+                    <div
+                        ref={uploadZoneRef}
+                        tabIndex={0}
+                        onPaste={handlePaste}
+                        onClick={() => uploadZoneRef.current?.focus()}
+                        className="relative w-full aspect-video bg-gray-900/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 rounded-xl overflow-hidden group transition-all cursor-pointer outline-none"
                     >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span>Clique para adicionar imagens</span>
-                    </button>
+                        {previews.length > 0 ? (
+                            <>
+                                {/* Main Image Display - Carousel */}
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                    src={previews[carouselIndex]}
+                                    alt={`Screenshot ${carouselIndex + 1}`}
+                                    className="w-full h-full object-cover"
+                                />
 
-                    {previews.length > 0 && (
-                        <div className="mt-4 grid grid-cols-4 gap-2">
-                            {previews.map((preview, index) => (
-                                <div key={index} className="relative group">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
-                                        src={preview}
-                                        alt={`Preview ${index + 1}`}
-                                        className="w-full h-20 object-cover rounded-lg"
-                                    />
+                                {/* Image Counter Badge */}
+                                <div className="absolute top-3 left-3 bg-black/70 px-2 py-1 rounded text-xs font-medium text-cyan-400">
+                                    {carouselIndex + 1} / {previews.length}
+                                </div>
+
+                                {/* Delete Current Image Button */}
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeFile(carouselIndex);
+                                    }}
+                                    className="absolute top-3 right-3 p-1.5 bg-red-500/80 rounded-lg hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Remover imagem"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+
+                                {/* Carousel Navigation */}
+                                {previews.length > 1 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setCarouselIndex(prev => prev > 0 ? prev - 1 : previews.length - 1);
+                                            }}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/70 rounded-lg text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                            </svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setCarouselIndex(prev => prev < previews.length - 1 ? prev + 1 : 0);
+                                            }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/70 rounded-lg text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    </>
+                                )}
+
+                                {/* Bottom Controls */}
+                                <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
+                                        CTRL+V
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => removeFile(index)}
-                                        className="absolute top-1 right-1 p-1 bg-red-500/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fileInputRef.current?.click();
+                                        }}
+                                        className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors flex items-center gap-2"
+                                        title="Adicionar mais imagens"
                                     >
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                         </svg>
                                     </button>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+
+                                {/* Thumbnail Strip */}
+                                {previews.length > 1 && (
+                                    <div className="absolute bottom-14 left-3 right-3 flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {previews.map((preview, index) => (
+                                            <button
+                                                key={index}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCarouselIndex(index);
+                                                }}
+                                                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all ${
+                                                    index === carouselIndex 
+                                                        ? 'border-cyan-500 ring-2 ring-cyan-500/50' 
+                                                        : 'border-white/30 hover:border-white/60'
+                                                }`}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={preview}
+                                                    alt={`Thumb ${index + 1}`}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            /* Empty State */
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <svg className="w-10 h-10 text-gray-600 group-hover:text-gray-500 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p className="text-gray-500 text-sm mb-1">Clique ou cole uma imagem</p>
+                                
+                                {/* Controls visible on hover/focus */}
+                                <div className="absolute bottom-3 w-full px-3 flex justify-between items-end opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
+                                    <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
+                                        CTRL+V
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fileInputRef.current?.click();
+                                        }}
+                                        className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors"
+                                        title="Upload Imagem"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Actions */}
@@ -581,7 +754,7 @@ export function CreateRecapModal({
                         variant="gradient-success" 
                         disabled={!title.trim() || isLoading || (reviewType === 'weekly' && selectedTradeIds.length === 0)}
                     >
-                        {isLoading ? 'Salvando...' : 'Criar Recap'}
+                        {isLoading ? 'Salvando...' : isEditMode ? 'Salvar' : 'Criar Recap'}
                     </Button>
                 </div>
             </form>

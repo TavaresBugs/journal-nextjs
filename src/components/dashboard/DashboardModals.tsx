@@ -22,6 +22,7 @@ interface DashboardModalsProps {
     isDayDetailModalOpen: boolean;
     isSettingsModalOpen: boolean;
     isCreatePlaybookModalOpen: boolean;
+    isEditFromDayDetail: boolean;
 
     // Selected Data
     selectedTrade: Trade | null;
@@ -46,7 +47,7 @@ interface DashboardModalsProps {
     handleCreateTrade: (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
     handleUpdateTrade: (trade: Trade) => Promise<void>;
     handleDeleteTrade: (tradeId: string) => Promise<void>;
-    handleEditTrade: (trade: Trade) => void; // Used by DayDetailModal
+    handleEditTrade: (trade: Trade, fromDayDetail?: boolean) => void; // Used by DayDetailModal
     handleImportComplete: () => void;
     handleUpdateBalance: (newBalance: number) => Promise<void>;
     handlePlaybookCreated: () => void;
@@ -66,6 +67,7 @@ export function DashboardModals({
     isDayDetailModalOpen,
     isSettingsModalOpen,
     isCreatePlaybookModalOpen,
+    isEditFromDayDetail,
 
     selectedTrade,
     selectedDate,
@@ -115,6 +117,7 @@ export function DashboardModals({
                 onClose={onCloseEditModal}
                 trade={selectedTrade}
                 onUpdateTrade={handleUpdateTrade}
+                isSecondaryModal={isEditFromDayDetail}
             />
 
             <DayDetailModal

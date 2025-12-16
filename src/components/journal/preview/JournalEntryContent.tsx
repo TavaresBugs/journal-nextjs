@@ -392,7 +392,7 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
       {/* Lightbox Overlay with Zoom */}
       {previewImageKey && typeof document !== 'undefined' && createPortal(
         <div
-          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center"
+          className="fixed inset-0 z-100 bg-black/50 flex items-center justify-center"
           onClick={handleCloseLightbox}
         >
           {/* Close Button */}

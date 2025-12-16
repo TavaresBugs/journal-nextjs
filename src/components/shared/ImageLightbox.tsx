@@ -44,7 +44,7 @@ export function ImageLightbox({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-60 bg-linear-to-br from-black/40 to-black/10 backdrop-blur-md flex items-center justify-center p-4"
+      className="fixed inset-0 z-60 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       {/* Close Button */}

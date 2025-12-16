@@ -74,6 +74,7 @@ export default function DashboardPage({
 
     // Selection States
     const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
+    const [isEditFromDayDetail, setIsEditFromDayDetail] = useState(false);
     const [editingPlaybook, setEditingPlaybook] = useState<Playbook | null>(null);
     const [viewingPlaybook, setViewingPlaybook] = useState<Playbook | null>(null);
     const [sharingPlaybook, setSharingPlaybook] = useState<Playbook | null>(null);
@@ -87,8 +88,9 @@ export default function DashboardPage({
     if (data.isLoading || !data.currentAccount) return <DashboardSkeleton />;
 
     // Handlers
-    const handleEditTrade = (trade: Trade) => {
+    const handleEditTrade = (trade: Trade, fromDayDetail = false) => {
         setSelectedTrade(trade);
+        setIsEditFromDayDetail(fromDayDetail);
         setIsEditModalOpen(true);
     };
 
@@ -223,7 +225,8 @@ export default function DashboardPage({
                     sharingPlaybook={sharingPlaybook}
                     onCloseCreateModal={() => setIsCreateModalOpen(false)}
                     onCloseImportModal={() => setIsImportModalOpen(false)}
-                    onCloseEditModal={() => { setIsEditModalOpen(false); setSelectedTrade(null); }}
+                    onCloseEditModal={() => { setIsEditModalOpen(false); setSelectedTrade(null); setIsEditFromDayDetail(false); }}
+                    isEditFromDayDetail={isEditFromDayDetail}
                     onCloseDayDetailModal={() => setIsDayDetailModalOpen(false)}
                     onCloseSettingsModal={() => setIsSettingsModalOpen(false)}
                     onCloseCreatePlaybookModal={() => setIsCreatePlaybookModalOpen(false)}

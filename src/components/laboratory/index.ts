@@ -7,3 +7,4 @@ export { CreateExperimentModal } from './CreateExperimentModal';
 export { ViewExperimentModal } from './ViewExperimentModal';
 export { CreateRecapModal } from './CreateRecapModal';
 export { ViewRecapModal } from './ViewRecapModal';
+export { EditRecapModal } from './EditRecapModal';

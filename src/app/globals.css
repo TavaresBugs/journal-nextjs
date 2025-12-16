@@ -56,6 +56,8 @@
 
 html {
   background-color: #1e2529; /* Zorin Gray-900 - Fixes mobile overscroll white background */
+  overflow-y: scroll; /* Always show scrollbar space to prevent layout shift */
+  scrollbar-gutter: stable; /* Reserve space for scrollbar */
 }
 
 body {
@@ -64,6 +66,12 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   min-height: 100vh;
+}
+
+/* Hide scrollbar on html when not needed (modal is open) */
+html:has(body[style*="overflow: hidden"]) {
+  scrollbar-gutter: auto;
+  overflow-y: hidden;
 }
 
 /* Global Cursor UX Standardization */

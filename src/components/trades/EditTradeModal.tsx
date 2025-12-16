@@ -9,9 +9,11 @@ interface EditTradeModalProps {
     onClose: () => void;
     trade: Trade | null;
     onUpdateTrade: (trade: Trade) => void | Promise<void>;
+    /** When true, modal is opened from another modal (e.g., DayDetailModal) and should not have backdrop */
+    isSecondaryModal?: boolean;
 }
 
-export function EditTradeModal({ isOpen, onClose, trade, onUpdateTrade }: EditTradeModalProps) {
+export function EditTradeModal({ isOpen, onClose, trade, onUpdateTrade, isSecondaryModal = false }: EditTradeModalProps) {
     if (!trade) return null;
 
     const handleUpdate = async (tradeData: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -24,7 +26,7 @@ export function EditTradeModal({ isOpen, onClose, trade, onUpdateTrade }: EditTr
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title="✏️ Editar Trade" maxWidth="6xl">
+        <Modal isOpen={isOpen} onClose={onClose} title="✏️ Editar Trade" maxWidth="6xl" noBackdrop={isSecondaryModal}>
             <TradeForm
                 accountId={trade.accountId}
                 onSubmit={handleUpdate}
