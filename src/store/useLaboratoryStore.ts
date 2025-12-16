@@ -590,7 +590,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
             if (journalIds.length > 0) {
                 const { data: journalData } = await supabase
                     .from('journal_entries')
-                    .select('id, date, title')
+                    .select('id, date, title, asset')
                     .in('id', journalIds);
 
                 if (journalData) {
@@ -598,7 +598,8 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                         acc[j.id] = { 
                             id: j.id, 
                             date: j.date, 
-                            title: j.title 
+                            title: j.title,
+                            asset: j.asset
                         };
                         return acc;
                     }, {} as Record<string, JournalEntryLite>);
