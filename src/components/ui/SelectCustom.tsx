@@ -152,9 +152,10 @@ const SelectContent = React.forwardRef<
         const updatePosition = () => {
             if (context.triggerRef.current) {
                 const rect = context.triggerRef.current.getBoundingClientRect();
+                // Use viewport-relative positions (works inside modals with scroll)
                 setCoords({
-                    top: rect.bottom + window.scrollY + 4,
-                    left: rect.left + window.scrollX,
+                    top: rect.bottom + 4,
+                    left: rect.left,
                     width: rect.width
                 });
             }
@@ -177,7 +178,7 @@ const SelectContent = React.forwardRef<
       ref={ref}
       data-select-content
       style={{
-        position: 'absolute',
+        position: 'fixed',
         top: coords.top,
         left: coords.left,
         width: coords.width,
