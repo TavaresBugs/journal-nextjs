@@ -706,7 +706,54 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                 }
             }
 
-            const newRecap = mapRecapFromDB(insertedData);
+            // Fetch linked record data if needed
+            let linkedJournal: JournalEntryLite | undefined;
+            let linkedTrade: TradeLite | undefined;
+
+            if (data.linkedType === 'journal' && data.linkedId) {
+                const { data: journalData } = await supabase
+                    .from('journal_entries')
+                    .select('id, date, title, asset')
+                    .eq('id', data.linkedId)
+                    .single();
+                
+                if (journalData) {
+                    linkedJournal = {
+                        id: journalData.id,
+                        date: journalData.date,
+                        title: journalData.title,
+                        asset: journalData.asset,
+                    };
+                }
+            } else if (data.linkedType === 'trade' && data.linkedId) {
+                const { data: tradeData } = await supabase
+                    .from('trades')
+                    .select('id, symbol, type, entry_date, entry_time, exit_date, exit_time, pnl, outcome, entry_price, exit_price, stop_loss, take_profit, lot')
+                    .eq('id', data.linkedId)
+                    .single();
+                
+                if (tradeData) {
+                    linkedTrade = {
+                        id: tradeData.id,
+                        symbol: tradeData.symbol,
+                        type: tradeData.type as 'Long' | 'Short',
+                        entryDate: tradeData.entry_date,
+                        entryTime: tradeData.entry_time,
+                        exitDate: tradeData.exit_date,
+                        exitTime: tradeData.exit_time,
+                        pnl: tradeData.pnl,
+                        outcome: tradeData.outcome,
+                        entryPrice: tradeData.entry_price,
+                        exitPrice: tradeData.exit_price,
+                        stopLoss: tradeData.stop_loss,
+                        takeProfit: tradeData.take_profit,
+                        lot: tradeData.lot,
+                        accountId: '',
+                    };
+                }
+            }
+
+            const newRecap = mapRecapFromDB(insertedData, linkedTrade, linkedJournal);
             set({ 
                 recaps: [newRecap, ...get().recaps], 
                 isLoading: false 
@@ -756,6 +803,53 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
 
             if (updateError) throw updateError;
 
+            // Fetch linked record data if needed
+            let linkedJournal: JournalEntryLite | undefined;
+            let linkedTrade: TradeLite | undefined;
+
+            if (data.linkedType === 'journal' && data.linkedId) {
+                const { data: journalData } = await supabase
+                    .from('journal_entries')
+                    .select('id, date, title, asset')
+                    .eq('id', data.linkedId)
+                    .single();
+                
+                if (journalData) {
+                    linkedJournal = {
+                        id: journalData.id,
+                        date: journalData.date,
+                        title: journalData.title,
+                        asset: journalData.asset,
+                    };
+                }
+            } else if (data.linkedType === 'trade' && data.linkedId) {
+                const { data: tradeData } = await supabase
+                    .from('trades')
+                    .select('id, symbol, type, entry_date, entry_time, exit_date, exit_time, pnl, outcome, entry_price, exit_price, stop_loss, take_profit, lot')
+                    .eq('id', data.linkedId)
+                    .single();
+                
+                if (tradeData) {
+                    linkedTrade = {
+                        id: tradeData.id,
+                        symbol: tradeData.symbol,
+                        type: tradeData.type as 'Long' | 'Short',
+                        entryDate: tradeData.entry_date,
+                        entryTime: tradeData.entry_time,
+                        exitDate: tradeData.exit_date,
+                        exitTime: tradeData.exit_time,
+                        pnl: tradeData.pnl,
+                        outcome: tradeData.outcome,
+                        entryPrice: tradeData.entry_price,
+                        exitPrice: tradeData.exit_price,
+                        stopLoss: tradeData.stop_loss,
+                        takeProfit: tradeData.take_profit,
+                        lot: tradeData.lot,
+                        accountId: '',
+                    };
+                }
+            }
+
             set({
                 recaps: get().recaps.map(recap => {
                     if (recap.id === data.id) {
@@ -770,9 +864,9 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
                             emotionalState: data.emotionalState,
                             lessonsLearned: data.lessonsLearned,
                             images: finalImages,
-                            // Clear journal/trade if link type changed
-                            trade: data.linkedType === 'trade' ? recap.trade : undefined,
-                            journal: data.linkedType === 'journal' ? recap.journal : undefined,
+                            // Update with fetched linked record data
+                            trade: linkedTrade,
+                            journal: linkedJournal,
                         };
                     }
                     return recap;
