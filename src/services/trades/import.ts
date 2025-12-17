@@ -52,9 +52,43 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
           const lines = text.split(/\r?\n/);
           rows = lines.map(line => line.split(',').map(cell => cell.trim()));
         } else {
+          // Check for Magic Bytes to detect actual file type
+          const buffer = data as ArrayBuffer;
+          const uint8Array = new Uint8Array(buffer);
+          
+          // Check for ZIP signature (PK..) -> valid XLSX
+          const isZip = uint8Array[0] === 0x50 && uint8Array[1] === 0x4B && uint8Array[2] === 0x03 && uint8Array[3] === 0x04;
+          
+          if (!isZip) {
+             // Not a zip file, so it cannot be a valid XLSX (which is a zipped XML format)
+             // Check if it looks like HTML or XML
+             const decoder = new TextDecoder('utf-8');
+             // Decode first 512 bytes for inspection
+             const headerStr = decoder.decode(uint8Array.slice(0, 512)).trim();
+             
+             if (headerStr.startsWith('<') || headerStr.includes('<html') || headerStr.includes('<!DOCTYPE html')) {
+                 console.log('Detected HTML/XML content in .xlsx file, switching to HTML parser');
+                 // It's likely an HTML file named as .xlsx
+                 return parseHTMLReport(file);
+             }
+             
+             // If uncertain, we could throw, or try the HTML parser as fallback if it has text content
+             // For now, let's throw a helpful error
+             throw new Error('O arquivo não parece ser um Excel válido (.xlsx). Se for um relatório HTML renomeado, tente salvar como .html ou abrir e salvar novamente no Excel.');
+          }
+
           // Parse XLSX with exceljs
           const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(data as ArrayBuffer);
+          try {
+            await workbook.xlsx.load(buffer);
+          } catch (err: unknown) {
+             const errMsg = err instanceof Error ? err.message : String(err);
+             if (errMsg.includes('disallowed character')) {
+                 throw new Error('Para sua segurança e dos seus dados, abra o arquivo Excel e salve-o com o mesmo nome novamente. Isso removerá caracteres inválidos e permitirá a importação correta.');
+             }
+             throw err;
+          }
+
           const worksheet = workbook.getWorksheet(1);
           if (!worksheet) throw new Error('No worksheet found');
 
