@@ -47,9 +47,18 @@ const Select = ({
   const ref = React.useRef<HTMLDivElement>(null)
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false)
+      const target = event.target as Node
+      // Check if click is inside the trigger container
+      if (ref.current && ref.current.contains(target)) {
+        return
       }
+      // Check if click is inside the portaled SelectContent
+      const selectContent = document.querySelector('[data-select-content]')
+      if (selectContent && selectContent.contains(target)) {
+        return
+      }
+      // If neither, close the dropdown
+      setOpen(false)
     }
     if (open) {
       document.addEventListener("mousedown", handleClickOutside)

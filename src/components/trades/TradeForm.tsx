@@ -178,11 +178,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                         value={cond} 
                                         className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
                                     >
-                                        <div className="flex items-center gap-2.5 w-full">
-                                            {/* Extract emoji if present */}
-                                            <span className="text-lg">{cond.split(' ')[0]}</span>
-                                            <span>{cond.split(' ').slice(1).join(' ')}</span>
-                                        </div>
+                                        <span className="text-lg">{cond.split(' ')[0]}</span>
+                                        <span>{cond.split(' ').slice(1).join(' ')}</span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -215,10 +212,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                             value={strat}
                                             className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
                                         >
-                                            <div className="flex items-center gap-2.5 w-full">
-                                                <span className="text-xl flex-shrink-0">{pb?.icon || getStrategyIcon(strat)}</span>
-                                                <span>{getStrategyLabel(strat)}</span>
-                                            </div>
+                                            <span className="text-xl flex-shrink-0">{pb?.icon || getStrategyIcon(strat)}</span>
+                                            <span>{getStrategyLabel(strat)}</span>
                                         </SelectItem>
                                     );
                                 })}
@@ -250,10 +245,8 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                         value={opt.value}
                                         className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
                                     >
-                                        <div className="flex items-center gap-2.5 w-full">
-                                            <span className="text-xl flex-shrink-0">{getPDArrayIcon(opt.value)}</span>
-                                            <span>{opt.label.split(' ').slice(1).join(' ')}</span>
-                                        </div>
+                                        <span className="text-xl flex-shrink-0">{getPDArrayIcon(opt.value)}</span>
+                                        <span>{opt.label.split(' ').slice(1).join(' ')}</span>
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -271,7 +264,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onValueChange={setTfAnalise}
                         >
                             <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
-                                <SelectValue placeholder="H4" />
+                                <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
                                 {HTF_OPTIONS.map((tf) => (
@@ -294,7 +287,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             onValueChange={setTfEntrada}
                         >
                             <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
-                                <SelectValue placeholder="M15" />
+                                <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
                             <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
                                 {LTF_OPTIONS.map((tf) => (
@@ -459,19 +452,15 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                     value="Long" 
                                     className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
                                 >
-                                    <div className="flex items-center gap-2.5 w-full">
-                                        <span className="text-xl flex-shrink-0">📈</span>
-                                        <span>Long</span>
-                                    </div>
+                                    <span className="text-xl flex-shrink-0">📈</span>
+                                    <span>Long</span>
                                 </SelectItem>
                                 <SelectItem 
                                     value="Short" 
                                     className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
                                 >
-                                    <div className="flex items-center gap-2.5 w-full">
-                                        <span className="text-xl flex-shrink-0">📉</span>
-                                        <span>Short</span>
-                                    </div>
+                                    <span className="text-xl flex-shrink-0">📉</span>
+                                    <span>Short</span>
                                 </SelectItem>
                             </SelectContent>
                         </Select>
