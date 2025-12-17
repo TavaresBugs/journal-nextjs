@@ -25,13 +25,14 @@ export function Input({
                     className="text-xs font-medium text-gray-400"
                 >
                     {label}
+                    {props.required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
             <input
                 id={id}
                 className={cn(
                     // Glass base - Specific user requested color
-                    "w-full px-3 py-2 bg-[#232b32] border rounded-lg",
+                    "w-full px-3 h-12 bg-[#232b32] border rounded-lg",
                     // Text
                     "text-gray-100 text-sm placeholder-gray-500",
                     // Focus - Cyan focus to match DatePicker

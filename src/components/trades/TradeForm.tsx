@@ -23,13 +23,34 @@ import {
 
 // Import domain selects
 import {
-    TimeframeSelect,
-    DirectionSelect,
-    AssetSelect,
-    MarketConditionSelect,
-    PdArraySelect,
-    EntryQualitySelect,
+    MARKET_CONDITIONS,
+    PD_ARRAY_OPTIONS,
+    ENTRY_QUALITY_OPTIONS,
+    HTF_OPTIONS,
+    LTF_OPTIONS,
 } from './DomainSelects';
+
+// AssetCombobox
+import { AssetCombobox } from '@/components/shared/AssetCombobox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/SelectCustom';
+import { getStrategyIcon, getStrategyLabel, getPDArrayIcon, getPDArrayLabel } from '@/lib/tradeHelpers';
+
+// Helper component for Select Value with Icon
+interface SelectValueWithIconProps {
+  value: string;
+  icon: string;
+  label: string;
+  placeholder?: string;
+}
+
+function SelectValueWithIcon({ value, icon, label, placeholder }: SelectValueWithIconProps) {
+  return (
+    <div className="flex items-center gap-2.5">
+      <span className="text-lg flex-shrink-0">{icon}</span>
+      <span>{label}</span>
+    </div>
+  );
+}
 
 interface TradeFormProps {
     accountId: string;
@@ -40,7 +61,7 @@ interface TradeFormProps {
 }
 
 export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = 'create' }: TradeFormProps) {
-    const { assets, strategies, setups } = useSettingsStore();
+    const { strategies, setups } = useSettingsStore();
     const { playbooks } = usePlaybookStore();
     const { showToast } = useToast();
     
@@ -141,69 +162,176 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             <FormSection icon="📊" title="Condições de Mercado">
                 {/* Market Condition + Strategy + PD Array */}
                 <FormRow cols={3}>
-                    <MarketConditionSelect
-                        label="Condição"
-                        value={marketConditionV2}
-                        onChange={setMarketConditionV2}
-                    />
-                    <div className="relative">
-                        <Input
-                            label="Estratégia"
-                            list="strategies-list"
+                    {/* Condição */}
+                    <FormGroup label="Condição">
+                        <Select
+                            value={marketConditionV2}
+                            onValueChange={setMarketConditionV2}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center gap-2.5">
+                                <SelectValue placeholder="Tendência, Lateral..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44]">
+                                {MARKET_CONDITIONS.map((cond) => (
+                                    <SelectItem 
+                                        key={cond} 
+                                        value={cond} 
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-2.5 w-full">
+                                            {/* Extract emoji if present */}
+                                            <span className="text-lg">{cond.split(' ')[0]}</span>
+                                            <span>{cond.split(' ').slice(1).join(' ')}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    {/* Estratégia */}
+                    <FormGroup label="Estratégia">
+                        <Select
                             value={strategy}
-                            onChange={(e) => setStrategy(e.target.value)}
-                            placeholder="MMBM, AMD..."
-                            autoComplete="off"
-                            className={playbooks.find(p => p.name === strategy) ? 'pl-8' : ''}
-                        />
-                        {playbooks.find(p => p.name === strategy) && (
-                            <div className="absolute left-2.5 top-[38px] -translate-y-1/2 text-sm" style={{ color: playbooks.find(p => p.name === strategy)?.color }}>
-                                {playbooks.find(p => p.name === strategy)?.icon}
-                            </div>
-                        )}
-                        <datalist id="strategies-list">
-                            {Array.from(new Set([...playbooks.map(p => p.name), ...strategies])).sort().map((strat) => {
-                                const pb = playbooks.find(p => p.name === strat);
-                                return <option key={strat} value={strat}>{pb ? `${pb.icon} ${strat}` : strat}</option>;
-                            })}
-                        </datalist>
-                    </div>
-                    <PdArraySelect
-                        label="PD Array"
-                        value={pdArray}
-                        onChange={setPdArray}
-                    />
+                            onValueChange={setStrategy}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center gap-2.5">
+                                {strategy ? (
+                                    <SelectValueWithIcon
+                                        value={strategy}
+                                        icon={playbooks.find(p => p.name === strategy)?.icon || getStrategyIcon(strategy)}
+                                        label={strategy}
+                                    />
+                                ) : (
+                                    <SelectValue placeholder="Selecione uma estratégia" />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44]">
+                                {playbooks.sort((a, b) => a.name.localeCompare(b.name)).map((pb) => {
+                                    const strat = pb.name;
+                                    return (
+                                        <SelectItem 
+                                            key={strat} 
+                                            value={strat}
+                                            className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
+                                        >
+                                            <div className="flex items-center gap-2.5 w-full">
+                                                <span className="text-xl flex-shrink-0">{pb?.icon || getStrategyIcon(strat)}</span>
+                                                <span>{getStrategyLabel(strat)}</span>
+                                            </div>
+                                        </SelectItem>
+                                    );
+                                })}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    {/* PD Array */}
+                    <FormGroup label="PD Array">
+                        <Select
+                            value={pdArray}
+                            onValueChange={setPdArray}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center gap-2.5">
+                                {pdArray ? (
+                                    <SelectValueWithIcon
+                                        value={pdArray}
+                                        icon={getPDArrayIcon(pdArray)}
+                                        label={PD_ARRAY_OPTIONS.find(o => o.value === pdArray)?.label.split(' ').slice(1).join(' ') || getPDArrayLabel(pdArray)}
+                                    />
+                                ) : (
+                                    <SelectValue placeholder="Selecione PD Array" />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44]">
+                                {PD_ARRAY_OPTIONS.map((opt) => (
+                                    <SelectItem 
+                                        key={opt.value} 
+                                        value={opt.value}
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-2.5 w-full">
+                                            <span className="text-xl flex-shrink-0">{getPDArrayIcon(opt.value)}</span>
+                                            <span>{opt.label.split(' ').slice(1).join(' ')}</span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
                 </FormRow>
 
                 {/* Timeframes + Setup */}
+                {/* Timeframes + Setup */}
                 <FormRow cols={3}>
-                    <TimeframeSelect
-                        type="htf"
-                        label="TF Análise"
-                        value={tfAnalise}
-                        onChange={setTfAnalise}
-                        placeholder="H4"
-                    />
-                    <TimeframeSelect
-                        type="ltf"
-                        label="TF Entrada"
-                        value={tfEntrada}
-                        onChange={setTfEntrada}
-                        placeholder="M15"
-                    />
-                    <div>
-                        <Input
-                            label="Setup"
-                            list="setups-list"
+                    {/* TF Análise */}
+                    <FormGroup label="TF Análise">
+                        <Select
+                            value={tfAnalise}
+                            onValueChange={setTfAnalise}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
+                                <SelectValue placeholder="H4" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
+                                {HTF_OPTIONS.map((tf) => (
+                                    <SelectItem 
+                                        key={tf} 
+                                        value={tf} 
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white py-2.5 cursor-pointer"
+                                    >
+                                        <span className="pl-1">{tf}</span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    {/* TF Entrada */}
+                    <FormGroup label="TF Entrada">
+                        <Select
+                            value={tfEntrada}
+                            onValueChange={setTfEntrada}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
+                                <SelectValue placeholder="M15" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
+                                {LTF_OPTIONS.map((tf) => (
+                                    <SelectItem 
+                                        key={tf} 
+                                        value={tf} 
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white py-2.5 cursor-pointer"
+                                    >
+                                        <span className="pl-1">{tf}</span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
+
+                    {/* Setup */}
+                    <FormGroup label="Setup">
+                        <Select
                             value={setup}
-                            onChange={(e) => setSetup(e.target.value)}
-                            placeholder="ST+RE"
-                            autoComplete="off"
-                        />
-                        <datalist id="setups-list">
-                            {setups.map((s) => <option key={s} value={s} />)}
-                        </datalist>
-                    </div>
+                            onValueChange={setSetup}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
+                                {setups.map((s) => (
+                                    <SelectItem 
+                                        key={s} 
+                                        value={s} 
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white py-2.5 cursor-pointer"
+                                    >
+                                        <span className="pl-1">{s}</span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
                 </FormRow>
 
                 {/* Alignment Badge */}
@@ -224,7 +352,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                 <FormRow cols={2}>
                     <FormGroup label="Confluências">
                         <div
-                            className="w-full px-3 py-2 bg-[#232b32] border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-transparent flex flex-wrap gap-1.5 items-center min-h-[38px] transition-all duration-200"
+                            className="w-full px-3 py-2 bg-[#232b32] border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-transparent flex flex-wrap gap-1.5 items-center min-h-12 transition-all duration-200"
                             onClick={() => document.getElementById('tags-input')?.focus()}
                         >
                             {tagsList.map((tag, index) => (
@@ -254,11 +382,29 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             />
                         </div>
                     </FormGroup>
-                    <EntryQualitySelect
-                        label="Avaliação"
-                        value={entryQuality}
-                        onChange={setEntryQuality}
-                    />
+
+                    {/* Avaliação (Entry Quality) */}
+                    <FormGroup label="Avaliação">
+                        <Select
+                            value={entryQuality}
+                            onValueChange={setEntryQuality}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
+                                <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
+                                {ENTRY_QUALITY_OPTIONS.map((opt) => (
+                                    <SelectItem 
+                                        key={opt} 
+                                        value={opt} 
+                                        className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white py-2.5 cursor-pointer"
+                                    >
+                                        <span className="pl-1">{opt}</span>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
                 </FormRow>
             </FormSection>
 
@@ -266,15 +412,19 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             <FormSection icon="💰" title="Dados Financeiros">
                 {/* Ativo, Lote, Direção */}
                 <FormRow cols={3}>
-                    <AssetSelect
-                        label="Ativo"
-                        value={symbol}
-                        onChange={setSymbol}
-                        onBlur={() => handleFieldBlur('symbol')}
-                        assets={assets}
-                        required
-                        error={getError('symbol')}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-gray-300">
+                            Ativo <span className="text-red-500">*</span>
+                        </label>
+                        <AssetCombobox
+                            value={symbol}
+                            onChange={setSymbol}
+                            placeholder="Buscar ativo..."
+                        />
+                        {getError('symbol') && (
+                            <p className="text-red-400 text-xs mt-1">{getError('symbol')}</p>
+                        )}
+                    </div>
                     <Input 
                         label="Lote" 
                         type="number" 
@@ -287,13 +437,45 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         error={getError('lot')}
                         autoComplete="off"
                     />
-                    <DirectionSelect
-                        label="Direção"
-                        value={type}
-                        onChange={(v) => setType(v as 'Long' | 'Short')}
-                        onBlur={() => handleFieldBlur('type')}
-                        error={getError('type')}
-                    />
+                    {/* Direção */}
+                    <FormGroup label="Direção" required>
+                        <Select
+                            value={type}
+                            onValueChange={(v) => setType(v as 'Long' | 'Short')}
+                        >
+                            <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center gap-2.5">
+                                {type ? (
+                                    <SelectValueWithIcon
+                                        value={type}
+                                        icon={type === 'Long' ? '📈' : '📉'}
+                                        label={type}
+                                    />
+                                ) : (
+                                    <SelectValue placeholder="Long/Short" />
+                                )}
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#21292e] border-[#333b44]">
+                                <SelectItem 
+                                    value="Long" 
+                                    className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-2.5 w-full">
+                                        <span className="text-xl flex-shrink-0">📈</span>
+                                        <span>Long</span>
+                                    </div>
+                                </SelectItem>
+                                <SelectItem 
+                                    value="Short" 
+                                    className="text-white hover:bg-[#2a333a] focus:bg-[#2a333a] focus:text-white flex items-center gap-2.5 py-2.5 cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-2.5 w-full">
+                                        <span className="text-xl flex-shrink-0">📉</span>
+                                        <span>Short</span>
+                                    </div>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormGroup>
                 </FormRow>
 
                 {/* Entry, SL, TP */}
@@ -343,6 +525,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         onChange={(e) => setExitPrice(e.target.value)} 
                         onBlur={() => handleFieldBlur('exitPrice')}
                         error={getError('exitPrice')}
+                        required={!isTradeOpen}
                         autoComplete="off"
                     />
                 )}
@@ -419,8 +602,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                         value={entryDate} 
                         onChange={setEntryDate} 
                         onBlur={() => handleFieldBlur('entryDate')}
-                        error={getError('entryDate')}
-                        required 
+                        error={getError('entryDate')} 
                     />
                     <TimePickerInput 
                         label="Hora Entrada" 

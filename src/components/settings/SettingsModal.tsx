@@ -5,6 +5,7 @@ import { Modal, Input, Button } from '@/components/ui';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { exportAllData, downloadAsJSON } from '@/services/trades/export';
 import { MentorshipSettings } from './MentorshipSettings';
+import { AssetsModal } from './AssetsModal';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -42,9 +43,6 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
         leverages,
         addLeverage: addLeverageToStore,
         removeLeverage: removeLeverageFromStore,
-        assets,
-        addAsset: addAssetToStore,
-        removeAsset: removeAssetFromStore,
         setups,
         addSetup: addSetupToStore,
         removeSetup: removeSetupFromStore,
@@ -60,10 +58,9 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
     
     const [newCurrency, setNewCurrency] = useState('');
     const [newLeverage, setNewLeverage] = useState('');
-    const [newAsset, setNewAsset] = useState('');
-    const [newMultiplier, setNewMultiplier] = useState('1');
     const [newSetup, setNewSetup] = useState('');
     const [isExporting, setIsExporting] = useState(false);
+    const [isAssetsModalOpen, setIsAssetsModalOpen] = useState(false);
 
     const handleExport = async () => {
         try {
@@ -78,17 +75,6 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
         }
     };
 
-    const addAsset = () => {
-        if (newAsset.trim()) {
-            addAssetToStore({ symbol: newAsset.toUpperCase(), multiplier: parseFloat(newMultiplier) || 1 });
-            setNewAsset('');
-            setNewMultiplier('1');
-        }
-    };
-
-    const removeAsset = (symbol: string) => {
-        removeAssetFromStore(symbol);
-    };
 
     const addSetup = () => {
         if (newSetup.trim() && !setups.includes(newSetup)) {
@@ -136,6 +122,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
     );
 
     return (
+        <>
         <Modal isOpen={isOpen} onClose={onClose} title={headerTitle} maxWidth="4xl">
             <div className="space-y-8 max-h-[70vh] overflow-y-auto pr-2">
                 
@@ -226,53 +213,25 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
                     <>
                         {/* Dashboard Settings - ONLY visible when inside a dashboard (accountId exists) */}
                         
-                        {/* Ativos & Multiplicadores */}
+                        {/* Ativos & Multiplicadores - Button to open modal */}
                         <section>
-                            <h3 className="text-lg font-semibold text-gray-200 mb-4 flex items-center gap-2">
-                                📊 Ativos & Multiplicadores
-                            </h3>
-                            
-                            {/* Add new asset */}
-                            <div className="grid grid-cols-3 gap-2 mb-4">
-                                <Input
-                                    placeholder="Ativo (Ex: US30)"
-                                    value={newAsset}
-                                    onChange={(e) => setNewAsset(e.target.value)}
-                                    className="w-full uppercase"
-                                />
-                                <Input
-                                    type="number"
-                                    placeholder="1"
-                                    value={newMultiplier}
-                                    onChange={(e) => setNewMultiplier(e.target.value)}
-                                    className="w-full"
-                                />
-                                <Button variant="gradient-success" onClick={addAsset} className="w-full font-extrabold text-lg h-10">
-                                    +
+                            <div className="flex items-center justify-between p-4 bg-black/20 border border-white/5 rounded-lg">
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-semibold text-gray-200 flex items-center gap-2">
+                                        📊 Ativos de Trading
+                                    </h3>
+                                    <p className="text-sm text-gray-500">
+                                        Configure multiplicadores, ative/desative ativos
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    onClick={() => setIsAssetsModalOpen(true)}
+                                    className="gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Configurar Ativos
                                 </Button>
-                            </div>
-
-                            {/* Asset list */}
-                            <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                                {assets.map((asset) => (
-                                    <div
-                                        key={asset.symbol}
-                                        className="bg-black/20 rounded-lg p-3 border border-white/5 flex items-center justify-between"
-                                    >
-                                        <div>
-                                            <div className="font-semibold text-gray-200">{asset.symbol}</div>
-                                            <div className="text-xs text-gray-500">x{asset.multiplier}</div>
-                                        </div>
-                                        <Button
-                                            variant="danger"
-                                            size="icon"
-                                            onClick={() => removeAsset(asset.symbol)}
-                                            className="w-8 h-8"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                        </Button>
-                                    </div>
-                                ))}
                             </div>
                         </section>
 
@@ -333,5 +292,12 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
                 </div>
             )}
         </Modal>
+        
+        {/* Assets Configuration Modal */}
+        <AssetsModal
+            isOpen={isAssetsModalOpen}
+            onClose={() => setIsAssetsModalOpen(false)}
+        />
+        </>
     );
 }

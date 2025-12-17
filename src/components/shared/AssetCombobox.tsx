@@ -1,0 +1,166 @@
+'use client';
+
+import { useState } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils/general';
+import { Button } from '@/components/ui/Button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { AssetIcon } from './AssetIcon';
+import { 
+  ASSET_OPTIONS, 
+  groupAssetsByType, 
+  findAssetBySymbol,
+  type AssetOption 
+} from '@/constants/assetComboboxData';
+
+// ============================================
+// TYPES
+// ============================================
+
+interface AssetComboboxProps {
+  value?: string;
+  onChange: (symbol: string) => void;
+  placeholder?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
+// ============================================
+// COMPONENT
+// ============================================
+
+export function AssetCombobox({ 
+  value, 
+  onChange, 
+  placeholder = 'Selecione um ativo...',
+  className,
+  disabled = false,
+}: AssetComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const selectedAsset = value ? findAssetBySymbol(value) : undefined;
+  const groupedAssets = groupAssetsByType(ASSET_OPTIONS);
+  
+  // Order groups for display
+  const groupOrder: AssetOption['type'][] = ['Forex', 'Futures', 'Commodity', 'Crypto'];
+  
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(
+            "w-full justify-between h-12",
+            "bg-gray-800 border-gray-700",
+            "hover:bg-gray-700 hover:border-gray-600",
+            "focus:ring-2 focus:ring-cyan-500",
+            !value && "text-muted-foreground",
+            className
+          )}
+        >
+          {selectedAsset ? (
+            <div className="flex items-center gap-2.5">
+              <AssetIcon symbol={selectedAsset.value} size="sm" />
+              <span className="font-medium">{selectedAsset.label}</span>
+            </div>
+          ) : (
+            <span className="text-gray-400">{placeholder}</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      
+      <PopoverContent 
+        className="w-[400px] p-0 bg-gray-800 border-gray-700"
+        align="start"
+      >
+        <Command className="bg-gray-800">
+          <CommandInput 
+            placeholder="Buscar ativo (EUR, BTC, ES...)" 
+            className="h-12 bg-gray-800 border-b border-gray-700 text-white placeholder:text-gray-400"
+          />
+          <CommandEmpty className="py-6 text-center text-sm text-gray-400">
+            Nenhum ativo encontrado.
+          </CommandEmpty>
+          
+          <CommandList className="max-h-[400px] overflow-y-auto">
+            {groupOrder.map((type) => {
+              const assets = groupedAssets[type];
+              if (!assets || assets.length === 0) return null;
+              
+              return (
+                <CommandGroup 
+                  key={type} 
+                  heading={type}
+                className="px-2 py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-gray-400 [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider"
+                >
+                  {assets.map((asset) => (
+                    <CommandItem
+                      key={asset.value}
+                      value={`${asset.value} ${asset.name}`}
+                      onSelect={() => {
+                        onChange(asset.value);
+                        setOpen(false);
+                      }}
+                      className={cn(
+                        "cursor-pointer rounded-md px-2 py-2.5",
+                        "hover:bg-gray-700",
+                        "data-[selected=true]:bg-gray-700",
+                      )}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        {/* Ícone SVG */}
+                        <AssetIcon 
+                          symbol={asset.value} 
+                          size="sm" 
+                          className="shrink-0"
+                        />
+                        
+                        {/* Info do ativo */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm text-white truncate">
+                            {asset.label}
+                          </p>
+                          <p className="text-xs text-gray-400 truncate">
+                            {asset.name}
+                          </p>
+                        </div>
+                        
+                        {/* Badge de tipo */}
+                        <span className="text-[10px] text-gray-500 uppercase font-medium px-1.5 py-0.5 bg-gray-900 rounded">
+                          {asset.type}
+                        </span>
+                        
+                        {/* Checkmark se selecionado */}
+                        <Check
+                          className={cn(
+                            "h-4 w-4 text-cyan-500",
+                            value === asset.value ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              );
+            })}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}

@@ -91,9 +91,9 @@ export function AssetIcon({
           />
         </div>
         
-        {/* Flag 2 (front) - BOTTOM LEFT with white ring */}
+        {/* Flag 2 (front) - BOTTOM LEFT with background-colored ring */}
         <div 
-          className="absolute bottom-0 left-0 rounded-full overflow-hidden ring-[3px] ring-white dark:ring-gray-800"
+          className="absolute bottom-0 left-0 rounded-full overflow-hidden ring-[2px] ring-slate-800"
           style={{
             width: sizeConfig.icon,
             height: sizeConfig.icon,

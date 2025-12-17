@@ -23,8 +23,8 @@ interface DatalistInputProps {
 // TIMEFRAME SELECT
 // ============================================
 
-const HTF_OPTIONS = ['Monthly', 'Weekly', 'Daily', 'H4', 'H1', 'M15'];
-const LTF_OPTIONS = ['Daily', 'H4', 'H1', 'M15', 'M5', 'M3', 'M1'];
+export const HTF_OPTIONS = ['Monthly', 'Weekly', 'Daily', 'H4', 'H1', 'M15'];
+export const LTF_OPTIONS = ['Daily', 'H4', 'H1', 'M15', 'M5', 'M3', 'M1'];
 
 interface TimeframeSelectProps extends DatalistInputProps {
     type: 'htf' | 'ltf';

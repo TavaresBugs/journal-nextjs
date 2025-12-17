@@ -198,7 +198,7 @@ export function TimePickerInput({
                     onKeyDown={handleKeyDown}
                     placeholder="HH:mm"
                     maxLength={5}
-                    className={`w-full pl-3 pr-10 py-2 bg-[#232b32] border rounded-lg text-gray-100 text-sm
+                    className={`w-full pl-3 pr-10 h-12 bg-[#232b32] border rounded-lg text-gray-100 text-sm
                                focus:outline-none focus:ring-2 focus:border-transparent
                                placeholder-gray-500 transition-all duration-200
                                ${(isInvalid || error)
