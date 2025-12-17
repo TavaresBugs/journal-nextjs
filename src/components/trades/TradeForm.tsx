@@ -289,7 +289,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             <SelectTrigger className="h-12 bg-[#232b32] border-[#333b44] text-white hover:bg-[#2a333a] flex items-center justify-between">
                                 <SelectValue placeholder="Selecione..." />
                             </SelectTrigger>
-                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-60">
+                            <SelectContent className="bg-[#232b32] border-[#333b44] max-h-80 overflow-y-auto">
                                 {LTF_OPTIONS.map((tf) => (
                                     <SelectItem 
                                         key={tf} 
