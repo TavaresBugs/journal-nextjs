@@ -261,45 +261,4 @@ export function EntryQualitySelect({
     );
 }
 
-// ============================================
-// ASSET SELECT
-// ============================================
-
-interface AssetSelectProps extends DatalistInputProps {
-    assets: { symbol: string }[];
-}
-
-/**
- * Asset/symbol selection input.
- */
-export function AssetSelect({ 
-    label, 
-    value, 
-    onChange, 
-    onBlur,
-    placeholder,
-    required,
-    error,
-    assets,
-    className 
-}: AssetSelectProps) {
-    return (
-        <div className={className}>
-            <Input
-                label={label}
-                list="assets-list"
-                value={value}
-                onChange={(e) => onChange(e.target.value.toUpperCase())}
-                onBlur={onBlur}
-                placeholder={placeholder || 'EURUSD'}
-                required={required}
-                error={error}
-                autoComplete="off"
-                className="uppercase"
-            />
-            <datalist id="assets-list">
-                {assets.map((asset) => <option key={asset.symbol} value={asset.symbol} />)}
-            </datalist>
-        </div>
-    );
-}
+// NOTE: AssetSelect was removed - use AssetCombobox from @/components/shared instead
