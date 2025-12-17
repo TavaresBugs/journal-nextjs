@@ -208,9 +208,12 @@ export function CreateRecapModal({
         };
     }, [weekTrades, selectedTradeIds]);
 
-    // Pre-fill form when editing
+    // Pre-fill form when editing OR reset when opening fresh
     useEffect(() => {
+        if (!isOpen) return; // Only run when modal is open
+        
         if (editingRecap) {
+            // Edit mode: fill with existing data
             setTitle(editingRecap.title);
             setReviewType('daily'); // Default to daily for editing existing recaps
             setLinkedType(editingRecap.linkedType);
@@ -223,15 +226,35 @@ export function CreateRecapModal({
             // but we can show previews
             if (editingRecap.images?.length) {
                 setPreviews(editingRecap.images);
+            } else {
+                setPreviews([]);
             }
+            setSelectedFiles([]);
             // Set search display for linked record
             if (editingRecap.linkedType === 'trade' && editingRecap.trade) {
                 setRecordSearch(editingRecap.trade.symbol);
             } else if (editingRecap.linkedType === 'journal' && editingRecap.journal) {
                 setRecordSearch(editingRecap.journal.title || 'Journal Entry');
+            } else {
+                setRecordSearch('');
             }
+        } else {
+            // Create mode: reset all fields
+            setTitle('');
+            setLinkedType(undefined);
+            setLinkedId('');
+            setRecordSearch('');
+            setSelectedTradeIds([]);
+            setWhatWorked('');
+            setWhatFailed('');
+            setEmotionalState('');
+            setLessonsLearned('');
+            setSelectedFiles([]);
+            setPreviews([]);
+            setReviewType('daily');
+            setCarouselIndex(0);
         }
-    }, [editingRecap]);
+    }, [isOpen, editingRecap]);
 
     // Close dropdown on outside click
     useEffect(() => {
