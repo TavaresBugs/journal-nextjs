@@ -227,8 +227,8 @@ const SelectItem = React.forwardRef<
         context?.setOpen(false)
       }}
       className={cn(
-        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-slate-100 focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:hover:bg-slate-800 dark:focus:bg-slate-800 dark:focus:text-slate-50 cursor-pointer",
-        isSelected && "bg-slate-100 dark:bg-slate-800",
+        "relative flex w-full select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-[#2a333a] data-disabled:pointer-events-none data-disabled:opacity-50 cursor-pointer",
+        isSelected && "bg-[#2a333a]",
         className
       )}
       {...props}
