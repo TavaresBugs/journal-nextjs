@@ -8,7 +8,7 @@ import type { Trade } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
-import { TimeframeImageGrid } from '@/components/shared';
+import { TimeframeImageGrid, AssetCombobox } from '@/components/shared';
 import { formatCurrency } from '@/lib/calculations';
 import dayjs from 'dayjs';
 
@@ -64,7 +64,7 @@ export function JournalEntryForm({
   availableTrades = [],
   isEditing = false
 }: JournalEntryFormProps) {
-  const { assets } = useSettingsStore();
+  const {  } = useSettingsStore();
   
   // Form state
   const [date, setDate] = useState(initialData?.date || dayjs().format('YYYY-MM-DD'));
@@ -163,20 +163,16 @@ export function JournalEntryForm({
               />
             </div>
             <div className="md:col-span-1">
-                <Input
-                  list="journal-assets-list"
-                  label="Ativo"
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-gray-400">
+                  Ativo <span className="text-red-500 ml-1">*</span>
+                </label>
+                <AssetCombobox
                   value={asset}
-                  onChange={(e) => setAsset(e.target.value.toUpperCase())}
-                  placeholder="EX: NAS100"
-                  className="uppercase font-bold"
-                  required
+                  onChange={setAsset}
+                  className="bg-[#232b32] border-gray-700 h-12"
                 />
-                <datalist id="journal-assets-list">
-                  {assets.map((a) => (
-                    <option key={a.symbol} value={a.symbol} />
-                  ))}
-                </datalist>
+              </div>
             </div>
             <div className="md:col-span-1">
               <Input
