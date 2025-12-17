@@ -339,23 +339,26 @@ export function TradeList({
 
                                         {/* TAGS */}
                                         <td className="px-3 py-3 text-center">
-                                            <div className="flex flex-wrap justify-center gap-1 max-w-[150px] mx-auto">
-                                                {trade.strategy && (
-                                                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">
-                                                        {trade.strategy}
-                                                    </span>
+                                            <div className="flex flex-wrap justify-center gap-1 max-w-[180px] mx-auto">
+                                                {trade.tags && trade.tags.split(',').map((tag, index) => {
+                                                    const colors = [
+                                                        { bg: 'bg-purple-500/20', text: 'text-purple-300', border: 'border-purple-500/30' },
+                                                        { bg: 'bg-cyan-500/20', text: 'text-cyan-300', border: 'border-cyan-500/30' },
+                                                        { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30' },
+                                                        { bg: 'bg-orange-500/20', text: 'text-orange-300', border: 'border-orange-500/30' },
+                                                        { bg: 'bg-pink-500/20', text: 'text-pink-300', border: 'border-pink-500/30' },
+                                                        { bg: 'bg-indigo-500/20', text: 'text-indigo-300', border: 'border-indigo-500/30' },
+                                                    ];
+                                                    const color = colors[index % colors.length];
+                                                    return (
+                                                        <span key={index} className={`text-[10px] ${color.bg} ${color.text} px-1.5 py-0.5 rounded border ${color.border}`}>
+                                                            🏷️ {tag.trim()}
+                                                        </span>
+                                                    );
+                                                })}
+                                                {!trade.tags && (
+                                                    <span className="text-gray-500 text-sm">—</span>
                                                 )}
-                                                {trade.setup && (
-                                                    <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-500/30">
-                                                        {trade.setup}
-                                                    </span>
-                                                )}
-                                                {trade.tags && trade.tags.split(',').map((tag, index) => (
-                                                    <span key={index} className="text-[10px] bg-cyan-500/20 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30">
-                                                        {tag.trim()}
-                                                    </span>
-                                                ))}
-                                                {!trade.strategy && !trade.setup && !trade.tags && '-'}
                                             </div>
                                         </td>
 

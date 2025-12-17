@@ -88,6 +88,26 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
 
     // NinjaTrader Upload UI
     if (selectedSource === 'ninjatrader') {
+        const handleNinjaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file) {
+                setFileName(file.name);
+                onFileSelect(e, 'ninjatrader');
+            }
+        };
+
+        const handleNinjaClearFile = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            setFileName(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        };
+
+        const handleNinjaChooseFileClick = () => {
+            fileInputRef.current?.click();
+        };
+
         return (
           <div className="space-y-6">
             {/* Instructions Box */}
@@ -116,21 +136,43 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
               <p className="mb-2 text-gray-200 font-medium">Arraste e solte ou clique para enviar</p>
               <p className="mb-6 text-sm text-gray-500">Apenas arquivos <span className="text-orange-400 font-medium">.csv</span> do NinjaTrader Grid</p>
 
-              <div className="relative">
+              <div className="flex flex-col items-center gap-3 w-full max-w-md">
                 <input
+                  ref={fileInputRef}
                   type="file"
                   accept=".csv"
-                  onChange={(e) => onFileSelect(e, 'ninjatrader')}
-                  className="block w-full text-sm text-gray-400
-                      file:mr-4 file:py-2.5 file:px-6
-                      file:rounded-lg file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-orange-600 file:text-white
-                      hover:file:bg-orange-500
-                      file:cursor-pointer file:transition-colors
-                      cursor-pointer"
+                  onChange={handleNinjaFileChange}
+                  className="hidden"
                 />
+
+                {!fileName ? (
+                    <button 
+                        onClick={handleNinjaChooseFileClick}
+                        className="px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-white font-semibold rounded-lg transition-colors"
+                    >
+                        Escolher Arquivo
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg border border-gray-700 w-full justify-between group/file">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                           <svg className="w-5 h-5 text-orange-500 min-w-[20px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                           </svg>
+                           <span className="text-gray-300 text-sm truncate">{fileName}</span>
+                        </div>
+                        <button 
+                            onClick={handleNinjaClearFile}
+                            className="text-gray-500 hover:text-red-400 p-1 hover:bg-gray-700 rounded transition-colors"
+                            title="Remover arquivo"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
               </div>
+
               {error && <p className="mt-4 text-red-500 text-sm bg-red-500/10 px-3 py-1 rounded">{error}</p>}
             </div>
 

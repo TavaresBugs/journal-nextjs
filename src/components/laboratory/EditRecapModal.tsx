@@ -330,7 +330,7 @@ export function EditRecapModal({
                     >
                         ‹
                     </button>
-                    <span className="text-lg font-semibold">📝 Editando Review Diário</span>
+                    <span className="text-lg font-semibold text-zorin-ice">📝 Editando Review Diário</span>
                 </div>
             }
             maxWidth="4xl"

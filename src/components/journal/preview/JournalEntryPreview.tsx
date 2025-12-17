@@ -2,6 +2,7 @@
 
 import { memo, useState } from 'react';
 import { Modal, Button } from '@/components/ui';
+import { AssetIcon } from '@/components/shared/AssetIcon';
 import type { Trade, JournalEntry } from '@/types';
 import { JournalEntryContent } from './JournalEntryContent';
 
@@ -39,10 +40,21 @@ const JournalEntryPreviewComponent = ({
   hasUnreadComments = false
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);
+  
+  // Get asset from linked trades or entry
+  const asset = linkedTrades[0]?.symbol || entry.asset || '';
 
   const CustomHeader = (
     <div className="flex items-center justify-between w-full pr-4">
-      <h2 className="text-xl font-bold text-zorin-ice">📖 Visualizar Diário</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
+        {asset && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-800/60 rounded-lg border border-gray-700">
+            <AssetIcon symbol={asset} size="sm" />
+            <span className="text-sm font-medium text-gray-300">{asset}</span>
+          </div>
+        )}
+      </div>
       <div className="flex items-center gap-2">
         <div className="relative">
           <Button 

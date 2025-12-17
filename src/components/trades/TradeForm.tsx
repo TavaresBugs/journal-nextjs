@@ -52,6 +52,18 @@ function SelectValueWithIcon({ value, icon, label, placeholder }: SelectValueWit
   );
 }
 
+// Badge colors for confluence tags
+const TAG_COLORS = [
+  { bg: 'bg-purple-500/20', text: 'text-purple-300', border: 'border-purple-500/30' },
+  { bg: 'bg-cyan-500/20', text: 'text-cyan-300', border: 'border-cyan-500/30' },
+  { bg: 'bg-emerald-500/20', text: 'text-emerald-300', border: 'border-emerald-500/30' },
+  { bg: 'bg-orange-500/20', text: 'text-orange-300', border: 'border-orange-500/30' },
+  { bg: 'bg-pink-500/20', text: 'text-pink-300', border: 'border-pink-500/30' },
+  { bg: 'bg-indigo-500/20', text: 'text-indigo-300', border: 'border-indigo-500/30' },
+];
+
+const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
+
 interface TradeFormProps {
     accountId: string;
     onSubmit: (trade: Omit<Trade, 'id' | 'createdAt' | 'updatedAt'>) => void | Promise<void>;
@@ -348,12 +360,15 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                             className="w-full px-3 py-2 bg-[#232b32] border border-gray-700 rounded-lg focus-within:ring-2 focus-within:ring-cyan-500 focus-within:border-transparent flex flex-wrap gap-1.5 items-center min-h-12 transition-all duration-200"
                             onClick={() => document.getElementById('tags-input')?.focus()}
                         >
-                            {tagsList.map((tag, index) => (
-                                <span key={index} className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                                    {tag}
-                                    <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
-                                </span>
-                            ))}
+                            {tagsList.map((tag, index) => {
+                                const color = getTagColor(index);
+                                return (
+                                    <span key={index} className={`px-2 py-0.5 rounded text-xs font-medium ${color.bg} ${color.text} border ${color.border} flex items-center gap-1`}>
+                                        🏷️ {tag}
+                                        <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
+                                    </span>
+                                );
+                            })}
                             <input
                                 id="tags-input"
                                 value={tagInput}

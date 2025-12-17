@@ -74,7 +74,7 @@ export function ViewRecapModal({
                 onClose={onClose} 
                 title={
                     <div className="flex items-center justify-between w-full pr-8">
-                        <span className="text-lg font-semibold">📝 {recap.title}</span>
+                        <span className="text-lg font-semibold text-zorin-ice">📝 {recap.title}</span>
                         <Button 
                             variant="gold"
                             onClick={() => onEdit(recap)}

@@ -154,12 +154,12 @@ export function JournalEntryForm({
           {/* Header Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-1">
-              <DatePickerInput
-                label="Data"
-                value={date}
-                onChange={setDate}
+              <Input
+                label="Título / Resumo do Dia"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Diário - 02/12/2025"
                 required
-                openDirection="bottom"
               />
             </div>
             <div className="md:col-span-1">
@@ -175,12 +175,12 @@ export function JournalEntryForm({
               </div>
             </div>
             <div className="md:col-span-1">
-              <Input
-                label="Título / Resumo do Dia"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Diário - 02/12/2025"
+              <DatePickerInput
+                label="Data"
+                value={date}
+                onChange={setDate}
                 required
+                openDirection="bottom"
               />
             </div>
           </div>

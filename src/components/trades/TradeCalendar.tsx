@@ -225,7 +225,7 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                             key={index}
                             onClick={() => (hasTrades || hasJournal || isCurrentMonth) && onDayClick && onDayClick(date.format('YYYY-MM-DD'), stats.dayTrades)}
                             className={`
-                                min-h-[120px] min-w-[100px] h-auto p-3 rounded-xl border transition-all relative flex flex-col items-center justify-between touch-manipulation
+                                h-[150px] min-w-[100px] p-3 rounded-xl border transition-all relative flex flex-col items-center justify-between touch-manipulation
                                 ${bgClass}
                                 ${isToday ? 'border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.15)]' : ''}
                                 ${hasTrades || hasJournal || isCurrentMonth ? 'hover:border-cyan-500 cursor-pointer' : ''}

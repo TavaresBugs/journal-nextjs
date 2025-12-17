@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
-import { toZonedTime, format as formatTz } from 'date-fns-tz';
 import type { Trade, JournalEntry } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { getReviewsForJournalEntry, markReviewAsRead, type MentorReview } from '@/services/journal/review';
@@ -119,22 +118,6 @@ export function JournalEntryContent({ entry, linkedTrades = [], showComments = f
         
         {/* Left Side: Journal Content */}
         <div className="space-y-6">
-          {/* Header Info */}
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
-              </div>
-              <div className="text-gray-400 text-sm mt-1">
-                {(() => {
-                  // entry.date é apenas YYYY-MM-DD sem hora
-                  // Adiciona T12:00 para evitar shift de timezone ao converter para NY
-                  const dateStr = entry.date.includes('T') ? entry.date : `${entry.date}T12:00`;
-                  return formatTz(toZonedTime(dateStr, 'America/New_York'), 'dd/MM/yyyy', { timeZone: 'America/New_York' });
-                })()} • {linkedTrades[0]?.symbol || entry.asset || 'Diário'}
-              </div>
-            </div>
-          </div>
 
           {/* Trades Info */}
           <GlassCard className="p-4 bg-[#1b292b]/60 backdrop-blur-md border border-[#00c853]/50 shadow-[0_0_15px_rgba(0,200,83,0.15)] hover:shadow-[0_0_20px_rgba(0,200,83,0.2)] transition-shadow duration-300">

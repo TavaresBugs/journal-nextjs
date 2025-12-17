@@ -52,7 +52,7 @@ function MetricCardContent({
                 <div className="text-center">
                     <div className="text-xs text-gray-500 uppercase">Win / Loss</div>
                     <div className="text-lg font-medium">
-                        <span className="text-emerald-400">{wins}</span> / <span className="text-red-400">{losses}</span>
+                        <span className="text-emerald-400">{wins}</span> <span className="text-gray-500">/</span> <span className="text-red-400">{losses}</span>
                     </div>
                 </div>
                 <div className="text-center">
