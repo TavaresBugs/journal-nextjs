@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, GlassCard } from '@/components/ui';
-import { Tabs } from '@/components/ui/Tabs';
+import { Modal, GlassCard, SegmentedToggle } from '@/components/ui';
 import { saveMentalLog, type MentalLog } from '@/services/core/mental';
 import { PerformanceGauge } from './PerformanceGauge';
 import { MentalGrid } from './MentalGrid';
@@ -147,20 +146,20 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
 
     const selectedMood = MOOD_OPTIONS.find(m => m.value === moodTag);
 
-    const TABS = [
-        { id: 'wizard', label: 'Resolver Agora', icon: '🎯' },
-        { id: 'diary', label: 'Diário & Performance', icon: '📊' },
-        { id: 'profiles', label: 'Meus Perfis', icon: '👤' },
+    const TABS_OPTIONS = [
+        { value: 'wizard', label: <>🎯 Resolver Agora</> },
+        { value: 'diary', label: <>📊 Diário & Performance</> },
+        { value: 'profiles', label: <>👤 Meus Perfis</> },
     ];
 
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="" maxWidth="4xl">
             <div className="min-h-[500px]">
                 {/* Tabs Navigation */}
-                <Tabs 
-                    tabs={TABS} 
-                    activeTab={activeTab} 
-                    onChange={(id) => setActiveTab(id as TabId)} 
+                <SegmentedToggle 
+                    options={TABS_OPTIONS}
+                    value={activeTab} 
+                    onChange={(val) => setActiveTab(val as TabId)}
                 />
                 
                 <div className="mt-6">

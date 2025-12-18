@@ -61,7 +61,7 @@ export function ViewPlaybookModal({
                 ) : undefined
             }
         >
-            <div className="space-y-6">
+            <div className="space-y-6 min-h-[500px] transition-all duration-300 ease-in-out">
                 {/* Description (if exists) */}
                 {playbook.description && (
                     <p className="text-gray-400 text-sm leading-relaxed px-1">

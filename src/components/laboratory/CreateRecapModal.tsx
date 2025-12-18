@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Modal, Button, GlassCard, Tabs, WeekPicker } from '@/components/ui';
+import { Modal, Button, GlassCard, WeekPicker, SegmentedToggle } from '@/components/ui';
 import { CustomCheckbox } from '@/components/checklist/CustomCheckbox';
 import type { EmotionalState, TradeLite, JournalEntryLite, RecapLinkedType } from '@/types';
 import { CreateRecapData } from '@/store/useLaboratoryStore';
@@ -10,9 +10,9 @@ import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { LaboratoryRecap } from '@/types';
 
-const REVIEW_TYPE_TABS = [
-    { id: 'daily', label: 'Review Diário', icon: '📅' },
-    { id: 'weekly', label: 'Review Semanal', icon: '📊' },
+const REVIEW_TYPE_OPTIONS = [
+    { value: 'daily', label: <>📅 Review Diário</> },
+    { value: 'weekly', label: <>📊 Review Semanal</> },
 ];
 
 /** Unified search record for trades and journal entries */
@@ -374,10 +374,11 @@ export function CreateRecapModal({
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Review Type Toggle - Modern Tabs (hidden in edit mode) */}
                 {!isEditMode && (
-                    <Tabs
-                        tabs={REVIEW_TYPE_TABS}
-                        activeTab={reviewType}
-                        onChange={(tabId) => setReviewType(tabId as 'daily' | 'weekly')}
+                    <SegmentedToggle
+                        value={reviewType}
+                        onChange={(val) => setReviewType(val as 'daily' | 'weekly')}
+                        options={REVIEW_TYPE_OPTIONS}
+                        className="mb-6"
                     />
                 )}
 

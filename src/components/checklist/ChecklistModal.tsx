@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Modal } from '@/components/ui';
+import { Modal, SegmentedToggle } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
-import { Tabs } from '@/components/ui/Tabs';
 import { CustomCheckbox } from './CustomCheckbox';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import { ArgumentsCalculator } from './ArgumentsCalculator';
@@ -15,9 +14,9 @@ interface ChecklistModalProps {
     onTradeStart?: () => void;
 }
 
-const CHECKLIST_TABS = [
-    { id: 'rules', label: 'Checklist & Regras', icon: '📋' },
-    { id: 'arguments', label: 'Argumentos', icon: '⚖️' }
+const CHECKLIST_OPTIONS = [
+    { value: 'rules', label: <>📋 Checklist & Regras</> },
+    { value: 'arguments', label: <>⚖️ Argumentos</> }
 ];
 
 export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModalProps) {
@@ -121,7 +120,12 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
             <div className="space-y-6">
                 
                 {/* Tab Switcher - Using Standard Tabs Component */}
-                <Tabs tabs={CHECKLIST_TABS} activeTab={activeTab} onChange={(id) => setActiveTab(id as 'rules' | 'arguments')} />
+                {/* Tab Switcher - Using Standard Tabs Component */}
+                <SegmentedToggle
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as 'rules' | 'arguments')}
+                    options={CHECKLIST_OPTIONS}
+                />
 
                 {/* Content switching */}
                 {activeTab === 'arguments' ? (

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Tabs, TabPanel } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent, TabPanel, SegmentedToggle } from '@/components/ui';
 import { 
     ExperimentsTab, 
     RecapsTab, 
@@ -19,9 +19,9 @@ interface DashboardLaboratoryProps {
     trades: TradeLite[];
 }
 
-const LABORATORY_TABS = [
-    { id: 'experiments', label: 'Experimentos', icon: '🧪' },
-    { id: 'recaps', label: 'Recaps', icon: '📝' },
+const LABORATORY_TABS_OPTIONS = [
+    { value: 'experiments', label: <>🧪 Experimentos</> },
+    { value: 'recaps', label: <>📝 Recaps</> },
 ];
 
 export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
@@ -146,10 +146,11 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                 </CardHeader>
                 <CardContent>
                     {/* Internal Tabs */}
-                    <Tabs 
-                        tabs={LABORATORY_TABS} 
-                        activeTab={activeTab} 
+                    <SegmentedToggle 
+                        value={activeTab} 
                         onChange={setActiveTab} 
+                        options={LABORATORY_TABS_OPTIONS}
+                        className="mb-6"
                     />
 
                     {/* Experiments Tab */}

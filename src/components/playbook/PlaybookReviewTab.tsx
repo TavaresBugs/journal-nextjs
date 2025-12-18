@@ -1,15 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Tabs } from '@/components/ui/Tabs';
+import { SegmentedToggle } from '@/components/ui';
 import { usePlaybookMetrics } from '@/hooks/usePlaybookMetrics';
 import { HtfView, HeatmapView, ReportView, type DrillPath } from './views';
 import type { PlaybookReviewTabProps, ViewMode } from '@/types/playbookTypes';
 
 const VIEW_FILTERS = [
-    { id: 'htf' as ViewMode, label: 'HTF → LTF', icon: '🔍' },
-    { id: 'heatmap' as ViewMode, label: 'Heatmap', icon: '🔥' },
-    { id: 'report' as ViewMode, label: 'Relatório', icon: '🧠' },
+    { value: 'htf', label: '🔍 HTF → LTF' },
+    { value: 'heatmap', label: '🔥 Heatmap' },
+    { value: 'report', label: '🧠 Relatório' },
 ];
 
 export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) {
@@ -31,10 +31,11 @@ export function PlaybookReviewTab({ trades, currency }: PlaybookReviewTabProps) 
     return (
         <div className="space-y-6">
             {/* View Mode Tabs - Using Standard Component */}
-            <Tabs 
-                tabs={VIEW_FILTERS} 
-                activeTab={viewMode} 
-                onChange={(id) => setViewMode(id as ViewMode)} 
+            {/* View Mode Tabs - Using Standard Component */}
+            <SegmentedToggle
+                value={viewMode}
+                onChange={(val) => setViewMode(val as ViewMode)}
+                options={VIEW_FILTERS}
             />
 
             {/* View Content */}

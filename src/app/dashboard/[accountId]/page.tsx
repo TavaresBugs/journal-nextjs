@@ -10,8 +10,7 @@ import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useJournalStore } from '@/store/useJournalStore';
 
 // Components
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
-import { Tabs, TabPanel } from '@/components/ui/Tabs';
+import { Card, CardHeader, CardTitle, CardContent, SegmentedToggle, TabPanel } from '@/components/ui';
 import { ChecklistFab } from '@/components/checklist';
 import { TradeForm } from '@/components/trades/TradeForm';
 import { TradeCalendar } from '@/components/trades/TradeCalendar';
@@ -31,13 +30,13 @@ import { DashboardSkeleton } from '@/components/dashboard/DashboardSkeleton';
 import type { Trade, Playbook } from '@/types';
 
 // Tab definitions
-const tabs = [
-    { id: 'novo', label: 'Novo Trade', icon: '➕' },
-    { id: 'lista', label: 'Histórico', icon: '📋' },
-    { id: 'calendario', label: 'Calendário', icon: '📅' },
-    { id: 'playbook', label: 'Playbook', icon: '📖' },
-    { id: 'laboratorio', label: 'Laboratório', icon: '🧪' },
-    { id: 'relatorios', label: 'Relatórios', icon: '📊' },
+const tabsOptions = [
+    { value: 'novo', label: <>➕ Novo Trade</> },
+    { value: 'lista', label: <>📋 Histórico</> },
+    { value: 'calendario', label: <>📅 Calendário</> },
+    { value: 'playbook', label: <>📖 Playbook</> },
+    { value: 'laboratorio', label: <>🧪 Laboratório</> },
+    { value: 'relatorios', label: <>📊 Relatórios</> },
 ];
 
 export default function DashboardPage({ 
@@ -144,7 +143,12 @@ export default function DashboardPage({
 
                 {/* Tabs */}
                 <div className="container mx-auto px-4 mt-6" style={{ maxWidth: '1200px' }}>
-                    <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
+                    <SegmentedToggle 
+                        options={tabsOptions} 
+                        value={activeTab} 
+                        onChange={setActiveTab} 
+                        variant="responsive"
+                    />
                 </div>
 
                 {/* Content */}
