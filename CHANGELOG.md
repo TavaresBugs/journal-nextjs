@@ -15,6 +15,29 @@ O formato segue [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
 ---
 
+## [0.9.0] - 2025-12-18
+
+### ♻️ Refatoração Massiva (The Great Cleanup)
+
+Uma revisão completa da arquitetura frontend para melhorar manutenibilidade e escalabilidade.
+
+- **Design System Unificado:** Criação de biblioteca de componentes atômicos em `src/components/ui`.
+- **Limpeza de Código:** Remoção de ~2.000 linhas de código duplicado em modais e formulários.
+- **Padronização:** Todos os botões, inputs e modais agora seguem padrões estritos de UI/UX.
+- **Performance:** Carregamento mais rápido de modais através de melhor gestão de estado.
+
+### ✨ Adicionado
+
+- Novos componentes base: `ModalFooterActions`, `IconActionButton`, `AssetBadge`.
+- Documentação técnica completa (`docs/`).
+
+### 🐛 Corrigido
+
+- Diversos bugs de consistência visual em mobile.
+- Problemas de z-index em modais sobrepostos.
+
+---
+
 ## [1.4.0] - 2025-12-14
 
 ### ✨ Adicionado

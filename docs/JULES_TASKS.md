@@ -33,6 +33,9 @@
 | 16  | Database Seed Script                | ✅ Concluída | Jules     |
 | 17  | Centralized Error Handling          | ✅ Concluída | Jules     |
 
+| 18 | Configure Prettier | ✅ Concluída | Jules |
+| 19 | Documentation Overhaul | ✅ Concluída | Jules |
+
 ---
 
 ## ✅ Tasks Concluídas (Histórico)
@@ -56,6 +59,8 @@
 | **TASK 10** | Import de Trades (CSV)              | `src/services/importService.ts`, `src/components/import/*`                      |
 | **TASK 12** | Relatório Excel                     | `src/services/reportService.ts`                                                 |
 | **TASK 11** | Export Backup Local                 | `src/services/exportService.ts`, `src/services/__tests__/exportService.test.ts` |
+| **TASK 18** | Configure Prettier                  | `.prettierrc`, `.prettierignore`, `package.json`                                |
+| **TASK 19** | Documentation Overhaul              | `README.md`, `docs/*`                                                           |
 
 ---
 
