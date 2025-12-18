@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import dayjs from 'dayjs';
+import { useState, useCallback } from "react";
+import dayjs from "dayjs";
 
 export interface JournalFormData {
   date: string;
@@ -30,42 +30,40 @@ export interface UseJournalFormReturn {
 
 /**
  * Custom hook for managing journal entry form state.
- * 
+ *
  * @param initialData - Initial form data (optional)
  * @returns Form state and utilities
  */
-export function useJournalForm(
-  initialData?: Partial<JournalFormData>
-): UseJournalFormReturn {
+export function useJournalForm(initialData?: Partial<JournalFormData>): UseJournalFormReturn {
   const defaultFormData: JournalFormData = {
-    date: dayjs().format('YYYY-MM-DD'),
-    title: `Diário - ${dayjs().format('DD/MM/YYYY')}`,
-    asset: '',
-    emotion: '',
-    analysis: '',
-    technicalWins: '',
-    improvements: '',
-    errors: '',
-    ...initialData
+    date: dayjs().format("YYYY-MM-DD"),
+    title: `Diário - ${dayjs().format("DD/MM/YYYY")}`,
+    asset: "",
+    emotion: "",
+    analysis: "",
+    technicalWins: "",
+    improvements: "",
+    errors: "",
+    ...initialData,
   };
 
   const [formData, setFormData] = useState<JournalFormData>(defaultFormData);
 
   const updateField = useCallback((field: keyof JournalFormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   }, []);
 
   const resetForm = useCallback((defaults?: Partial<JournalFormData>) => {
     setFormData({
-      date: dayjs().format('YYYY-MM-DD'),
-      title: `Diário - ${dayjs().format('DD/MM/YYYY')}`,
-      asset: '',
-      emotion: '',
-      analysis: '',
-      technicalWins: '',
-      improvements: '',
-      errors: '',
-      ...defaults
+      date: dayjs().format("YYYY-MM-DD"),
+      title: `Diário - ${dayjs().format("DD/MM/YYYY")}`,
+      asset: "",
+      emotion: "",
+      analysis: "",
+      technicalWins: "",
+      improvements: "",
+      errors: "",
+      ...defaults,
     });
   }, []);
 
@@ -73,14 +71,14 @@ export function useJournalForm(
     return {
       date: formData.date,
       title: formData.title,
-      asset: formData.asset || 'Diário',
+      asset: formData.asset || "Diário",
       emotion: formData.emotion,
       analysis: formData.analysis,
       notes: JSON.stringify({
         technicalWins: formData.technicalWins,
         improvements: formData.improvements,
-        errors: formData.errors
-      })
+        errors: formData.errors,
+      }),
     };
   }, [formData]);
 
@@ -88,6 +86,6 @@ export function useJournalForm(
     formData,
     updateField,
     resetForm,
-    prepareSubmission
+    prepareSubmission,
   };
 }

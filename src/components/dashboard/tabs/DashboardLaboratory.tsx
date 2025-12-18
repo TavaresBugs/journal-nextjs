@@ -1,225 +1,238 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, TabPanel, SegmentedToggle } from '@/components/ui';
-import { 
-    ExperimentsTab, 
-    RecapsTab, 
-    CreateExperimentModal, 
-    ViewExperimentModal,
-    ViewRecapModal,
-    RecapFormModal // Unified Modal
-} from '@/components/laboratory';
-import { useLaboratoryStore, CreateExperimentData, CreateRecapData, UpdateRecapData } from '@/store/useLaboratoryStore';
-import { useJournalStore } from '@/store/useJournalStore';
-import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite } from '@/types';
+import React, { useState, useEffect, useMemo } from "react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  TabPanel,
+  SegmentedToggle,
+} from "@/components/ui";
+import {
+  ExperimentsTab,
+  RecapsTab,
+  CreateExperimentModal,
+  ViewExperimentModal,
+  ViewRecapModal,
+  RecapFormModal, // Unified Modal
+} from "@/components/laboratory";
+import {
+  useLaboratoryStore,
+  CreateExperimentData,
+  CreateRecapData,
+  UpdateRecapData,
+} from "@/store/useLaboratoryStore";
+import { useJournalStore } from "@/store/useJournalStore";
+import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite } from "@/types";
 
 interface DashboardLaboratoryProps {
-    trades: TradeLite[];
+  trades: TradeLite[];
 }
 
 const LABORATORY_TABS_OPTIONS = [
-    { value: 'experiments', label: <>🧪 Experimentos</> },
-    { value: 'recaps', label: <>📝 Recaps</> },
+  { value: "experiments", label: <>🧪 Experimentos</> },
+  { value: "recaps", label: <>📝 Recaps</> },
 ];
 
 export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
-    const [activeTab, setActiveTab] = useState('experiments');
-    
-    // Modals state
-    const [showCreateExperiment, setShowCreateExperiment] = useState(false);
-    const [showViewExperiment, setShowViewExperiment] = useState(false);
-    const [selectedExperiment, setSelectedExperiment] = useState<LaboratoryExperiment | null>(null);
-    
-    // Recap Modals state variables
-    const [showRecapForm, setShowRecapForm] = useState(false);
-    const [recapFormMode, setRecapFormMode] = useState<'create' | 'edit'>('create');
-    const [showViewRecap, setShowViewRecap] = useState(false);
-    const [selectedRecap, setSelectedRecap] = useState<LaboratoryRecap | null>(null);
+  const [activeTab, setActiveTab] = useState("experiments");
 
-    // Laboratory Store
-    const {
-        experiments,
-        recaps,
-        isLoading,
-        loadExperiments,
-        loadRecaps,
-        addExperiment,
-        removeExperiment,
-        promoteToPlaybook,
-        addRecap,
-        updateRecap,
-        removeRecap,
-    } = useLaboratoryStore();
+  // Modals state
+  const [showCreateExperiment, setShowCreateExperiment] = useState(false);
+  const [showViewExperiment, setShowViewExperiment] = useState(false);
+  const [selectedExperiment, setSelectedExperiment] = useState<LaboratoryExperiment | null>(null);
 
-    // Journal Store - for linking recaps to journal entries
-    const { entries: journalEntries } = useJournalStore();
+  // Recap Modals state variables
+  const [showRecapForm, setShowRecapForm] = useState(false);
+  const [recapFormMode, setRecapFormMode] = useState<"create" | "edit">("create");
+  const [showViewRecap, setShowViewRecap] = useState(false);
+  const [selectedRecap, setSelectedRecap] = useState<LaboratoryRecap | null>(null);
 
-    // Map journal entries to lightweight format for the modal
-    const journalEntriesLite: JournalEntryLite[] = useMemo(() => 
-        journalEntries.map(e => ({
-            id: e.id,
-            date: e.date,
-            title: e.title,
-            asset: e.asset,
-        })),
-        [journalEntries]
-    );
+  // Laboratory Store
+  const {
+    experiments,
+    recaps,
+    isLoading,
+    loadExperiments,
+    loadRecaps,
+    addExperiment,
+    removeExperiment,
+    promoteToPlaybook,
+    addRecap,
+    updateRecap,
+    removeRecap,
+  } = useLaboratoryStore();
 
-    // Load data on mount
-    useEffect(() => {
-        loadExperiments();
-        loadRecaps();
-    }, [loadExperiments, loadRecaps]);
+  // Journal Store - for linking recaps to journal entries
+  const { entries: journalEntries } = useJournalStore();
 
-    // Experiment handlers
-    const handleCreateExperiment = async (data: CreateExperimentData, files: File[]) => {
-        await addExperiment(data, files);
-        setShowCreateExperiment(false);
-    };
+  // Map journal entries to lightweight format for the modal
+  const journalEntriesLite: JournalEntryLite[] = useMemo(
+    () =>
+      journalEntries.map((e) => ({
+        id: e.id,
+        date: e.date,
+        title: e.title,
+        asset: e.asset,
+      })),
+    [journalEntries]
+  );
 
-    const handleViewExperiment = (experiment: LaboratoryExperiment) => {
-        setSelectedExperiment(experiment);
-        setShowViewExperiment(true);
-    };
+  // Load data on mount
+  useEffect(() => {
+    loadExperiments();
+    loadRecaps();
+  }, [loadExperiments, loadRecaps]);
 
-    const handleEditExperiment = (experiment: LaboratoryExperiment) => {
-        setSelectedExperiment(experiment);
-        setShowViewExperiment(true);
-    };
+  // Experiment handlers
+  const handleCreateExperiment = async (data: CreateExperimentData, files: File[]) => {
+    await addExperiment(data, files);
+    setShowCreateExperiment(false);
+  };
 
-    const handleDeleteExperiment = async (id: string) => {
-        if (confirm('Tem certeza que deseja excluir este experimento?')) {
-            await removeExperiment(id);
-        }
-    };
+  const handleViewExperiment = (experiment: LaboratoryExperiment) => {
+    setSelectedExperiment(experiment);
+    setShowViewExperiment(true);
+  };
 
-    const handlePromoteExperiment = async (id: string) => {
-        if (confirm('Deseja promover este experimento para o Playbook?')) {
-            await promoteToPlaybook(id);
-        }
-    };
+  const handleEditExperiment = (experiment: LaboratoryExperiment) => {
+    setSelectedExperiment(experiment);
+    setShowViewExperiment(true);
+  };
 
-    // Recap handlers
-    const handleOpenCreateRecap = () => {
-        setSelectedRecap(null);
-        setRecapFormMode('create');
-        setShowRecapForm(true);
-    };
+  const handleDeleteExperiment = async (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este experimento?")) {
+      await removeExperiment(id);
+    }
+  };
 
-    const handleRecapSubmit = async (data: CreateRecapData | UpdateRecapData, files: File[]) => {
-        if (recapFormMode === 'create') {
-            await addRecap(data as CreateRecapData, files);
-        } else {
-            await updateRecap(data as UpdateRecapData, files);
-        }
-        setShowRecapForm(false);
-        setSelectedRecap(null);
-    };
+  const handlePromoteExperiment = async (id: string) => {
+    if (confirm("Deseja promover este experimento para o Playbook?")) {
+      await promoteToPlaybook(id);
+    }
+  };
 
-    const handleViewRecap = (recap: LaboratoryRecap) => {
-        setSelectedRecap(recap);
-        setShowViewRecap(true);
-    };
+  // Recap handlers
+  const handleOpenCreateRecap = () => {
+    setSelectedRecap(null);
+    setRecapFormMode("create");
+    setShowRecapForm(true);
+  };
 
-    const handleEditRecap = (recap: LaboratoryRecap) => {
-        setSelectedRecap(recap);
-        setShowViewRecap(false); // Close view modal
-        setRecapFormMode('edit');
-        setShowRecapForm(true); // Open form modal in edit mode
-    };
+  const handleRecapSubmit = async (data: CreateRecapData | UpdateRecapData, files: File[]) => {
+    if (recapFormMode === "create") {
+      await addRecap(data as CreateRecapData, files);
+    } else {
+      await updateRecap(data as UpdateRecapData, files);
+    }
+    setShowRecapForm(false);
+    setSelectedRecap(null);
+  };
 
-    const handleDeleteRecap = async (id: string) => {
-        if (confirm('Tem certeza que deseja excluir este recap?')) {
-            await removeRecap(id);
-        }
-    };
+  const handleViewRecap = (recap: LaboratoryRecap) => {
+    setSelectedRecap(recap);
+    setShowViewRecap(true);
+  };
 
-    return (
-        <>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>🧪 Laboratório</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {/* Internal Tabs */}
-                    <SegmentedToggle 
-                        value={activeTab} 
-                        onChange={setActiveTab} 
-                        options={LABORATORY_TABS_OPTIONS}
-                        className="mb-6"
-                    />
+  const handleEditRecap = (recap: LaboratoryRecap) => {
+    setSelectedRecap(recap);
+    setShowViewRecap(false); // Close view modal
+    setRecapFormMode("edit");
+    setShowRecapForm(true); // Open form modal in edit mode
+  };
 
-                    {/* Experiments Tab */}
-                    <TabPanel value="experiments" activeTab={activeTab}>
-                        <ExperimentsTab
-                            experiments={experiments}
-                            onCreateNew={() => setShowCreateExperiment(true)}
-                            onView={handleViewExperiment}
-                            onEdit={handleEditExperiment}
-                            onDelete={handleDeleteExperiment}
-                            onPromote={handlePromoteExperiment}
-                            isLoading={isLoading}
-                        />
-                    </TabPanel>
+  const handleDeleteRecap = async (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este recap?")) {
+      await removeRecap(id);
+    }
+  };
 
-                    {/* Recaps Tab */}
-                    <TabPanel value="recaps" activeTab={activeTab}>
-                        <RecapsTab
-                            recaps={recaps}
-                            onCreateNew={handleOpenCreateRecap}
-                            onView={handleViewRecap}
-                            onEdit={handleEditRecap}
-                            onDelete={handleDeleteRecap}
-                            isLoading={isLoading}
-                        />
-                    </TabPanel>
-                </CardContent>
-            </Card>
+  return (
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>🧪 Laboratório</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Internal Tabs */}
+          <SegmentedToggle
+            value={activeTab}
+            onChange={setActiveTab}
+            options={LABORATORY_TABS_OPTIONS}
+            className="mb-6"
+          />
 
-            {/* Experiment Modals */}
-            <CreateExperimentModal
-                isOpen={showCreateExperiment}
-                onClose={() => setShowCreateExperiment(false)}
-                onSubmit={handleCreateExperiment}
-                isLoading={isLoading}
+          {/* Experiments Tab */}
+          <TabPanel value="experiments" activeTab={activeTab}>
+            <ExperimentsTab
+              experiments={experiments}
+              onCreateNew={() => setShowCreateExperiment(true)}
+              onView={handleViewExperiment}
+              onEdit={handleEditExperiment}
+              onDelete={handleDeleteExperiment}
+              onPromote={handlePromoteExperiment}
+              isLoading={isLoading}
             />
+          </TabPanel>
 
-            <ViewExperimentModal
-                isOpen={showViewExperiment}
-                onClose={() => {
-                    setShowViewExperiment(false);
-                    setSelectedExperiment(null);
-                }}
-                experiment={selectedExperiment}
-                onEdit={handleEditExperiment}
-                onPromote={handlePromoteExperiment}
+          {/* Recaps Tab */}
+          <TabPanel value="recaps" activeTab={activeTab}>
+            <RecapsTab
+              recaps={recaps}
+              onCreateNew={handleOpenCreateRecap}
+              onView={handleViewRecap}
+              onEdit={handleEditRecap}
+              onDelete={handleDeleteRecap}
+              isLoading={isLoading}
             />
+          </TabPanel>
+        </CardContent>
+      </Card>
 
-            {/* Unified Recap Form Modal (Create & Edit) */}
-            <RecapFormModal
-                isOpen={showRecapForm}
-                onClose={() => {
-                    setShowRecapForm(false);
-                    setSelectedRecap(null);
-                }}
-                mode={recapFormMode}
-                initialData={selectedRecap}
-                onSubmit={handleRecapSubmit}
-                trades={trades}
-                journalEntries={journalEntriesLite}
-                isLoading={isLoading}
-            />
+      {/* Experiment Modals */}
+      <CreateExperimentModal
+        isOpen={showCreateExperiment}
+        onClose={() => setShowCreateExperiment(false)}
+        onSubmit={handleCreateExperiment}
+        isLoading={isLoading}
+      />
 
-            <ViewRecapModal
-                isOpen={showViewRecap}
-                onClose={() => {
-                    setShowViewRecap(false);
-                    setSelectedRecap(null);
-                }}
-                recap={selectedRecap}
-                onEdit={handleEditRecap}
-            />
-        </>
-    );
+      <ViewExperimentModal
+        isOpen={showViewExperiment}
+        onClose={() => {
+          setShowViewExperiment(false);
+          setSelectedExperiment(null);
+        }}
+        experiment={selectedExperiment}
+        onEdit={handleEditExperiment}
+        onPromote={handlePromoteExperiment}
+      />
+
+      {/* Unified Recap Form Modal (Create & Edit) */}
+      <RecapFormModal
+        isOpen={showRecapForm}
+        onClose={() => {
+          setShowRecapForm(false);
+          setSelectedRecap(null);
+        }}
+        mode={recapFormMode}
+        initialData={selectedRecap}
+        onSubmit={handleRecapSubmit}
+        trades={trades}
+        journalEntries={journalEntriesLite}
+        isLoading={isLoading}
+      />
+
+      <ViewRecapModal
+        isOpen={showViewRecap}
+        onClose={() => {
+          setShowViewRecap(false);
+          setSelectedRecap(null);
+        }}
+        recap={selectedRecap}
+        onEdit={handleEditRecap}
+      />
+    </>
+  );
 }

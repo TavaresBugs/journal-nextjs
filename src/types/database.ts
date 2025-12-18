@@ -16,7 +16,7 @@ export interface DBTrade {
   user_id: string;
   account_id: string;
   symbol: string;
-  type: 'Long' | 'Short';
+  type: "Long" | "Short";
   entry_price: number | string;
   stop_loss: number | string;
   take_profit: number | string;
@@ -38,7 +38,7 @@ export interface DBTrade {
   exit_date?: string;
   exit_time?: string;
   pnl?: number | string | null;
-  outcome?: 'win' | 'loss' | 'breakeven' | 'pending';
+  outcome?: "win" | "loss" | "breakeven" | "pending";
   // Telemetry fields
   session?: string;
   htf_aligned?: boolean;

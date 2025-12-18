@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { memo, useState } from 'react';
-import { Modal, IconActionButton, AssetBadge } from '@/components/ui';
-import type { Trade, JournalEntry } from '@/types';
-import { JournalEntryContent } from './JournalEntryContent';
+import { memo, useState } from "react";
+import { Modal, IconActionButton, AssetBadge } from "@/components/ui";
+import type { Trade, JournalEntry } from "@/types";
+import { JournalEntryContent } from "./JournalEntryContent";
 
 interface JournalEntryPreviewProps {
   entry: JournalEntry;
@@ -21,7 +21,7 @@ interface JournalEntryPreviewProps {
  * Preview mode component for viewing journal entries.
  * Displays all entry information in a read-only format with edit and share options.
  * Memoized to prevent unnecessary re-renders.
- * 
+ *
  * @param entry - The journal entry to display
  * @param trade - The linked trade (optional)
  * @param onClose - Callback to close the preview
@@ -38,19 +38,17 @@ const JournalEntryPreviewComponent = ({
   isSharingLoading,
 
   hasUnreadComments = false,
-  noBackdrop = true
+  noBackdrop = true,
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);
-  
+
   // Get asset from linked trades or entry
-  const asset = linkedTrades[0]?.symbol || entry.asset || '';
+  const asset = linkedTrades[0]?.symbol || entry.asset || "";
 
   const CustomTitle = (
     <div className="flex items-center gap-3">
-      <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
-      {asset && (
-        <AssetBadge symbol={asset} />
-      )}
+      <h2 className="text-zorin-ice text-xl font-bold">{entry.title}</h2>
+      {asset && <AssetBadge symbol={asset} />}
     </div>
   );
 
@@ -61,11 +59,11 @@ const JournalEntryPreviewComponent = ({
           variant="comments"
           size="md"
           onClick={() => setShowComments(!showComments)}
-          title={showComments ? 'Esconder comentários' : 'Ver comentários'}
-          className="[&_svg]:w-6 [&_svg]:h-6"
+          title={showComments ? "Esconder comentários" : "Ver comentários"}
+          className="[&_svg]:h-6 [&_svg]:w-6"
         />
         {hasUnreadComments && !showComments && (
-          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
+          <span className="pointer-events-none absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-gray-900 bg-red-500" />
         )}
       </div>
       <IconActionButton
@@ -73,30 +71,30 @@ const JournalEntryPreviewComponent = ({
         size="md"
         onClick={onShare}
         disabled={isSharingLoading}
-        className="[&_svg]:w-6 [&_svg]:h-6"
+        className="[&_svg]:h-6 [&_svg]:w-6"
       />
       <IconActionButton
         variant="edit"
         size="md"
         onClick={onEdit}
-        className="[&_svg]:w-6 [&_svg]:h-6"
+        className="[&_svg]:h-6 [&_svg]:w-6"
       />
     </>
   );
 
   return (
-    <Modal 
-      isOpen={true} 
-      onClose={onClose} 
+    <Modal
+      isOpen={true}
+      onClose={onClose}
       title={CustomTitle}
       headerActions={HeaderActions}
-      maxWidth={showComments ? 'full' : '6xl'}
+      maxWidth={showComments ? "full" : "6xl"}
       noBackdrop={noBackdrop}
     >
       <div className="space-y-6">
-        <JournalEntryContent 
-          entry={entry} 
-          linkedTrades={linkedTrades} 
+        <JournalEntryContent
+          entry={entry}
+          linkedTrades={linkedTrades}
           showComments={showComments}
         />
       </div>

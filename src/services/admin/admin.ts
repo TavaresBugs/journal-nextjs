@@ -1,36 +1,36 @@
-import { supabase } from '@/lib/supabase';
-import { UserExtended, UserStatus, UserRole, AuditLog, AdminStats } from '@/types';
-import { getCurrentUserId } from '@/services/core/account';
+import { supabase } from "@/lib/supabase";
+import { UserExtended, UserStatus, UserRole, AuditLog, AdminStats } from "@/types";
+import { getCurrentUserId } from "@/services/core/account";
 
 // ============================================
 // DB TYPES
 // ============================================
 
 interface DBUserExtended {
-    id: string;
-    email: string;
-    name: string | null;
-    avatar_url: string | null;
-    status: string;
-    role: string;
-    approved_at: string | null;
-    approved_by: string | null;
-    notes: string | null;
-    last_login_at: string | null;
-    created_at: string;
-    updated_at: string;
+  id: string;
+  email: string;
+  name: string | null;
+  avatar_url: string | null;
+  status: string;
+  role: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  notes: string | null;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface DBAuditLog {
-    id: string;
-    user_id: string | null;
-    action: string;
-    resource_type: string | null;
-    resource_id: string | null;
-    ip_address: string | null;
-    user_agent: string | null;
-    metadata: Record<string, unknown> | null;
-    created_at: string;
+  id: string;
+  user_id: string | null;
+  action: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
 }
 
 // ============================================
@@ -38,30 +38,30 @@ interface DBAuditLog {
 // ============================================
 
 const mapUserFromDB = (db: DBUserExtended): UserExtended => ({
-    id: db.id,
-    email: db.email,
-    name: db.name || undefined,
-    avatarUrl: db.avatar_url || undefined,
-    status: db.status as UserStatus,
-    role: db.role as UserRole,
-    approvedAt: db.approved_at || undefined,
-    approvedBy: db.approved_by || undefined,
-    notes: db.notes || undefined,
-    lastLoginAt: db.last_login_at || undefined,
-    createdAt: db.created_at,
-    updatedAt: db.updated_at,
+  id: db.id,
+  email: db.email,
+  name: db.name || undefined,
+  avatarUrl: db.avatar_url || undefined,
+  status: db.status as UserStatus,
+  role: db.role as UserRole,
+  approvedAt: db.approved_at || undefined,
+  approvedBy: db.approved_by || undefined,
+  notes: db.notes || undefined,
+  lastLoginAt: db.last_login_at || undefined,
+  createdAt: db.created_at,
+  updatedAt: db.updated_at,
 });
 
 const mapAuditLogFromDB = (db: DBAuditLog): AuditLog => ({
-    id: db.id,
-    userId: db.user_id || undefined,
-    action: db.action,
-    resourceType: db.resource_type || undefined,
-    resourceId: db.resource_id || undefined,
-    ipAddress: db.ip_address || undefined,
-    userAgent: db.user_agent || undefined,
-    metadata: db.metadata || undefined,
-    createdAt: db.created_at,
+  id: db.id,
+  userId: db.user_id || undefined,
+  action: db.action,
+  resourceType: db.resource_type || undefined,
+  resourceId: db.resource_id || undefined,
+  ipAddress: db.ip_address || undefined,
+  userAgent: db.user_agent || undefined,
+  metadata: db.metadata || undefined,
+  createdAt: db.created_at,
 });
 
 // ============================================
@@ -75,21 +75,21 @@ const mapAuditLogFromDB = (db: DBAuditLog): AuditLog => ({
  * const user = await getCurrentUserExtended();
  */
 export async function getCurrentUserExtended(): Promise<UserExtended | null> {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
 
-    const { data, error } = await supabase
-        .from('users_extended')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from("users_extended")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
 
-    if (error) {
-        console.error('[getCurrentUserExtended] Error:', error);
-        return null;
-    }
+  if (error) {
+    console.error("[getCurrentUserExtended] Error:", error);
+    return null;
+  }
 
-    return data ? mapUserFromDB(data) : null;
+  return data ? mapUserFromDB(data) : null;
 }
 
 /**
@@ -99,8 +99,8 @@ export async function getCurrentUserExtended(): Promise<UserExtended | null> {
  * const isAdminUser = await isAdmin();
  */
 export async function isAdmin(): Promise<boolean> {
-    const user = await getCurrentUserExtended();
-    return user?.role === 'admin';
+  const user = await getCurrentUserExtended();
+  return user?.role === "admin";
 }
 
 /**
@@ -110,8 +110,8 @@ export async function isAdmin(): Promise<boolean> {
  * const approved = await isApproved();
  */
 export async function isApproved(): Promise<boolean> {
-    const user = await getCurrentUserExtended();
-    return user?.status === 'approved';
+  const user = await getCurrentUserExtended();
+  return user?.status === "approved";
 }
 
 /**
@@ -121,13 +121,13 @@ export async function isApproved(): Promise<boolean> {
  * await updateLastLogin();
  */
 export async function updateLastLogin(): Promise<void> {
-    const userId = await getCurrentUserId();
-    if (!userId) return;
+  const userId = await getCurrentUserId();
+  if (!userId) return;
 
-    await supabase
-        .from('users_extended')
-        .update({ last_login_at: new Date().toISOString() })
-        .eq('id', userId);
+  await supabase
+    .from("users_extended")
+    .update({ last_login_at: new Date().toISOString() })
+    .eq("id", userId);
 }
 
 // ============================================
@@ -141,23 +141,23 @@ export async function updateLastLogin(): Promise<void> {
  * const users = await getAllUsers();
  */
 export async function getAllUsers(): Promise<UserExtended[]> {
-    const admin = await isAdmin();
-    if (!admin) {
-        console.warn('[getAllUsers] Access denied: not admin');
-        return [];
-    }
+  const admin = await isAdmin();
+  if (!admin) {
+    console.warn("[getAllUsers] Access denied: not admin");
+    return [];
+  }
 
-    const { data, error } = await supabase
-        .from('users_extended')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from("users_extended")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (error) {
-        console.error('[getAllUsers] Error:', error);
-        return [];
-    }
+  if (error) {
+    console.error("[getAllUsers] Error:", error);
+    return [];
+  }
 
-    return data ? data.map(mapUserFromDB) : [];
+  return data ? data.map(mapUserFromDB) : [];
 }
 
 /**
@@ -168,24 +168,24 @@ export async function getAllUsers(): Promise<UserExtended[]> {
  * const user = await getUserById('user-id');
  */
 export async function getUserById(id: string): Promise<UserExtended | null> {
-    const admin = await isAdmin();
-    if (!admin) {
-        console.warn('[getUserById] Access denied: not admin');
-        return null;
-    }
+  const admin = await isAdmin();
+  if (!admin) {
+    console.warn("[getUserById] Access denied: not admin");
+    return null;
+  }
 
-    const { data, error } = await supabase
-        .from('users_extended')
-        .select('*')
-        .eq('id', id)
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from("users_extended")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
 
-    if (error) {
-        console.error('[getUserById] Error:', error);
-        return null;
-    }
+  if (error) {
+    console.error("[getUserById] Error:", error);
+    return null;
+  }
 
-    return data ? mapUserFromDB(data) : null;
+  return data ? mapUserFromDB(data) : null;
 }
 
 /**
@@ -198,49 +198,46 @@ export async function getUserById(id: string): Promise<UserExtended | null> {
  * const success = await updateUserStatus('user-id', 'approved', 'User approved manually');
  */
 export async function updateUserStatus(
-    id: string, 
-    status: UserStatus,
-    notes?: string
+  id: string,
+  status: UserStatus,
+  notes?: string
 ): Promise<boolean> {
-    const userId = await getCurrentUserId();
-    const admin = await isAdmin();
-    
-    if (!admin || !userId) {
-        console.warn('[updateUserStatus] Access denied');
-        return false;
-    }
+  const userId = await getCurrentUserId();
+  const admin = await isAdmin();
 
-    const updateData: Record<string, unknown> = {
-        status,
-        updated_at: new Date().toISOString(),
-    };
+  if (!admin || !userId) {
+    console.warn("[updateUserStatus] Access denied");
+    return false;
+  }
 
-    if (status === 'approved') {
-        updateData.approved_at = new Date().toISOString();
-        updateData.approved_by = userId;
-    }
+  const updateData: Record<string, unknown> = {
+    status,
+    updated_at: new Date().toISOString(),
+  };
 
-    if (notes !== undefined) {
-        updateData.notes = notes;
-    }
+  if (status === "approved") {
+    updateData.approved_at = new Date().toISOString();
+    updateData.approved_by = userId;
+  }
 
-    const { error } = await supabase
-        .from('users_extended')
-        .update(updateData)
-        .eq('id', id);
+  if (notes !== undefined) {
+    updateData.notes = notes;
+  }
 
-    if (error) {
-        console.error('[updateUserStatus] Error:', error);
-        return false;
-    }
+  const { error } = await supabase.from("users_extended").update(updateData).eq("id", id);
 
-    // Log da ação
-    await logAction('user_status_change', 'user', id, { 
-        new_status: status,
-        notes 
-    });
+  if (error) {
+    console.error("[updateUserStatus] Error:", error);
+    return false;
+  }
 
-    return true;
+  // Log da ação
+  await logAction("user_status_change", "user", id, {
+    new_status: status,
+    notes,
+  });
+
+  return true;
 }
 
 /**
@@ -252,28 +249,28 @@ export async function updateUserStatus(
  * const success = await updateUserRole('user-id', 'admin');
  */
 export async function updateUserRole(id: string, role: UserRole): Promise<boolean> {
-    const admin = await isAdmin();
-    if (!admin) {
-        console.warn('[updateUserRole] Access denied');
-        return false;
-    }
+  const admin = await isAdmin();
+  if (!admin) {
+    console.warn("[updateUserRole] Access denied");
+    return false;
+  }
 
-    const { error } = await supabase
-        .from('users_extended')
-        .update({ 
-            role,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
+  const { error } = await supabase
+    .from("users_extended")
+    .update({
+      role,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
 
-    if (error) {
-        console.error('[updateUserRole] Error:', error);
-        return false;
-    }
+  if (error) {
+    console.error("[updateUserRole] Error:", error);
+    return false;
+  }
 
-    await logAction('user_role_change', 'user', id, { new_role: role });
+  await logAction("user_role_change", "user", id, { new_role: role });
 
-    return true;
+  return true;
 }
 
 // ============================================
@@ -287,39 +284,35 @@ export async function updateUserRole(id: string, role: UserRole): Promise<boolea
  * const stats = await getAdminStats();
  */
 export async function getAdminStats(): Promise<AdminStats | null> {
-    const admin = await isAdmin();
-    if (!admin) return null;
+  const admin = await isAdmin();
+  if (!admin) return null;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    const { data: users, error: usersError } = await supabase
-        .from('users_extended')
-        .select('status, role, created_at, last_login_at');
+  const { data: users, error: usersError } = await supabase
+    .from("users_extended")
+    .select("status, role, created_at, last_login_at");
 
-    if (usersError) {
-        console.error('[getAdminStats] Error:', usersError);
-        return null;
-    }
+  if (usersError) {
+    console.error("[getAdminStats] Error:", usersError);
+    return null;
+  }
 
-    if (!users) return null;
+  if (!users) return null;
 
-    const stats: AdminStats = {
-        totalUsers: users.length,
-        pendingUsers: users.filter(u => u.status === 'pending').length,
-        approvedUsers: users.filter(u => u.status === 'approved').length,
-        suspendedUsers: users.filter(u => u.status === 'suspended').length,
-        bannedUsers: users.filter(u => u.status === 'banned').length,
-        adminUsers: users.filter(u => u.role === 'admin').length,
-        todayLogins: users.filter(u => 
-            u.last_login_at && new Date(u.last_login_at) >= today
-        ).length,
-        todaySignups: users.filter(u => 
-            new Date(u.created_at) >= today
-        ).length,
-    };
+  const stats: AdminStats = {
+    totalUsers: users.length,
+    pendingUsers: users.filter((u) => u.status === "pending").length,
+    approvedUsers: users.filter((u) => u.status === "approved").length,
+    suspendedUsers: users.filter((u) => u.status === "suspended").length,
+    bannedUsers: users.filter((u) => u.status === "banned").length,
+    adminUsers: users.filter((u) => u.role === "admin").length,
+    todayLogins: users.filter((u) => u.last_login_at && new Date(u.last_login_at) >= today).length,
+    todaySignups: users.filter((u) => new Date(u.created_at) >= today).length,
+  };
 
-    return stats;
+  return stats;
 }
 
 // ============================================
@@ -337,31 +330,31 @@ export async function getAdminStats(): Promise<AdminStats | null> {
  * await logAction('create_user', 'user', 'user-id', { role: 'admin' });
  */
 export async function logAction(
-    action: string,
-    resourceType?: string,
-    resourceId?: string,
-    metadata?: Record<string, unknown>
+  action: string,
+  resourceType?: string,
+  resourceId?: string,
+  metadata?: Record<string, unknown>
 ): Promise<string | null> {
-    const userId = await getCurrentUserId();
+  const userId = await getCurrentUserId();
 
-    const { data, error } = await supabase
-        .from('audit_logs')
-        .insert({
-            user_id: userId,
-            action,
-            resource_type: resourceType,
-            resource_id: resourceId,
-            metadata: metadata || {},
-        })
-        .select('id')
-        .single();
+  const { data, error } = await supabase
+    .from("audit_logs")
+    .insert({
+      user_id: userId,
+      action,
+      resource_type: resourceType,
+      resource_id: resourceId,
+      metadata: metadata || {},
+    })
+    .select("id")
+    .single();
 
-    if (error) {
-        console.error('[logAction] Error:', error);
-        return null;
-    }
+  if (error) {
+    console.error("[logAction] Error:", error);
+    return null;
+  }
 
-    return data?.id || null;
+  return data?.id || null;
 }
 
 /**
@@ -377,51 +370,48 @@ export async function logAction(
  * const logs = await getAuditLogs({ limit: 10 });
  */
 export async function getAuditLogs(options?: {
-    userId?: string;
-    action?: string;
-    resourceType?: string;
-    limit?: number;
-    offset?: number;
+  userId?: string;
+  action?: string;
+  resourceType?: string;
+  limit?: number;
+  offset?: number;
 }): Promise<AuditLog[]> {
-    const admin = await isAdmin();
-    if (!admin) {
-        console.warn('[getAuditLogs] Access denied');
-        return [];
-    }
+  const admin = await isAdmin();
+  if (!admin) {
+    console.warn("[getAuditLogs] Access denied");
+    return [];
+  }
 
-    let query = supabase
-        .from('audit_logs')
-        .select('*')
-        .order('created_at', { ascending: false });
+  let query = supabase.from("audit_logs").select("*").order("created_at", { ascending: false });
 
-    if (options?.userId) {
-        query = query.eq('user_id', options.userId);
-    }
+  if (options?.userId) {
+    query = query.eq("user_id", options.userId);
+  }
 
-    if (options?.action) {
-        query = query.eq('action', options.action);
-    }
+  if (options?.action) {
+    query = query.eq("action", options.action);
+  }
 
-    if (options?.resourceType) {
-        query = query.eq('resource_type', options.resourceType);
-    }
+  if (options?.resourceType) {
+    query = query.eq("resource_type", options.resourceType);
+  }
 
-    if (options?.limit) {
-        query = query.limit(options.limit);
-    }
+  if (options?.limit) {
+    query = query.limit(options.limit);
+  }
 
-    if (options?.offset) {
-        query = query.range(options.offset, options.offset + (options.limit || 50) - 1);
-    }
+  if (options?.offset) {
+    query = query.range(options.offset, options.offset + (options.limit || 50) - 1);
+  }
 
-    const { data, error } = await query;
+  const { data, error } = await query;
 
-    if (error) {
-        console.error('[getAuditLogs] Error:', error);
-        return [];
-    }
+  if (error) {
+    console.error("[getAuditLogs] Error:", error);
+    return [];
+  }
 
-    return data ? data.map(mapAuditLogFromDB) : [];
+  return data ? data.map(mapAuditLogFromDB) : [];
 }
 
 /**
@@ -431,19 +421,16 @@ export async function getAuditLogs(options?: {
  * const actions = await getUniqueActions();
  */
 export async function getUniqueActions(): Promise<string[]> {
-    const admin = await isAdmin();
-    if (!admin) return [];
+  const admin = await isAdmin();
+  if (!admin) return [];
 
-    const { data, error } = await supabase
-        .from('audit_logs')
-        .select('action')
-        .order('action');
+  const { data, error } = await supabase.from("audit_logs").select("action").order("action");
 
-    if (error) {
-        console.error('[getUniqueActions] Error:', error);
-        return [];
-    }
+  if (error) {
+    console.error("[getUniqueActions] Error:", error);
+    return [];
+  }
 
-    const actions = new Set(data?.map(d => d.action) || []);
-    return Array.from(actions);
+  const actions = new Set(data?.map((d) => d.action) || []);
+  return Array.from(actions);
 }

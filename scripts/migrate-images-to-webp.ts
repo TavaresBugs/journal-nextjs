@@ -1,21 +1,21 @@
 /**
  * Script para converter imagens existentes no Supabase para WebP
- * 
+ *
  * ⚠️ ANTES DE RODAR:
  * 1. npm install sharp
  * 2. Configurar SUPABASE_SERVICE_ROLE_KEY no .env.local
  * 3. Fazer backup do banco no Supabase Dashboard
- * 
+ *
  * Uso: npx tsx scripts/migrate-images-to-webp.ts
- * 
+ *
  * Modo teste (5 imagens): npx tsx scripts/migrate-images-to-webp.ts --test
  */
 
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' }); // Carrega .env.local especificamente
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" }); // Carrega .env.local especificamente
 
-import { createClient } from '@supabase/supabase-js';
-import sharp from 'sharp';
+import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 
 // ============================================
 // CONFIGURAÇÃO
@@ -25,12 +25,12 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // Rate limiting
-const BATCH_SIZE = 5;           // Processar 5 por vez
-const DELAY_BETWEEN_BATCHES = 2000;  // 2s entre batches
-const MAX_FILE_SIZE_MB = 10;    // Pular arquivos > 10MB
+const BATCH_SIZE = 5; // Processar 5 por vez
+const DELAY_BETWEEN_BATCHES = 2000; // 2s entre batches
+const MAX_FILE_SIZE_MB = 10; // Pular arquivos > 10MB
 
 // Modo teste
-const IS_TEST_MODE = process.argv.includes('--test');
+const IS_TEST_MODE = process.argv.includes("--test");
 const TEST_LIMIT = 5;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
@@ -75,15 +75,15 @@ const stats: MigrationStats = {
 // ============================================
 
 function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function extractPathFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/journal-images/');
+    const pathParts = urlObj.pathname.split("/journal-images/");
     if (pathParts.length > 1) {
-      return decodeURIComponent(pathParts[1].split('?')[0]);
+      return decodeURIComponent(pathParts[1].split("?")[0]);
     }
   } catch {
     // Ignorar erro de parse
@@ -96,12 +96,12 @@ function extractPathFromUrl(url: string): string | null {
 // ============================================
 
 async function fetchAllImages(): Promise<JournalImage[]> {
-  console.log('\n📥 Buscando imagens do banco...');
-  
+  console.log("\n📥 Buscando imagens do banco...");
+
   let query = supabase
-    .from('journal_images')
-    .select('id, url, path, journal_entry_id, user_id, timeframe')
-    .order('created_at', { ascending: false });
+    .from("journal_images")
+    .select("id, url, path, journal_entry_id, user_id, timeframe")
+    .order("created_at", { ascending: false });
 
   if (IS_TEST_MODE) {
     query = query.limit(TEST_LIMIT);
@@ -111,7 +111,7 @@ async function fetchAllImages(): Promise<JournalImage[]> {
   const { data, error } = await query;
 
   if (error) {
-    console.error('❌ Erro ao buscar imagens:', error);
+    console.error("❌ Erro ao buscar imagens:", error);
     return [];
   }
 
@@ -121,9 +121,7 @@ async function fetchAllImages(): Promise<JournalImage[]> {
 
 async function downloadImage(path: string): Promise<Buffer | null> {
   try {
-    const { data, error } = await supabase.storage
-      .from('journal-images')
-      .download(path);
+    const { data, error } = await supabase.storage.from("journal-images").download(path);
 
     if (error || !data) {
       return null;
@@ -149,30 +147,25 @@ async function downloadImage(path: string): Promise<Buffer | null> {
 async function convertToWebP(buffer: Buffer): Promise<Buffer | null> {
   try {
     // Converter para WebP - SEM resize, qualidade 100% (lossless)
-    const webp = await sharp(buffer)
-      .webp({ quality: 100, lossless: true })
-      .toBuffer();
+    const webp = await sharp(buffer).webp({ quality: 100, lossless: true }).toBuffer();
 
     return webp;
   } catch (err) {
-    console.error('❌ Erro na conversão sharp:', err);
+    console.error("❌ Erro na conversão sharp:", err);
     return null;
   }
 }
 
-async function uploadConverted(
-  basePath: string,
-  webpBuffer: Buffer
-): Promise<string | null> {
+async function uploadConverted(basePath: string, webpBuffer: Buffer): Promise<string | null> {
   // Remover extensão original
-  const pathWithoutExt = basePath.replace(/\.(png|jpg|jpeg|gif|bmp)$/i, '');
+  const pathWithoutExt = basePath.replace(/\.(png|jpg|jpeg|gif|bmp)$/i, "");
   const webpPath = `${pathWithoutExt}.webp`;
 
   // Upload WebP
   const { error: webpError } = await supabase.storage
-    .from('journal-images')
+    .from("journal-images")
     .upload(webpPath, webpBuffer, {
-      contentType: 'image/webp',
+      contentType: "image/webp",
       upsert: true,
     });
 
@@ -185,17 +178,17 @@ async function uploadConverted(
 }
 
 async function updateDatabaseUrl(imageId: string, newPath: string): Promise<boolean> {
-  const { data: { publicUrl } } = supabase.storage
-    .from('journal-images')
-    .getPublicUrl(newPath);
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("journal-images").getPublicUrl(newPath);
 
   const { error } = await supabase
-    .from('journal_images')
-    .update({ 
+    .from("journal_images")
+    .update({
       url: publicUrl,
-      path: newPath 
+      path: newPath,
     })
-    .eq('id', imageId);
+    .eq("id", imageId);
 
   if (error) {
     console.error(`❌ Erro ao atualizar DB:`, error.message);
@@ -217,7 +210,7 @@ async function processImage(image: JournalImage): Promise<void> {
   }
 
   // Pular se já é WebP
-  if (imagePath.endsWith('.webp')) {
+  if (imagePath.endsWith(".webp")) {
     stats.alreadyWebP++;
     return;
   }
@@ -258,11 +251,12 @@ async function processImage(image: JournalImage): Promise<void> {
     stats.savedBytes += originalSize - webpBuffer.length;
 
     const savingsPercent = (((originalSize - webpBuffer.length) / originalSize) * 100).toFixed(0);
-    console.log(`✅ ${imagePath.split('/').pop()} → ${(originalSize/1024).toFixed(0)}KB → ${(webpBuffer.length/1024).toFixed(0)}KB (-${savingsPercent}%)`);
+    console.log(
+      `✅ ${imagePath.split("/").pop()} → ${(originalSize / 1024).toFixed(0)}KB → ${(webpBuffer.length / 1024).toFixed(0)}KB (-${savingsPercent}%)`
+    );
 
     // ⚠️ NÃO deletar original automaticamente
     // Deletar manualmente após confirmar que tudo funciona
-
   } catch (err) {
     console.error(`❌ Erro processando ${imagePath}:`, err);
     stats.failed++;
@@ -295,14 +289,16 @@ function printSummary(): void {
 // ============================================
 
 async function main() {
-  console.log('🚀 Iniciando migração de imagens para WebP...');
-  console.log(`📊 Config: BATCH_SIZE=${BATCH_SIZE}, DELAY=${DELAY_BETWEEN_BATCHES}ms, MAX_SIZE=${MAX_FILE_SIZE_MB}MB`);
+  console.log("🚀 Iniciando migração de imagens para WebP...");
+  console.log(
+    `📊 Config: BATCH_SIZE=${BATCH_SIZE}, DELAY=${DELAY_BETWEEN_BATCHES}ms, MAX_SIZE=${MAX_FILE_SIZE_MB}MB`
+  );
 
   // Verificar configuração
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    console.error('\n❌ ERRO: Configure as variáveis de ambiente:');
-    console.error('   - NEXT_PUBLIC_SUPABASE_URL');
-    console.error('   - SUPABASE_SERVICE_ROLE_KEY');
+    console.error("\n❌ ERRO: Configure as variáveis de ambiente:");
+    console.error("   - NEXT_PUBLIC_SUPABASE_URL");
+    console.error("   - SUPABASE_SERVICE_ROLE_KEY");
     process.exit(1);
   }
 
@@ -311,19 +307,21 @@ async function main() {
   stats.total = images.length;
 
   if (images.length === 0) {
-    console.log('ℹ️ Nenhuma imagem encontrada.');
+    console.log("ℹ️ Nenhuma imagem encontrada.");
     return;
   }
 
   // Processar em batches com delay
   for (let i = 0; i < images.length; i += BATCH_SIZE) {
     const batch = images.slice(i, i + BATCH_SIZE);
-    
-    console.log(`\n--- Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(images.length / BATCH_SIZE)} ---`);
-    
+
+    console.log(
+      `\n--- Batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(images.length / BATCH_SIZE)} ---`
+    );
+
     // Processar em paralelo dentro do batch
     await Promise.all(batch.map(processImage));
-    
+
     // Delay entre batches (exceto último)
     if (i + BATCH_SIZE < images.length) {
       console.log(`⏳ Aguardando ${DELAY_BETWEEN_BATCHES}ms...`);
@@ -335,11 +333,11 @@ async function main() {
   printSummary();
 
   if (IS_TEST_MODE) {
-    console.log('⚠️ Este foi um TESTE. Para rodar em produção, execute sem --test');
+    console.log("⚠️ Este foi um TESTE. Para rodar em produção, execute sem --test");
   }
 }
 
 main().catch((err) => {
-  console.error('❌ Erro fatal:', err);
+  console.error("❌ Erro fatal:", err);
   process.exit(1);
 });

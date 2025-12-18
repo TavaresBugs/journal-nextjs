@@ -3,49 +3,49 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
       },
       {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "*.supabase.co",
+        pathname: "/**",
       },
     ],
   },
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           // Previne clickjacking - bloqueia iframe embedding
-          { key: 'X-Frame-Options', value: 'DENY' },
-          
+          { key: "X-Frame-Options", value: "DENY" },
+
           // Previne MIME type sniffing
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          
+          { key: "X-Content-Type-Options", value: "nosniff" },
+
           // XSS Protection (legado, mas ainda útil para browsers antigos)
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+
           // Controla informações enviadas no Referer header
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+
           // Desabilita APIs sensíveis não utilizadas
-          { 
-            key: 'Permissions-Policy', 
-            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' 
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
-          
+
           // HSTS - força HTTPS por 1 ano
-          { 
-            key: 'Strict-Transport-Security', 
-            value: 'max-age=31536000; includeSubDomains; preload' 
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=31536000; includeSubDomains; preload",
           },
-          
+
           // Content Security Policy - controla origens de recursos
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
@@ -55,13 +55,13 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
               "frame-ancestors 'none'",
               "base-uri 'self'",
-              "form-action 'self'"
-            ].join('; ')
-          }
-        ]
-      }
+              "form-action 'self'",
+            ].join("; "),
+          },
+        ],
+      },
     ];
-  }
+  },
 };
 
 export default nextConfig;

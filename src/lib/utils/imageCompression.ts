@@ -1,13 +1,13 @@
 /**
  * Image Compression Utilities
- * 
+ *
  * Provides functions for compressing images before caching or uploading.
  * Uses canvas-based compression for maximum browser compatibility.
- * 
+ *
  * @example
  * // Compress a base64 image for preview
  * const compressed = await compressImageForPreview(base64, { maxWidth: 800 });
- * 
+ *
  * // Get image size info
  * const info = getBase64SizeInfo(base64);
  * console.log(info.sizeMB); // e.g., 0.5
@@ -25,7 +25,7 @@ export interface CompressionOptions {
   /** JPEG quality 0-1 (default: 0.95) */
   quality?: number;
   /** Output format (default: auto-detect from input) */
-  format?: 'jpeg' | 'png' | 'webp';
+  format?: "jpeg" | "png" | "webp";
 }
 
 export interface ImageSizeInfo {
@@ -44,10 +44,10 @@ export interface ImageSizeInfo {
 export function getBase64SizeInfo(base64: string): ImageSizeInfo {
   // Base64 encoded size is ~33% larger than binary
   // Remove data URL prefix for accurate calculation
-  const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
+  const base64Data = base64.includes(",") ? base64.split(",")[1] : base64;
   const sizeBytes = Math.round((base64Data.length * 3) / 4);
   const sizeMB = sizeBytes / (1024 * 1024);
-  
+
   return {
     originalSizeBytes: sizeBytes,
     originalSizeMB: Number(sizeMB.toFixed(2)),
@@ -70,10 +70,10 @@ export function shouldCompress(base64: string, thresholdMB = 0.5): boolean {
 
 /**
  * Compress a base64 image for preview/thumbnail use.
- * 
+ *
  * Uses canvas-based compression which works in all modern browsers.
  * Falls back to original if compression fails.
- * 
+ *
  * @param base64 - Base64 encoded image (with or without data URL prefix)
  * @param options - Compression options
  * @returns Compressed base64 image
@@ -82,12 +82,7 @@ export async function compressImageForPreview(
   base64: string,
   options: CompressionOptions = {}
 ): Promise<string> {
-  const {
-    maxWidth = 1200,
-    maxHeight = 900,
-    quality = 0.95,
-    format,
-  } = options;
+  const { maxWidth = 1200, maxHeight = 900, quality = 0.95, format } = options;
 
   // Check if compression is needed
   const sizeInfo = getBase64SizeInfo(base64);
@@ -98,30 +93,30 @@ export async function compressImageForPreview(
 
   return new Promise((resolve) => {
     const img = new Image();
-    
+
     img.onload = () => {
       try {
         // Calculate new dimensions maintaining aspect ratio
         let { width, height } = img;
-        
+
         if (width > maxWidth) {
           height = (height * maxWidth) / width;
           width = maxWidth;
         }
-        
+
         if (height > maxHeight) {
           width = (width * maxHeight) / height;
           height = maxHeight;
         }
 
         // Create canvas
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = Math.round(width);
         canvas.height = Math.round(height);
-        
-        const ctx = canvas.getContext('2d');
+
+        const ctx = canvas.getContext("2d");
         if (!ctx) {
-          console.warn('[compressImage] Canvas context unavailable');
+          console.warn("[compressImage] Canvas context unavailable");
           resolve(base64);
           return;
         }
@@ -130,14 +125,17 @@ export async function compressImageForPreview(
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         // Determine output format
-        const inputFormat = base64.includes('image/png') ? 'png' : 
-                           base64.includes('image/webp') ? 'webp' : 'jpeg';
-        const outputFormat = format || (inputFormat === 'png' ? 'png' : 'jpeg');
+        const inputFormat = base64.includes("image/png")
+          ? "png"
+          : base64.includes("image/webp")
+            ? "webp"
+            : "jpeg";
+        const outputFormat = format || (inputFormat === "png" ? "png" : "jpeg");
         const mimeType = `image/${outputFormat}`;
 
         // Convert to compressed base64
         const compressed = canvas.toDataURL(mimeType, quality);
-        
+
         // Verify compression actually reduced size
         const compressedSize = getBase64SizeInfo(compressed);
         if (compressedSize.originalSizeMB >= sizeInfo.originalSizeMB) {
@@ -146,22 +144,22 @@ export async function compressImageForPreview(
           return;
         }
 
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
           console.log(
             `[compressImage] ${sizeInfo.originalSizeMB}MB → ${compressedSize.originalSizeMB}MB ` +
-            `(${Math.round((1 - compressedSize.originalSizeMB / sizeInfo.originalSizeMB) * 100)}% reduction)`
+              `(${Math.round((1 - compressedSize.originalSizeMB / sizeInfo.originalSizeMB) * 100)}% reduction)`
           );
         }
 
         resolve(compressed);
       } catch (error) {
-        console.warn('[compressImage] Compression failed:', error);
+        console.warn("[compressImage] Compression failed:", error);
         resolve(base64);
       }
     };
 
     img.onerror = () => {
-      console.warn('[compressImage] Failed to load image');
+      console.warn("[compressImage] Failed to load image");
       resolve(base64);
     };
 
@@ -176,7 +174,7 @@ export async function compressImagesForPreview(
   images: string[],
   options: CompressionOptions = {}
 ): Promise<string[]> {
-  return Promise.all(images.map(img => compressImageForPreview(img, options)));
+  return Promise.all(images.map((img) => compressImageForPreview(img, options)));
 }
 
 // ============================================
@@ -187,15 +185,12 @@ export async function compressImagesForPreview(
  * Generate a small thumbnail for quick previews (e.g., in lists)
  * More aggressive compression than preview
  */
-export async function generateThumbnail(
-  base64: string,
-  size: number = 200
-): Promise<string> {
+export async function generateThumbnail(base64: string, size: number = 200): Promise<string> {
   return compressImageForPreview(base64, {
     maxWidth: size,
     maxHeight: size,
     quality: 0.6,
-    format: 'jpeg',
+    format: "jpeg",
   });
 }
 
@@ -239,22 +234,22 @@ export interface WebPCompressionOptions {
  * Check if the browser supports WebP encoding
  */
 export function supportsWebP(): boolean {
-  if (typeof document === 'undefined') return false;
-  
-  const canvas = document.createElement('canvas');
+  if (typeof document === "undefined") return false;
+
+  const canvas = document.createElement("canvas");
   canvas.width = 1;
   canvas.height = 1;
-  return canvas.toDataURL('image/webp').startsWith('data:image/webp');
+  return canvas.toDataURL("image/webp").startsWith("data:image/webp");
 }
 
 /**
  * Compress a File to WebP format with JPEG fallback.
- * 
+ *
  * Generates:
  * - WebP blob (primary, ~70-80% smaller)
  * - JPEG blob (fallback for old browsers)
  * - Low-quality preview dataURL for immediate display
- * 
+ *
  * @param file - Image file to compress
  * @param options - Compression options
  * @returns CompressedImage with all variants
@@ -273,7 +268,7 @@ export async function compressToWebP(
 
   // 1. Load image using createImageBitmap for better performance
   let img: ImageBitmap | HTMLImageElement;
-  
+
   try {
     img = await createImageBitmap(file);
   } catch {
@@ -297,22 +292,22 @@ export async function compressToWebP(
   }
 
   // 3. Create canvas and draw
-  const canvas = document.createElement('canvas');
+  const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  
-  const ctx = canvas.getContext('2d');
+
+  const ctx = canvas.getContext("2d");
   if (!ctx) {
-    throw new Error('Canvas 2D context not available');
+    throw new Error("Canvas 2D context not available");
   }
-  
+
   ctx.drawImage(img, 0, 0, width, height);
 
   // 4. Generate WebP blob
   const webpBlob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('WebP conversion failed'))),
-      'image/webp',
+      (blob) => (blob ? resolve(blob) : reject(new Error("WebP conversion failed"))),
+      "image/webp",
       qualityWebP
     );
   });
@@ -320,28 +315,28 @@ export async function compressToWebP(
   // 5. Generate JPEG fallback
   const jpegBlob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(new Error('JPEG conversion failed'))),
-      'image/jpeg',
+      (blob) => (blob ? resolve(blob) : reject(new Error("JPEG conversion failed"))),
+      "image/jpeg",
       qualityJpeg
     );
   });
 
   // 6. Generate preview dataURL (low quality for fast display)
-  const previewDataUrl = canvas.toDataURL('image/webp', previewQuality);
+  const previewDataUrl = canvas.toDataURL("image/webp", previewQuality);
 
   // Log compression stats in development
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     const savingsWebP = ((1 - webpBlob.size / file.size) * 100).toFixed(1);
     const savingsJpeg = ((1 - jpegBlob.size / file.size) * 100).toFixed(1);
     console.log(
       `[WebP] ${file.name}: ${(file.size / 1024).toFixed(0)}KB → ` +
-      `WebP: ${(webpBlob.size / 1024).toFixed(0)}KB (-${savingsWebP}%), ` +
-      `JPEG: ${(jpegBlob.size / 1024).toFixed(0)}KB (-${savingsJpeg}%)`
+        `WebP: ${(webpBlob.size / 1024).toFixed(0)}KB (-${savingsWebP}%), ` +
+        `JPEG: ${(jpegBlob.size / 1024).toFixed(0)}KB (-${savingsJpeg}%)`
     );
   }
 
   // Cleanup ImageBitmap if used
-  if ('close' in img) {
+  if ("close" in img) {
     (img as ImageBitmap).close();
   }
 
@@ -360,17 +355,17 @@ export async function compressToWebP(
 /**
  * Convert base64 to File for WebP compression
  */
-export function base64ToFile(base64: string, filename: string = 'image.png'): File {
-  const arr = base64.split(',');
-  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+export function base64ToFile(base64: string, filename: string = "image.png"): File {
+  const arr = base64.split(",");
+  const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
   const bstr = atob(arr[1]);
   let n = bstr.length;
   const u8arr = new Uint8Array(n);
-  
+
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n);
   }
-  
+
   return new File([u8arr], filename, { type: mime });
 }
 
@@ -385,4 +380,3 @@ export async function compressBase64ToWebP(
   const file = base64ToFile(base64);
   return compressToWebP(file, options);
 }
-

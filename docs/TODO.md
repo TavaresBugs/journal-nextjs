@@ -9,7 +9,6 @@
 ### Melhorias nos Gráficos
 
 - [x] **Padronização de Altura dos Gráficos** - Altura fixa de 300px para todos os gráficos Recharts
-
   - `WinLossDistributionChart` - Altura padronizada
   - `RMultipleDistributionChart` - Altura padronizada
   - `WeekdayWinRateChart` - Altura padronizada
@@ -17,28 +16,23 @@
   - `DrawdownChartLightweight` - Altura padronizada
 
 - [x] **Tooltips Visíveis** - Corrigido contraste de texto nos tooltips
-
   - Cores escuras para melhor legibilidade
   - padding e border-radius consistentes
 
 - [x] **Orientação de Barras** - Gráficos ajustados para layout horizontal
-
   - `WeekdayWinRateChart` - Barras horizontais para melhor visualização
   - `WinLossDistributionChart` - Barras horizontais
 
 - [x] **Novo Componente** - `StrategyComparisonChart`
-
   - Gráfico de comparação entre estratégias/playbooks
 
 - [x] **Playbook Review Tab** - Aba de reviews no modal de playbook
 
 - [x] **Timeframe Utils** - Utilitários para ordenação de timeframes
-
   - `timeframeUtils.ts` com lógica de ordenação
   - Testes unitários adicionados
 
 - [x] **Tag Analytics Service** - Serviço de análise por tags
-
   - Métricas por tag/PDArray
   - Testes unitários adicionados
 
@@ -52,19 +46,16 @@
 ### Implementações
 
 - [x] **NinjaTrader Import** - Suporte completo a CSV do NinjaTrader
-
   - Parser para formato brasileiro (`;` separator, `,` decimal)
   - Conversão de timezone Brasília → NY
   - Símbolos limpos: `MNQ 12-25` → `MNQ`
   - Comissão armazenada como negativo
 
 - [x] **MetaTrader HTML Fix** - Parser melhorado
-
   - Suporte a 13, 14 e 15+ colunas
   - Corrigido bug de Volume/Price invertidos
 
 - [x] **Commission/Swap no Banco**
-
   - Campos adicionados ao `DBTrade`
   - Mappers atualizados (`mapTradeToDB`, `mapTradeFromDB`)
   - Migração SQL: `017_add_trade_costs.sql`

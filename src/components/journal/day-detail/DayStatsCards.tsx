@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { memo } from 'react';
-import type { Trade } from '@/types';
-import { GlassCard } from '@/components/ui';
-import { formatCurrency } from '@/lib/calculations';
+import { memo } from "react";
+import type { Trade } from "@/types";
+import { GlassCard } from "@/components/ui";
+import { formatCurrency } from "@/lib/calculations";
 
 interface DayStatsCardsProps {
   trades: Trade[];
@@ -19,15 +19,13 @@ const DayStatsCardsComponent = ({ trades, totalPnL }: DayStatsCardsProps) => {
   const tradeCount = trades.length;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {/* Total PnL Card */}
-      <GlassCard className="flex flex-col items-center justify-center p-6 bg-zorin-bg/50">
-        <span className="text-gray-400 text-sm uppercase tracking-wider mb-2">
-          P/L
-        </span>
+      <GlassCard className="bg-zorin-bg/50 flex flex-col items-center justify-center p-6">
+        <span className="mb-2 text-sm tracking-wider text-gray-400 uppercase">P/L</span>
         <span
           className={`text-3xl font-bold ${
-            totalPnL >= 0 ? 'text-zorin-accent' : 'text-zorin-danger'
+            totalPnL >= 0 ? "text-zorin-accent" : "text-zorin-danger"
           }`}
         >
           {formatCurrency(totalPnL)}
@@ -35,13 +33,9 @@ const DayStatsCardsComponent = ({ trades, totalPnL }: DayStatsCardsProps) => {
       </GlassCard>
 
       {/* Trade Count Card */}
-      <GlassCard className="flex flex-col items-center justify-center p-6 bg-zorin-bg/50">
-        <span className="text-gray-400 text-sm uppercase tracking-wider mb-2">
-          TRADES COUNT
-        </span>
-        <span className="text-3xl font-bold text-gray-100">
-          {tradeCount}
-        </span>
+      <GlassCard className="bg-zorin-bg/50 flex flex-col items-center justify-center p-6">
+        <span className="mb-2 text-sm tracking-wider text-gray-400 uppercase">TRADES COUNT</span>
+        <span className="text-3xl font-bold text-gray-100">{tradeCount}</span>
       </GlassCard>
     </div>
   );

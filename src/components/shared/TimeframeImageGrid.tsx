@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { memo } from 'react';
+import { memo } from "react";
 
-import { ImageUploadZone } from './ImageUploadZone';
+import { ImageUploadZone } from "./ImageUploadZone";
 
 interface Timeframe {
   key: string;
@@ -26,17 +26,17 @@ const TimeframeImageGridComponent = ({
   images,
   onPaste,
   onFileSelect,
-  onRemoveImage
+  onRemoveImage,
 }: TimeframeImageGridProps) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {timeframes.map(tf => (
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {timeframes.map((tf) => (
         <ImageUploadZone
           key={tf.key}
           timeframe={tf}
           images={images[tf.key] || []}
-          onPaste={e => onPaste(e, tf.key)}
-          onFileSelect={e => onFileSelect(e, tf.key)}
+          onPaste={(e) => onPaste(e, tf.key)}
+          onFileSelect={(e) => onFileSelect(e, tf.key)}
           onRemove={() => onRemoveImage(tf.key)}
           onAddMore={() => {
             document.getElementById(`file-input-${tf.key}`)?.click();

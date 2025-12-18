@@ -1,9 +1,9 @@
 /**
  * Image Converter Utilities
- * 
+ *
  * Provides functions for converting images to WebP format before upload.
  * Uses Canvas API for browser-based conversion.
- * 
+ *
  * @example
  * const webpBlob = await convertToWebP(file, 1.0);
  * const fileName = generateWebPFileName('screenshot.png');
@@ -15,17 +15,14 @@
  * @param quality - WebP quality (0-1), default 1.0 for lossless
  * @returns Promise<Blob> - WebP blob
  */
-export async function convertToWebP(
-  file: File | Blob,
-  quality: number = 1.0
-): Promise<Blob> {
+export async function convertToWebP(file: File | Blob, quality: number = 1.0): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     if (!ctx) {
-      reject(new Error('Canvas context não disponível'));
+      reject(new Error("Canvas context não disponível"));
       return;
     }
 
@@ -42,21 +39,21 @@ export async function convertToWebP(
         (blob) => {
           // Cleanup object URL
           URL.revokeObjectURL(img.src);
-          
+
           if (blob) {
             resolve(blob);
           } else {
-            reject(new Error('Falha ao converter imagem para WebP'));
+            reject(new Error("Falha ao converter imagem para WebP"));
           }
         },
-        'image/webp',
+        "image/webp",
         quality
       );
     };
 
     img.onerror = () => {
       URL.revokeObjectURL(img.src);
-      reject(new Error('Erro ao carregar imagem'));
+      reject(new Error("Erro ao carregar imagem"));
     };
 
     // Load image from file/blob
@@ -75,8 +72,8 @@ export function generateWebPFileName(originalName?: string): string {
 
   if (originalName) {
     // Remove extension and sanitize
-    const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
-    const sanitized = nameWithoutExt.replace(/[^a-zA-Z0-9-_]/g, '-');
+    const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
+    const sanitized = nameWithoutExt.replace(/[^a-zA-Z0-9-_]/g, "-");
     return `${sanitized}-${timestamp}-${random}.webp`;
   }
 
@@ -87,10 +84,10 @@ export function generateWebPFileName(originalName?: string): string {
  * Check if browser supports WebP encoding
  */
 export function supportsWebPEncoding(): boolean {
-  if (typeof document === 'undefined') return false;
-  
-  const canvas = document.createElement('canvas');
+  if (typeof document === "undefined") return false;
+
+  const canvas = document.createElement("canvas");
   canvas.width = 1;
   canvas.height = 1;
-  return canvas.toDataURL('image/webp').startsWith('data:image/webp');
+  return canvas.toDataURL("image/webp").startsWith("data:image/webp");
 }

@@ -1,1 +1,1 @@
-export { AssetsModal } from './AssetsModal';
+export { AssetsModal } from "./AssetsModal";

@@ -13,328 +13,327 @@ export interface AssetIconConfig {
   bgColor?: string;
 }
 
-const ICON_BASE = '/assets/icons';
+const ICON_BASE = "/assets/icons";
 
 export const ASSET_ICON_CONFIGS: Record<string, AssetIconConfig> = {
-  
   // ===== FOREX PAIRS (2 bandeiras) =====
-  
-  'EURUSD': {
+
+  EURUSD: {
     icons: [`${ICON_BASE}/flags/eur.svg`, `${ICON_BASE}/flags/usd.svg`],
-    color: '#3B82F6',
-    bgColor: '#F3F4F6',
+    color: "#3B82F6",
+    bgColor: "#F3F4F6",
   },
-  'GBPUSD': {
+  GBPUSD: {
     icons: [`${ICON_BASE}/flags/gbp.svg`, `${ICON_BASE}/flags/usd.svg`],
-    color: '#8B5CF6',
-    bgColor: '#F3F4F6',
+    color: "#8B5CF6",
+    bgColor: "#F3F4F6",
   },
-  'USDJPY': {
+  USDJPY: {
     icons: [`${ICON_BASE}/flags/usd.svg`, `${ICON_BASE}/flags/jpy.svg`],
-    color: '#EC4899',
-    bgColor: '#F3F4F6',
+    color: "#EC4899",
+    bgColor: "#F3F4F6",
   },
-  'AUDUSD': {
+  AUDUSD: {
     icons: [`${ICON_BASE}/flags/aud.svg`, `${ICON_BASE}/flags/usd.svg`],
-    color: '#10B981',
-    bgColor: '#F3F4F6',
+    color: "#10B981",
+    bgColor: "#F3F4F6",
   },
-  'USDCAD': {
+  USDCAD: {
     icons: [`${ICON_BASE}/flags/usd.svg`, `${ICON_BASE}/flags/cad.svg`],
-    color: '#EF4444',
-    bgColor: '#F3F4F6',
+    color: "#EF4444",
+    bgColor: "#F3F4F6",
   },
-  'USDCHF': {
+  USDCHF: {
     icons: [`${ICON_BASE}/flags/usd.svg`, `${ICON_BASE}/flags/chf.svg`],
-    color: '#DC2626',
-    bgColor: '#F3F4F6',
+    color: "#DC2626",
+    bgColor: "#F3F4F6",
   },
-  'NZDUSD': {
+  NZDUSD: {
     icons: [`${ICON_BASE}/flags/nzd.svg`, `${ICON_BASE}/flags/usd.svg`],
-    color: '#1E40AF',
-    bgColor: '#F3F4F6',
+    color: "#1E40AF",
+    bgColor: "#F3F4F6",
   },
-  'EURGBP': {
+  EURGBP: {
     icons: [`${ICON_BASE}/flags/eur.svg`, `${ICON_BASE}/flags/gbp.svg`],
-    color: '#6366F1',
-    bgColor: '#F3F4F6',
+    color: "#6366F1",
+    bgColor: "#F3F4F6",
   },
-  'EURJPY': {
+  EURJPY: {
     icons: [`${ICON_BASE}/flags/eur.svg`, `${ICON_BASE}/flags/jpy.svg`],
-    color: '#3B82F6',
-    bgColor: '#F3F4F6',
+    color: "#3B82F6",
+    bgColor: "#F3F4F6",
   },
-  'GBPJPY': {
+  GBPJPY: {
     icons: [`${ICON_BASE}/flags/gbp.svg`, `${ICON_BASE}/flags/jpy.svg`],
-    color: '#8B5CF6',
-    bgColor: '#F3F4F6',
+    color: "#8B5CF6",
+    bgColor: "#F3F4F6",
   },
 
   // ===== ÍNDICES AMERICANOS (ícone único) =====
-  
-  'ES': {
+
+  ES: {
     icons: [`${ICON_BASE}/indices/sp500.svg`],
-    color: '#10B981',
-    bgColor: '#FFFFFF',
+    color: "#10B981",
+    bgColor: "#FFFFFF",
   },
-  'MES': {
+  MES: {
     icons: [`${ICON_BASE}/indices/sp500.svg`],
-    color: '#10B981',
-    bgColor: '#FFFFFF',
+    color: "#10B981",
+    bgColor: "#FFFFFF",
   },
-  'US500': {
+  US500: {
     icons: [`${ICON_BASE}/indices/sp500.svg`],
-    color: '#10B981',
-    bgColor: '#FFFFFF',
+    color: "#10B981",
+    bgColor: "#FFFFFF",
   },
-  'SPX': {
+  SPX: {
     icons: [`${ICON_BASE}/indices/sp500.svg`],
-    color: '#10B981',
-    bgColor: '#FFFFFF',
+    color: "#10B981",
+    bgColor: "#FFFFFF",
   },
-  
-  'NQ': {
+
+  NQ: {
     icons: [`${ICON_BASE}/indices/nasdaq-100.svg`],
-    color: '#F59E0B',
-    bgColor: '#FFFFFF',
+    color: "#F59E0B",
+    bgColor: "#FFFFFF",
   },
-  'MNQ': {
+  MNQ: {
     icons: [`${ICON_BASE}/indices/nasdaq-100.svg`],
-    color: '#F59E0B',
-    bgColor: '#FFFFFF',
+    color: "#F59E0B",
+    bgColor: "#FFFFFF",
   },
-  'US100': {
+  US100: {
     icons: [`${ICON_BASE}/indices/nasdaq-100.svg`],
-    color: '#F59E0B',
-    bgColor: '#FFFFFF',
+    color: "#F59E0B",
+    bgColor: "#FFFFFF",
   },
-  'NAS100': {
+  NAS100: {
     icons: [`${ICON_BASE}/indices/nasdaq-100.svg`],
-    color: '#F59E0B',
-    bgColor: '#FFFFFF',
+    color: "#F59E0B",
+    bgColor: "#FFFFFF",
   },
-  
-  'YM': {
+
+  YM: {
     icons: [`${ICON_BASE}/indices/dow-jones.svg`],
-    color: '#3B82F6',
-    bgColor: '#FFFFFF',
+    color: "#3B82F6",
+    bgColor: "#FFFFFF",
   },
-  'MYM': {
+  MYM: {
     icons: [`${ICON_BASE}/indices/dow-jones.svg`],
-    color: '#3B82F6',
-    bgColor: '#FFFFFF',
+    color: "#3B82F6",
+    bgColor: "#FFFFFF",
   },
-  'US30': {
+  US30: {
     icons: [`${ICON_BASE}/indices/dow-jones.svg`],
-    color: '#3B82F6',
-    bgColor: '#FFFFFF',
+    color: "#3B82F6",
+    bgColor: "#FFFFFF",
   },
-  
-  'RTY': {
+
+  RTY: {
     icons: [`${ICON_BASE}/indices/russell-2000.svg`],
-    color: '#8B5CF6',
-    bgColor: '#FFFFFF',
+    color: "#8B5CF6",
+    bgColor: "#FFFFFF",
   },
-  'M2K': {
+  M2K: {
     icons: [`${ICON_BASE}/indices/russell-2000.svg`],
-    color: '#8B5CF6',
-    bgColor: '#FFFFFF',
+    color: "#8B5CF6",
+    bgColor: "#FFFFFF",
   },
-  
-  'DXY': {
+
+  DXY: {
     icons: [`${ICON_BASE}/indices/us-dollar-index.svg`],
-    color: '#059669',
-    bgColor: '#FFFFFF',
+    color: "#059669",
+    bgColor: "#FFFFFF",
   },
-  'USDX': {
+  USDX: {
     icons: [`${ICON_BASE}/indices/us-dollar-index.svg`],
-    color: '#059669',
-    bgColor: '#FFFFFF',
+    color: "#059669",
+    bgColor: "#FFFFFF",
   },
 
   // ===== BRAZIL FUTURES (B3) =====
-  
-  'WIN': {
+
+  WIN: {
     icons: [`${ICON_BASE}/indices/bovespa.svg`],
-    color: '#16A34A',
-    bgColor: '#FFFFFF',
+    color: "#16A34A",
+    bgColor: "#FFFFFF",
   },
-  'WDO': {
+  WDO: {
     icons: [`${ICON_BASE}/flags/usd.svg`],
-    color: '#059669',
-    bgColor: '#FFFFFF',
+    color: "#059669",
+    bgColor: "#FFFFFF",
   },
-  'IBOV': {
+  IBOV: {
     icons: [`${ICON_BASE}/indices/bovespa.svg`],
-    color: '#16A34A',
-    bgColor: '#FFFFFF',
+    color: "#16A34A",
+    bgColor: "#FFFFFF",
   },
 
   // ===== COMMODITIES - METALS =====
-  
-  'XAUUSD': {
+
+  XAUUSD: {
     icons: [`${ICON_BASE}/commodities/gold.svg`],
-    color: '#EAB308',
-    bgColor: '#FFFBEB',
+    color: "#EAB308",
+    bgColor: "#FFFBEB",
   },
-  'GC': {
+  GC: {
     icons: [`${ICON_BASE}/commodities/gold.svg`],
-    color: '#EAB308',
-    bgColor: '#FFFBEB',
+    color: "#EAB308",
+    bgColor: "#FFFBEB",
   },
-  'GOLD': {
+  GOLD: {
     icons: [`${ICON_BASE}/commodities/gold.svg`],
-    color: '#EAB308',
-    bgColor: '#FFFBEB',
+    color: "#EAB308",
+    bgColor: "#FFFBEB",
   },
-  
-  'XAGUSD': {
+
+  XAGUSD: {
     icons: [`${ICON_BASE}/commodities/silver.svg`],
-    color: '#9CA3AF',
-    bgColor: '#F9FAFB',
+    color: "#9CA3AF",
+    bgColor: "#F9FAFB",
   },
-  'SI': {
+  SI: {
     icons: [`${ICON_BASE}/commodities/silver.svg`],
-    color: '#9CA3AF',
-    bgColor: '#F9FAFB',
+    color: "#9CA3AF",
+    bgColor: "#F9FAFB",
   },
-  'SILVER': {
+  SILVER: {
     icons: [`${ICON_BASE}/commodities/silver.svg`],
-    color: '#9CA3AF',
-    bgColor: '#F9FAFB',
+    color: "#9CA3AF",
+    bgColor: "#F9FAFB",
   },
-  
-  'HG': {
+
+  HG: {
     icons: [`${ICON_BASE}/commodities/copper.svg`],
-    color: '#B45309',
-    bgColor: '#FEF3C7',
+    color: "#B45309",
+    bgColor: "#FEF3C7",
   },
-  'COPPER': {
+  COPPER: {
     icons: [`${ICON_BASE}/commodities/copper.svg`],
-    color: '#B45309',
-    bgColor: '#FEF3C7',
+    color: "#B45309",
+    bgColor: "#FEF3C7",
   },
 
   // ===== COMMODITIES - ENERGY =====
-  
-  'CL': {
+
+  CL: {
     icons: [`${ICON_BASE}/commodities/crude-oil.svg`],
-    color: '#1F2937',
-    bgColor: '#F3F4F6',
+    color: "#1F2937",
+    bgColor: "#F3F4F6",
   },
-  'USOIL': {
+  USOIL: {
     icons: [`${ICON_BASE}/commodities/crude-oil.svg`],
-    color: '#1F2937',
-    bgColor: '#F3F4F6',
+    color: "#1F2937",
+    bgColor: "#F3F4F6",
   },
-  'WTI': {
+  WTI: {
     icons: [`${ICON_BASE}/commodities/crude-oil.svg`],
-    color: '#1F2937',
-    bgColor: '#F3F4F6',
+    color: "#1F2937",
+    bgColor: "#F3F4F6",
   },
-  
-  'NG': {
+
+  NG: {
     icons: [`${ICON_BASE}/commodities/natural-gas.svg`],
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
   },
-  'NATGAS': {
+  NATGAS: {
     icons: [`${ICON_BASE}/commodities/natural-gas.svg`],
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
   },
 
   // ===== CRIPTOMOEDAS =====
-  
-  'BTCUSD': {
+
+  BTCUSD: {
     icons: [`${ICON_BASE}/crypto/bitcoin.svg`],
-    color: '#F97316',
-    bgColor: '#FFF7ED',
+    color: "#F97316",
+    bgColor: "#FFF7ED",
   },
-  'BTCUSDT': {
+  BTCUSDT: {
     icons: [`${ICON_BASE}/crypto/bitcoin.svg`],
-    color: '#F97316',
-    bgColor: '#FFF7ED',
+    color: "#F97316",
+    bgColor: "#FFF7ED",
   },
-  'BTC': {
+  BTC: {
     icons: [`${ICON_BASE}/crypto/bitcoin.svg`],
-    color: '#F97316',
-    bgColor: '#FFF7ED',
+    color: "#F97316",
+    bgColor: "#FFF7ED",
   },
-  
-  'ETHUSD': {
+
+  ETHUSD: {
     icons: [`${ICON_BASE}/crypto/ethereum.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  'ETHUSDT': {
+  ETHUSDT: {
     icons: [`${ICON_BASE}/crypto/ethereum.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  'ETH': {
+  ETH: {
     icons: [`${ICON_BASE}/crypto/ethereum.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  
-  'SOLUSD': {
+
+  SOLUSD: {
     icons: [`${ICON_BASE}/crypto/solana.svg`],
-    color: '#8B5CF6',
-    bgColor: '#F5F3FF',
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
   },
-  'SOLUSDT': {
+  SOLUSDT: {
     icons: [`${ICON_BASE}/crypto/solana.svg`],
-    color: '#8B5CF6',
-    bgColor: '#F5F3FF',
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
   },
-  'SOL': {
+  SOL: {
     icons: [`${ICON_BASE}/crypto/solana.svg`],
-    color: '#8B5CF6',
-    bgColor: '#F5F3FF',
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
   },
-  
-  'ADAUSD': {
+
+  ADAUSD: {
     icons: [`${ICON_BASE}/crypto/cardano.svg`],
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
   },
-  'ADAUSDT': {
+  ADAUSDT: {
     icons: [`${ICON_BASE}/crypto/cardano.svg`],
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
   },
-  'ADA': {
+  ADA: {
     icons: [`${ICON_BASE}/crypto/cardano.svg`],
-    color: '#3B82F6',
-    bgColor: '#EFF6FF',
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
   },
-  
-  'XRPUSD': {
+
+  XRPUSD: {
     icons: [`${ICON_BASE}/crypto/ripple.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  'XRPUSDT': {
+  XRPUSDT: {
     icons: [`${ICON_BASE}/crypto/ripple.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  'XRP': {
+  XRP: {
     icons: [`${ICON_BASE}/crypto/ripple.svg`],
-    color: '#6366F1',
-    bgColor: '#EEF2FF',
+    color: "#6366F1",
+    bgColor: "#EEF2FF",
   },
-  
-  'USDT': {
+
+  USDT: {
     icons: [`${ICON_BASE}/crypto/tether.svg`],
-    color: '#10B981',
-    bgColor: '#ECFDF5',
+    color: "#10B981",
+    bgColor: "#ECFDF5",
   },
-  'USDTUSDT': {
+  USDTUSDT: {
     icons: [`${ICON_BASE}/crypto/tether.svg`],
-    color: '#10B981',
-    bgColor: '#ECFDF5',
+    color: "#10B981",
+    bgColor: "#ECFDF5",
   },
 };
 
@@ -345,16 +344,16 @@ export const ASSET_ICON_CONFIGS: Record<string, AssetIconConfig> = {
 export function getAssetIconConfig(symbol: string): AssetIconConfig {
   const normalized = symbol.toUpperCase().trim();
   const config = ASSET_ICON_CONFIGS[normalized];
-  
+
   if (!config) {
     // Fallback for unconfigured assets
     return {
       icons: [`${ICON_BASE}/fallback.svg`],
-      color: '#9CA3AF',
-      bgColor: '#F3F4F6',
+      color: "#9CA3AF",
+      bgColor: "#F3F4F6",
     };
   }
-  
+
   return config;
 }
 

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { createPortal } from 'react-dom';
-import Image from 'next/image';
-import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
+import { createPortal } from "react-dom";
+import Image from "next/image";
+import { useBlockBodyScroll } from "@/hooks/useBlockBodyScroll";
 
 interface ImageData {
   key: string;
@@ -27,29 +27,29 @@ export function ImageLightbox({
   currentIndex,
   onClose,
   onNext,
-  onPrev
+  onPrev,
 }: ImageLightboxProps) {
   const isOpen = currentIndex >= 0 && currentIndex < images.length;
   useBlockBodyScroll(isOpen);
 
-  if (typeof document === 'undefined' || !isOpen) {
+  if (typeof document === "undefined" || !isOpen) {
     return null;
   }
 
   const currentImage = images[currentIndex];
-  const currentTimeframeImages = images.filter(img => img.key === currentImage.key);
+  const currentTimeframeImages = images.filter((img) => img.key === currentImage.key);
   const currentIndexInTimeframe = currentTimeframeImages.findIndex(
-    img => img.index === currentImage.index
+    (img) => img.index === currentImage.index
   );
 
   return createPortal(
     <div
-      className="fixed inset-0 z-60 bg-black/50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4"
       onClick={onClose}
     >
       {/* Close Button */}
       <button
-        className="absolute top-4 right-4 text-gray-400 hover:text-white p-2"
+        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white"
         onClick={onClose}
       >
         <svg
@@ -68,12 +68,12 @@ export function ImageLightbox({
         </svg>
       </button>
 
-      <div className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center">
+      <div className="relative flex h-full max-h-[90vh] w-full max-w-7xl items-center justify-center">
         {/* Navigation Buttons */}
         {images.length > 1 && (
           <>
             <button
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors z-50"
+              className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
               onClick={onPrev}
             >
               <svg
@@ -91,7 +91,7 @@ export function ImageLightbox({
               </svg>
             </button>
             <button
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors z-50"
+              className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
               onClick={onNext}
             >
               <svg
@@ -112,9 +112,9 @@ export function ImageLightbox({
         )}
 
         {/* Image Container */}
-        <div className="relative" onClick={e => e.stopPropagation()}>
+        <div className="relative" onClick={(e) => e.stopPropagation()}>
           {/* Image Info Label */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm font-medium text-cyan-400 z-10 flex gap-2">
+          <div className="absolute top-4 left-1/2 z-10 flex -translate-x-1/2 gap-2 rounded-full bg-black/60 px-3 py-1 text-sm font-medium text-cyan-400">
             <span>{currentImage.label}</span>
             {currentTimeframeImages.length > 1 && (
               <span className="text-gray-400">
@@ -124,12 +124,12 @@ export function ImageLightbox({
           </div>
 
           {/* Main Image */}
-          <div className="relative w-full h-[85vh]">
+          <div className="relative h-[85vh] w-full">
             <Image
               src={currentImage.url}
               alt="Preview"
               fill
-              className="object-contain rounded-lg shadow-2xl"
+              className="rounded-lg object-contain shadow-2xl"
               quality={100}
             />
           </div>

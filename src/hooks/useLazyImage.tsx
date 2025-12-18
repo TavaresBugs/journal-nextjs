@@ -1,24 +1,24 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /**
  * Lazy Image Loading Hook with Intersection Observer
- * 
+ *
  * Provides efficient lazy loading for images using the Intersection Observer API.
  * Only loads images when they enter the viewport, reducing initial page load.
- * 
+ *
  * Features:
  * - Deferred loading until element is visible
  * - Optional placeholder while loading
  * - Loading state for UI feedback
  * - Error handling with fallback
  * - Configurable root margin for preloading
- * 
+ *
  * @example
  * function ImageComponent({ src }) {
  *   const { ref, isLoaded, isLoading, error, imageSrc } = useLazyImage(src, {
  *     placeholder: '/placeholder.png',
  *     rootMargin: '100px' // Preload 100px before visible
  *   });
- *   
+ *
  *   return (
  *     <div ref={ref}>
  *       {isLoading && <Spinner />}
@@ -28,7 +28,7 @@
  * }
  */
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from "react";
 
 // ============================================
 // Types
@@ -76,7 +76,7 @@ export function useLazyImage(
 ): LazyImageReturn {
   const {
     placeholder,
-    rootMargin = '50px',
+    rootMargin = "50px",
     threshold = 0.1,
     eager = false,
     onLoad,
@@ -98,7 +98,7 @@ export function useLazyImage(
     setError(null);
 
     const img = new Image();
-    
+
     img.onload = () => {
       setImageSrc(src);
       setIsLoaded(true);
@@ -124,7 +124,7 @@ export function useLazyImage(
       return;
     }
 
-    if (!ref.current || typeof IntersectionObserver === 'undefined') {
+    if (!ref.current || typeof IntersectionObserver === "undefined") {
       // Fallback for environments without Intersection Observer
       setIsInView(true);
       load();
@@ -188,7 +188,7 @@ export interface LazyImageProps {
 export function LazyImage({
   src,
   alt,
-  className = '',
+  className = "",
   placeholder,
   rootMargin,
   onLoad,
@@ -205,7 +205,7 @@ export function LazyImage({
     <div ref={ref} className={`lazy-image-container ${className}`}>
       {isLoading && (
         <div className="lazy-image-loading absolute inset-0 flex items-center justify-center bg-gray-900/50">
-          <div className="animate-spin w-6 h-6 border-2 border-cyan-500 border-t-transparent rounded-full" />
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-cyan-500 border-t-transparent" />
         </div>
       )}
       {imageSrc && (
@@ -213,8 +213,8 @@ export function LazyImage({
         <img
           src={imageSrc}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+          className={`h-full w-full object-cover transition-opacity duration-300 ${
+            isLoaded ? "opacity-100" : "opacity-0"
           }`}
           loading="lazy"
         />

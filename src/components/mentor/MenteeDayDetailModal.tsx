@@ -48,7 +48,7 @@ export function MenteeDayDetailModal({
   const [routine, setRoutine] = useState<DailyRoutine | null>(null);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [loadingExtra, setLoadingExtra] = useState(false);
-  
+
   // Review Modal State
   const [isReviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedReviewEntry, setSelectedReviewEntry] = useState<JournalEntry | null>(null);
@@ -81,7 +81,7 @@ export function MenteeDayDetailModal({
     const totalPnL = trades.reduce((sum, t) => sum + (t.pnl || 0), 0);
     const wins = trades.filter((t) => t.outcome === "win").length;
     const losses = trades.filter((t) => t.outcome === "loss").length;
-    const winRate = trades.length > 0 ? ((wins / trades.length) * 100) : 0;
+    const winRate = trades.length > 0 ? (wins / trades.length) * 100 : 0;
 
     return { totalPnL, wins, losses, winRate, total: trades.length };
   }, [trades]);
@@ -110,21 +110,17 @@ export function MenteeDayDetailModal({
       onClose={onClose}
       maxWidth="4xl"
       title={
-        <div className="text-center w-full">
-          <h2 className="text-xl font-bold text-gray-100">
-            📅 {formattedDate}
-          </h2>
-          <p className="text-sm text-gray-400 mt-1">
-            Trades e Diário de {menteeName}
-          </p>
+        <div className="w-full text-center">
+          <h2 className="text-xl font-bold text-gray-100">📅 {formattedDate}</h2>
+          <p className="mt-1 text-sm text-gray-400">Trades e Diário de {menteeName}</p>
         </div>
       }
     >
       <div className="space-y-6">
         {/* Habits Row */}
         {routine && (
-          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
-            <div className="flex items-center justify-between mb-3">
+          <div className="rounded-xl border border-gray-700 bg-gray-800/30 p-4">
+            <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-300">Rotina Matinal</h3>
               <span className="text-xs text-gray-500">{completedHabits}/6 concluídos</span>
             </div>
@@ -134,10 +130,10 @@ export function MenteeDayDetailModal({
                 return (
                   <div
                     key={key}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
                       isCompleted
-                        ? "bg-green-900/30 border-green-500/40"
-                        : "bg-gray-800/50 border-gray-700 opacity-50"
+                        ? "border-green-500/40 bg-green-900/30"
+                        : "border-gray-700 bg-gray-800/50 opacity-50"
                     }`}
                     title={config.label}
                   >
@@ -145,9 +141,7 @@ export function MenteeDayDetailModal({
                     <span className={`text-xs ${isCompleted ? "text-green-400" : "text-gray-500"}`}>
                       {config.label}
                     </span>
-                    {isCompleted && (
-                      <span className="text-green-400 text-xs">✓</span>
-                    )}
+                    {isCompleted && <span className="text-xs text-green-400">✓</span>}
                   </div>
                 );
               })}
@@ -156,28 +150,31 @@ export function MenteeDayDetailModal({
         )}
 
         {!routine && !loadingExtra && (
-          <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700 text-center text-gray-500 text-sm">
+          <div className="rounded-xl border border-gray-700 bg-gray-800/30 p-4 text-center text-sm text-gray-500">
             Nenhuma rotina registrada neste dia.
           </div>
         )}
 
         {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4 text-center">
             <div className="text-2xl font-bold text-gray-100">{stats.total}</div>
             <div className="text-xs text-gray-400">Total Trades</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
+          <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4 text-center">
             <div className="text-2xl font-bold text-green-400">{stats.wins}</div>
             <div className="text-xs text-gray-400">Ganhos</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
+          <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4 text-center">
             <div className="text-2xl font-bold text-red-400">{stats.losses}</div>
             <div className="text-xs text-gray-400">Perdas</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700 text-center">
-            <div className={`text-2xl font-bold ${stats.totalPnL >= 0 ? "text-green-400" : "text-red-400"}`}>
-              {stats.totalPnL >= 0 ? "+" : ""}{formatCurrency(stats.totalPnL)}
+          <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-4 text-center">
+            <div
+              className={`text-2xl font-bold ${stats.totalPnL >= 0 ? "text-green-400" : "text-red-400"}`}
+            >
+              {stats.totalPnL >= 0 ? "+" : ""}
+              {formatCurrency(stats.totalPnL)}
             </div>
             <div className="text-xs text-gray-400">P&L Total</div>
           </div>
@@ -185,7 +182,7 @@ export function MenteeDayDetailModal({
 
         {trades.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-gray-300 flex items-center gap-2">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-300">
               <span className="text-yellow-400">📊</span> Trades
             </h3>
             {trades.map((trade) => {
@@ -197,38 +194,40 @@ export function MenteeDayDetailModal({
               return (
                 <div
                   key={trade.id}
-                  className={`p-4 rounded-xl border transition-all flex items-center justify-between gap-4 ${
+                  className={`flex items-center justify-between gap-4 rounded-xl border p-4 transition-all ${
                     trade.outcome === "win"
-                      ? "bg-green-900/20 border-green-500/30"
+                      ? "border-green-500/30 bg-green-900/20"
                       : trade.outcome === "loss"
-                      ? "bg-red-900/20 border-red-500/30"
-                      : "bg-gray-800/50 border-gray-700"
+                        ? "border-red-500/30 bg-red-900/20"
+                        : "border-gray-700 bg-gray-800/50"
                   }`}
                 >
                   {/* LEFT COLUMN: Info & Details */}
-                  <div className="flex-1 flex flex-col gap-3">
+                  <div className="flex flex-1 flex-col gap-3">
                     {/* Symbol & Outcome */}
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-white text-lg">
-                        {trade.symbol}
-                      </span>
+                      <span className="text-lg font-bold text-white">{trade.symbol}</span>
                       {trade.outcome && (
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded ${
+                          className={`rounded px-2 py-0.5 text-xs font-bold ${
                             trade.outcome === "win"
                               ? "bg-green-500/30 text-green-300"
                               : trade.outcome === "loss"
-                              ? "bg-red-500/30 text-red-300"
-                              : "bg-gray-500/30 text-gray-300"
+                                ? "bg-red-500/30 text-red-300"
+                                : "bg-gray-500/30 text-gray-300"
                           }`}
                         >
-                          {trade.outcome === "win" ? "WIN" : trade.outcome === "loss" ? "LOSS" : "B/E"}
+                          {trade.outcome === "win"
+                            ? "WIN"
+                            : trade.outcome === "loss"
+                              ? "LOSS"
+                              : "B/E"}
                         </span>
                       )}
                     </div>
 
                     {/* Details Row */}
-                    <div className="flex items-center gap-4 text-sm text-gray-400 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
                       <span>
                         <span className="text-gray-500">Entrada:</span>{" "}
                         <span className="text-gray-300">{trade.entryPrice?.toFixed(2)}</span>
@@ -246,10 +245,10 @@ export function MenteeDayDetailModal({
                           <span className="text-gray-500">Hora:</span>{" "}
                           <span className="text-gray-300">{trade.entryTime || "-"}</span>
                         </span>
-                        
+
                         {/* Type Tag with Icon */}
                         <div
-                          className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
+                          className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
                             trade.type === "Long"
                               ? "bg-green-500/20 text-green-400"
                               : "bg-red-500/20 text-red-400"
@@ -257,12 +256,30 @@ export function MenteeDayDetailModal({
                         >
                           <span>{trade.type}</span>
                           {trade.type === "Long" ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
                               <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                               <polyline points="17 6 23 6 23 12"></polyline>
                             </svg>
                           ) : (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
                               <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                               <polyline points="17 18 23 18 23 12"></polyline>
                             </svg>
@@ -280,8 +297,8 @@ export function MenteeDayDetailModal({
 
                     {/* Notes */}
                     {trade.notes && (
-                      <div className="text-sm text-gray-300 bg-gray-800/70 rounded-lg p-3 border border-gray-700">
-                        <span className="text-gray-500 text-xs block mb-1">Notas:</span>
+                      <div className="rounded-lg border border-gray-700 bg-gray-800/70 p-3 text-sm text-gray-300">
+                        <span className="mb-1 block text-xs text-gray-500">Notas:</span>
                         {trade.notes}
                       </div>
                     )}
@@ -290,16 +307,14 @@ export function MenteeDayDetailModal({
                   {/* RIGHT COLUMN: PnL & Button (Centered Vertically) */}
                   <div className="flex items-center gap-3">
                     <div
-                      className={`text-lg font-bold h-8 flex items-center ${
-                        (trade.pnl || 0) >= 0
-                          ? "text-green-400"
-                          : "text-red-400"
+                      className={`flex h-8 items-center text-lg font-bold ${
+                        (trade.pnl || 0) >= 0 ? "text-green-400" : "text-red-400"
                       }`}
                     >
                       {(trade.pnl || 0) >= 0 ? "+" : ""}
                       {formatCurrency(trade.pnl || 0)}
                     </div>
-                    
+
                     {/* Journal Button */}
                     <button
                       disabled={!linkedEntry}
@@ -311,10 +326,10 @@ export function MenteeDayDetailModal({
                         }
                       }}
                       title={linkedEntry ? "Ver/Avaliar Diário" : "Sem diário vinculado"}
-                      className={`h-8 w-8 rounded-[8px] flex items-center justify-center transition-all border ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-[8px] border transition-all ${
                         linkedEntry
-                          ? "bg-cyan-500/20 border-cyan-500 text-cyan-400 hover:bg-cyan-500/30 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.15)]"
-                          : "bg-gray-800/20 border-gray-700/50 text-gray-600 cursor-not-allowed"
+                          ? "cursor-pointer border-cyan-500 bg-cyan-500/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.15)] hover:bg-cyan-500/30"
+                          : "cursor-not-allowed border-gray-700/50 bg-gray-800/20 text-gray-600"
                       }`}
                     >
                       <span className="text-[16px]">📖</span>
@@ -327,17 +342,13 @@ export function MenteeDayDetailModal({
         )}
 
         {trades.length === 0 && journalEntries.length === 0 && !routine && (
-          <div className="text-center py-8 text-gray-400">
+          <div className="py-8 text-center text-gray-400">
             Nenhuma atividade registrada neste dia.
           </div>
         )}
 
         {/* Close Button */}
-        <Button
-          variant="gradient-danger"
-          onClick={onClose}
-          className="w-full py-3 font-bold"
-        >
+        <Button variant="gradient-danger" onClick={onClose} className="w-full py-3 font-bold">
           Fechar
         </Button>
       </div>

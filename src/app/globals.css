@@ -36,12 +36,12 @@
   --color-cyan-950: #0d2b26;
 
   /* Zorin Glass Design System Tokens (Golden Standard - Gunmetal Green) */
-  --color-zorin-bg: #20282d;       /* Gunmetal Green - Modal/Card backgrounds */
-  --color-zorin-surface: #2a3238;  /* Surface - Hovers and list items */
-  --color-zorin-ice: #bde6fb;      /* Ice Blue - Icons and subtle borders */
-  --color-zorin-accent: #00c853;   /* Neon Green - ONLY action buttons */
-  --color-zorin-danger: #ff5252;   /* Danger Red - Delete/Close */
-  --color-zorin-glass: rgba(32, 40, 45, 0.7);  /* Gunmetal Green with transparency */
+  --color-zorin-bg: #20282d; /* Gunmetal Green - Modal/Card backgrounds */
+  --color-zorin-surface: #2a3238; /* Surface - Hovers and list items */
+  --color-zorin-ice: #bde6fb; /* Ice Blue - Icons and subtle borders */
+  --color-zorin-accent: #00c853; /* Neon Green - ONLY action buttons */
+  --color-zorin-danger: #ff5252; /* Danger Red - Delete/Close */
+  --color-zorin-glass: rgba(32, 40, 45, 0.7); /* Gunmetal Green with transparency */
   --color-zorin-glass-border: rgba(255, 255, 255, 0.05);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -82,7 +82,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root { /* Zorin Gray-900 */ /* Zorin Gray-100 */
+  :root {
+    /* Zorin Gray-900 */ /* Zorin Gray-100 */
   }
 }
 
@@ -150,41 +151,25 @@ body::before {
 }
 
 *::-webkit-scrollbar-track {
-  background: linear-gradient(
-    to right,
-    rgba(20, 24, 29, 0.4),
-    rgba(30, 37, 41, 0.4)
-  );
+  background: linear-gradient(to right, rgba(20, 24, 29, 0.4), rgba(30, 37, 41, 0.4));
   border-radius: 10px;
   margin: 4px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 242, 195, 0.6),
-    rgba(0, 208, 160, 0.6)
-  );
+  background: linear-gradient(135deg, rgba(0, 242, 195, 0.6), rgba(0, 208, 160, 0.6));
   border-radius: 10px;
   border: 2px solid rgba(20, 24, 29, 0.4);
   transition: all 0.3s ease;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 242, 195, 0.9),
-    rgba(0, 208, 160, 0.9)
-  );
+  background: linear-gradient(135deg, rgba(0, 242, 195, 0.9), rgba(0, 208, 160, 0.9));
   border-color: rgba(0, 242, 195, 0.3);
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 242, 195, 1),
-    rgba(0, 208, 160, 1)
-  );
+  background: linear-gradient(135deg, rgba(0, 242, 195, 1), rgba(0, 208, 160, 1));
 }
 
 *::-webkit-scrollbar-corner {

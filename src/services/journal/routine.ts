@@ -1,7 +1,7 @@
-import { supabase } from '@/lib/supabase';
-import { DailyRoutine } from '@/types';
-import { DBDailyRoutine } from '@/types/database';
-import { getCurrentUserId } from '@/services/core/account';
+import { supabase } from "@/lib/supabase";
+import { DailyRoutine } from "@/types";
+import { DBDailyRoutine } from "@/types/database";
+import { getCurrentUserId } from "@/services/core/account";
 
 // ============================================
 // MAPPERS
@@ -15,18 +15,18 @@ import { getCurrentUserId } from '@/services/core/account';
  * const routine = mapDailyRoutineFromDB(dbRoutine);
  */
 export const mapDailyRoutineFromDB = (db: DBDailyRoutine): DailyRoutine => ({
-    id: db.id,
-    userId: db.user_id,
-    accountId: db.account_id,
-    date: db.date,
-    aerobic: db.aerobic,
-    diet: db.diet,
-    reading: db.reading,
-    meditation: db.meditation,
-    preMarket: db.pre_market,
-    prayer: db.prayer,
-    createdAt: db.created_at,
-    updatedAt: db.updated_at,
+  id: db.id,
+  userId: db.user_id,
+  accountId: db.account_id,
+  date: db.date,
+  aerobic: db.aerobic,
+  diet: db.diet,
+  reading: db.reading,
+  meditation: db.meditation,
+  preMarket: db.pre_market,
+  prayer: db.prayer,
+  createdAt: db.created_at,
+  updatedAt: db.updated_at,
 });
 
 /**
@@ -37,18 +37,18 @@ export const mapDailyRoutineFromDB = (db: DBDailyRoutine): DailyRoutine => ({
  * const dbRoutine = mapDailyRoutineToDB(routine);
  */
 export const mapDailyRoutineToDB = (app: DailyRoutine): DBDailyRoutine => ({
-    id: app.id,
-    user_id: app.userId,
-    account_id: app.accountId,
-    date: app.date,
-    aerobic: app.aerobic,
-    diet: app.diet,
-    reading: app.reading,
-    meditation: app.meditation,
-    pre_market: app.preMarket,
-    prayer: app.prayer,
-    created_at: app.createdAt,
-    updated_at: new Date().toISOString(),
+  id: app.id,
+  user_id: app.userId,
+  account_id: app.accountId,
+  date: app.date,
+  aerobic: app.aerobic,
+  diet: app.diet,
+  reading: app.reading,
+  meditation: app.meditation,
+  pre_market: app.preMarket,
+  prayer: app.prayer,
+  created_at: app.createdAt,
+  updated_at: new Date().toISOString(),
 });
 
 // ============================================
@@ -63,25 +63,25 @@ export const mapDailyRoutineToDB = (app: DailyRoutine): DBDailyRoutine => ({
  * const routines = await getDailyRoutines('account-id');
  */
 export async function getDailyRoutines(accountId: string): Promise<DailyRoutine[]> {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-        console.error('User not authenticated');
-        return [];
-    }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    console.error("User not authenticated");
+    return [];
+  }
 
-    const { data, error } = await supabase
-        .from('daily_routines')
-        .select('*')
-        .eq('account_id', accountId)
-        .eq('user_id', userId)
-        .order('date', { ascending: false });
+  const { data, error } = await supabase
+    .from("daily_routines")
+    .select("*")
+    .eq("account_id", accountId)
+    .eq("user_id", userId)
+    .order("date", { ascending: false });
 
-    if (error) {
-        console.error('Error fetching daily routines:', error);
-        return [];
-    }
+  if (error) {
+    console.error("Error fetching daily routines:", error);
+    return [];
+  }
 
-    return data ? data.map(mapDailyRoutineFromDB) : [];
+  return data ? data.map(mapDailyRoutineFromDB) : [];
 }
 
 /**
@@ -92,27 +92,27 @@ export async function getDailyRoutines(accountId: string): Promise<DailyRoutine[
  * const success = await saveDailyRoutine(myRoutine);
  */
 export async function saveDailyRoutine(routine: DailyRoutine): Promise<boolean> {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-        console.error('User not authenticated');
-        return false;
-    }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    console.error("User not authenticated");
+    return false;
+  }
 
-    const routineWithUser = {
-        ...routine,
-        userId
-    };
+  const routineWithUser = {
+    ...routine,
+    userId,
+  };
 
-    const { error } = await supabase
-        .from('daily_routines')
-        .upsert(mapDailyRoutineToDB(routineWithUser), { onConflict: 'account_id, date' });
+  const { error } = await supabase
+    .from("daily_routines")
+    .upsert(mapDailyRoutineToDB(routineWithUser), { onConflict: "account_id, date" });
 
-    if (error) {
-        console.error('Error saving daily routine:', error);
-        return false;
-    }
+  if (error) {
+    console.error("Error saving daily routine:", error);
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -123,22 +123,22 @@ export async function saveDailyRoutine(routine: DailyRoutine): Promise<boolean> 
  * const success = await deleteDailyRoutine('routine-id');
  */
 export async function deleteDailyRoutine(id: string): Promise<boolean> {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-        console.error('User not authenticated');
-        return false;
-    }
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    console.error("User not authenticated");
+    return false;
+  }
 
-    const { error } = await supabase
-        .from('daily_routines')
-        .delete()
-        .eq('id', id)
-        .eq('user_id', userId);
+  const { error } = await supabase
+    .from("daily_routines")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", userId);
 
-    if (error) {
-        console.error('Error deleting daily routine:', error);
-        return false;
-    }
+  if (error) {
+    console.error("Error deleting daily routine:", error);
+    return false;
+  }
 
-    return true;
+  return true;
 }

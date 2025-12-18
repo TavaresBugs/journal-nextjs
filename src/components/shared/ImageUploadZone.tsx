@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { memo, useRef } from 'react';
+import React, { memo, useRef } from "react";
 
 interface ImageUploadZoneProps {
   timeframe: { key: string; label: string };
@@ -22,10 +22,10 @@ const ImageUploadZoneComponent = ({
   onPaste,
   onFileSelect,
   onRemove,
-  onAddMore
+  onAddMore,
 }: ImageUploadZoneProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const triggerFileInput = () => {
     document.getElementById(`file-input-${timeframe.key}`)?.click();
   };
@@ -38,7 +38,7 @@ const ImageUploadZoneComponent = ({
   return (
     <div
       ref={containerRef}
-      className="aspect-video bg-gray-900/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 rounded-xl relative group overflow-hidden transition-all duration-200 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 cursor-pointer"
+      className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-700 bg-gray-900/50 transition-all duration-200 hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
       onPaste={(e) => {
         e.stopPropagation();
         onPaste(e);
@@ -54,7 +54,7 @@ const ImageUploadZoneComponent = ({
         onChange={onFileSelect}
       />
 
-      <div className="absolute top-2 left-2 bg-black/60 px-2 py-0.5 rounded text-[10px] font-medium text-cyan-400 z-10">
+      <div className="absolute top-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-medium text-cyan-400">
         {timeframe.label} {images.length > 0 && `(${images.length})`}
       </div>
 
@@ -64,7 +64,7 @@ const ImageUploadZoneComponent = ({
           <img
             src={images[images.length - 1]}
             alt={timeframe.label}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
             loading="lazy"
           />
 
@@ -72,7 +72,7 @@ const ImageUploadZoneComponent = ({
           <button
             type="button"
             onClick={onRemove}
-            className="absolute top-2 right-2 p-1 bg-red-500/80 rounded hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity z-20"
+            className="absolute top-2 right-2 z-20 rounded bg-red-500/80 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
             title="Remover última imagem"
           >
             <svg
@@ -93,8 +93,8 @@ const ImageUploadZoneComponent = ({
 
           {/* Add Button Overlay */}
           {onAddMore && (
-            <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-20">
-              <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
+            <div className="absolute right-3 bottom-3 left-3 z-20 flex items-end justify-between opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+              <span className="rounded bg-cyan-500/20 px-2 py-1 text-[10px] font-bold text-cyan-400">
                 CTRL+V
               </span>
               <button
@@ -103,7 +103,7 @@ const ImageUploadZoneComponent = ({
                   e.stopPropagation();
                   triggerFileInput();
                 }}
-                className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors"
+                className="rounded-lg bg-cyan-500 p-2 text-white shadow-lg transition-colors hover:bg-cyan-400"
                 title="Adicionar outra imagem"
               >
                 <svg
@@ -126,19 +126,17 @@ const ImageUploadZoneComponent = ({
         </>
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl text-gray-600 group-hover:text-gray-500 mb-2">
-            +
-          </span>
+          <span className="mb-2 text-2xl text-gray-600 group-hover:text-gray-500">+</span>
 
           {/* Controls that appear on hover/focus */}
-          <div className="absolute bottom-3 w-full px-3 flex justify-between items-end opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
-            <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
+          <div className="absolute bottom-3 flex w-full items-end justify-between px-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100">
+            <span className="rounded bg-cyan-500/20 px-2 py-1 text-[10px] font-bold text-cyan-400">
               CTRL+V
             </span>
             <button
               type="button"
               onClick={triggerFileInput}
-              className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors"
+              className="rounded-lg bg-cyan-500 p-2 text-white shadow-lg transition-colors hover:bg-cyan-400"
               title="Upload Imagem"
             >
               <svg

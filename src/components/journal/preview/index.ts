@@ -1,2 +1,2 @@
-export * from './JournalEntryContent';
-export { JournalEntryPreview } from './JournalEntryPreview';
+export * from "./JournalEntryContent";
+export { JournalEntryPreview } from "./JournalEntryPreview";

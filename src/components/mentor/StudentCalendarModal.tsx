@@ -30,7 +30,7 @@ export function StudentCalendarModal({
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<AccountOption[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
-  
+
   // Day detail modal state
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTrades, setSelectedTrades] = useState<Trade[]>([]);
@@ -61,8 +61,8 @@ export function StudentCalendarModal({
       const fetchTrades = async () => {
         setLoading(true);
         try {
-          // Pass selectedAccountId to filter trades. 
-          // If empty, it might fetch all or none depending on backend logic, 
+          // Pass selectedAccountId to filter trades.
+          // If empty, it might fetch all or none depending on backend logic,
           // but our service is flexible.
           const data = await getMenteeTrades(menteeId, selectedAccountId || undefined);
           setTrades(data);
@@ -95,17 +95,17 @@ export function StudentCalendarModal({
         onClose={onClose}
         maxWidth="7xl"
         title={
-          <div className="flex flex-col md:flex-row items-center justify-between w-full pr-8">
+          <div className="flex w-full flex-col items-center justify-between pr-8 md:flex-row">
             <span>📊 Calendário de {menteeName}</span>
-            
+
             {/* Account Selector */}
             {accounts.length > 0 && (
-              <div className="mt-2 md:mt-0 flex items-center gap-2">
-                <span className="text-sm text-gray-400 font-normal">Carteira:</span>
+              <div className="mt-2 flex items-center gap-2 md:mt-0">
+                <span className="text-sm font-normal text-gray-400">Carteira:</span>
                 <select
                   value={selectedAccountId}
                   onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg focus:ring-cyan-500 focus:border-cyan-500 block p-2"
+                  className="block rounded-lg border border-gray-700 bg-gray-800 p-2 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500"
                 >
                   <option value="">Todas (se permitido)</option>
                   {accounts.map((acc) => (
@@ -121,23 +121,19 @@ export function StudentCalendarModal({
       >
         <div>
           {loading ? (
-            <div className="flex items-center justify-center h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
+            <div className="flex h-[400px] items-center justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-cyan-500"></div>
             </div>
           ) : (
             <div>
               {/* Instruction */}
-              <p className="text-gray-400 text-sm mb-4 text-center">
+              <p className="mb-4 text-center text-sm text-gray-400">
                 Clique em um dia para ver os detalhes dos trades
                 {selectedAccountId && " desta carteira"}
               </p>
-              
+
               {/* Calendar */}
-              <TradeCalendar
-                trades={trades}
-                entries={[]}
-                onDayClick={handleDayClick}
-              />
+              <TradeCalendar trades={trades} entries={[]} onDayClick={handleDayClick} />
             </div>
           )}
         </div>

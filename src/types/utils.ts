@@ -1,4 +1,4 @@
-import { DailyRoutine } from './index';
+import { DailyRoutine } from "./index";
 
 export type HabitKey = keyof Omit<
   DailyRoutine,

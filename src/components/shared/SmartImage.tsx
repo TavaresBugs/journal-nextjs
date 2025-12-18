@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
 /**
  * SmartImage Component
- * 
+ *
  * Uses <picture> element to serve WebP with JPEG fallback.
  * Supports legacy images that don't have WebP versions.
- * 
+ *
  * @example
  * <SmartImage
  *   webpSrc="/images/photo.webp"
  *   jpegSrc="/images/photo.jpg"
  *   alt="Photo description"
  * />
- * 
+ *
  * // For legacy images
  * <SmartImage
  *   fallbackSrc="/old/image.png"
@@ -20,9 +20,9 @@
  * />
  */
 
-import { ImgHTMLAttributes, useState } from 'react';
+import { ImgHTMLAttributes, useState } from "react";
 
-export interface SmartImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
+export interface SmartImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> {
   /** WebP source URL (preferred) */
   webpSrc?: string;
   /** JPEG source URL (fallback) */
@@ -45,8 +45,8 @@ export function SmartImage({
   fallbackSrc,
   alt,
   blurDataUrl,
-  loading = 'lazy',
-  className = '',
+  loading = "lazy",
+  className = "",
   onImageLoad,
   onImageError,
   ...props
@@ -77,17 +77,17 @@ export function SmartImage({
   // Error state - show placeholder
   if (hasError) {
     return (
-      <div 
-        className={`bg-gray-800 flex items-center justify-center text-gray-500 ${className}`}
+      <div
+        className={`flex items-center justify-center bg-gray-800 text-gray-500 ${className}`}
         {...props}
       >
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="24" 
-          height="24" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
           strokeWidth="1.5"
         >
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -109,7 +109,7 @@ export function SmartImage({
             src={blurDataUrl}
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover blur-sm scale-110"
+            className="absolute inset-0 h-full w-full scale-110 object-cover blur-sm"
           />
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -117,8 +117,8 @@ export function SmartImage({
           src={fallbackSrc}
           alt={alt}
           loading={loading}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+          className={`h-full w-full object-cover transition-opacity duration-300 ${
+            isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={handleLoad}
           onError={handleError}
@@ -138,7 +138,7 @@ export function SmartImage({
           src={blurDataUrl}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover blur-sm scale-110"
+          className="absolute inset-0 h-full w-full scale-110 object-cover blur-sm"
         />
       )}
       <picture>
@@ -149,8 +149,8 @@ export function SmartImage({
           src={imgSrc}
           alt={alt}
           loading={loading}
-          className={`w-full h-full object-cover transition-opacity duration-300 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+          className={`h-full w-full object-cover transition-opacity duration-300 ${
+            isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={handleLoad}
           onError={handleError}
@@ -181,12 +181,12 @@ export interface JournalImageData {
  */
 export function parseJournalImage(
   image: string | JournalImageData
-): Pick<SmartImageProps, 'webpSrc' | 'jpegSrc' | 'fallbackSrc' | 'blurDataUrl'> {
+): Pick<SmartImageProps, "webpSrc" | "jpegSrc" | "fallbackSrc" | "blurDataUrl"> {
   // Legacy string URL
-  if (typeof image === 'string') {
+  if (typeof image === "string") {
     return { fallbackSrc: image };
   }
-  
+
   // Modern image data object
   return {
     webpSrc: image.webp,

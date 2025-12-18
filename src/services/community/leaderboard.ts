@@ -3,25 +3,22 @@
 // Serviço para features de leaderboard e stats da comunidade
 // ============================================
 
-import { supabase } from '@/lib/supabase';
-import {
-    LeaderboardEntry,
-    LeaderboardOptIn
-} from '@/types';
+import { supabase } from "@/lib/supabase";
+import { LeaderboardEntry, LeaderboardOptIn } from "@/types";
 
 // ============================================
 // DB TYPES (snake_case)
 // ============================================
 
 interface DBLeaderboardOptIn {
-    user_id: string;
-    display_name: string;
-    show_win_rate: boolean;
-    show_profit_factor: boolean;
-    show_total_trades: boolean;
-    show_pnl: boolean;
-    created_at: string;
-    updated_at: string;
+  user_id: string;
+  display_name: string;
+  show_win_rate: boolean;
+  show_profit_factor: boolean;
+  show_total_trades: boolean;
+  show_pnl: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 // ============================================
@@ -29,16 +26,16 @@ interface DBLeaderboardOptIn {
 // ============================================
 
 function mapLeaderboardOptInFromDB(db: DBLeaderboardOptIn): LeaderboardOptIn {
-    return {
-        userId: db.user_id,
-        displayName: db.display_name,
-        showWinRate: db.show_win_rate,
-        showProfitFactor: db.show_profit_factor,
-        showTotalTrades: db.show_total_trades,
-        showPnl: db.show_pnl,
-        createdAt: db.created_at,
-        updatedAt: db.updated_at,
-    };
+  return {
+    userId: db.user_id,
+    displayName: db.display_name,
+    showWinRate: db.show_win_rate,
+    showProfitFactor: db.show_profit_factor,
+    showTotalTrades: db.show_total_trades,
+    showPnl: db.show_pnl,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  };
 }
 
 // ============================================
@@ -52,23 +49,25 @@ function mapLeaderboardOptInFromDB(db: DBLeaderboardOptIn): LeaderboardOptIn {
  * const name = await getCurrentUserDisplayName();
  */
 export async function getCurrentUserDisplayName(): Promise<string | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
-    // 1. Tentar leaderboard_opt_in (se já entrou antes)
-    const { data: leader } = await supabase
-        .from('leaderboard_opt_in')
-        .select('display_name')
-        .eq('user_id', user.id)
-        .maybeSingle();
-    if (leader?.display_name) return leader.display_name;
+  // 1. Tentar leaderboard_opt_in (se já entrou antes)
+  const { data: leader } = await supabase
+    .from("leaderboard_opt_in")
+    .select("display_name")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (leader?.display_name) return leader.display_name;
 
-    // 2. Tentar raw_user_metadata
-    if (user.user_metadata?.first_name) return user.user_metadata.first_name;
-    if (user.user_metadata?.full_name) return user.user_metadata.full_name;
-    if (user.user_metadata?.name) return user.user_metadata.name;
+  // 2. Tentar raw_user_metadata
+  if (user.user_metadata?.first_name) return user.user_metadata.first_name;
+  if (user.user_metadata?.full_name) return user.user_metadata.full_name;
+  if (user.user_metadata?.name) return user.user_metadata.name;
 
-    return null;
+  return null;
 }
 
 /**
@@ -84,37 +83,39 @@ export async function getCurrentUserDisplayName(): Promise<string | null> {
  * const entry = await joinLeaderboard('TraderPRO', { showWinRate: true });
  */
 export async function joinLeaderboard(
-    displayName: string,
-    options: {
-        showWinRate?: boolean;
-        showProfitFactor?: boolean;
-        showTotalTrades?: boolean;
-        showPnl?: boolean;
-    } = {}
+  displayName: string,
+  options: {
+    showWinRate?: boolean;
+    showProfitFactor?: boolean;
+    showTotalTrades?: boolean;
+    showPnl?: boolean;
+  } = {}
 ): Promise<LeaderboardOptIn | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
-    const { data, error } = await supabase
-        .from('leaderboard_opt_in')
-        .upsert({
-            user_id: user.id,
-            display_name: displayName,
-            show_win_rate: options.showWinRate ?? true,
-            show_profit_factor: options.showProfitFactor ?? true,
-            show_total_trades: options.showTotalTrades ?? true,
-            show_pnl: options.showPnl ?? false,
-            updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
+  const { data, error } = await supabase
+    .from("leaderboard_opt_in")
+    .upsert({
+      user_id: user.id,
+      display_name: displayName,
+      show_win_rate: options.showWinRate ?? true,
+      show_profit_factor: options.showProfitFactor ?? true,
+      show_total_trades: options.showTotalTrades ?? true,
+      show_pnl: options.showPnl ?? false,
+      updated_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
 
-    if (error) {
-        console.error('Erro ao entrar no leaderboard:', error);
-        return null;
-    }
+  if (error) {
+    console.error("Erro ao entrar no leaderboard:", error);
+    return null;
+  }
 
-    return mapLeaderboardOptInFromDB(data);
+  return mapLeaderboardOptInFromDB(data);
 }
 
 /**
@@ -124,20 +125,19 @@ export async function joinLeaderboard(
  * const success = await leaveLeaderboard();
  */
 export async function leaveLeaderboard(): Promise<boolean> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
 
-    const { error } = await supabase
-        .from('leaderboard_opt_in')
-        .delete()
-        .eq('user_id', user.id);
+  const { error } = await supabase.from("leaderboard_opt_in").delete().eq("user_id", user.id);
 
-    if (error) {
-        console.error('Erro ao sair do leaderboard:', error);
-        return false;
-    }
+  if (error) {
+    console.error("Erro ao sair do leaderboard:", error);
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -147,18 +147,20 @@ export async function leaveLeaderboard(): Promise<boolean> {
  * const status = await getMyLeaderboardStatus();
  */
 export async function getMyLeaderboardStatus(): Promise<LeaderboardOptIn | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
 
-    const { data, error } = await supabase
-        .from('leaderboard_opt_in')
-        .select()
-        .eq('user_id', user.id)
-        .maybeSingle();
+  const { data, error } = await supabase
+    .from("leaderboard_opt_in")
+    .select()
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-    if (error || !data) return null;
+  if (error || !data) return null;
 
-    return mapLeaderboardOptInFromDB(data);
+  return mapLeaderboardOptInFromDB(data);
 }
 
 /**
@@ -168,31 +170,28 @@ export async function getMyLeaderboardStatus(): Promise<LeaderboardOptIn | null>
  * const leaderboard = await getLeaderboard();
  */
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
-    // Usar a view que já calcula as estatísticas
-    const { data, error } = await supabase
-        .from('leaderboard_view')
-        .select('*')
-        .limit(100);
+  // Usar a view que já calcula as estatísticas
+  const { data, error } = await supabase.from("leaderboard_view").select("*").limit(100);
 
-    if (error) {
-        console.error('Erro ao buscar leaderboard:', error);
-        return [];
-    }
+  if (error) {
+    console.error("Erro ao buscar leaderboard:", error);
+    return [];
+  }
 
-    return (data || []).map((item, index) => ({
-        userId: item.user_id,
-        displayName: item.display_name,
-        showWinRate: item.show_win_rate,
-        showProfitFactor: item.show_profit_factor,
-        showTotalTrades: item.show_total_trades,
-        showPnl: item.show_pnl,
-        totalTrades: item.total_trades,
-        winRate: item.win_rate,
-        totalPnl: item.total_pnl,
-        avgRR: item.avg_rr, // Avg RR from view
-        streak: item.streak, // Streak from view
-        rank: index + 1,
-    }));
+  return (data || []).map((item, index) => ({
+    userId: item.user_id,
+    displayName: item.display_name,
+    showWinRate: item.show_win_rate,
+    showProfitFactor: item.show_profit_factor,
+    showTotalTrades: item.show_total_trades,
+    showPnl: item.show_pnl,
+    totalTrades: item.total_trades,
+    winRate: item.win_rate,
+    totalPnl: item.total_pnl,
+    avgRR: item.avg_rr, // Avg RR from view
+    streak: item.streak, // Streak from view
+    rank: index + 1,
+  }));
 }
 
 /**
@@ -208,36 +207,39 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
  * const success = await updateLeaderboardPreferences({ showPnl: true });
  */
 export async function updateLeaderboardPreferences(
-    options: Partial<{
-        displayName: string;
-        showWinRate: boolean;
-        showProfitFactor: boolean;
-        showTotalTrades: boolean;
-        showPnl: boolean;
-    }>
+  options: Partial<{
+    displayName: string;
+    showWinRate: boolean;
+    showProfitFactor: boolean;
+    showTotalTrades: boolean;
+    showPnl: boolean;
+  }>
 ): Promise<boolean> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
 
-    const updateData: Record<string, unknown> = {
-        updated_at: new Date().toISOString(),
-    };
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
 
-    if (options.displayName !== undefined) updateData.display_name = options.displayName;
-    if (options.showWinRate !== undefined) updateData.show_win_rate = options.showWinRate;
-    if (options.showProfitFactor !== undefined) updateData.show_profit_factor = options.showProfitFactor;
-    if (options.showTotalTrades !== undefined) updateData.show_total_trades = options.showTotalTrades;
-    if (options.showPnl !== undefined) updateData.show_pnl = options.showPnl;
+  if (options.displayName !== undefined) updateData.display_name = options.displayName;
+  if (options.showWinRate !== undefined) updateData.show_win_rate = options.showWinRate;
+  if (options.showProfitFactor !== undefined)
+    updateData.show_profit_factor = options.showProfitFactor;
+  if (options.showTotalTrades !== undefined) updateData.show_total_trades = options.showTotalTrades;
+  if (options.showPnl !== undefined) updateData.show_pnl = options.showPnl;
 
-    const { error } = await supabase
-        .from('leaderboard_opt_in')
-        .update(updateData)
-        .eq('user_id', user.id);
+  const { error } = await supabase
+    .from("leaderboard_opt_in")
+    .update(updateData)
+    .eq("user_id", user.id);
 
-    if (error) {
-        console.error('Erro ao atualizar preferências:', error);
-        return false;
-    }
+  if (error) {
+    console.error("Erro ao atualizar preferências:", error);
+    return false;
+  }
 
-    return true;
+  return true;
 }

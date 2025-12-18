@@ -1,10 +1,10 @@
 /**
  * Query fragments for optimized data fetching.
- * 
+ *
  * Schema uses N:N relationship via journal_entry_trades junction table.
  * DEPRECATED: journal_entries.trade_id (do not use).
  * Keep this in sync with actual database schema.
- * 
+ *
  * @see src/lib/supabase/SCHEMA_NOTES.md for full schema documentation
  */
 
@@ -24,7 +24,7 @@ export const TRADE_FRAGMENTS = {
     entry_quality,
     outcome,
     created_at
-  `.replace(/\s+/g, ''),
+  `.replace(/\s+/g, ""),
 
   /**
    * ALL 34 columns for full trade detail view/edit.
@@ -68,7 +68,7 @@ export const TRADE_FRAGMENTS = {
     pd_array,
     created_at,
     updated_at
-  `.replace(/\s+/g, ''),
+  `.replace(/\s+/g, ""),
 
   /**
    * Public-safe columns for anonymous share links.
@@ -87,7 +87,7 @@ export const TRADE_FRAGMENTS = {
     strategy,
     entry_quality,
     market_condition_v2
-  `.replace(/\s+/g, ''),
+  `.replace(/\s+/g, ""),
 
   /**
    * Lightweight fragment for charts and analytics.
@@ -110,7 +110,7 @@ export const TRADE_FRAGMENTS = {
     market_condition_v2,
     r_multiple,
     htf_aligned
-  `.replace(/\s+/g, '')
+  `.replace(/\s+/g, ""),
 } as const;
 
 // ============================================
@@ -128,7 +128,7 @@ export const JOURNAL_FRAGMENTS = {
     title,
     date,
     created_at
-  `.replace(/\s+/g, ''),
+  `.replace(/\s+/g, ""),
 
   /**
    * ALL 18 columns for full journal entry view/edit.
@@ -159,7 +159,7 @@ export const JOURNAL_FRAGMENTS = {
     week_end_date,
     created_at,
     updated_at
-  `.replace(/\s+/g, ''),
+  `.replace(/\s+/g, ""),
 
   /**
    * Journal with associated trades via N:N junction table.
@@ -183,7 +183,10 @@ export const JOURNAL_FRAGMENTS = {
         strategy
       )
     )
-  `.replace(/\s+/g, '').replace(/\(\s*/g, '(').replace(/\s*\)/g, ')'),
+  `
+    .replace(/\s+/g, "")
+    .replace(/\(\s*/g, "(")
+    .replace(/\s*\)/g, ")"),
 
   /**
    * Journal with images for display.
@@ -204,7 +207,10 @@ export const JOURNAL_FRAGMENTS = {
       timeframe,
       display_order
     )
-  `.replace(/\s+/g, '').replace(/\(\s*/g, '(').replace(/\s*\)/g, ')')
+  `
+    .replace(/\s+/g, "")
+    .replace(/\(\s*/g, "(")
+    .replace(/\s*\)/g, ")"),
 } as const;
 
 // ============================================

@@ -161,11 +161,7 @@ import { ModalFooterActions } from '@/components/ui';
   <div className="space-y-4">
     <p>Conteúdo do modal...</p>
 
-    <ModalFooterActions
-      mode="save-cancel"
-      onPrimary={onConfirm}
-      onSecondary={onClose}
-    />
+    <ModalFooterActions mode="save-cancel" onPrimary={onConfirm} onSecondary={onClose} />
   </div>
 </Modal>
 ```
@@ -216,11 +212,7 @@ const [view, setView] = useState("grid");
 ```tsx
 <div>
   <label className="text-sm font-medium text-gray-300">Email</label>
-  <Input
-    placeholder="exemplo@email.com"
-    error={errors.email?.message}
-    {...register("email")}
-  />
+  <Input placeholder="exemplo@email.com" error={errors.email?.message} {...register("email")} />
 </div>
 ```
 

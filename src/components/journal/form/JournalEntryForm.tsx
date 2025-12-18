@@ -1,17 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
-import { Modal, Input, Textarea, Button, GlassCard, IconActionButton, ModalFooterActions } from '@/components/ui';
-import { DatePickerInput } from '@/components/ui/DateTimePicker';
-import type { Trade } from '@/types';
-import { useSettingsStore } from '@/store/useSettingsStore';
-import { useImageUpload } from '@/hooks/useImageUpload';
-import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
-import { TimeframeImageGrid, AssetCombobox } from '@/components/shared';
-import { formatCurrency } from '@/lib/calculations';
-import dayjs from 'dayjs';
-
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  Modal,
+  Input,
+  Textarea,
+  Button,
+  GlassCard,
+  IconActionButton,
+  ModalFooterActions,
+} from "@/components/ui";
+import { DatePickerInput } from "@/components/ui/DateTimePicker";
+import type { Trade } from "@/types";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { useImageUpload } from "@/hooks/useImageUpload";
+import { useBlockBodyScroll } from "@/hooks/useBlockBodyScroll";
+import { TimeframeImageGrid, AssetCombobox } from "@/components/shared";
+import { formatCurrency } from "@/lib/calculations";
+import dayjs from "dayjs";
 
 interface JournalEntryFormProps {
   isOpen: boolean;
@@ -42,14 +49,14 @@ export interface FormSubmissionData extends FormData {
 }
 
 const timeframes = [
-  { key: 'tfM', label: 'Mensal' },
-  { key: 'tfW', label: 'Semanal' },
-  { key: 'tfD', label: 'Diário' },
-  { key: 'tfH4', label: '4H' },
-  { key: 'tfH1', label: '1H' },
-  { key: 'tfM15', label: 'M15' },
-  { key: 'tfM5', label: 'M5' },
-  { key: 'tfM3', label: 'M3/M1' },
+  { key: "tfM", label: "Mensal" },
+  { key: "tfW", label: "Semanal" },
+  { key: "tfD", label: "Diário" },
+  { key: "tfH4", label: "4H" },
+  { key: "tfH1", label: "1H" },
+  { key: "tfM15", label: "M15" },
+  { key: "tfM5", label: "M5" },
+  { key: "tfM3", label: "M3/M1" },
 ] as const;
 
 /**
@@ -64,31 +71,35 @@ export function JournalEntryForm({
   linkedTrades: initialLinkedTrades = [],
   availableTrades = [],
   isEditing = false,
-  noBackdrop = true
+  noBackdrop = true,
 }: JournalEntryFormProps) {
-  const {  } = useSettingsStore();
-  
+  const {} = useSettingsStore();
+
   // Form state
-  const [date, setDate] = useState(initialData?.date || dayjs().format('YYYY-MM-DD'));
-  const [title, setTitle] = useState(initialData?.title || `Diário - ${dayjs().format('DD/MM/YYYY')}`);
-  const [asset, setAsset] = useState(initialData?.asset || initialLinkedTrades[0]?.symbol || '');
-  const [emotion, setEmotion] = useState(initialData?.emotion || '');
-  const [analysis, setAnalysis] = useState(initialData?.analysis || '');
-  const [technicalWins, setTechnicalWins] = useState(initialData?.technicalWins || '');
-  const [improvements, setImprovements] = useState(initialData?.improvements || '');
-  const [errors, setErrors] = useState(initialData?.errors || '');
-  
+  const [date, setDate] = useState(initialData?.date || dayjs().format("YYYY-MM-DD"));
+  const [title, setTitle] = useState(
+    initialData?.title || `Diário - ${dayjs().format("DD/MM/YYYY")}`
+  );
+  const [asset, setAsset] = useState(initialData?.asset || initialLinkedTrades[0]?.symbol || "");
+  const [emotion, setEmotion] = useState(initialData?.emotion || "");
+  const [analysis, setAnalysis] = useState(initialData?.analysis || "");
+  const [technicalWins, setTechnicalWins] = useState(initialData?.technicalWins || "");
+  const [improvements, setImprovements] = useState(initialData?.improvements || "");
+  const [errors, setErrors] = useState(initialData?.errors || "");
+
   // Trade management - support multiple trades
   const [trades, setTrades] = useState<Trade[]>(initialLinkedTrades);
   const [isLinkTradeModalOpen, setIsLinkTradeModalOpen] = useState(false);
-  
+
   // Block body scroll when link trade modal is open
   useBlockBodyScroll(isLinkTradeModalOpen);
-  
+
   // Image management
   const initialImages = initialData?.images || {};
-  const { images, handlePasteImage, handleFileSelect, removeLastImage } = useImageUpload(initialImages as Record<string, string[]>);
-  
+  const { images, handlePasteImage, handleFileSelect, removeLastImage } = useImageUpload(
+    initialImages as Record<string, string[]>
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -100,14 +111,14 @@ export function JournalEntryForm({
       await onSubmit({
         date,
         title,
-        asset: asset || 'Diário',
+        asset: asset || "Diário",
         emotion,
         analysis,
         technicalWins,
         improvements,
         errors,
         images,
-        tradeIds: trades.map(t => t.id)
+        tradeIds: trades.map((t) => t.id),
       });
     } finally {
       setIsSubmitting(false);
@@ -116,7 +127,7 @@ export function JournalEntryForm({
 
   const handleLinkTrade = (selectedTrade: Trade) => {
     // Add trade if not already linked
-    if (!trades.find(t => t.id === selectedTrade.id)) {
+    if (!trades.find((t) => t.id === selectedTrade.id)) {
       setTrades([...trades, selectedTrade]);
       // Set asset from first trade if not set
       if (!asset && trades.length === 0) {
@@ -127,17 +138,13 @@ export function JournalEntryForm({
   };
 
   const handleRemoveTrade = (tradeId: string) => {
-    setTrades(trades.filter(t => t.id !== tradeId));
+    setTrades(trades.filter((t) => t.id !== tradeId));
   };
 
   const modalTitle = (
     <div className="flex items-center gap-3">
       {isEditing && (
-        <IconActionButton
-          variant="back"
-          onClick={onClose}
-          title="Voltar para visualização"
-        />
+        <IconActionButton variant="back" onClick={onClose} title="Voltar para visualização" />
       )}
       <h2 className="text-xl font-bold text-gray-100">
         {isEditing ? "📝 Editando Diário" : "📝 Nova Entrada no Diário"}
@@ -147,10 +154,16 @@ export function JournalEntryForm({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="6xl" noBackdrop={noBackdrop}>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={modalTitle}
+        maxWidth="6xl"
+        noBackdrop={noBackdrop}
+      >
         <form onSubmit={handleFormSubmit} className="space-y-6">
           {/* Header Inputs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="md:col-span-1">
               <Input
                 label="Título / Resumo do Dia"
@@ -163,12 +176,12 @@ export function JournalEntryForm({
             <div className="md:col-span-1">
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-medium text-gray-400">
-                  Ativo <span className="text-red-500 ml-1">*</span>
+                  Ativo <span className="ml-1 text-red-500">*</span>
                 </label>
                 <AssetCombobox
                   value={asset}
                   onChange={setAsset}
-                  className="bg-[#232b32] border-gray-700 h-12"
+                  className="h-12 border-gray-700 bg-[#232b32]"
                 />
               </div>
             </div>
@@ -184,59 +197,92 @@ export function JournalEntryForm({
           </div>
 
           {/* Trades Vinculados */}
-          <GlassCard className="p-4 bg-[#1b292b]/60 backdrop-blur-md border border-[#00c853]/50 shadow-[0_0_15px_rgba(0,200,83,0.15)] hover:shadow-[0_0_20px_rgba(0,200,83,0.2)] transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-2">
+          <GlassCard className="border border-[#00c853]/50 bg-[#1b292b]/60 p-4 shadow-[0_0_15px_rgba(0,200,83,0.15)] backdrop-blur-md transition-shadow duration-300 hover:shadow-[0_0_20px_rgba(0,200,83,0.2)]">
+            <div className="mb-2 flex items-center justify-between">
               <h3 className="text-zorin-accent text-sm font-medium">
-                Trades Vinculados {trades.length > 0 && <span className="text-cyan-300">({trades.length})</span>}
+                Trades Vinculados{" "}
+                {trades.length > 0 && <span className="text-cyan-300">({trades.length})</span>}
               </h3>
               <Button
                 type="button"
                 variant="gradient-success"
                 onClick={() => setIsLinkTradeModalOpen(true)}
-                className="text-white h-8 px-3 rounded-lg shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 transition-all hover:scale-105"
+                className="flex h-8 items-center justify-center gap-2 rounded-lg px-3 text-white shadow-lg shadow-green-500/30 transition-all hover:scale-105"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span className="text-xs font-bold uppercase tracking-wide">Adicionar Trade</span>
+                <span className="text-xs font-bold tracking-wide uppercase">Adicionar Trade</span>
               </Button>
             </div>
-            
+
             {trades.length > 0 ? (
-              <div className="space-y-2 max-h-[200px] overflow-y-auto">
+              <div className="max-h-[200px] space-y-2 overflow-y-auto">
                 {trades.map((trade) => (
-                  <GlassCard 
-                    key={trade.id} 
-                    className="p-2 flex items-center justify-between gap-2 bg-zorin-bg/50 border-white/5"
+                  <GlassCard
+                    key={trade.id}
+                    className="bg-zorin-bg/50 flex items-center justify-between gap-2 border-white/5 p-2"
                   >
-                    <div className="flex items-center flex-wrap gap-1 text-sm">
+                    <div className="flex flex-wrap items-center gap-1 text-sm">
                       <span className="text-gray-400">
-                        {dayjs(trade.entryDate).format('DD/MM')} {trade.entryTime?.substring(0, 5)}
+                        {dayjs(trade.entryDate).format("DD/MM")} {trade.entryTime?.substring(0, 5)}
                       </span>
-                      <span className="text-gray-200 font-medium">{trade.symbol}</span>
-                      <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
-                        trade.type === 'Long'
-                          ? 'bg-zorin-accent/20 text-zorin-accent'
-                          : 'bg-red-500/20 text-red-400'
-                      }`}>
+                      <span className="font-medium text-gray-200">{trade.symbol}</span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
+                          trade.type === "Long"
+                            ? "bg-zorin-accent/20 text-zorin-accent"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
                         {trade.type}
-                        {trade.type === 'Long' ? (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {trade.type === "Long" ? (
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
                             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                             <polyline points="17 6 23 6 23 12"></polyline>
                           </svg>
                         ) : (
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
                             <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                             <polyline points="17 18 23 18 23 12"></polyline>
                           </svg>
                         )}
                       </span>
                       {trade.pnl !== undefined && (
-                        <span className={`text-xs font-bold ${
-                          trade.pnl > 0 ? 'text-zorin-accent' : 'text-red-400'
-                        }`}>
+                        <span
+                          className={`text-xs font-bold ${
+                            trade.pnl > 0 ? "text-zorin-accent" : "text-red-400"
+                          }`}
+                        >
                           {formatCurrency(trade.pnl)}
                         </span>
                       )}
@@ -246,10 +292,19 @@ export function JournalEntryForm({
                       size="icon"
                       type="button"
                       onClick={() => handleRemoveTrade(trade.id)}
-                      className="text-gray-500 hover:text-red-400 transition-colors bg-transparent border-0 shadow-none h-6 w-6"
+                      className="h-6 w-6 border-0 bg-transparent text-gray-500 shadow-none transition-colors hover:text-red-400"
                       title="Remover trade"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
@@ -258,15 +313,17 @@ export function JournalEntryForm({
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm italic">Nenhum trade vinculado a esta entrada.</p>
+              <p className="text-sm text-gray-400 italic">Nenhum trade vinculado a esta entrada.</p>
             )}
           </GlassCard>
 
           {/* Análise Multi-Timeframe (Imagens) */}
           <div className="space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <label className="text-sm text-gray-400">Análise Multi-Timeframe (Imagens)</label>
-              <span className="text-xs text-gray-500">Clique no ícone de upload ou use CTRL+V para colar</span>
+              <span className="text-xs text-gray-500">
+                Clique no ícone de upload ou use CTRL+V para colar
+              </span>
             </div>
 
             <TimeframeImageGrid
@@ -300,18 +357,18 @@ export function JournalEntryForm({
               value={analysis}
               onChange={(e) => setAnalysis(e.target.value)}
               placeholder="Descreva sua análise do ativo em cada timeframe..."
-              className="h-48 font-mono text-sm border-white/5"
+              className="h-48 border-white/5 font-mono text-sm"
             />
           </div>
 
           {/* Review */}
-          <GlassCard className="space-y-4 p-4 bg-zorin-bg/30 border-white/5">
-            <label className="flex items-center gap-2 text-sm text-gray-400 font-medium">
+          <GlassCard className="bg-zorin-bg/30 space-y-4 border-white/5 p-4">
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
               <span>📜</span> Review
             </label>
 
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm text-zorin-accent">
+              <label className="text-zorin-accent flex items-center gap-2 text-sm">
                 ✅ Acertos técnicos:
               </label>
               <Textarea
@@ -358,82 +415,120 @@ export function JournalEntryForm({
       </Modal>
 
       {/* Link Trade Modal */}
-      {isLinkTradeModalOpen && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-          <GlassCard className="bg-zorin-bg border-white/10 w-full max-w-md shadow-2xl overflow-hidden p-0">
-            <div className="flex items-center justify-between p-4 border-b border-white/5 bg-zorin-surface/50">
-              <h3 className="text-lg font-bold text-cyan-400 flex items-center gap-2">
-                🔗 Vincular Trade
-              </h3>
-              <button
-                onClick={() => setIsLinkTradeModalOpen(false)}
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-4">
-              <p className="text-sm text-gray-400 mb-4">Selecione um trade do dia para vincular a este diário:</p>
-
-              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                {availableTrades.length > 0 ? (
-                  availableTrades.map(t => (
-                    <button
-                      key={t.id}
-                      onClick={() => handleLinkTrade(t)}
-                      className="w-full bg-zorin-bg/50 hover:bg-zorin-surface/50 border border-white/5 hover:border-zorin-accent/50 rounded-lg p-3 transition-all text-left group"
-                    >
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-bold text-gray-200">{t.symbol}</span>
-                        <span className={`font-bold ${t.pnl && t.pnl >= 0 ? 'text-zorin-accent' : 'text-red-400'}`}>
-                          {formatCurrency(t.pnl || 0)}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-400 flex justify-between">
-                        <span className="flex items-center gap-1">
-                          <span className={`flex items-center gap-1 ${t.type === 'Long' ? 'text-zorin-accent' : 'text-red-400'}`}>
-                            {t.type}
-                            {t.type === 'Long' ? (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                <polyline points="17 6 23 6 23 12"></polyline>
-                              </svg>
-                            ) : (
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                <polyline points="17 18 23 18 23 12"></polyline>
-                              </svg>
-                            )}
-                          </span>
-                          <span className="text-gray-400">@ {t.entryPrice}</span>
-                        </span>
-                        <span>
-                          {(() => {
-                            // Dados já estão armazenados como horário NY
-                            const timeFormatted = t.entryTime ? t.entryTime.substring(0, 5) : '';
-                            return `${timeFormatted} (NY)`;
-                          })()}
-                        </span>
-                      </div>
-                    </button>
-                  ))
-                ) : (
-                  <div className="border border-dashed border-gray-700 rounded-lg p-8 text-center bg-gray-800/20">
-                    <div className="text-4xl mb-3 opacity-30">🔍</div>
-                    <h4 className="text-gray-300 font-medium mb-1">Nenhum trade encontrado</h4>
-                    <p className="text-xs text-gray-500">Não há trades nesta data disponíveis para vínculo.</p>
-                  </div>
-                )}
+      {isLinkTradeModalOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
+            <GlassCard className="bg-zorin-bg w-full max-w-md overflow-hidden border-white/10 p-0 shadow-2xl">
+              <div className="bg-zorin-surface/50 flex items-center justify-between border-b border-white/5 p-4">
+                <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-400">
+                  🔗 Vincular Trade
+                </h3>
+                <button
+                  onClick={() => setIsLinkTradeModalOpen(false)}
+                  className="text-gray-400 transition-colors hover:text-white"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
               </div>
-            </div>
-          </GlassCard>
-        </div>,
-        document.body
-      )}
+
+              <div className="p-4">
+                <p className="mb-4 text-sm text-gray-400">
+                  Selecione um trade do dia para vincular a este diário:
+                </p>
+
+                <div className="max-h-[60vh] space-y-2 overflow-y-auto">
+                  {availableTrades.length > 0 ? (
+                    availableTrades.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => handleLinkTrade(t)}
+                        className="bg-zorin-bg/50 hover:bg-zorin-surface/50 hover:border-zorin-accent/50 group w-full rounded-lg border border-white/5 p-3 text-left transition-all"
+                      >
+                        <div className="mb-1 flex items-start justify-between">
+                          <span className="font-bold text-gray-200">{t.symbol}</span>
+                          <span
+                            className={`font-bold ${t.pnl && t.pnl >= 0 ? "text-zorin-accent" : "text-red-400"}`}
+                          >
+                            {formatCurrency(t.pnl || 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-400">
+                          <span className="flex items-center gap-1">
+                            <span
+                              className={`flex items-center gap-1 ${t.type === "Long" ? "text-zorin-accent" : "text-red-400"}`}
+                            >
+                              {t.type}
+                              {t.type === "Long" ? (
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                  <polyline points="17 6 23 6 23 12"></polyline>
+                                </svg>
+                              ) : (
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                  <polyline points="17 18 23 18 23 12"></polyline>
+                                </svg>
+                              )}
+                            </span>
+                            <span className="text-gray-400">@ {t.entryPrice}</span>
+                          </span>
+                          <span>
+                            {(() => {
+                              // Dados já estão armazenados como horário NY
+                              const timeFormatted = t.entryTime ? t.entryTime.substring(0, 5) : "";
+                              return `${timeFormatted} (NY)`;
+                            })()}
+                          </span>
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-gray-700 bg-gray-800/20 p-8 text-center">
+                      <div className="mb-3 text-4xl opacity-30">🔍</div>
+                      <h4 className="mb-1 font-medium text-gray-300">Nenhum trade encontrado</h4>
+                      <p className="text-xs text-gray-500">
+                        Não há trades nesta data disponíveis para vínculo.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "format": "prettier --write .",
     "test": "vitest"
   },
   "dependencies": {
@@ -58,6 +59,8 @@
     "eslint-config-next": "16.0.7",
     "happy-dom": "^20.0.11",
     "jsdom": "^27.3.0",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
     "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",

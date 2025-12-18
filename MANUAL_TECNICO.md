@@ -170,7 +170,6 @@ Este é o coração do sistema. Veja o que acontece nos bastidores quando o usu�
 Mesmo um sistema robusto tem pontos de atenção:
 
 1.  **Cálculos no Frontend:**
-
     - **Risco:** Alguns cálculos de lucro (PnL) são feitos no navegador (JavaScript) para ser rápido.
     - **Problema:** Se alguém malicioso alterar o código no navegador, pode ver um valor errado (embora o banco de dados geralmente recalcule ou aceite o valor enviado).
     - **Solução:** Garantir que o Backend (Supabase Functions) valide os números críticos antes de salvar permanentemente.

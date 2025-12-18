@@ -120,10 +120,7 @@ Testam contra banco real (requer `.env.local`):
 // src/lib/__tests__/production-smoke.test.ts
 describe("Production Performance", () => {
   it("should query trades efficiently", async () => {
-    const { data, error } = await supabase
-      .from("trades")
-      .select("id, strategy")
-      .limit(100);
+    const { data, error } = await supabase.from("trades").select("id, strategy").limit(100);
 
     expect(error).toBeNull();
   });
