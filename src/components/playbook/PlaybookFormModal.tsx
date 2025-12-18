@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal, Input, Button, GlassCard, IconActionButton, SegmentedToggle } from '@/components/ui';
+import { Modal, Input, Button, GlassCard, IconActionButton, SegmentedToggle, ModalFooterActions } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import type { Playbook, RuleGroup } from '@/types';
 import {
@@ -529,28 +529,18 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
             )}
 
             {/* Footer Buttons */}
-            <div className="flex gap-3 pt-6 mt-6 border-t border-gray-700">
-                <Button
-                    type="button"
-                    variant="gradient-danger"
-                    onClick={() => {
-                        handleReset();
-                        onClose();
-                    }}
-                    className="flex-1 font-extrabold"
-                >
-                    Cancelar
-                </Button>
-                <Button
-                    type="button"
-                    variant="zorin-primary"
-                    onClick={handleSubmit}
-                    className="flex-1 font-extrabold"
-                    disabled={!name.trim() || isSaving}
-                >
-                    {submitButtonText}
-                </Button>
-            </div>
+            {/* Footer Buttons */}
+            <ModalFooterActions
+                onPrimary={handleSubmit}
+                onSecondary={() => {
+                    handleReset();
+                    onClose();
+                }}
+                primaryLabel={submitButtonText}
+                primaryVariant="zorin-primary"
+                disabled={!name.trim() || isSaving}
+                isFullWidth
+            />
         </Modal>
     );
 }

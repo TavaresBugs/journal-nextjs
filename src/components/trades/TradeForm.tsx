@@ -1,6 +1,6 @@
 'use client';
 
-import { Input, Button, FormSection, FormRow, FormGroup } from '@/components/ui';
+import { Input, Button, FormSection, FormRow, FormGroup, SegmentedToggle, ModalFooterActions } from '@/components/ui';
 import { DatePickerInput, TimePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { DEFAULT_ASSETS } from '@/types';
@@ -144,29 +144,34 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
         <form onSubmit={handleSubmit} className="space-y-5">
             {/* Toggle: Em Aberto / Finalizado */}
             {mode === 'create' && (
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={() => setExitPrice('')}
-                        className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                            isTradeOpen
-                                ? 'bg-amber-500/20 text-amber-300 border-2 border-amber-500/50 shadow-lg shadow-amber-500/20'
-                                : 'bg-[#232b32] text-gray-400 border border-gray-700 hover:bg-[#2a343c]'
-                        }`}
-                    >
-                        🟡 Em Aberto
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setExitPrice(entryPrice || '0')}
-                        className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all ${
-                            !isTradeOpen
-                                ? 'bg-zorin-accent/20 text-zorin-accent border-2 border-zorin-accent/50 shadow-lg shadow-zorin-accent/20'
-                                : 'bg-[#232b32] text-gray-400 border border-gray-700 hover:bg-[#2a343c]'
-                        }`}
-                    >
-                        🟢 Finalizado
-                    </button>
+                <div className="mb-2">
+                    <SegmentedToggle
+                        options={[
+                            { 
+                                value: 'open', 
+                                label: '🟡 Em Aberto',
+                                activeTextColor: 'text-amber-400',
+                                activeBgColor: 'bg-linear-to-r from-amber-500/20 to-amber-400/10',
+                                activeShadowColor: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+                            },
+                            { 
+                                value: 'closed', 
+                                label: '🟢 Finalizado',
+                                activeTextColor: 'text-green-400',
+                                activeBgColor: 'bg-linear-to-r from-green-500/20 to-green-400/10',
+                                activeShadowColor: 'shadow-[0_0_15px_rgba(34,197,94,0.15)]'
+                            }
+                        ]}
+                        value={isTradeOpen ? 'open' : 'closed'}
+                        onChange={(val) => {
+                            if (val === 'open') {
+                                setExitPrice('');
+                            } else {
+                                setExitPrice(entryPrice || '0');
+                            }
+                        }}
+                        className="w-full"
+                    />
                 </div>
             )}
 
@@ -365,7 +370,14 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
                                 return (
                                     <span key={index} className={`px-2 py-0.5 rounded text-xs font-medium ${color.bg} ${color.text} border ${color.border} flex items-center gap-1`}>
                                         🏷️ {tag}
-                                        <button type="button" onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} className="hover:text-white">×</button>
+                                        <div 
+                                            role="button"
+                                            onClick={(e) => { e.stopPropagation(); setTagsList(prev => prev.filter((_, i) => i !== index)); }} 
+                                            className="hover:text-white cursor-pointer flex items-center justify-center w-4 h-4 rounded-full hover:bg-black/20 transition-colors"
+                                            title="Remover tag"
+                                        >
+                                            ×
+                                        </div>
                                     </span>
                                 );
                             })}
@@ -650,22 +662,17 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             </FormSection>
 
             {/* Submit Button */}
-            <div className="flex gap-3">
-                {mode === 'edit' && onCancel && (
-                    <Button type="button" onClick={onCancel} variant="gradient-danger" className="flex-1 font-extrabold">
-                        Cancelar
-                    </Button>
-                )}
-                <Button
-                    type="submit"
-                    variant="zorin-primary"
-                    isLoading={isSaving}
-                    disabled={isSaving}
-                    className="flex-1"
-                >
-                    {mode === 'edit' ? 'Salvar' : 'Registrar Trade'}
-                </Button>
-            </div>
+            {/* Submit Button */}
+            <ModalFooterActions
+                isSubmit
+                onSecondary={(mode === 'edit' && onCancel) ? onCancel : undefined}
+                primaryLabel={mode === 'edit' ? 'Salvar' : 'Registrar Trade'}
+                primaryVariant="zorin-primary"
+                isLoading={isSaving}
+                disabled={isSaving}
+                isFullWidth
+                className="mt-6"
+            />
         </form>
     );
 }

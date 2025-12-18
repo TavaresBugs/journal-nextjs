@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import { Button, SegmentedToggle } from '@/components/ui';
 import { useAccountStore } from '@/store/useAccountStore';
 import { 
     MentorStatsCards, 
     MentoradosTable, 
     ConvitesTable,
-    StudentCalendarModal 
+    StudentCalendarModal,
+    InviteMenteeModal
 } from '@/components/mentor';
-import { getMentees, getSentInvites, inviteMentee, revokeInvite } from '@/services/mentor/invites';
-import { MentorInvite, MenteeOverview, MentorPermission } from '@/types';
+import { getMentees, getSentInvites, revokeInvite } from '@/services/mentor/invites';
+import { MentorInvite, MenteeOverview } from '@/types';
 
 export default function MentoriaPage() {
     const router = useRouter();
@@ -23,9 +24,6 @@ export default function MentoriaPage() {
     
     // Invite modal state
     const [showInviteModal, setShowInviteModal] = useState(false);
-    const [inviteEmail, setInviteEmail] = useState('');
-    const invitePermission: MentorPermission = 'comment';
-    const [inviting, setInviting] = useState(false);
 
     // Trades modal state
     const [showTradesModal, setShowTradesModal] = useState(false);
@@ -74,24 +72,7 @@ export default function MentoriaPage() {
         }
     };
 
-    const handleSendInvite = async () => {
-        if (!inviteEmail.trim()) return;
-        setInviting(true);
-        try {
-            const result = await inviteMentee(inviteEmail, invitePermission);
-            if (result) {
-                alert('✅ Convite enviado com sucesso para ' + inviteEmail);
-                setInviteEmail('');
-                setShowInviteModal(false);
-                loadData();
-            } else {
-                alert('❌ Erro ao enviar convite. Verifique o console para mais detalhes.');
-            }
-        } catch (err) {
-            alert('❌ Erro inesperado ao enviar convite: ' + String(err));
-        }
-        setInviting(false);
-    };
+
 
     const handleRevokeAccess = async (inviteId: string) => {
         if (!confirm('Tem certeza que deseja revogar o acesso?')) return;
@@ -99,15 +80,12 @@ export default function MentoriaPage() {
         if (success) loadData();
     };
 
-    const tabs = [
-        { id: 'mentorados', label: '🎓 Meus Mentorados' },
-        { id: 'convites', label: '📤 Convites Enviados' },
-    ] as const;
+
 
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:20px_20px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] bg-size-[20px_20px] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
 
             <div className="relative z-10 container mx-auto px-4 py-6 max-w-7xl">
                 {/* Header Box */}
@@ -147,20 +125,15 @@ export default function MentoriaPage() {
                 <MentorStatsCards stats={stats} />
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-6 border-b border-gray-700">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`pb-3 px-1 font-medium transition-colors ${
-                                activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-white'
-                            }`}
-                            style={activeTab === tab.id ? { color: '#bde6fb', borderColor: '#bde6fb' } : {}}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+                <SegmentedToggle
+                    options={[
+                        { value: 'mentorados', label: '🎓 Meus Mentorados' },
+                        { value: 'convites', label: '📤 Convites Enviados' }
+                    ]}
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as 'mentorados' | 'convites')}
+                    className="mb-6 w-full max-w-md"
+                />
 
                 {/* Content */}
                 <div className="bg-gray-900/50 border border-gray-800 rounded-2xl backdrop-blur-sm overflow-hidden">
@@ -177,53 +150,11 @@ export default function MentoriaPage() {
                 </div>
 
                 {/* Invite Modal */}
-                {showInviteModal && (
-                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm">
-                        <div className="bg-gray-900 rounded-2xl p-6 w-full max-w-md border border-gray-700 shadow-2xl">
-                            <h2 className="text-xl font-bold text-white mb-4">Convidar Mentorado</h2>
-                            <p className="text-gray-400 text-sm mb-4">
-                                Convide um aluno para acompanhar seus trades e oferecer feedback através de análises e comentários.
-                            </p>
-                            
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm text-gray-400 mb-1">Email do mentorado</label>
-                                    <input
-                                        type="email"
-                                        value={inviteEmail}
-                                        onChange={(e) => setInviteEmail(e.target.value)}
-                                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-cyan-500 focus:outline-none transition-colors"
-                                        placeholder="aluno@email.com"
-                                    />
-                                </div>
-                                
-                                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-                                    <div className="flex items-center gap-2 text-purple-400">
-                                        <span>💬</span>
-                                        <span className="font-medium">Análise + Comentários</span>
-                                    </div>
-                                    <p className="text-xs text-gray-400 mt-1">
-                                        Você poderá visualizar os trades e journals do mentorado e adicionar comentários de feedback.
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div className="flex gap-3 mt-6">
-                                <Button variant="ghost" className="flex-1" onClick={() => setShowInviteModal(false)}>
-                                    Cancelar
-                                </Button>
-                                <Button 
-                                    variant="success" 
-                                    className="flex-1" 
-                                    onClick={handleSendInvite}
-                                    disabled={inviting || !inviteEmail.trim()}
-                                >
-                                    {inviting ? 'Enviando...' : 'Enviar Convite'}
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <InviteMenteeModal 
+                    isOpen={showInviteModal}
+                    onClose={() => setShowInviteModal(false)}
+                    onSuccess={loadData}
+                />
 
                 {/* Mentee Trades Modal */}
                 {selectedMentee && (

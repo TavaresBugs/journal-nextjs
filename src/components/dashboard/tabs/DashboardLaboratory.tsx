@@ -7,9 +7,8 @@ import {
     RecapsTab, 
     CreateExperimentModal, 
     ViewExperimentModal,
-    CreateRecapModal,
     ViewRecapModal,
-    EditRecapModal 
+    RecapFormModal // Unified Modal
 } from '@/components/laboratory';
 import { useLaboratoryStore, CreateExperimentData, CreateRecapData, UpdateRecapData } from '@/store/useLaboratoryStore';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -32,9 +31,10 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     const [showViewExperiment, setShowViewExperiment] = useState(false);
     const [selectedExperiment, setSelectedExperiment] = useState<LaboratoryExperiment | null>(null);
     
-    const [showCreateRecap, setShowCreateRecap] = useState(false);
+    // Recap Modals state variables
+    const [showRecapForm, setShowRecapForm] = useState(false);
+    const [recapFormMode, setRecapFormMode] = useState<'create' | 'edit'>('create');
     const [showViewRecap, setShowViewRecap] = useState(false);
-    const [showEditRecap, setShowEditRecap] = useState(false);
     const [selectedRecap, setSelectedRecap] = useState<LaboratoryRecap | null>(null);
 
     // Laboratory Store
@@ -84,8 +84,6 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     };
 
     const handleEditExperiment = (experiment: LaboratoryExperiment) => {
-        // For now, we'll use view modal with edit option
-        // You could create a separate EditExperimentModal if needed
         setSelectedExperiment(experiment);
         setShowViewExperiment(true);
     };
@@ -103,15 +101,19 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     };
 
     // Recap handlers
-    const handleCreateRecap = async (data: CreateRecapData, files: File[]) => {
-        await addRecap(data, files);
-        setShowCreateRecap(false);
+    const handleOpenCreateRecap = () => {
         setSelectedRecap(null);
+        setRecapFormMode('create');
+        setShowRecapForm(true);
     };
 
-    const handleUpdateRecap = async (id: string, data: CreateRecapData, files: File[]) => {
-        await updateRecap({ id, ...data });
-        setShowCreateRecap(false);
+    const handleRecapSubmit = async (data: CreateRecapData | UpdateRecapData, files: File[]) => {
+        if (recapFormMode === 'create') {
+            await addRecap(data as CreateRecapData, files);
+        } else {
+            await updateRecap(data as UpdateRecapData, files);
+        }
+        setShowRecapForm(false);
         setSelectedRecap(null);
     };
 
@@ -123,13 +125,8 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     const handleEditRecap = (recap: LaboratoryRecap) => {
         setSelectedRecap(recap);
         setShowViewRecap(false); // Close view modal
-        setShowEditRecap(true); // Open edit modal
-    };
-
-    const handleUpdateRecapFromEdit = async (data: UpdateRecapData, files: File[]) => {
-        await updateRecap(data, files);
-        setShowEditRecap(false);
-        setSelectedRecap(null);
+        setRecapFormMode('edit');
+        setShowRecapForm(true); // Open form modal in edit mode
     };
 
     const handleDeleteRecap = async (id: string) => {
@@ -170,7 +167,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                     <TabPanel value="recaps" activeTab={activeTab}>
                         <RecapsTab
                             recaps={recaps}
-                            onCreateNew={() => setShowCreateRecap(true)}
+                            onCreateNew={handleOpenCreateRecap}
                             onView={handleViewRecap}
                             onEdit={handleEditRecap}
                             onDelete={handleDeleteRecap}
@@ -199,16 +196,19 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                 onPromote={handlePromoteExperiment}
             />
 
-            {/* Recap Modals */}
-            <CreateRecapModal
-                isOpen={showCreateRecap}
-                onClose={() => { setShowCreateRecap(false); setSelectedRecap(null); }}
-                onSubmit={handleCreateRecap}
-                onUpdate={handleUpdateRecap}
+            {/* Unified Recap Form Modal (Create & Edit) */}
+            <RecapFormModal
+                isOpen={showRecapForm}
+                onClose={() => {
+                    setShowRecapForm(false);
+                    setSelectedRecap(null);
+                }}
+                mode={recapFormMode}
+                initialData={selectedRecap}
+                onSubmit={handleRecapSubmit}
                 trades={trades}
                 journalEntries={journalEntriesLite}
                 isLoading={isLoading}
-                editingRecap={selectedRecap}
             />
 
             <ViewRecapModal
@@ -219,23 +219,6 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
                 }}
                 recap={selectedRecap}
                 onEdit={handleEditRecap}
-            />
-
-            <EditRecapModal
-                isOpen={showEditRecap}
-                onClose={() => {
-                    setShowEditRecap(false);
-                    setSelectedRecap(null);
-                }}
-                onBack={() => {
-                    setShowEditRecap(false);
-                    setShowViewRecap(true);
-                }}
-                recap={selectedRecap}
-                onUpdateRecap={handleUpdateRecapFromEdit}
-                trades={trades}
-                journalEntries={journalEntriesLite}
-                isLoading={isLoading}
             />
         </>
     );

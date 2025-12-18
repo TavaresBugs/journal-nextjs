@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Modal, Input, Textarea, Button, GlassCard, IconActionButton } from '@/components/ui';
+import { Modal, Input, Textarea, Button, GlassCard, IconActionButton, ModalFooterActions } from '@/components/ui';
 import { DatePickerInput } from '@/components/ui/DateTimePicker';
 import type { Trade } from '@/types';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -345,16 +345,15 @@ export function JournalEntryForm({
           </GlassCard>
 
           {/* Footer Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-800">
-            {isEditing && (
-              <Button type="button" variant="gradient-danger" onClick={onClose} className="flex-1 font-extrabold">
-                Cancelar
-              </Button>
-            )}
-            <Button type="submit" variant="gradient-success" className="flex-1 font-extrabold" disabled={isSubmitting}>
-              {isSubmitting ? 'Salvando...' : 'Salvar Entrada'}
-            </Button>
-          </div>
+          {/* Footer Actions */}
+          <ModalFooterActions
+            isSubmit
+            onSecondary={isEditing ? onClose : undefined}
+            primaryLabel="Salvar Entrada"
+            primaryVariant="gradient-success"
+            isLoading={isSubmitting}
+            isFullWidth
+          />
         </form>
       </Modal>
 

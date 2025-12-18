@@ -15,3 +15,4 @@ export { IconActionButton } from './IconActionButton';
 export { Switch } from './switch';
 export { SegmentedToggle } from './SegmentedToggle';
 export { AssetBadge } from './AssetBadge';
+export * from './ModalFooterActions';

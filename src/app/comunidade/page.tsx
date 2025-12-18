@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import { Button, SegmentedToggle } from '@/components/ui';
+import { ViewSharedPlaybookModal } from '@/components/playbook/ViewSharedPlaybookModal';
 import { PageSkeleton } from '@/components/ui/PageSkeleton';
 import { useAccountStore } from '@/store/useAccountStore';
 import {
@@ -128,22 +129,24 @@ function PlaybooksGrid({
                                 </div>
 
                                 {/* Star Button */}
-                                <button 
-                                    onClick={(e) => {
+                                <Button 
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e: React.MouseEvent) => {
                                         e.stopPropagation();
                                         onStar(playbook.id);
                                     }}
-                                    className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors ${
+                                    className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors h-auto ${
                                         playbook.hasUserStarred 
-                                            ? 'bg-amber-500/20 text-amber-400' 
-                                            : 'bg-gray-700/50 text-gray-400 hover:text-amber-400'
+                                            ? 'bg-amber-500/20 text-amber-400 hover:bg-amber-500/30' 
+                                            : 'bg-gray-700/50 text-gray-400 hover:text-amber-400 hover:bg-gray-700'
                                     }`}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={playbook.hasUserStarred ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                                     </svg>
                                     <span className="text-sm">{playbook.stars}</span>
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
@@ -411,7 +414,7 @@ export default function ComunidadePage() {
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Grid pattern overlay - same as admin page */}
-            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [background-size:20px_20px] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
+            <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] bg-size-[20px_20px] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-10" />
 
             <div className="relative z-10 container mx-auto px-4 py-6 max-w-7xl">
                 {/* Header Box - matching admin page style */}
@@ -428,45 +431,34 @@ export default function ComunidadePage() {
                     </div>
 
                     {/* Right: Back Button */}
-                    <button 
+                    {/* Right: Back Button */}
+                    <Button 
+                        variant="ghost"
                         onClick={goBack}
-                        className="px-4 py-2 text-gray-400 hover:text-cyan-400 bg-gray-950/50 hover:bg-gray-900 border border-gray-700 hover:border-cyan-500/50 rounded-lg transition-all duration-200 flex items-center gap-2"
+                        leftIcon={
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                        }
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7"/>
-                        </svg>
                         Voltar ao Dashboard
-                    </button>
+                    </Button>
                 </div>
 
                 {/* Stats */}
                 <StatsCards stats={stats} />
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-6 border-b border-gray-700">
-                    <button
-                        onClick={() => setActiveTab('playbooks')}
-                        className={`pb-3 px-1 font-medium transition-colors ${
-                            activeTab === 'playbooks'
-                                ? 'border-b-2'
-                                : 'text-gray-400 hover:text-white'
-                        }`}
-                        style={activeTab === 'playbooks' ? { color: '#bde6fb', borderColor: '#bde6fb' } : {}}
-                    >
-                        📚 Playbooks Públicos
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('leaderboard')}
-                        className={`pb-3 px-1 font-medium transition-colors ${
-                            activeTab === 'leaderboard'
-                                ? 'border-b-2'
-                                : 'text-gray-400 hover:text-white'
-                        }`}
-                        style={activeTab === 'leaderboard' ? { color: '#bde6fb', borderColor: '#bde6fb' } : {}}
-                    >
-                        🏆 Leaderboard
-                    </button>
-                </div>
+                {/* Tabs */}
+                <SegmentedToggle
+                    options={[
+                        { value: 'playbooks', label: '📚 Playbooks Públicos' },
+                        { value: 'leaderboard', label: '🏆 Leaderboard' }
+                    ]}
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as 'playbooks' | 'leaderboard')}
+                    className="mb-6 w-full max-w-md"
+                />
 
                 {/* Content */}
                 <div className="bg-gray-900/50 border border-gray-800 rounded-2xl backdrop-blur-sm overflow-hidden">
@@ -491,148 +483,10 @@ export default function ComunidadePage() {
             </div>
 
             {/* View Playbook Modal */}
-            {viewingPlaybook && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-                    <div className="bg-gray-900 rounded-2xl w-full max-w-4xl border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto flex flex-col">
-                        {/* Modal Header */}
-                        <div className="flex items-start justify-between p-6 border-b border-gray-800 sticky top-0 bg-gray-900 z-10">
-                            <div className="flex items-center gap-4">
-                                <div 
-                                    className="text-4xl p-3 rounded-xl bg-gray-800/50"
-                                    style={{ color: viewingPlaybook.playbook?.color }}
-                                >
-                                    {viewingPlaybook.playbook?.icon || '📘'}
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-white mb-1">{viewingPlaybook.playbook?.name || 'Playbook'}</h2>
-                                    <div className="flex items-center gap-3 text-sm text-gray-400">
-                                        <div className="flex items-center gap-1.5 bg-gray-800 px-2 py-0.5 rounded-full">
-                                            <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-                                            {viewingPlaybook.userName}
-                                        </div>
-                                        <span className="flex items-center gap-1 text-amber-400">
-                                            ⭐ {viewingPlaybook.stars}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setViewingPlaybook(null)}
-                                className="text-gray-400 hover:text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-8">
-                             {/* Description */}
-                            {(viewingPlaybook.description || viewingPlaybook.playbook?.description) && (
-                                <div className="bg-gray-800/30 p-4 rounded-xl border border-gray-800">
-                                    <p className="text-gray-300 leading-relaxed">
-                                        {viewingPlaybook.description || viewingPlaybook.playbook?.description}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Rules Section - Prominent */}
-                            {viewingPlaybook.playbook?.ruleGroups && viewingPlaybook.playbook.ruleGroups.length > 0 && (
-                                <div>
-                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                        REGRAS DO PLAYBOOK
-                                    </h3>
-                                    <div className="grid gap-4">
-                                        {viewingPlaybook.playbook.ruleGroups.map((group, idx) => (
-                                            <div key={idx} className="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
-                                                <div className="bg-gray-800 px-4 py-2 border-b border-gray-700 font-semibold text-gray-200">
-                                                    {group.name}
-                                                </div>
-                                                <div className="p-4">
-                                                    <ul className="space-y-2">
-                                                        {group.rules.map((rule, ruleIdx) => (
-                                                            <li key={ruleIdx} className="flex items-start gap-3 text-gray-300">
-                                                                <span className="text-cyan-500 mt-1">•</span>
-                                                                <span>{rule}</span>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Author Stats - Detailed Grid */}
-                            {viewingPlaybook.authorStats ? (
-                                <div>
-                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                                        PERFORMANCE DO AUTOR
-                                    </h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        {/* Main Cards */}
-                                        <div className="col-span-2 bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 p-4 rounded-xl flex flex-col justify-between relative overflow-hidden group">
-                                            <div className="text-sm text-gray-400 font-medium">Net P&L</div>
-                                            <div className={`text-3xl font-bold ${viewingPlaybook.authorStats.netPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                                {viewingPlaybook.authorStats.netPnl >= 0 ? '+' : ''}{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD' }).format(viewingPlaybook.authorStats.netPnl)}
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl">
-                                            <div className="text-xs text-gray-400 mb-1">Win Rate</div>
-                                            <div className={`text-xl font-bold ${viewingPlaybook.authorStats.winRate >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                                                {viewingPlaybook.authorStats.winRate.toFixed(1)}%
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl">
-                                            <div className="text-xs text-gray-400 mb-1">Avg RR</div>
-                                            <div className="text-xl font-bold text-gray-200">
-                                                {viewingPlaybook.authorStats.avgRR.toFixed(2)}R
-                                            </div>
-                                        </div>
-
-                                        {/* Detailed Metrics - Row 2 */}
-                                        <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl">
-                                            <div className="text-xs text-gray-400 mb-1">Sequência Win</div>
-                                            <div className="text-lg font-bold text-green-400">
-                                                {viewingPlaybook.authorStats.maxWinStreak}
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-gray-800/50 border border-gray-700 p-4 rounded-xl">
-                                            <div className="text-xs text-gray-400 mb-1">Duração Média</div>
-                                            <div className="text-lg font-bold text-gray-200">
-                                                {viewingPlaybook.authorStats.avgDuration || '-'}
-                                            </div>
-                                        </div>
-
-                                        <div className="col-span-2 bg-gray-800/50 border border-gray-700 p-4 rounded-xl">
-                                            <div className="text-xs text-gray-400 mb-1">Preferências</div>
-                                            <div className="text-sm font-medium text-white flex items-center gap-3">
-                                                <span className="flex items-center gap-1">
-                                                    <span className="text-gray-500">Ativo:</span> {viewingPlaybook.authorStats.preferredSymbol || '-'}
-                                                </span>
-                                                <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
-                                                <span className="flex items-center gap-1">
-                                                    <span className="text-gray-500">Sessão:</span> {viewingPlaybook.authorStats.preferredSession || '-'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="bg-gray-800/30 border border-gray-800 border-dashed rounded-xl p-8 text-center">
-                                    <div className="text-4xl mb-3">👻</div>
-                                    <h3 className="text-gray-300 font-medium">Sem dados de performance</h3>
-                                    <p className="text-gray-500 text-sm mt-1">O autor ainda não registrou trades suficientes com este playbook.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ViewSharedPlaybookModal 
+                playbook={viewingPlaybook} 
+                onClose={() => setViewingPlaybook(null)} 
+            />
 
         </div>
     );

@@ -3,8 +3,8 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils/general';
 
-type IconActionVariant = 'edit' | 'delete' | 'share' | 'view' | 'back' | 'close' | 'comments' | 'journal' | 'add';
-type IconActionSize = 'sm' | 'md';
+type IconActionVariant = 'edit' | 'delete' | 'share' | 'view' | 'back' | 'next' | 'close' | 'comments' | 'journal' | 'add' | 'star';
+type IconActionSize = 'sm' | 'md' | 'lg';
 
 interface IconActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     variant: IconActionVariant;
@@ -24,6 +24,16 @@ const VARIANT_CONFIG: Record<IconActionVariant, {
         icon: (
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m15 18-6-6 6-6"/>
+            </svg>
+        ),
+    },
+    next: {
+        hoverText: 'hover:text-blue-400',
+        hoverBg: 'hover:bg-blue-500/10',
+        defaultTitle: 'Avançar',
+        icon: (
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m9 18 6-6-6-6"/>
             </svg>
         ),
     },
@@ -109,11 +119,22 @@ const VARIANT_CONFIG: Record<IconActionVariant, {
             </svg>
         ),
     },
+    star: {
+        hoverText: 'hover:text-amber-400',
+        hoverBg: 'hover:bg-amber-500/10',
+        defaultTitle: 'Favoritar',
+        icon: (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+        ),
+    },
 };
 
 const SIZE_CONFIG: Record<IconActionSize, string> = {
     sm: 'p-1',
     md: 'p-1.5',
+    lg: 'p-3',
 };
 
 export function IconActionButton({

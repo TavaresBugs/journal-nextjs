@@ -541,6 +541,7 @@ export interface LaboratoryRecap {
     /** ID of the linked record (trade or journal entry) */
     linkedId?: string;
     title: string;
+    type?: 'daily' | 'weekly';
     whatWorked?: string;
     whatFailed?: string;
     emotionalState?: EmotionalState;

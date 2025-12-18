@@ -120,6 +120,7 @@ function mapRecapFromDB(
         linkedType: row.linked_type as RecapLinkedType | undefined,
         linkedId: row.linked_id as string | undefined,
         title: row.title as string,
+        type: row.review_type as 'daily' | 'weekly' | undefined,
         whatWorked: row.what_worked as string | undefined,
         whatFailed: row.what_failed as string | undefined,
         emotionalState: row.emotional_state as EmotionalState | undefined,

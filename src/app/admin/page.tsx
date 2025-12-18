@@ -1,9 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { useAccountStore } from '@/store/useAccountStore';
 import { 
     getAllUsers, 
     getAdminStats, 
@@ -18,30 +15,8 @@ import {
     AdminMentorTable 
 } from '@/components/admin';
 import { UserExtended, AuditLog, AdminStats } from '@/types';
-
-// Back button component (small, kept inline)
-function BackButton() {
-    const router = useRouter();
-    const { currentAccountId } = useAccountStore();
-    
-    const goBack = () => {
-        if (currentAccountId) {
-            router.push(`/dashboard/${currentAccountId}`);
-        } else {
-            router.push('/');
-        }
-    };
-    
-    return (
-        <Button variant="ghost" onClick={goBack} leftIcon={
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-        }>
-            Voltar ao Dashboard
-        </Button>
-    );
-}
+import { BackButton } from '@/components/shared/BackButton';
+import { SegmentedToggle } from '@/components/ui';
 
 export default function AdminPage() {
     const [activeTab, setActiveTab] = useState<'users' | 'logs' | 'mentors'>('users');
@@ -95,12 +70,6 @@ export default function AdminPage() {
         loadData();
     };
 
-    const tabs = [
-        { id: 'users', label: '👥 Usuários' },
-        { id: 'logs', label: '📋 Audit Logs' },
-        { id: 'mentors', label: '🎓 Mentores' },
-    ] as const;
-
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Grid pattern overlay */}
@@ -125,20 +94,16 @@ export default function AdminPage() {
                 <AdminStatsCards stats={stats} />
 
                 {/* Tabs */}
-                <div className="flex gap-4 mb-6 border-b border-gray-700">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`pb-3 px-1 font-medium transition-colors ${
-                                activeTab === tab.id ? 'border-b-2' : 'text-gray-400 hover:text-white'
-                            }`}
-                            style={activeTab === tab.id ? { color: '#bde6fb', borderColor: '#bde6fb' } : {}}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+                <SegmentedToggle
+                    options={[
+                        { value: 'users', label: '👥 Usuários' },
+                        { value: 'logs', label: '📋 Audit Logs' },
+                        { value: 'mentors', label: '🎓 Mentores' }
+                    ]}
+                    value={activeTab}
+                    onChange={(val) => setActiveTab(val as 'users' | 'logs' | 'mentors')}
+                    className="mb-6 w-full max-w-md"
+                />
 
                 {/* Content */}
                 <div className="bg-gray-900/50 border border-gray-800 rounded-2xl backdrop-blur-sm overflow-hidden">

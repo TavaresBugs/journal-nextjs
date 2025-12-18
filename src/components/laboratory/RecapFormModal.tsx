@@ -1,14 +1,13 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Modal, Button, GlassCard, WeekPicker, SegmentedToggle } from '@/components/ui';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Modal, Button, GlassCard, WeekPicker, SegmentedToggle, IconActionButton, ModalFooterActions } from '@/components/ui';
 import { CustomCheckbox } from '@/components/checklist/CustomCheckbox';
-import type { EmotionalState, TradeLite, JournalEntryLite, RecapLinkedType } from '@/types';
-import { CreateRecapData } from '@/store/useLaboratoryStore';
+import type { EmotionalState, TradeLite, JournalEntryLite, RecapLinkedType, LaboratoryRecap } from '@/types';
+import { CreateRecapData, UpdateRecapData } from '@/store/useLaboratoryStore';
 import { formatCurrency } from '@/lib/calculations';
 import { startOfWeek, endOfWeek, format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type { LaboratoryRecap } from '@/types';
 
 const REVIEW_TYPE_OPTIONS = [
     { value: 'daily', label: <>📅 Review Diário</> },
@@ -27,17 +26,6 @@ interface SearchRecord {
     title?: string;
 }
 
-interface CreateRecapModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (data: CreateRecapData, files: File[]) => Promise<void>;
-    onUpdate?: (id: string, data: CreateRecapData, files: File[]) => Promise<void>;
-    trades: TradeLite[];
-    journalEntries?: JournalEntryLite[];
-    isLoading?: boolean;
-    editingRecap?: LaboratoryRecap | null;
-}
-
 const EMOTION_OPTIONS: { value: EmotionalState; label: string; emoji: string }[] = [
     { value: 'confiante', label: 'Confiante', emoji: '💪' },
     { value: 'disciplinado', label: 'Disciplinado', emoji: '🎯' },
@@ -48,17 +36,29 @@ const EMOTION_OPTIONS: { value: EmotionalState; label: string; emoji: string }[]
     { value: 'frustrado', label: 'Frustrado', emoji: '😤' },
 ];
 
-export function CreateRecapModal({ 
+interface RecapFormModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    mode: 'create' | 'edit';
+    initialData?: LaboratoryRecap | null;
+    onSubmit: (data: CreateRecapData | UpdateRecapData, files: File[]) => Promise<void>;
+    trades: TradeLite[];
+    journalEntries?: JournalEntryLite[];
+    isLoading?: boolean;
+}
+
+export function RecapFormModal({ 
     isOpen, 
     onClose, 
+    mode,
+    initialData,
     onSubmit,
-    onUpdate,
     trades,
     journalEntries = [],
     isLoading = false,
-    editingRecap
-}: CreateRecapModalProps) {
-    const isEditMode = !!editingRecap;
+}: RecapFormModalProps) {
+    const isEditMode = mode === 'edit';
+    
     // Review type toggle
     const [reviewType, setReviewType] = useState<'daily' | 'weekly'>('daily');
     
@@ -71,10 +71,17 @@ export function CreateRecapModal({
     const [whatFailed, setWhatFailed] = useState('');
     const [emotionalState, setEmotionalState] = useState<EmotionalState | ''>('');
     const [lessonsLearned, setLessonsLearned] = useState('');
-    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-    const [previews, setPreviews] = useState<string[]>([]);
+    
+    // Files state
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // New files to upload
+    const [previews, setPreviews] = useState<string[]>([]); // URLs for display (remote or local blob)
+    
+    // Search state
     const [recordSearch, setRecordSearch] = useState('');
     const [showRecordDropdown, setShowRecordDropdown] = useState(false);
+    
+    // Carousel state
+    const [carouselIndex, setCarouselIndex] = useState(0);
     
     // Week selection
     const [selectedWeek, setSelectedWeek] = useState(() => {
@@ -85,7 +92,6 @@ export function CreateRecapModal({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const uploadZoneRef = useRef<HTMLDivElement>(null);
-    const [carouselIndex, setCarouselIndex] = useState(0);
 
     // Parse week string to dates
     const weekDates = useMemo(() => {
@@ -123,7 +129,7 @@ export function CreateRecapModal({
             .map(t => ({
                 type: 'trade' as const,
                 id: t.id,
-                label: t.symbol, // Just the symbol - badge shows [TRADE]
+                label: t.symbol,
                 symbol: t.symbol,
                 date: t.entryDate,
                 outcome: t.outcome,
@@ -136,27 +142,25 @@ export function CreateRecapModal({
             .map(j => ({
                 type: 'journal' as const,
                 id: j.id,
-                label: j.asset || 'Observação', // Just the asset - badge shows [DIÁRIO]
+                label: j.asset || 'Observação',
                 date: j.date,
                 title: j.title,
             }));
 
-        // Sort by date descending (most recent first)
+        // Sort by date descending
         return [...recentJournals, ...recentTrades]
             .sort((a, b) => b.date.localeCompare(a.date))
             .slice(0, 8);
     }, [trades, journalEntries]);
 
-    // Unified search results (trades + journals)
+    // Unified search results
     const searchResults = useMemo((): SearchRecord[] => {
-        // If no search query, show recent records
         if (!recordSearch || recordSearch.length < 2) {
             return showRecordDropdown ? recentRecords : [];
         }
 
         const query = recordSearch.toLowerCase();
         
-        // Filter trades matching the search
         const matchingTrades: SearchRecord[] = trades
             .filter(t => 
                 t.symbol.toLowerCase().includes(query) ||
@@ -172,7 +176,6 @@ export function CreateRecapModal({
                 outcome: t.outcome,
             }));
         
-        // Filter journals matching the search
         const matchingJournals: SearchRecord[] = journalEntries
             .filter(j => 
                 j.title?.toLowerCase().includes(query) ||
@@ -188,14 +191,12 @@ export function CreateRecapModal({
                 title: j.title,
             }));
         
-        // Journals first (more recent in memory), then trades
         return [...matchingJournals, ...matchingTrades];
     }, [recordSearch, trades, journalEntries, showRecordDropdown, recentRecords]);
 
     // Calculate stats for selected trades
     const weekStats = useMemo(() => {
         const selected = weekTrades.filter(t => selectedTradeIds.includes(t.id));
-        // Calculate wins based on P&L (positive = win), not outcome field
         const wins = selected.filter(t => (t.pnl ?? 0) > 0).length;
         const total = selected.length;
         const totalPnL = selected.reduce((sum, t) => sum + (t.pnl || 0), 0);
@@ -208,53 +209,48 @@ export function CreateRecapModal({
         };
     }, [weekTrades, selectedTradeIds]);
 
-    // Pre-fill form when editing OR reset when opening fresh
+    // Initialization Effect
     useEffect(() => {
-        if (!isOpen) return; // Only run when modal is open
+        if (!isOpen) return;
         
-        if (editingRecap) {
-            // Edit mode: fill with existing data
-            setTitle(editingRecap.title);
-            setReviewType('daily'); // Default to daily for editing existing recaps
-            setLinkedType(editingRecap.linkedType);
-            setLinkedId(editingRecap.linkedId || editingRecap.tradeId || '');
-            setWhatWorked(editingRecap.whatWorked || '');
-            setWhatFailed(editingRecap.whatFailed || '');
-            setEmotionalState(editingRecap.emotionalState || '');
-            setLessonsLearned(editingRecap.lessonsLearned || '');
-            // For existing images, we can't convert URLs back to Files
-            // but we can show previews
-            if (editingRecap.images?.length) {
-                setPreviews(editingRecap.images);
+        if (isEditMode && initialData) {
+            // EDIT MODE
+            setTitle(initialData.title);
+            setReviewType(initialData.type === 'weekly' ? 'weekly' : 'daily');
+            setLinkedType(initialData.linkedType);
+            setLinkedId(initialData.linkedId || initialData.tradeId || '');
+            setWhatWorked(initialData.whatWorked || '');
+            setWhatFailed(initialData.whatFailed || '');
+            setEmotionalState(initialData.emotionalState || '');
+            setLessonsLearned(initialData.lessonsLearned || '');
+            
+            // Image handling for edit:
+            // Existing images come as URLs. We put them in 'previews'.
+            // 'selectedFiles' remains empty initially.
+            if (initialData.images?.length) {
+                setPreviews(initialData.images);
             } else {
                 setPreviews([]);
             }
+            
             setSelectedFiles([]);
-            // Set search display for linked record
-            if (editingRecap.linkedType === 'trade' && editingRecap.trade) {
-                setRecordSearch(editingRecap.trade.symbol);
-            } else if (editingRecap.linkedType === 'journal' && editingRecap.journal) {
-                setRecordSearch(editingRecap.journal.title || 'Journal Entry');
+            setCarouselIndex(0);
+
+            // Populate search field based on linked record
+            if (initialData.linkedType === 'trade' && initialData.trade) {
+                setRecordSearch(initialData.trade.symbol);
+            } else if (initialData.linkedType === 'journal' && initialData.journal) {
+                setRecordSearch(initialData.journal.title || initialData.journal.asset || 'Diário');
             } else {
                 setRecordSearch('');
             }
+            
         } else {
-            // Create mode: reset all fields
-            setTitle('');
-            setLinkedType(undefined);
-            setLinkedId('');
-            setRecordSearch('');
-            setSelectedTradeIds([]);
-            setWhatWorked('');
-            setWhatFailed('');
-            setEmotionalState('');
-            setLessonsLearned('');
-            setSelectedFiles([]);
-            setPreviews([]);
-            setReviewType('daily');
-            setCarouselIndex(0);
+            // CREATE MODE
+            handleReset();
         }
-    }, [isOpen, editingRecap]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, isEditMode, initialData]);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -267,8 +263,29 @@ export function CreateRecapModal({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
+    const handleReset = () => {
+        setTitle('');
+        setLinkedType(undefined);
+        setLinkedId('');
+        setRecordSearch('');
+        setSelectedTradeIds([]);
+        setWhatWorked('');
+        setWhatFailed('');
+        setEmotionalState('');
+        setLessonsLearned('');
+        setSelectedFiles([]);
+        setPreviews([]);
+        setReviewType('daily');
+        setCarouselIndex(0);
+    };
+
+    const handleClose = () => {
+        handleReset();
+        onClose();
+    };
+
+    // File Handling
+    const processFiles = useCallback((files: File[]) => {
         if (files.length > 0) {
             setSelectedFiles(prev => [...prev, ...files]);
             
@@ -280,35 +297,75 @@ export function CreateRecapModal({
                 reader.readAsDataURL(file);
             });
         }
+    }, []);
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        processFiles(files);
+        // Reset input to allow selecting same file again if needed
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const removeFile = (index: number) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-        setPreviews(prev => prev.filter((_, i) => i !== index));
-        // Adjust carousel index if needed
-        setCarouselIndex(prev => Math.max(0, Math.min(prev, previews.length - 2)));
-    };
-
-    const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const handlePaste = useCallback((e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
         const items = e.clipboardData?.items;
         if (!items) return;
 
-        for (const item of Array.from(items)) {
+        const imageFiles: File[] = [];
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
             if (item.type.startsWith('image/')) {
-                e.preventDefault();
                 const file = item.getAsFile();
-                if (file) {
-                    setSelectedFiles(prev => [...prev, file]);
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        setPreviews(prev => [...prev, event.target?.result as string]);
-                    };
-                    reader.readAsDataURL(file);
-                }
+                if (file) imageFiles.push(file);
             }
         }
+
+        if (imageFiles.length > 0) {
+            e.preventDefault();
+            e.stopPropagation(); // Stop propagation if it's an event handler
+            processFiles(imageFiles);
+        }
+    }, [processFiles]);
+
+    // Global Paste Listener (only when modal is open)
+    useEffect(() => {
+        if (!isOpen) return;
+        const globalPasteHandler = (e: ClipboardEvent) => handlePaste(e);
+        document.addEventListener('paste', globalPasteHandler);
+        return () => document.removeEventListener('paste', globalPasteHandler);
+    }, [isOpen, handlePaste]);
+
+    const removeImage = (index: number) => {
+        // We need to know if the image being removed is an existing remote image (edit mode)
+        // or a newly uploaded file. 
+        // Logic: 
+        // We have 'previews'. We have 'selectedFiles'.
+        // BUT 'previews' contains BOTH existing URLs AND new local blob URLs.
+        // We need to sync removals.
+        
+        // This simple approach assumes updates send ALL 'newFiles'.
+        // For deleting existing files, the API likely expects the full list of remaining images or separate delete endpoint.
+        // Our 'UpdateRecapData' interface supports passing 'images' array (existing ones).
+        // So we need to separate 'remainingExistingImages' vs 'newlyAddedFiles'.
+        
+        // Let's refine the logic:
+        
+        const isNewFile = index >= (previews.length - selectedFiles.length);
+        
+        if (isNewFile) {
+            // It's in selectedFiles. But at what index?
+            // If we have 3 existing images (0,1,2) and 2 new (3,4).
+            // Removing index 4 (2nd new file).
+            // Index in selectedFiles = 4 - 3 = 1.
+            const existingCount = previews.length - selectedFiles.length;
+            const fileIndex = index - existingCount;
+            setSelectedFiles(prev => prev.filter((_, i) => i !== fileIndex));
+        }
+
+        setPreviews(prev => prev.filter((_, i) => i !== index));
+        setCarouselIndex(prev => Math.max(0, Math.min(prev, previews.length - 2)));
     };
 
+    // Selection Handlers
     const selectRecord = (record: SearchRecord) => {
         setLinkedType(record.type);
         setLinkedId(record.id);
@@ -327,58 +384,69 @@ export function CreateRecapModal({
         
         if (!title.trim()) return;
 
-        const data: CreateRecapData = {
-            title: title.trim(),
-            reviewType,
-            linkedType: reviewType === 'daily' ? linkedType : undefined,
-            linkedId: reviewType === 'daily' ? (linkedId || undefined) : undefined,
-            tradeIds: reviewType === 'weekly' ? selectedTradeIds : undefined,
-            weekStartDate: reviewType === 'weekly' ? format(weekDates.weekStart, 'yyyy-MM-dd') : undefined,
-            weekEndDate: reviewType === 'weekly' ? format(weekDates.weekEnd, 'yyyy-MM-dd') : undefined,
-            whatWorked: whatWorked.trim() || undefined,
-            whatFailed: whatFailed.trim() || undefined,
-            emotionalState: emotionalState || undefined,
-            lessonsLearned: lessonsLearned.trim() || undefined,
-        };
+        if (isEditMode && initialData) {
+            // UPDATE
+            // We need to pass the list of 'kept' images.
+            // Any URL in 'previews' that isn't a data: blob is an existing image we kept.
+            const keptImages = previews.filter(url => !url.startsWith('data:'));
+            
+            const updateData: UpdateRecapData = {
+                id: initialData.id,
+                title: title.trim(),
+                linkedType: linkedType,
+                linkedId: linkedId || undefined,
+                whatWorked: whatWorked.trim() || undefined,
+                whatFailed: whatFailed.trim() || undefined,
+                emotionalState: emotionalState || undefined,
+                lessonsLearned: lessonsLearned.trim() || undefined,
+                images: keptImages, // API should handle reconciling this
+            };
 
-        if (isEditMode && editingRecap && onUpdate) {
-            await onUpdate(editingRecap.id, data, selectedFiles);
+            await onSubmit(updateData, selectedFiles);
         } else {
-            await onSubmit(data, selectedFiles);
+            // CREATE
+            const createData: CreateRecapData = {
+                title: title.trim(),
+                reviewType,
+                linkedType: reviewType === 'daily' ? linkedType : undefined,
+                linkedId: reviewType === 'daily' ? (linkedId || undefined) : undefined,
+                tradeIds: reviewType === 'weekly' ? selectedTradeIds : undefined,
+                weekStartDate: reviewType === 'weekly' ? format(weekDates.weekStart, 'yyyy-MM-dd') : undefined,
+                weekEndDate: reviewType === 'weekly' ? format(weekDates.weekEnd, 'yyyy-MM-dd') : undefined,
+                whatWorked: whatWorked.trim() || undefined,
+                whatFailed: whatFailed.trim() || undefined,
+                emotionalState: emotionalState || undefined,
+                lessonsLearned: lessonsLearned.trim() || undefined,
+            };
+            
+            await onSubmit(createData, selectedFiles);
         }
-        handleReset();
+        
+        handleClose();
     };
 
-    const handleReset = () => {
-        setTitle('');
-        setLinkedType(undefined);
-        setLinkedId('');
-        setRecordSearch('');
-        setSelectedTradeIds([]);
-        setWhatWorked('');
-        setWhatFailed('');
-        setEmotionalState('');
-        setLessonsLearned('');
-        setSelectedFiles([]);
-        setPreviews([]);
-        setReviewType('daily');
-    };
-
-    const handleClose = () => {
-        handleReset();
-        onClose();
-    };
+    const canSubmit = useMemo(() => {
+        if (!title.trim()) return false;
+        if (!isEditMode && reviewType === 'weekly' && selectedTradeIds.length === 0) return false;
+        return true;
+    }, [title, isEditMode, reviewType, selectedTradeIds]);
 
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} title={isEditMode ? `✏️ ${editingRecap?.title || 'Editar Recap'}` : "📝 Novo Recap"} maxWidth="4xl">
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleClose} 
+            title={isEditMode ? `✏️ ${initialData?.title || 'Editar Recap'}` : "📝 Novo Recap"} 
+            maxWidth="4xl"
+        >
             <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Review Type Toggle - Modern Tabs (hidden in edit mode) */}
+                {/* Review Type Toggle (Create Mode Only) */}
                 {!isEditMode && (
                     <SegmentedToggle
                         value={reviewType}
                         onChange={(val) => setReviewType(val as 'daily' | 'weekly')}
                         options={REVIEW_TYPE_OPTIONS}
                         className="mb-6"
+                        size="md"
                     />
                 )}
 
@@ -400,27 +468,43 @@ export function CreateRecapModal({
                     />
                 </div>
 
-                {/* Record Link - Daily Mode */}
+                {/* Record Link - Daily Mode (Search & Link) */}
                 {reviewType === 'daily' && (
                     <div className="relative" ref={dropdownRef}>
                         <label className="block text-sm font-medium text-gray-300 mb-2">
                             Vincular a um registro (opcional)
                         </label>
-                        <input
-                            type="text"
-                            value={recordSearch}
-                            onChange={(e) => {
-                                setRecordSearch(e.target.value);
-                                setShowRecordDropdown(true);
-                                if (e.target.value === '') {
-                                    setLinkedType(undefined);
-                                    setLinkedId('');
-                                }
-                            }}
-                            onFocus={() => setShowRecordDropdown(true)}
-                            placeholder="Buscar por ativo, data ou diário..."
-                            className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors"
-                        />
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={recordSearch}
+                                onChange={(e) => {
+                                    setRecordSearch(e.target.value);
+                                    setShowRecordDropdown(true);
+                                    if (e.target.value === '') {
+                                        setLinkedType(undefined);
+                                        setLinkedId('');
+                                    }
+                                }}
+                                onFocus={() => setShowRecordDropdown(true)}
+                                placeholder="Buscar por ativo, data ou diário..."
+                                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-colors pr-10"
+                            />
+                            {/* Clear Search Button */}
+                            {recordSearch && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setRecordSearch('');
+                                        setLinkedType(undefined);
+                                        setLinkedId('');
+                                    }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-red-400"
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
                         
                         {showRecordDropdown && searchResults.length > 0 && (
                             <div className="absolute z-50 w-full mt-2 bg-gray-800 border border-gray-700 rounded-xl shadow-xl max-h-48 overflow-auto">
@@ -441,7 +525,7 @@ export function CreateRecapModal({
                                         <span className="text-white flex-1 truncate">
                                             {record.label}
                                         </span>
-                                        <span className="text-gray-400 text-sm">{record.date}</span>
+                                        <span className="text-gray-400 text-sm">{format(parseISO(record.date), 'dd/MM')}</span>
                                         {record.outcome && (
                                             <span className={`text-sm ${
                                                 record.outcome === 'win' ? 'text-green-400' : 
@@ -458,7 +542,7 @@ export function CreateRecapModal({
                 )}
 
                 {/* Week Selection and Trade Multi-Select - Weekly Mode */}
-                {reviewType === 'weekly' && (
+                {reviewType === 'weekly' && !isEditMode && (
                     <GlassCard className="p-4 space-y-4 bg-gray-800/30 border-white/5">
                         {/* Week Selector */}
                         <div>
@@ -624,13 +708,12 @@ export function CreateRecapModal({
                     <div
                         ref={uploadZoneRef}
                         tabIndex={0}
-                        onPaste={handlePaste}
                         onClick={() => uploadZoneRef.current?.focus()}
                         className="relative w-full aspect-video bg-gray-900/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 rounded-xl overflow-hidden group transition-all cursor-pointer outline-none"
                     >
                         {previews.length > 0 ? (
                             <>
-                                {/* Main Image Display - Carousel */}
+                                {/* Main Image Display */}
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={previews[carouselIndex]}
@@ -644,47 +727,34 @@ export function CreateRecapModal({
                                 </div>
 
                                 {/* Delete Current Image Button */}
-                                <button
-                                    type="button"
+                                <IconActionButton
+                                    variant="delete"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        removeFile(carouselIndex);
+                                        removeImage(carouselIndex);
                                     }}
-                                    className="absolute top-3 right-3 p-1.5 bg-red-500/80 rounded-lg hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                    title="Remover imagem"
-                                >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+                                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 bg-black/50 hover:bg-black/80"
+                                />
 
                                 {/* Carousel Navigation */}
                                 {previews.length > 1 && (
                                     <>
-                                        <button
-                                            type="button"
+                                        <IconActionButton
+                                            variant="back"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setCarouselIndex(prev => prev > 0 ? prev - 1 : previews.length - 1);
                                             }}
-                                            className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/70 rounded-lg text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                            </svg>
-                                        </button>
-                                        <button
-                                            type="button"
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 opacity-0 group-hover:opacity-100"
+                                        />
+                                        <IconActionButton
+                                            variant="next"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setCarouselIndex(prev => prev < previews.length - 1 ? prev + 1 : 0);
                                             }}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/70 rounded-lg text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                            </svg>
-                                        </button>
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 opacity-0 group-hover:opacity-100"
+                                        />
                                     </>
                                 )}
 
@@ -693,19 +763,15 @@ export function CreateRecapModal({
                                     <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
                                         CTRL+V
                                     </span>
-                                    <button
-                                        type="button"
+                                    <IconActionButton
+                                        variant="add"
+                                        title="Adicionar mais imagens"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             fileInputRef.current?.click();
                                         }}
-                                        className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors flex items-center gap-2"
-                                        title="Adicionar mais imagens"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                        </svg>
-                                    </button>
+                                        className="bg-cyan-500 text-white hover:text-white hover:bg-cyan-400"
+                                    />
                                 </div>
 
                                 {/* Thumbnail Strip */}
@@ -749,19 +815,15 @@ export function CreateRecapModal({
                                     <span className="bg-cyan-500/20 text-cyan-400 text-[10px] font-bold px-2 py-1 rounded">
                                         CTRL+V
                                     </span>
-                                    <button
-                                        type="button"
+                                    <IconActionButton
+                                        variant="add"
+                                        title="Upload Imagem"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             fileInputRef.current?.click();
                                         }}
-                                        className="bg-cyan-500 hover:bg-cyan-400 text-white p-2 rounded-lg shadow-lg transition-colors"
-                                        title="Upload Imagem"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                        </svg>
-                                    </button>
+                                        className="bg-cyan-500 text-white hover:text-white hover:bg-cyan-400"
+                                    />
                                 </div>
                             </div>
                         )}
@@ -769,18 +831,15 @@ export function CreateRecapModal({
                 </div>
 
                 {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                    <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
-                        Cancelar
-                    </Button>
-                    <Button 
-                        type="submit" 
-                        variant="gradient-success" 
-                        disabled={!title.trim() || isLoading || (reviewType === 'weekly' && selectedTradeIds.length === 0)}
-                    >
-                        {isLoading ? 'Salvando...' : isEditMode ? 'Salvar' : 'Criar Recap'}
-                    </Button>
-                </div>
+                {/* Actions */}
+                <ModalFooterActions
+                    isSubmit
+                    onSecondary={handleClose}
+                    primaryLabel={isEditMode ? 'Salvar Alterações' : 'Criar Recap'}
+                    isLoading={isLoading}
+                    disabled={!canSubmit}
+                    primaryVariant="gradient-success"
+                />
             </form>
         </Modal>
     );
