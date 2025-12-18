@@ -24,6 +24,7 @@ interface JournalEntryModalProps {
   hasMentor?: boolean;
   hasUnreadComments?: boolean;
   onEntrySelect?: (id: string) => void;
+  noBackdrop?: boolean;
 }
 
 // Enhanced type for Optimistic UI
@@ -59,7 +60,7 @@ export function JournalEntryModal({
   startEditing = false,
   hasMentor = false,
   hasUnreadComments = false,
-
+  noBackdrop = true,
 }: JournalEntryModalProps) {
   const { addEntry, updateEntry } = useJournalStore();
   const { trades: allTrades } = useTradeStore();
@@ -309,6 +310,7 @@ export function JournalEntryModal({
         isSharingLoading={isSharingLoading}
         hasMentor={hasMentor}
         hasUnreadComments={hasUnreadComments}
+        noBackdrop={noBackdrop}
       />
     );
   }
@@ -324,6 +326,7 @@ export function JournalEntryModal({
       availableTrades={availableTrades}
       accountId={accountId || linkedTrades[0]?.accountId || existingEntry?.accountId || ''}
       isEditing={!!existingEntry}
+      noBackdrop={noBackdrop}
     />
   );
 }

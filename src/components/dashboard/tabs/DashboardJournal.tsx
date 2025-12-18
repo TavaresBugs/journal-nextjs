@@ -18,6 +18,7 @@ interface DashboardJournalProps {
     onEditTrade: (trade: Trade) => void;
     onDeleteTrade: (tradeId: string) => Promise<void>;
     onViewDay: (date: string) => void;
+    onJournalClick?: (trade: Trade, startEditing?: boolean) => void;
 }
 
 export function DashboardJournal({
@@ -31,7 +32,8 @@ export function DashboardJournal({
     onDeleteAllTrades,
     onEditTrade,
     onDeleteTrade,
-    onViewDay
+    onViewDay,
+    onJournalClick
 }: DashboardJournalProps) {
     const { showToast } = useToast();
 
@@ -121,6 +123,7 @@ export function DashboardJournal({
                     onEditTrade={onEditTrade}
                     onDeleteTrade={onDeleteTrade}
                     onViewDay={onViewDay}
+                    onJournalClick={onJournalClick}
                     totalCount={totalCount}
                     currentPage={currentPage}
                     onPageChange={(p) => onLoadPage(accountId, p)}

@@ -3,7 +3,7 @@
 import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils/general';
 
-type IconActionVariant = 'edit' | 'delete' | 'share' | 'view' | 'back' | 'close' | 'comments';
+type IconActionVariant = 'edit' | 'delete' | 'share' | 'view' | 'back' | 'close' | 'comments' | 'journal' | 'add';
 type IconActionSize = 'sm' | 'md';
 
 interface IconActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -85,6 +85,27 @@ const VARIANT_CONFIG: Record<IconActionVariant, {
         icon: (
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        ),
+    },
+    journal: {
+        hoverText: 'hover:text-green-400',
+        hoverBg: 'hover:bg-green-500/10',
+        defaultTitle: 'Ver Diário',
+        icon: (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+            </svg>
+        ),
+    },
+    add: {
+        hoverText: 'hover:text-green-400',
+        hoverBg: 'hover:bg-green-500/10',
+        defaultTitle: 'Adicionar',
+        icon: (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
         ),
     },

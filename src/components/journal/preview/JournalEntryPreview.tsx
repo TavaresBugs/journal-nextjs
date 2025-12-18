@@ -15,6 +15,7 @@ interface JournalEntryPreviewProps {
   isSharingLoading: boolean;
   hasMentor?: boolean;
   hasUnreadComments?: boolean;
+  noBackdrop?: boolean;
 }
 
 /**
@@ -37,7 +38,8 @@ const JournalEntryPreviewComponent = ({
   onShare,
   isSharingLoading,
 
-  hasUnreadComments = false
+  hasUnreadComments = false,
+  noBackdrop = true
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);
   
@@ -93,7 +95,7 @@ const JournalEntryPreviewComponent = ({
       title={CustomTitle}
       headerActions={HeaderActions}
       maxWidth={showComments ? 'full' : '6xl'}
-      noBackdrop
+      noBackdrop={noBackdrop}
     >
       <div className="space-y-6">
         <JournalEntryContent 

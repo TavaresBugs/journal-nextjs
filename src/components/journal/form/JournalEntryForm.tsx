@@ -22,6 +22,7 @@ interface JournalEntryFormProps {
   availableTrades?: Trade[];
   accountId: string;
   isEditing?: boolean;
+  noBackdrop?: boolean;
 }
 
 export interface FormData {
@@ -62,7 +63,8 @@ export function JournalEntryForm({
   initialData,
   linkedTrades: initialLinkedTrades = [],
   availableTrades = [],
-  isEditing = false
+  isEditing = false,
+  noBackdrop = true
 }: JournalEntryFormProps) {
   const {  } = useSettingsStore();
   
@@ -145,7 +147,7 @@ export function JournalEntryForm({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="6xl" noBackdrop>
+      <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="6xl" noBackdrop={noBackdrop}>
         <form onSubmit={handleFormSubmit} className="space-y-6">
           {/* Header Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

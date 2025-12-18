@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, use, useCallback } from 'react';
 import { useToast } from '@/providers/ToastProvider';
 import { usePrefetchCommunityData } from '@/hooks/useCommunityData';
 import { usePrefetchAdminData } from '@/hooks/useAdminData';
 import { usePrefetchMentorData } from '@/hooks/useMentorData';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
+import { useJournalStore } from '@/store/useJournalStore';
 
 // Components
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
@@ -14,6 +15,7 @@ import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { ChecklistFab } from '@/components/checklist';
 import { TradeForm } from '@/components/trades/TradeForm';
 import { TradeCalendar } from '@/components/trades/TradeCalendar';
+import { JournalEntryModal } from '@/components/journal/JournalEntryModal';
 
 // Dashboard Components
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
@@ -71,6 +73,10 @@ export default function DashboardPage({
     const [isDayDetailModalOpen, setIsDayDetailModalOpen] = useState(() => !!queryDate);
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isCreatePlaybookModalOpen, setIsCreatePlaybookModalOpen] = useState(false);
+    const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+
+    // Journal Store
+    const { getEntryByTradeId } = useJournalStore();
 
     // Selection States
     const [selectedTrade, setSelectedTrade] = useState<Trade | null>(null);
@@ -79,9 +85,18 @@ export default function DashboardPage({
     const [viewingPlaybook, setViewingPlaybook] = useState<Playbook | null>(null);
     const [sharingPlaybook, setSharingPlaybook] = useState<Playbook | null>(null);
     const [selectedDate, setSelectedDate] = useState<string>(queryDate || '');
+    const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
+    const [startJournalEditing, setStartJournalEditing] = useState(false);
 
     // UI State
     const [activeTab, setActiveTab] = useState('novo');
+
+    // Callbacks before early returns (hooks must be called in same order)
+    const handleJournalClick = useCallback((trade: Trade, startEditing: boolean = true) => {
+        setSelectedTradeForJournal(trade);
+        setStartJournalEditing(startEditing);
+        setIsJournalModalOpen(true);
+    }, []);
 
     // Early returns
     if (!data.isValidAccount) return null;
@@ -156,6 +171,7 @@ export default function DashboardPage({
                             onEditTrade={handleEditTrade}
                             onDeleteTrade={actions.handleDeleteTrade}
                             onViewDay={handleViewDay}
+                            onJournalClick={handleJournalClick}
                         />
                     </TabPanel>
 
@@ -243,6 +259,24 @@ export default function DashboardPage({
                     handleUpdatePlaybook={actions.handleUpdatePlaybook}
                     handleShareSuccess={actions.handleShareSuccess}
                 />
+
+                {/* Journal Modal from Trade History */}
+                {isJournalModalOpen && selectedTradeForJournal && (
+                    <JournalEntryModal
+                        key={selectedTradeForJournal.id}
+                        isOpen={isJournalModalOpen}
+                        onClose={() => {
+                            setIsJournalModalOpen(false);
+                            setSelectedTradeForJournal(null);
+                        }}
+                        trade={selectedTradeForJournal}
+                        existingEntry={getEntryByTradeId(selectedTradeForJournal.id)}
+                        initialDate={selectedTradeForJournal.entryDate}
+                        accountId={accountId}
+                        startEditing={startJournalEditing}
+                        noBackdrop={false}
+                    />
+                )}
 
                 <ChecklistFab />
             </div>

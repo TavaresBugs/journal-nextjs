@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Button, GlassCard, Input } from '@/components/ui';
+import { Button, GlassCard, Input, IconActionButton } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -18,6 +18,7 @@ interface TradeListProps {
     onEditTrade?: (trade: Trade) => void;
     onDeleteTrade?: (tradeId: string) => void;
     onViewDay?: (date: string) => void;
+    onJournalClick?: (trade: Trade, startEditing?: boolean) => void;
     // Server-side pagination props (optional)
     totalCount?: number;
     currentPage?: number;
@@ -34,6 +35,7 @@ export function TradeList({
     onEditTrade, 
     onDeleteTrade,
     onViewDay,
+    onJournalClick,
     totalCount,
     currentPage: controlledPage,
     itemsPerPage = 10,
@@ -222,47 +224,29 @@ export function TradeList({
                                     >
                                         {/* DIÁRIO */}
                                         <td className="px-3 py-3 text-center">
-                                            <Button 
-                                                variant="zorin-success"
-                                                size="icon"
-                                                onClick={() => onViewDay?.(trade.entryDate)}
-                                                className="w-8 h-8 mx-auto"
-                                                title="Ver Detalhes do Dia"
-                                            >
-                                                {journalEntry ? (
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                                                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                                                    </svg>
-                                                ) : (
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                        <path d="M12 4.5v15m7.5-7.5h-15" />
-                                                    </svg>
-                                                )}
-                                            </Button>
+                                            <IconActionButton
+                                                variant={journalEntry ? 'journal' : 'add'}
+                                                size="md"
+                                                onClick={() => onJournalClick ? onJournalClick(trade, !journalEntry) : onViewDay?.(trade.entryDate)}
+                                                title={journalEntry ? "Ver Diário" : "Criar Diário"}
+                                            />
                                         </td>
 
                                         {/* AÇÕES */}
                                         <td className="px-3 py-3">
                                             <div className="flex items-center justify-center gap-2">
-                                                <Button 
-                                                    variant="zorin-warning"
-                                                    size="icon"
+                                                <IconActionButton
+                                                    variant="edit"
+                                                    size="md"
                                                     onClick={() => onEditTrade?.(trade)}
-                                                    className="w-8 h-8"
                                                     title="Editar"
-                                                >
-                                                    ✏️
-                                                </Button>
-                                                <Button 
-                                                    variant="zorin-danger"
-                                                    size="icon"
+                                                />
+                                                <IconActionButton
+                                                    variant="delete"
+                                                    size="md"
                                                     onClick={() => onDeleteTrade?.(trade.id)}
-                                                    className="w-8 h-8"
                                                     title="Excluir"
-                                                >
-                                                    🗑️
-                                                </Button>
+                                                />
                                             </div>
                                         </td>
 

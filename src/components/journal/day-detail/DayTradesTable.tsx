@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
-import { Button, GlassCard } from '@/components/ui';
+import { Button, GlassCard, IconActionButton } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import { getCachedImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
@@ -142,27 +142,12 @@ const DayTradesTableComponent = ({
             >
               <td className="px-4 py-3 text-center whitespace-nowrap">
                 <div className="relative inline-block">
-                  <Button
-                    variant="zorin-success"
-                    size="icon"
+                  <IconActionButton
+                    variant="journal"
+                    size="md"
                     onClick={() => onPreviewEntry ? onPreviewEntry(entry) : onEditEntry(entry)}
-                    className="w-8 h-8 mx-auto"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                    </svg>
-                  </Button>
+                    title="Ver Diário"
+                  />
                   {hasMentor && reviewStatus?.hasUnread && (
                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
                   )}
@@ -170,24 +155,18 @@ const DayTradesTableComponent = ({
               </td>
               <td className="px-4 py-3 text-center whitespace-nowrap">
                 <div className="flex items-center justify-center gap-2">
-                  <Button
-                    variant="zorin-warning"
-                    size="icon"
+                  <IconActionButton
+                    variant="edit"
+                    size="md"
                     onClick={() => onEditEntry(entry)}
-                    className="w-8 h-8"
                     title="Editar"
-                  >
-                    ✏️
-                  </Button>
-                  <Button
-                    variant="zorin-danger"
-                    size="icon"
+                  />
+                  <IconActionButton
+                    variant="delete"
+                    size="md"
                     onClick={() => onDeleteEntry(entry.id)}
-                    className="w-8 h-8"
                     title="Excluir"
-                  >
-                    🗑️
-                  </Button>
+                  />
                 </div>
               </td>
               <td className="px-4 py-3 text-center whitespace-nowrap">
@@ -248,46 +227,13 @@ const DayTradesTableComponent = ({
               >
                 <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="relative inline-block">
-                    <Button
-                      variant={journalEntry ? "zorin-success" : "zorin-ghost"}
-                      size="icon"
+                    <IconActionButton
+                      variant={journalEntry ? 'journal' : 'add'}
+                      size="md"
                       onClick={() => onJournalClick(trade, !journalEntry)}
-                      className={`w-8 h-8 mx-auto ${!journalEntry ? 'opacity-40 border border-gray-600 hover:opacity-70' : ''}`}
                       title={journalEntry ? "Ver Diário" : "Criar Diário"}
-                    >
-                      {journalEntry ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-gray-500"
-                        >
-                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-                        </svg>
-                      )}
-                    </Button>
+                      className={!journalEntry ? 'opacity-40 hover:opacity-70' : ''}
+                    />
                     {hasMentor && reviewStatus?.hasUnread && (
                       <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-gray-900 pointer-events-none" />
                     )}
@@ -295,27 +241,19 @@ const DayTradesTableComponent = ({
                 </td>
                 <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="flex items-center justify-center gap-2">
-                    {/* Edit Trade Button */}
-                    <Button
-                      variant="zorin-warning"
-                      size="icon"
+                    <IconActionButton
+                      variant="edit"
+                      size="md"
                       onClick={() => onEditTrade?.(trade)}
-                      className={`w-8 h-8 ${!onEditTrade ? 'opacity-50 cursor-not-allowed' : ''}`}
                       title="Editar Trade"
                       disabled={!onEditTrade}
-                    >
-                      ✏️
-                    </Button>
-                    {/* Delete Trade Button */}
-                    <Button
-                      variant="zorin-danger"
-                      size="icon"
+                    />
+                    <IconActionButton
+                      variant="delete"
+                      size="md"
                       onClick={() => onDeleteTrade(trade.id)}
-                      className="w-8 h-8"
                       title="Excluir Trade"
-                    >
-                      🗑️
-                    </Button>
+                    />
                   </div>
                 </td>
                 <td className="px-4 py-3 text-center whitespace-nowrap">
