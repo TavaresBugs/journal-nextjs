@@ -151,6 +151,11 @@ export function DashboardModals({
                 onClose={() => setEditingPlaybook(null)}
                 playbook={editingPlaybook}
                 onSuccess={handleUpdatePlaybook}
+                onBack={() => {
+                    const pb = editingPlaybook;
+                    setEditingPlaybook(null);
+                    if (pb) setViewingPlaybook(pb);
+                }}
             />
 
             <ViewPlaybookModal

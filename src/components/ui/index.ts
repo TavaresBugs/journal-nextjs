@@ -11,3 +11,4 @@ export { CircularProgress } from './CircularProgress';
 export { PageSkeleton } from './PageSkeleton';
 export { FormSection, FormRow, FormGroup } from './FormLayout';
 export { WeekPicker, WeekPickerCalendar } from './WeekPicker';
+export { IconActionButton } from './IconActionButton';

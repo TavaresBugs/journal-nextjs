@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Button } from '@/components/ui';
+import { Modal, IconActionButton } from '@/components/ui';
 import { ImagePreviewLightbox, type ImageItem } from '@/components/shared/ImagePreviewLightbox';
 import type { LaboratoryRecap, EmotionalState } from '@/types';
 
@@ -72,18 +72,16 @@ export function ViewRecapModal({
             <Modal 
                 isOpen={isOpen} 
                 onClose={onClose} 
-                title={
-                    <div className="flex items-center justify-between w-full pr-8">
-                        <span className="text-lg font-semibold text-zorin-ice">📝 {recap.title}</span>
-                        <Button 
-                            variant="gold"
-                            onClick={() => onEdit(recap)}
-                        >
-                            ✏️ Editar
-                        </Button>
-                    </div>
-                }
+                title={`📝 ${recap.title}`}
                 maxWidth="3xl"
+                headerActions={
+                    <IconActionButton
+                        variant="edit"
+                        size="md"
+                        onClick={() => onEdit(recap)}
+                        className="[&_svg]:w-6 [&_svg]:h-6"
+                    />
+                }
             >
                 <div className="space-y-4">
                     {/* Emotion badge - only show if set */}

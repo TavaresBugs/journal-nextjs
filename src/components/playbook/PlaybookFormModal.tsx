@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal, Input, Button, GlassCard } from '@/components/ui';
+import { Modal, Input, Button, GlassCard, IconActionButton } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import type { Playbook, RuleGroup } from '@/types';
 
@@ -11,6 +11,8 @@ interface PlaybookFormModalProps {
     onSuccess: () => void;
     /** If provided, modal is in edit mode. Otherwise, create mode. */
     playbook?: Playbook | null;
+    /** Called when back button is pressed (to return to view modal) */
+    onBack?: () => void;
 }
 
 const EMOJI_LIST = [
@@ -40,7 +42,7 @@ const DEFAULT_GROUPS = [
  * Unified modal for creating and editing playbooks.
  * Pass `playbook` prop for edit mode, omit for create mode.
  */
-export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook }: PlaybookFormModalProps) {
+export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack }: PlaybookFormModalProps) {
     const { addPlaybook, updatePlaybook } = usePlaybookStore();
     const isEditMode = !!playbook;
 
@@ -167,8 +169,28 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook }: Play
     const modalTitle = isEditMode ? '✏️ Editar Playbook' : '📖 Criar Playbook';
     const submitButtonText = isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Playbook' : 'Salvar Playbook');
 
+    // Custom title with back button (same pattern as JournalEntryForm)
+    const handleBackClick = () => {
+        handleReset();
+        if (onBack) {
+            onBack();
+        } else {
+            onClose();
+        }
+    };
+
+    const titleElement = (
+        <div className="flex items-center gap-3">
+            <IconActionButton
+                variant="back"
+                onClick={handleBackClick}
+            />
+            <h2 className="text-xl font-bold text-gray-100">{modalTitle}</h2>
+        </div>
+    );
+
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="3xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="3xl">
             {/* Tabs */}
             <div className="flex gap-2 mb-6 border-b border-white/5">
                 <button
@@ -313,31 +335,23 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook }: Play
                                                 ) : (
                                                     <>
                                                         <span className="flex-1 text-sm text-gray-300">{rule}</span>
-                                                        <Button
-                                                            variant="zorin-ghost"
-                                                            size="icon"
+                                                        <IconActionButton
+                                                            variant="edit"
+                                                            size="sm"
                                                             onClick={() => startEditingRule(group.id, index, rule)}
-                                                            className="w-6 h-6 text-xs text-yellow-500 hover:text-yellow-400"
-                                                            title="Editar"
-                                                        >
-                                                            ✏️
-                                                        </Button>
-                                                        <Button
-                                                            variant="zorin-ghost"
-                                                            size="icon"
+                                                        />
+                                                        <IconActionButton
+                                                            variant="delete"
+                                                            size="sm"
                                                             onClick={() => removeRule(group.id, index)}
-                                                            className="w-6 h-6 text-xs text-red-500 hover:text-red-400"
-                                                            title="Deletar"
-                                                        >
-                                                            🗑️
-                                                        </Button>
+                                                        />
                                                     </>
                                                 )}
                                             </div>
                                         );
                                     })}
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-2">
                                     <Input
                                         type="text"
                                         placeholder="Criar nova regra"
@@ -346,7 +360,7 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook }: Play
                                         onKeyPress={(e) => e.key === 'Enter' && addRuleToGroup(group.id)}
                                         className="flex-1 h-10"
                                     />
-                                    <Button variant="zorin-primary" size="sm" onClick={() => addRuleToGroup(group.id)}>
+                                    <Button variant="zorin-primary" size="md" onClick={() => addRuleToGroup(group.id)}>
                                         + Criar nova regra
                                     </Button>
                                 </div>

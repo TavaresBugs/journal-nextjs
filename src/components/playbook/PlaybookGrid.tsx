@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Trade, Playbook } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
-import { CircularProgress, Button, GlassCard } from '@/components/ui';
+import { CircularProgress, GlassCard, IconActionButton } from '@/components/ui';
 
 interface PlaybookGridProps {
     trades: Trade[];
@@ -173,45 +173,30 @@ export function PlaybookGrid({ trades, playbooks, currency, onEdit, onDelete, on
 
                                 {/* Action Buttons */}
                                 {strategy.playbook && (
-                                    <div className="flex gap-1">
-                                        <Button 
-                                            variant="gold"
-                                            size="icon"
+                                    <div className="flex items-center gap-1">
+                                        <IconActionButton
+                                            variant="edit"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onEdit?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8"
-                                            title="Editar"
-                                        >
-                                            ✏️
-                                        </Button>
-                                        <Button 
-                                            variant="info"
-                                            size="icon"
+                                        />
+                                        <IconActionButton
+                                            variant="share"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onShare?.(strategy.playbook!);
                                             }}
-                                            className="w-8 h-8"
-                                            title="Compartilhar"
-                                        >
-                                            🌐
-                                        </Button>
-                                        <Button 
-                                            variant="danger"
-                                            size="icon"
+                                        />
+                                        <IconActionButton
+                                            variant="delete"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 if (confirm('Tem certeza que deseja excluir este playbook?')) {
                                                     onDelete?.(strategy.playbook!.id);
                                                 }
                                             }}
-                                            className="w-8 h-8"
-                                            title="Excluir"
-                                        >
-                                            🗑️
-                                        </Button>
+                                        />
                                     </div>
                                 )}
                             </div>

@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils/general';
 import { useBlockBodyScroll } from '@/hooks/useBlockBodyScroll';
+import { IconActionButton } from './IconActionButton';
 
 interface ModalProps {
     isOpen: boolean;
@@ -74,14 +75,10 @@ export function Modal({ isOpen, onClose, title, headerActions, children, maxWidt
                         )}
                         <div className="flex items-center gap-2">
                             {headerActions}
-                            <button
+                            <IconActionButton
+                                variant="close"
                                 onClick={onClose}
-                                className="text-gray-400 hover:text-gray-200 transition-colors p-1 hover:bg-gray-800 rounded-lg"
-                            >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                            />
                         </div>
                     </div>
                 )}

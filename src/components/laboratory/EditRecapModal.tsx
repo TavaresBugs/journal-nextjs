@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Modal, Button } from '@/components/ui';
+import { Modal, Button, IconActionButton } from '@/components/ui';
 import type { LaboratoryRecap, EmotionalState, TradeLite, JournalEntryLite, RecapLinkedType } from '@/types';
 import { UpdateRecapData } from '@/store/useLaboratoryStore';
 
@@ -323,13 +323,10 @@ export function EditRecapModal({
             onClose={handleClose} 
             title={
                 <div className="flex items-center gap-3">
-                    <button 
-                        type="button"
+                    <IconActionButton
+                        variant="back"
                         onClick={onBack}
-                        className="text-gray-400 hover:text-white transition-colors text-xl"
-                    >
-                        ‹
-                    </button>
+                    />
                     <span className="text-lg font-semibold text-zorin-ice">📝 Editando Review Diário</span>
                 </div>
             }

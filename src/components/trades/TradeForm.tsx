@@ -417,7 +417,7 @@ export function TradeForm({ accountId, onSubmit, onCancel, initialData, mode = '
             </FormSection>
 
             {/* ===== BLOCO 2: FINANCEIRO ===== */}
-            <FormSection icon="💰" title="Dados Financeiros">
+            <FormSection icon="💵" title="Dados Financeiros">
                 {/* Ativo, Lote, Direção */}
                 <FormRow cols={3}>
                     <div>

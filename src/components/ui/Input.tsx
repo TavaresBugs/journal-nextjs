@@ -16,9 +16,17 @@ export function Input({
 }: InputProps) {
     const generatedId = useId();
     const id = props.id || generatedId;
+    // Extract layout classes that need to be on the wrapper
+    const hasFlexGrow = className.includes('flex-1');
+    const heightMatch = className.match(/h-\d+/);
+    const wrapperClasses = cn(
+        "flex flex-col gap-1.5",
+        hasFlexGrow && 'flex-1',
+        heightMatch && heightMatch[0]
+    );
 
     return (
-        <div className="flex flex-col gap-1.5">
+        <div className={wrapperClasses}>
             {label && (
                 <label
                     htmlFor={id}

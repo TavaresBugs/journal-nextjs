@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, Button, GlassCard } from '@/components/ui';
+import { Modal, Button, GlassCard, IconActionButton } from '@/components/ui';
 import { Tabs, TabPanel } from '@/components/ui/Tabs';
 import { PlaybookReviewTab } from './PlaybookReviewTab';
 import type { Playbook, Trade } from '@/types';
@@ -48,17 +48,15 @@ export function ViewPlaybookModal({
             maxWidth="5xl"
             headerActions={
                 onEdit && activeTab === 'info' ? (
-                    <Button
-                        variant="gold"
+                    <IconActionButton
+                        variant="edit"
                         size="md"
                         onClick={() => {
                             onEdit(playbook);
                             handleClose();
                         }}
-                        leftIcon={<span>✏️</span>}
-                    >
-                        Editar
-                    </Button>
+                        className="[&_svg]:w-6 [&_svg]:h-6"
+                    />
                 ) : undefined
             }
         >
