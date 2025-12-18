@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Button, GlassCard, Input, IconActionButton } from '@/components/ui';
+import { Button, GlassCard, Input, IconActionButton, AssetBadge } from '@/components/ui';
 import type { Trade } from '@/types';
 import { formatCurrency } from '@/lib/calculations';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -277,9 +277,9 @@ export function TradeList({
 
                                         {/* ATIVO */}
                                         <td className="px-3 py-3 text-center">
-                                            <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
-                                                {trade.symbol}
-                                            </span>
+                                            <div className="flex justify-center">
+                                                <AssetBadge symbol={trade.symbol} size="sm" />
+                                            </div>
                                         </td>
 
                                         {/* TIPO */}

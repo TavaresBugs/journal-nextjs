@@ -1,8 +1,7 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { Modal, IconActionButton } from '@/components/ui';
-import { AssetIcon } from '@/components/shared/AssetIcon';
+import { Modal, IconActionButton, AssetBadge } from '@/components/ui';
 import type { Trade, JournalEntry } from '@/types';
 import { JournalEntryContent } from './JournalEntryContent';
 
@@ -50,10 +49,7 @@ const JournalEntryPreviewComponent = ({
     <div className="flex items-center gap-3">
       <h2 className="text-xl font-bold text-zorin-ice">{entry.title}</h2>
       {asset && (
-        <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-800/60 rounded-lg border border-gray-700">
-          <AssetIcon symbol={asset} size="sm" />
-          <span className="text-sm font-medium text-gray-300">{asset}</span>
-        </div>
+        <AssetBadge symbol={asset} />
       )}
     </div>
   );

@@ -2,7 +2,7 @@
 
 import { memo, useState, useEffect } from 'react';
 import type { Trade, JournalEntry } from '@/types';
-import { Button, GlassCard, IconActionButton } from '@/components/ui';
+import { Button, GlassCard, IconActionButton, AssetBadge } from '@/components/ui';
 import { formatCurrency } from '@/lib/calculations';
 import { getCachedImageUrl } from '@/lib/utils/general';
 import dayjs from 'dayjs';
@@ -183,9 +183,9 @@ const DayTradesTableComponent = ({
                 -
               </td>
               <td className="px-4 py-3 text-center text-gray-300 font-medium whitespace-nowrap">
-                <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
-                  {entry.asset || 'Diário'}
-                </span>
+                <div className="flex justify-center">
+                  <AssetBadge symbol={entry.asset || 'Diário'} size="sm" />
+                </div>
               </td>
               <td className="px-4 py-3 text-center text-gray-400 whitespace-nowrap">-</td>
               <td className="px-4 py-3 text-center text-gray-400 font-mono text-xs whitespace-nowrap">
@@ -295,9 +295,9 @@ const DayTradesTableComponent = ({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-center text-gray-300 font-medium whitespace-nowrap">
-                  <span className="font-bold text-gray-200 bg-zorin-surface px-2 py-1 rounded">
-                    {trade.symbol}
-                  </span>
+                  <div className="flex justify-center">
+                    <AssetBadge symbol={trade.symbol} size="sm" />
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-center text-gray-400 whitespace-nowrap">
                   {trade.lot}
