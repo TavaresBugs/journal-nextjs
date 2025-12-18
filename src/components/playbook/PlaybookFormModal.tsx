@@ -4,6 +4,23 @@ import { useState, useEffect } from 'react';
 import { Modal, Input, Button, GlassCard, IconActionButton } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import type { Playbook, RuleGroup } from '@/types';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface PlaybookFormModalProps {
     isOpen: boolean;
@@ -38,10 +55,118 @@ const DEFAULT_GROUPS = [
     { id: 'exit', name: 'Critérios de saída' },
 ];
 
+const GROUP_ICONS: Record<string, string> = {
+    market: '📊', // Análise/Condições
+    entry: '🎯',  // Gatilho/Entrada
+    exit: '🏁',   // Saída/Alvo
+};
+
 /**
- * Unified modal for creating and editing playbooks.
- * Pass `playbook` prop for edit mode, omit for create mode.
+ * Internal type for rule items with unique IDs for dnd-kit
  */
+interface SortableRule {
+    id: string;
+    text: string;
+}
+
+interface SortableRuleGroup {
+    id: string;
+    name: string;
+    rules: SortableRule[];
+}
+
+// --- Sortable Item Component ---
+
+interface SortableRuleItemProps {
+    rule: SortableRule;
+    isEditing: boolean;
+    editingText: string;
+    onEditStart: () => void;
+    onEditCancel: () => void;
+    onEditSave: () => void;
+    onEditTextChange: (text: string) => void;
+    onDelete: () => void;
+}
+
+function SortableRuleItem({
+    rule,
+    isEditing,
+    editingText,
+    onEditStart,
+    onEditCancel,
+    onEditSave,
+    onEditTextChange,
+    onDelete
+}: SortableRuleItemProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: rule.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 10 : 1,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
+    return (
+        <div 
+            ref={setNodeRef} 
+            style={style} 
+            className={`flex items-center gap-2 bg-zorin-bg/50 p-2 rounded group/rule border border-white/5 ${isDragging ? 'shadow-lg border-zorin-accent/50' : ''}`}
+        >
+            {/* Drag Handle */}
+            <div 
+                {...attributes} 
+                {...listeners} 
+                className="cursor-move text-gray-500 hover:text-gray-300 p-1 touch-none"
+            >
+                ☰
+            </div>
+
+            {isEditing ? (
+                <>
+                    <Input
+                        type="text"
+                        value={editingText}
+                        onChange={(e) => onEditTextChange(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && onEditSave()}
+                        className="flex-1 h-8 text-sm"
+                        autoFocus
+                    />
+                    <Button variant="zorin-primary" size="sm" onClick={onEditSave} className="text-xs px-3 py-1 font-semibold">
+                        Salvar
+                    </Button>
+                    <Button variant="zorin-ghost" size="sm" onClick={onEditCancel} className="text-xs px-2 py-1">
+                        ✕
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <span className="flex-1 text-sm text-gray-300">{rule.text}</span>
+                    <IconActionButton
+                        variant="edit"
+                        size="sm"
+                        onClick={onEditStart}
+                    />
+                    <IconActionButton
+                        variant="delete"
+                        size="sm"
+                        onClick={onDelete}
+                    />
+                </>
+            )}
+        </div>
+    );
+}
+
+// --- Main Modal Component ---
+
 export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack }: PlaybookFormModalProps) {
     const { addPlaybook, updatePlaybook } = usePlaybookStore();
     const isEditMode = !!playbook;
@@ -51,81 +176,145 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
     const [description, setDescription] = useState('');
     const [selectedIcon, setSelectedIcon] = useState('📈');
     const [selectedColor, setSelectedColor] = useState('#3B82F6');
-    const [ruleGroups, setRuleGroups] = useState<RuleGroup[]>(
-        DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] }))
-    );
+    
+    // Use local state with IDs for DnD
+    const [sortableGroups, setSortableGroups] = useState<SortableRuleGroup[]>([]);
+    
     const [newRuleInputs, setNewRuleInputs] = useState<Record<string, string>>({});
-    const [editingRule, setEditingRule] = useState<{groupId: string, index: number} | null>(null);
+    const [editingRuleId, setEditingRuleId] = useState<string | null>(null);
     const [editingRuleText, setEditingRuleText] = useState('');
     const [isSaving, setIsSaving] = useState(false);
 
+    // Sensors for drag and drop
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
     // Populate form when editing
     useEffect(() => {
-        if (isEditMode && playbook && isOpen) {
-            setName(playbook.name || '');
-            setDescription(playbook.description || '');
-            setSelectedIcon(playbook.icon || '📈');
-            setSelectedColor(playbook.color || '#3B82F6');
-            if (playbook.ruleGroups && playbook.ruleGroups.length > 0) {
-                setRuleGroups(playbook.ruleGroups);
+        if (isOpen) {
+            if (isEditMode && playbook) {
+                setName(playbook.name || '');
+                setDescription(playbook.description || '');
+                setSelectedIcon(playbook.icon || '📈');
+                setSelectedColor(playbook.color || '#3B82F6');
+                
+                // Convert simple string rules into SortableRules with IDs
+                if (playbook.ruleGroups && playbook.ruleGroups.length > 0) {
+                    setSortableGroups(playbook.ruleGroups.map(g => ({
+                        id: g.id,
+                        name: g.name,
+                        rules: g.rules.map(ruleText => ({
+                            id: Math.random().toString(36).substr(2, 9),
+                            text: ruleText
+                        }))
+                    })));
+                } else {
+                    initializeDefaultGroups();
+                }
             } else {
-                setRuleGroups(DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] })));
+                // Create mode: Reset everything
+                handleReset();
             }
             setActiveTab('general');
         }
-    }, [playbook, isEditMode, isOpen]);
+    }, [playbook, isEditMode, isOpen]); // removed handleReset from deps to avoid loop
+
+    const initializeDefaultGroups = () => {
+        setSortableGroups(DEFAULT_GROUPS.map(g => ({ 
+            id: g.id, 
+            name: g.name, 
+            rules: [] 
+        })));
+    };
 
     const addRuleToGroup = (groupId: string) => {
         const ruleText = newRuleInputs[groupId]?.trim();
         if (ruleText) {
-            setRuleGroups(ruleGroups.map(group => 
+            const newRule: SortableRule = {
+                id: Math.random().toString(36).substr(2, 9),
+                text: ruleText
+            };
+
+            setSortableGroups(groups => groups.map(group => 
                 group.id === groupId 
-                    ? { ...group, rules: [...group.rules, ruleText] }
+                    ? { ...group, rules: [...group.rules, newRule] }
                     : group
             ));
             setNewRuleInputs({ ...newRuleInputs, [groupId]: '' });
         }
     };
 
-    const removeRule = (groupId: string, ruleIndex: number) => {
-        setRuleGroups(ruleGroups.map(group =>
+    const removeRule = (groupId: string, ruleId: string) => {
+        setSortableGroups(groups => groups.map(group =>
             group.id === groupId
-                ? { ...group, rules: group.rules.filter((_, i) => i !== ruleIndex) }
+                ? { ...group, rules: group.rules.filter(r => r.id !== ruleId) }
                 : group
         ));
     };
 
-    const startEditingRule = (groupId: string, ruleIndex: number, currentText: string) => {
-        setEditingRule({ groupId, index: ruleIndex });
+    const startEditingRule = (ruleId: string, currentText: string) => {
+        setEditingRuleId(ruleId);
         setEditingRuleText(currentText);
     };
 
-    const saveEditingRule = () => {
-        if (!editingRule || !editingRuleText.trim()) return;
+    const saveEditingRule = (groupId: string) => {
+        if (!editingRuleId || !editingRuleText.trim()) return;
         
-        setRuleGroups(ruleGroups.map(group =>
-            group.id === editingRule.groupId
+        setSortableGroups(groups => groups.map(group =>
+            group.id === groupId
                 ? { 
                     ...group, 
-                    rules: group.rules.map((rule, i) => 
-                        i === editingRule.index ? editingRuleText.trim() : rule
+                    rules: group.rules.map(rule => 
+                        rule.id === editingRuleId ? { ...rule, text: editingRuleText.trim() } : rule
                     )
                   }
                 : group
         ));
         
-        setEditingRule(null);
+        setEditingRuleId(null);
         setEditingRuleText('');
     };
 
     const cancelEditingRule = () => {
-        setEditingRule(null);
+        setEditingRuleId(null);
         setEditingRuleText('');
+    };
+
+    // Drag and Drop Logic
+    const handleDragEnd = (event: DragEndEvent, groupId: string) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setSortableGroups((groups) => {
+                return groups.map(group => {
+                    if (group.id !== groupId) return group;
+
+                    const oldIndex = group.rules.findIndex((r) => r.id === active.id);
+                    const newIndex = group.rules.findIndex((r) => r.id === over?.id);
+
+                    return {
+                        ...group,
+                        rules: arrayMove(group.rules, oldIndex, newIndex)
+                    };
+                });
+            });
+        }
     };
 
     const handleSubmit = async () => {
         setIsSaving(true);
         try {
+            // Convert SortableGroups back to clean RuleGroups (string arrays)
+            const cleanRuleGroups: RuleGroup[] = sortableGroups.map(g => ({
+                id: g.id,
+                name: g.name,
+                rules: g.rules.map(r => r.text)
+            }));
+
             if (isEditMode && playbook) {
                 await updatePlaybook({
                     ...playbook,
@@ -133,7 +322,7 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
                     description,
                     icon: selectedIcon,
                     color: selectedColor,
-                    ruleGroups,
+                    ruleGroups: cleanRuleGroups, // Use cleaned groups
                 });
             } else {
                 await addPlaybook({
@@ -142,7 +331,7 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
                     description,
                     icon: selectedIcon,
                     color: selectedColor,
-                    ruleGroups,
+                    ruleGroups: cleanRuleGroups,
                 });
             }
             handleReset();
@@ -161,15 +350,15 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
         setDescription('');
         setSelectedIcon('📈');
         setSelectedColor('#3B82F6');
-        setRuleGroups(DEFAULT_GROUPS.map(g => ({ id: g.id, name: g.name, rules: [] })));
+        initializeDefaultGroups();
         setNewRuleInputs({});
         setActiveTab('general');
+        setEditingRuleId(null);
     };
 
     const modalTitle = isEditMode ? '✏️ Editar Playbook' : '📖 Criar Playbook';
     const submitButtonText = isSaving ? 'Salvando...' : (isEditMode ? 'Atualizar Playbook' : 'Salvar Playbook');
 
-    // Custom title with back button (same pattern as JournalEntryForm)
     const handleBackClick = () => {
         handleReset();
         if (onBack) {
@@ -294,62 +483,44 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
                     <div>
                         <h3 className="text-sm font-medium text-gray-300 mb-1">Regras do Playbook</h3>
                         <p className="text-sm text-gray-500">
-                            Defina suas regras de playbook com agrupamento.
+                            Defina suas regras de playbook com agrupamento e arraste para organizar.
                         </p>
                     </div>
 
                     {/* Rule Groups */}
                     <div className="space-y-4">
-                        {ruleGroups.map((group) => (
+                        {sortableGroups.map((group) => (
                             <GlassCard key={group.id} className="bg-zorin-bg/30 border-white/5 p-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <h4 className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                                        <span className="text-gray-500">☰</span> {group.name}
+                                        <span className="text-lg">{GROUP_ICONS[group.id] || '📋'}</span> {group.name}
                                     </h4>
                                 </div>
                                 <div className="space-y-2 mb-3">
-                                    {group.rules.map((rule, index) => {
-                                        const isEditing = editingRule?.groupId === group.id && editingRule?.index === index;
-                                        
-                                        return (
-                                            <div key={index} className="flex items-center gap-2 bg-zorin-bg/50 p-2 rounded group/rule border border-white/5">
-                                                <span className="text-gray-500 text-xs">☰</span>
-                                                
-                                                {isEditing ? (
-                                                    <>
-                                                        <Input
-                                                            type="text"
-                                                            value={editingRuleText}
-                                                            onChange={(e) => setEditingRuleText(e.target.value)}
-                                                            onKeyPress={(e) => e.key === 'Enter' && saveEditingRule()}
-                                                            className="flex-1 h-8 text-sm"
-                                                            autoFocus
-                                                        />
-                                                        <Button variant="zorin-primary" size="sm" onClick={saveEditingRule} className="text-xs px-3 py-1 font-semibold">
-                                                            Salvar
-                                                        </Button>
-                                                        <Button variant="zorin-ghost" size="sm" onClick={cancelEditingRule} className="text-xs px-2 py-1">
-                                                            ✕
-                                                        </Button>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="flex-1 text-sm text-gray-300">{rule}</span>
-                                                        <IconActionButton
-                                                            variant="edit"
-                                                            size="sm"
-                                                            onClick={() => startEditingRule(group.id, index, rule)}
-                                                        />
-                                                        <IconActionButton
-                                                            variant="delete"
-                                                            size="sm"
-                                                            onClick={() => removeRule(group.id, index)}
-                                                        />
-                                                    </>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                    <DndContext
+                                        sensors={sensors}
+                                        collisionDetection={closestCenter}
+                                        onDragEnd={(event) => handleDragEnd(event, group.id)}
+                                    >
+                                        <SortableContext 
+                                            items={group.rules.map(r => r.id)}
+                                            strategy={verticalListSortingStrategy}
+                                        >
+                                            {group.rules.map((rule) => (
+                                                <SortableRuleItem
+                                                    key={rule.id}
+                                                    rule={rule}
+                                                    isEditing={editingRuleId === rule.id}
+                                                    editingText={editingRuleText}
+                                                    onEditStart={() => startEditingRule(rule.id, rule.text)}
+                                                    onEditCancel={cancelEditingRule}
+                                                    onEditSave={() => saveEditingRule(group.id)}
+                                                    onEditTextChange={setEditingRuleText}
+                                                    onDelete={() => removeRule(group.id, rule.id)}
+                                                />
+                                            ))}
+                                        </SortableContext>
+                                    </DndContext>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Input
