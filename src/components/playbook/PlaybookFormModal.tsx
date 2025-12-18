@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Modal, Input, Button, GlassCard, IconActionButton } from '@/components/ui';
+import { Modal, Input, Button, GlassCard, IconActionButton, SegmentedToggle } from '@/components/ui';
 import { usePlaybookStore } from '@/store/usePlaybookStore';
 import type { Playbook, RuleGroup } from '@/types';
 import {
@@ -380,29 +380,16 @@ export function PlaybookFormModal({ isOpen, onClose, onSuccess, playbook, onBack
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={titleElement} maxWidth="3xl">
-            {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b border-white/5">
-                <button
-                    onClick={() => setActiveTab('general')}
-                    className={`px-6 py-3 font-medium transition-all ${
-                        activeTab === 'general'
-                            ? 'text-zorin-accent border-b-2 border-zorin-accent'
-                            : 'text-gray-400 hover:text-gray-300'
-                    }`}
-                >
-                    Informações Gerais
-                </button>
-                <button
-                    onClick={() => setActiveTab('rules')}
-                    className={`px-6 py-3 font-medium transition-all ${
-                        activeTab === 'rules'
-                            ? 'text-zorin-accent border-b-2 border-zorin-accent'
-                            : 'text-gray-400 hover:text-gray-300'
-                    }`}
-                >
-                    Regras do Playbook
-                </button>
-            </div>
+            {/* Segmented Toggle Control */}
+            <SegmentedToggle
+                value={activeTab}
+                onChange={(val: string) => setActiveTab(val as 'general' | 'rules')}
+                options={[
+                    { value: 'general', label: '📋 Informações Gerais' },
+                    { value: 'rules', label: '📜 Regras do Playbook' }
+                ]}
+                className="mb-8"
+            />
 
             {/* General Tab */}
             {activeTab === 'general' && (

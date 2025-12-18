@@ -1,15 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Modal, Button, GlassCard, IconActionButton } from '@/components/ui';
-import { Tabs, TabPanel } from '@/components/ui/Tabs';
+import { Modal, GlassCard, IconActionButton, SegmentedToggle } from '@/components/ui';
+import { TabPanel } from '@/components/ui/Tabs';
 import { PlaybookReviewTab } from './PlaybookReviewTab';
 import type { Playbook, Trade } from '@/types';
 
-const PLAYBOOK_TABS = [
-    { id: 'info', label: 'Info', icon: '📋' },
-    { id: 'relatorios', label: 'Relatórios', icon: '📊' }
-];
+const GROUP_ICONS: Record<string, string> = {
+    market: '📊',
+    entry: '🎯',
+    exit: '🏁',
+};
 
 interface ViewPlaybookModalProps {
     isOpen: boolean;
@@ -69,7 +70,14 @@ export function ViewPlaybookModal({
                 )}
 
                 {/* Tabs */}
-                <Tabs tabs={PLAYBOOK_TABS} activeTab={activeTab} onChange={setActiveTab} />
+                <SegmentedToggle
+                    value={activeTab}
+                    onChange={setActiveTab}
+                    options={[
+                        { value: 'info', label: <>📋 Info</> },
+                        { value: 'relatorios', label: <>📊 Relatórios</> }
+                    ]}
+                />
 
                 {/* Tab: Info (Rules) */}
                 <TabPanel value="info" activeTab={activeTab}>
@@ -82,7 +90,7 @@ export function ViewPlaybookModal({
                             {playbook.ruleGroups?.map((group) => (
                                 <GlassCard key={group.id} className="bg-zorin-bg/30 border-white/5 overflow-hidden">
                                     <div className="px-4 py-2 bg-zorin-bg/50 border-b border-white/5 flex items-center gap-2">
-                                        <span className="text-gray-500">☰</span>
+                                        <span className="text-lg">{GROUP_ICONS[group.id] || '📋'}</span>
                                         <span className="font-medium text-gray-200">{group.name}</span>
                                     </div>
                                     <div className="p-4 space-y-2">
