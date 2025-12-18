@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { createPortal } from "react-dom"
 
@@ -123,6 +123,7 @@ const SelectTrigger = React.forwardRef<
         // Handle both refs
         if (typeof ref === 'function') ref(node);
         else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        // eslint-disable-next-line
         if (internalRef) (internalRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
       }}
       type="button"

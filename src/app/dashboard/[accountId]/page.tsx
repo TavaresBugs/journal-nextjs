@@ -95,7 +95,7 @@ export default function DashboardPage({
         setSelectedTradeForJournal(trade);
         setStartJournalEditing(startEditing);
         setIsJournalModalOpen(true);
-    }, []);
+    }, [setSelectedTradeForJournal, setStartJournalEditing, setIsJournalModalOpen]);
 
     // Early returns
     if (!data.isValidAccount) return null;

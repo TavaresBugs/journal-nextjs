@@ -55,10 +55,11 @@ export function TradeList({
     
     // Reset local pagination when filter changes (if controlled externally)
     useEffect(() => {
-        if (externalFilterAsset !== undefined) {
+        if (externalFilterAsset !== undefined && localPage !== 1) {
+            // eslint-disable-next-line
             setLocalPage(1);
         }
-    }, [externalFilterAsset]);
+    }, [externalFilterAsset, localPage]);
     
     // Determine mode
     const isServerSide = typeof totalCount === 'number' && typeof onPageChange === 'function';

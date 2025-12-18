@@ -43,7 +43,9 @@ export function ImagePreviewLightbox({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (e.key === 'ArrowLeft') handlePrev(e as any);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (e.key === 'ArrowRight') handleNext(e as any);
     };
 

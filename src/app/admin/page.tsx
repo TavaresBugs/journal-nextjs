@@ -102,7 +102,7 @@ export default function AdminPage() {
                     ]}
                     value={activeTab}
                     onChange={(val) => setActiveTab(val as 'users' | 'logs' | 'mentors')}
-                    className="mb-6 w-full max-w-md"
+                    className="mb-6 w-full"
                 />
 
                 {/* Content */}

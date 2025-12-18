@@ -9,10 +9,12 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { ModalFooterActions } from '@/components/ui/ModalFooterActions';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Switch } from '@/components/ui/switch';
 import { AssetIcon } from '@/components/shared/AssetIcon';
-import { Search, RotateCcw, Lock, Settings2, Check, X } from 'lucide-react';
+import { Search, RotateCcw, Lock, Settings2 } from 'lucide-react';
 import { ASSET_OPTIONS, type AssetOption } from '@/constants/assetComboboxData';
 import { getDefaultMultiplier } from '@/constants/defaultMultipliers';
 import { cn } from '@/lib/utils/general';
@@ -126,7 +128,7 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col bg-gray-800 border-gray-700">
+      <DialogContent className="w-full max-w-6xl max-h-[85vh] flex flex-col bg-gray-800 border-gray-700">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
             <Settings2 className="w-5 h-5 text-cyan-500" />
@@ -180,7 +182,7 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
                   {type}
                 </h3>
                 
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {typeConfigs.map((config) => (
                     <div
                       key={config.symbol}
@@ -191,74 +193,68 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
                           : "bg-gray-900/50 border-gray-700 opacity-60"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        {/* Icon and Info */}
-                        <AssetIcon symbol={config.symbol} size="md" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-white">{config.symbol}</p>
-                          <p className="text-xs text-gray-400 truncate">{config.name}</p>
+                      <div className="flex items-center justify-between gap-4">
+                        {/* LEFT: Icon and Info */}
+                        <div className="flex items-center gap-3 min-w-[140px] flex-1">
+                          <AssetIcon symbol={config.symbol} size="md" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-white">{config.symbol}</p>
+                            <p className="text-xs text-gray-400 truncate">{config.name}</p>
+                          </div>
                         </div>
                         
-                        {/* Multiplier Input */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex flex-col items-end">
-                            <label className="text-[10px] text-gray-500 mb-0.5 flex items-center gap-1">
-                              Multiplicador
-                              {config.isLocked && <Lock className="w-3 h-3" />}
-                            </label>
-                            <div className="flex items-center gap-1">
-                              <Input
-                                type="number"
-                                value={config.multiplier}
-                                onChange={(e) => updateConfig(config.symbol, { 
-                                  multiplier: parseFloat(e.target.value) || 0 
-                                })}
-                                disabled={config.isLocked}
-                                className={cn(
-                                  "w-24 h-8 text-sm text-right",
-                                  config.isLocked 
-                                    ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed" 
-                                    : "bg-gray-600 border-gray-500 text-white"
-                                )}
-                              />
-                              {!config.isLocked && config.multiplier !== config.defaultMultiplier && (
-                                <button
-                                  onClick={() => resetToDefault(config.symbol)}
-                                  className="p-1.5 text-gray-400 hover:text-cyan-400 transition-colors"
-                                  title="Restaurar padrão"
-                                >
-                                  <RotateCcw className="w-3.5 h-3.5" />
-                                </button>
+                        {/* CENTER: Multiplier Input */}
+                        <div className="flex flex-col items-center">
+                          <label className="text-[10px] text-gray-400 mb-1 flex items-center justify-center gap-1 font-medium">
+                            Multiplicador
+                            {config.isLocked && (
+                              <div 
+                                title="🔒 Multiplicador fixo definido pelo contrato"
+                                className="cursor-help flex items-center"
+                              >
+                                <Lock className="w-3 h-3 text-amber-500" />
+                              </div>
+                            )}
+                          </label>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              value={config.multiplier}
+                              onChange={(e) => updateConfig(config.symbol, { 
+                                multiplier: parseFloat(e.target.value) || 0 
+                              })}
+                              disabled={config.isLocked}
+                              className={cn(
+                                "w-32 h-9 text-sm text-center bg-gray-800/80 border-gray-600 focus:border-cyan-500 transition-colors",
+                                config.isLocked && "opacity-50 cursor-not-allowed"
                               )}
-                            </div>
+                            />
+                            {!config.isLocked && config.multiplier !== config.defaultMultiplier && (
+                              <button
+                                onClick={() => resetToDefault(config.symbol)}
+                                className="absolute -right-6 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-cyan-400 transition-colors"
+                                title="Restaurar padrão"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                           </div>
-                          
-                          {/* Active Toggle */}
-                          <button
-                            onClick={() => toggleActive(config.symbol)}
-                            className={cn(
-                              "ml-2 p-1.5 rounded-full transition-colors",
-                              config.isActive 
-                                ? "bg-cyan-600 text-white" 
-                                : "bg-gray-600 text-gray-400"
-                            )}
-                            title={config.isActive ? 'Desativar' : 'Ativar'}
-                          >
-                            {config.isActive ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              <X className="w-4 h-4" />
-                            )}
-                          </button>
+                        </div>
+
+                        {/* RIGHT: Active Switch */}
+                        <div className="flex flex-col items-center min-w-[60px]">
+                           <span className="text-[10px] text-gray-400 mb-1 font-medium">
+                            Busca
+                          </span>
+                          <div className="h-9 flex items-center justify-center">
+                            <Switch
+                              checked={config.isActive}
+                              onCheckedChange={() => toggleActive(config.symbol)}
+                              className="data-[state=checked]:bg-cyan-600"
+                            />
+                          </div>
                         </div>
                       </div>
-                      
-                      {config.isLocked && (
-                        <p className="text-[10px] text-amber-500/80 mt-2 flex items-center gap-1">
-                          <Lock className="w-3 h-3" />
-                          Multiplicador fixo definido pelo contrato
-                        </p>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -274,20 +270,16 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
         </div>
         
         {/* Footer */}
-        <DialogFooter className="border-t border-gray-700 pt-4">
-          <Button 
-            variant="outline" 
-            onClick={onClose}
-            className="bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600"
-          >
-            Cancelar
-          </Button>
-          <Button 
-            onClick={handleSave}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white"
-          >
-            Salvar Alterações
-          </Button>
+        <DialogFooter className="border-t border-gray-700 pt-0">
+          <ModalFooterActions
+            mode="save-cancel"
+            onPrimary={handleSave}
+            onSecondary={onClose}
+            primaryLabel="Salvar Alterações"
+            secondaryLabel="Cancelar"
+            isFullWidth
+            className="w-full border-t-0"
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -132,7 +132,7 @@ export default function MentoriaPage() {
                     ]}
                     value={activeTab}
                     onChange={(val) => setActiveTab(val as 'mentorados' | 'convites')}
-                    className="mb-6 w-full max-w-md"
+                    className="mb-6 w-full"
                 />
 
                 {/* Content */}

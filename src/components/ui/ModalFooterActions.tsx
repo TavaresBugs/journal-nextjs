@@ -14,7 +14,7 @@ export interface ModalFooterActionsProps {
     mode?: 'save-cancel' | 'create-close' | 'close-only' | 'destructive' | 'custom';
     
     /** Variantes de estilo para o botão primário */
-    primaryVariant?: 'primary' | 'success' | 'danger' | 'zorin-primary' | 'gradient-success';
+    primaryVariant?: 'primary' | 'success' | 'danger' | 'zorin-primary' | 'gradient-success' | 'solid-danger' | 'solid-gray';
     
     /** Handlers */
     onPrimary?: () => void;
@@ -49,7 +49,7 @@ export function ModalFooterActions({
     secondaryLabel,
     isLoading = false,
     disabled = false,
-    isFullWidth = false,
+    isFullWidth = true,
     isSubmit = false,
     className = "",
     children
@@ -84,16 +84,17 @@ export function ModalFooterActions({
     const finalSecondaryLabel = secondaryLabel || defaults.secondary;
 
     // Determine default variant if not provided
-    const finalPrimaryVariant = primaryVariant || (mode === 'destructive' ? 'danger' : 'gradient-success');
+    const finalPrimaryVariant = primaryVariant || (mode === 'destructive' ? 'danger' : (mode === 'close-only' ? 'solid-danger' : 'zorin-primary'));
 
     if (mode === 'close-only') {
         return (
             <div className={`flex justify-end pt-4 border-t border-gray-700 ${className}`}>
                 <Button 
-                    variant="ghost" 
+                    variant={finalPrimaryVariant} 
                     onClick={onPrimary}
                     className={isFullWidth ? 'flex-1' : ''}
                     disabled={disabled}
+                    size="lg"
                 >
                     {finalPrimaryLabel}
                 </Button>
@@ -106,10 +107,11 @@ export function ModalFooterActions({
             {onSecondary && (
                 <Button 
                     type="button" 
-                    variant="ghost" 
+                    variant="solid-danger" 
                     onClick={onSecondary} 
                     disabled={isLoading || disabled}
                     className={`font-semibold ${isFullWidth ? 'flex-1' : ''}`}
+                    size="lg"
                 >
                     {finalSecondaryLabel}
                 </Button>
@@ -122,6 +124,7 @@ export function ModalFooterActions({
                 isLoading={isLoading}
                 disabled={disabled || isLoading}
                 className={`font-bold ${isFullWidth ? 'flex-1' : ''}`}
+                size="lg"
             >
                 {finalPrimaryLabel}
             </Button>

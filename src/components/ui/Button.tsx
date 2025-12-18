@@ -2,7 +2,7 @@ import React, { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils/general';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'outline-danger' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning';
+    variant?: 'primary' | 'secondary' | 'outline' | 'outline-danger' | 'ghost' | 'danger' | 'success' | 'warning' | 'info' | 'ghost-success' | 'gradient-success' | 'gradient-danger' | 'gold' | 'purple' | 'zorin-primary' | 'zorin-outline' | 'zorin-ghost' | 'zorin-success' | 'zorin-danger' | 'zorin-warning' | 'solid-danger' | 'solid-gray';
     size?: 'sm' | 'md' | 'lg' | 'icon';
     isLoading?: boolean;
     leftIcon?: React.ReactNode;
@@ -73,6 +73,10 @@ export function Button({
         'zorin-success': "bg-[#00c853]/10 text-[#00c853] border border-[#00c853] hover:shadow-[0_0_20px_rgba(0,200,83,0.4)] font-bold",
         'zorin-danger': "bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] font-bold",
         'zorin-warning': "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] font-bold",
+
+        // New Standard Solid Variants (Bold + Solid Color)
+        'solid-danger': "bg-red-600 hover:bg-red-700 text-white border border-red-600 hover:border-red-700 focus:ring-red-500 font-bold shadow-lg shadow-red-500/20",
+        'solid-gray': "bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 hover:border-gray-500 focus:ring-gray-500 font-bold shadow-md",
     };
 
     const sizes = {

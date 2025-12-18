@@ -457,7 +457,7 @@ export default function ComunidadePage() {
                     ]}
                     value={activeTab}
                     onChange={(val) => setActiveTab(val as 'playbooks' | 'leaderboard')}
-                    className="mb-6 w-full max-w-md"
+                    className="mb-6 w-full"
                 />
 
                 {/* Content */}
