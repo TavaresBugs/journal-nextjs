@@ -1,223 +1,177 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useImageCache } from "@/hooks/useImageCache";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { useImageCache, startCacheCleanupInterval } from "../../hooks/useImageCache";
 
 describe("useImageCache", () => {
-  // Clear global cache before each test
-  beforeEach(() => {
+  // Helper to clear cache
+  const clearCache = () => {
     const { result } = renderHook(() => useImageCache());
-    act(() => {
-      result.current.clear();
-    });
+    result.current.clear();
+  };
+
+  beforeEach(() => {
+    clearCache();
+    vi.useFakeTimers();
   });
 
-  describe("basic operations", () => {
-    it("should set and get an item", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      act(() => {
-        result.current.set("test-key", "test-data");
-      });
-
-      expect(result.current.get("test-key")).toBe("test-data");
-    });
-
-    it("should return null for non-existent key", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      expect(result.current.get("non-existent")).toBeNull();
-    });
-
-    it("should remove an item", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      act(() => {
-        result.current.set("test-key", "test-data");
-      });
-
-      expect(result.current.get("test-key")).toBe("test-data");
-
-      act(() => {
-        result.current.remove("test-key");
-      });
-
-      expect(result.current.get("test-key")).toBeNull();
-    });
-
-    it("should check if key exists with has()", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      expect(result.current.has("test-key")).toBe(false);
-
-      act(() => {
-        result.current.set("test-key", "test-data");
-      });
-
-      expect(result.current.has("test-key")).toBe(true);
-    });
-
-    it("should list all keys", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      act(() => {
-        result.current.set("key1", "data1");
-        result.current.set("key2", "data2");
-        result.current.set("key3", "data3");
-      });
-
-      const keys = result.current.keys();
-      expect(keys).toHaveLength(3);
-      expect(keys).toContain("key1");
-      expect(keys).toContain("key2");
-      expect(keys).toContain("key3");
-    });
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
-  describe("clear operations", () => {
-    it("should clear all items without filter", () => {
-      const { result } = renderHook(() => useImageCache());
+  it("should set and get values", () => {
+    const { result } = renderHook(() => useImageCache());
+    const key = "k1";
+    const val = "data";
 
-      act(() => {
-        result.current.set("key1", "data1");
-        result.current.set("key2", "data2");
-      });
-
-      expect(result.current.getStats().count).toBe(2);
-
-      act(() => {
-        result.current.clear();
-      });
-
-      expect(result.current.getStats().count).toBe(0);
-    });
-
-    it("should clear items matching filter", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      act(() => {
-        result.current.set("journal_123_daily", "data1");
-        result.current.set("journal_123_weekly", "data2");
-        result.current.set("journal_456_daily", "data3");
-      });
-
-      expect(result.current.getStats().count).toBe(3);
-
-      act(() => {
-        result.current.clear((key) => key.startsWith("journal_123"));
-      });
-
-      expect(result.current.getStats().count).toBe(1);
-      expect(result.current.has("journal_456_daily")).toBe(true);
-      expect(result.current.has("journal_123_daily")).toBe(false);
-    });
+    result.current.set(key, val);
+    expect(result.current.has(key)).toBe(true);
+    expect(result.current.get(key)).toBe(val);
   });
 
-  describe("LRU eviction", () => {
-    it("should evict items when maxItems exceeded", () => {
-      const { result } = renderHook(() => useImageCache({ maxItems: 3 }));
+  it("should expire items after TTL", () => {
+    const { result: hook } = renderHook(() => useImageCache({ ttlMs: 100 }));
+    hook.current.set("k1", "data");
 
-      act(() => {
-        result.current.set("key1", "data1");
-        result.current.set("key2", "data2");
-        result.current.set("key3", "data3");
-        // Adding key4 should evict one item
-        result.current.set("key4", "data4");
-      });
+    expect(hook.current.get("k1")).toBe("data");
 
-      // Should have exactly 3 items (maxItems limit)
-      expect(result.current.getStats().count).toBe(3);
-      // key4 should definitely exist (most recent)
-      expect(result.current.has("key4")).toBe(true);
-    });
+    // Advance time past TTL
+    vi.advanceTimersByTime(150);
 
-    it("should keep recently accessed items during eviction", () => {
-      const { result } = renderHook(() => useImageCache({ maxItems: 2 }));
-
-      act(() => {
-        result.current.set("key1", "data1");
-        result.current.set("key2", "data2");
-      });
-
-      // Access key1 to make it more recently used
-      act(() => {
-        result.current.get("key1");
-      });
-
-      // Add key3, should evict one item (cache full)
-      act(() => {
-        result.current.set("key3", "data3");
-      });
-
-      // Should have exactly 2 items
-      expect(result.current.getStats().count).toBe(2);
-      // key3 should definitely exist (just added)
-      expect(result.current.has("key3")).toBe(true);
-      // One of key1/key2 should be evicted
-      const hasKey1 = result.current.has("key1");
-      const hasKey2 = result.current.has("key2");
-      expect(hasKey1 || hasKey2).toBe(true); // At least one kept
-      expect(hasKey1 && hasKey2).toBe(false); // But not both
-    });
+    expect(hook.current.get("k1")).toBeNull();
   });
 
-  describe("getStats", () => {
-    it("should return correct count", () => {
-      const { result } = renderHook(() => useImageCache());
+  it("should evict LRU items when maxItems reached", () => {
+    const { result: hook } = renderHook(() => useImageCache({ maxItems: 2 }));
 
-      expect(result.current.getStats().count).toBe(0);
+    // Ensure distinct timestamps
+    hook.current.set("k1", "d1");
+    vi.advanceTimersByTime(10);
 
-      act(() => {
-        result.current.set("key1", "test data 1");
-        result.current.set("key2", "test data 2");
-      });
+    hook.current.set("k2", "d2");
+    vi.advanceTimersByTime(10);
 
-      expect(result.current.getStats().count).toBe(2);
-    });
+    // Access k1 to make it recent
+    hook.current.get("k1");
+    vi.advanceTimersByTime(10);
 
-    it("should track oldest and newest keys", () => {
-      const { result } = renderHook(() => useImageCache());
+    // k1 lastAccess > k2 lastAccess
+    // k2 is LRU
 
-      act(() => {
-        result.current.set("first", "data1");
-        result.current.set("second", "data2");
-      });
+    // Add k3, should evict k2
+    hook.current.set("k3", "d3");
 
-      const stats = result.current.getStats();
-      // Both keys should be tracked
-      expect(stats.oldestKey).not.toBeNull();
-      expect(stats.newestKey).not.toBeNull();
-      // They should be one of our added keys
-      expect(["first", "second"]).toContain(stats.oldestKey);
-      expect(["first", "second"]).toContain(stats.newestKey);
-    });
-
-    it("should calculate size in MB", () => {
-      const { result } = renderHook(() => useImageCache());
-
-      // Add a larger string to ensure measurable size
-      const largeData = "x".repeat(100000); // ~100KB
-
-      act(() => {
-        result.current.set("large", largeData);
-      });
-
-      const stats = result.current.getStats();
-      expect(stats.sizeMB).toBeGreaterThan(0);
-      expect(stats.sizeMB).toBeLessThan(1); // Should be ~0.1MB
-    });
+    expect(hook.current.has("k2"), "k2 should be evicted").toBe(false);
+    expect(hook.current.has("k1"), "k1 should remain").toBe(true);
+    expect(hook.current.has("k3"), "k3 should remain").toBe(true);
   });
 
-  describe("shared global cache", () => {
-    it("should share cache across hook instances", () => {
-      const { result: hook1 } = renderHook(() => useImageCache());
-      const { result: hook2 } = renderHook(() => useImageCache());
+  it("should evict LRU items when maxSizeBytes reached", () => {
+    const { result: hook } = renderHook(() => useImageCache({ maxSizeBytes: 2 }));
 
-      act(() => {
-        hook1.current.set("shared-key", "shared-data");
-      });
+    hook.current.set("k1", "a");
+    vi.advanceTimersByTime(10);
 
-      // hook2 should be able to get data set by hook1
-      expect(hook2.current.get("shared-key")).toBe("shared-data");
-    });
+    hook.current.set("k2", "b");
+    vi.advanceTimersByTime(10);
+
+    // k1 is LRU
+    hook.current.set("k3", "c");
+
+    expect(hook.current.has("k1")).toBe(false);
+    expect(hook.current.has("k2")).toBe(true);
+    expect(hook.current.has("k3")).toBe(true);
+  });
+
+  it("should return null for non-existent keys", () => {
+    const { result } = renderHook(() => useImageCache());
+    expect(result.current.get("missing")).toBeNull();
+  });
+
+  it("should remove specific key", () => {
+    const { result } = renderHook(() => useImageCache());
+    result.current.set("k1", "d1");
+    expect(result.current.remove("k1")).toBe(true);
+    expect(result.current.has("k1")).toBe(false);
+  });
+
+  it("should clear with filter", () => {
+    const { result } = renderHook(() => useImageCache());
+    result.current.set("a1", "d");
+    result.current.set("a2", "d");
+    result.current.set("b1", "d");
+
+    const removed = result.current.clear((k) => k.startsWith("a"));
+
+    expect(removed).toBe(2);
+    expect(result.current.has("a1")).toBe(false);
+    expect(result.current.has("b1")).toBe(true);
+  });
+
+  it("should cleanup manually", () => {
+    const { result: hook } = renderHook(() => useImageCache({ ttlMs: 100 }));
+    hook.current.set("k1", "d");
+    vi.advanceTimersByTime(150);
+
+    hook.current.cleanup();
+    expect(hook.current.has("k1")).toBe(false);
+  });
+
+  it("should report stats", () => {
+    const { result } = renderHook(() => useImageCache());
+    result.current.set("k1", "d1");
+    const stats = result.current.getStats();
+    expect(stats.count).toBe(1);
+    expect(stats.newestKey).toBe("k1");
+  });
+
+  it("should provide keys", () => {
+    const { result } = renderHook(() => useImageCache());
+    result.current.set("k1", "d");
+    expect(result.current.keys()).toContain("k1");
+  });
+
+  it("should not cache if item exceeds max size", () => {
+    const { result: hook } = renderHook(() => useImageCache({ maxSizeBytes: 1 }));
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    hook.current.set("k1", "aa"); // 2 bytes
+
+    expect(hook.current.has("k1")).toBe(false);
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
+  });
+});
+
+describe("startCacheCleanupInterval", () => {
+  // Need to clear cache here too or ensure clean slate
+  const clearCache = () => {
+    const { result } = renderHook(() => useImageCache());
+    result.current.clear();
+  };
+
+  beforeEach(() => {
+    clearCache();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("should clean periodically", () => {
+    const { result: hook } = renderHook(() => useImageCache());
+    hook.current.set("k1", "d");
+
+    // Start cleanup every 1s
+    const stop = startCacheCleanupInterval(1000);
+
+    // Default TTL is 10 min (600,000 ms)
+    // Advance slightly past it
+    vi.advanceTimersByTime(600000 + 1000);
+
+    // Now it should be gone
+    expect(hook.current.has("k1")).toBe(false);
+
+    stop();
   });
 });
