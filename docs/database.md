@@ -389,7 +389,7 @@ R: Crie migration em `supabase/migrations/`, rode `supabase db push`.
 
 ## 🔗 Referências
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Arquitetura geral
+- [architecture.md](./architecture.md) - Arquitetura geral
 - [Supabase Docs - RLS](https://supabase.com/docs/guides/auth/row-level-security)
 - [PostgreSQL Docs](https://www.postgresql.org/docs/)
 

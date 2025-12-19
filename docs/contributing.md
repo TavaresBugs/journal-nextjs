@@ -245,10 +245,10 @@ R: Não, mas funcionalidades críticas devem ter testes.
 
 ## 🔗 Referências
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Entenda a arquitetura
-- [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - Componentes UI
-- [GLOSSARIO.md](./GLOSSARIO.md) - Termos técnicos
-- [TODO.md](./TODO.md) - Tarefas disponíveis
+- [architecture.md](./architecture.md) - Entenda a arquitetura
+- [design-system.md](./design-system.md) - Componentes UI
+- [glossary.md](./glossary.md) - Termos técnicos
+- [todo.md](./todo.md) - Tarefas disponíveis
 
 ---
 

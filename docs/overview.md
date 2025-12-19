@@ -206,17 +206,17 @@ R: Server Components, melhor performance, layouts aninhados. É o futuro do Next
 R: Em `src/lib/services/`. Repositories apenas buscam dados, services aplicam regras.
 
 **P: Como adicionar um novo componente UI?**
-R: Crie em `src/components/ui/`, exporte em `index.ts`, documente em `DESIGN_SYSTEM.md`.
+R: Crie em `src/components/ui/`, exporte em `index.ts`, documente em `design-system.md`.
 
 ---
 
 ## 🔗 Referências
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Arquitetura detalhada com diagramas
-- [DATABASE.md](./DATABASE.md) - Schema e RLS policies
-- [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - Catálogo de componentes
-- [ROADMAP.md](./ROADMAP.md) - Plano de evolução
-- [CONTRIBUTING.md](./CONTRIBUTING.md) - Guia de contribuição
+- [architecture.md](./architecture.md) - Arquitetura detalhada com diagramas
+- [database.md](./database.md) - Schema e RLS policies
+- [design-system.md](./design-system.md) - Catálogo de componentes
+- [roadmap.md](./roadmap.md) - Plano de evolução
+- [contributing.md](./contributing.md) - Guia de contribuição
 
 ---
 

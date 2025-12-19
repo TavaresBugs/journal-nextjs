@@ -230,9 +230,9 @@
 
 ## 🔗 Referências
 
-- [ROADMAP.md](./ROADMAP.md) - Visão de longo prazo
-- [TODO.md](./TODO.md) - Tarefas do dia-a-dia
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Onde implementar
+- [roadmap.md](./roadmap.md) - Visão de longo prazo
+- [todo.md](./todo.md) - Tarefas do dia-a-dia
+- [architecture.md](./architecture.md) - Onde implementar
 
 ---
 

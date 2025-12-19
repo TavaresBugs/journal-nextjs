@@ -266,16 +266,16 @@ npm run type-check
 | Documento                                     | Descrição                        |
 | --------------------------------------------- | -------------------------------- |
 | [🚀 Getting Started](docs/getting-started.md) | Setup inicial e primeiro projeto |
-| [📋 Overview](docs/PROJETO_CONTEXTO.md)       | Visão técnica geral do projeto   |
-| [📖 Glossário](docs/GLOSSARIO.md)             | Termos técnicos explicados       |
+| [📋 Overview](docs/overview.md)               | Visão técnica geral do projeto   |
+| [📖 Glossário](docs/glossary.md)              | Termos técnicos explicados       |
 
 ### 🏗️ Arquitetura & Design
 
 | Documento                                 | Descrição                       |
 | ----------------------------------------- | ------------------------------- |
-| [🏗️ Arquitetura](docs/ARCHITECTURE.md)    | Diagramas C4, padrões, decisões |
-| [🗄️ Database](docs/DATABASE.md)           | Schema, RLS policies, queries   |
-| [🎨 Design System](docs/DESIGN_SYSTEM.md) | Componentes UI, variantes       |
+| [🏗️ Arquitetura](docs/architecture.md)    | Diagramas C4, padrões, decisões |
+| [🗄️ Database](docs/database.md)           | Schema, RLS policies, queries   |
+| [🎨 Design System](docs/design-system.md) | Componentes UI, variantes       |
 
 ### 🔧 Desenvolvimento
 
@@ -283,18 +283,18 @@ npm run type-check
 | --------------------------------------- | ------------------------------------- |
 | [🧪 Testes](docs/testing.md)            | Estratégia, como escrever, inventário |
 | [🔒 Segurança](docs/security.md)        | Auth, RLS, logging seguro             |
-| [🤝 Contribuindo](docs/CONTRIBUTING.md) | Convenções, processo de PR            |
+| [🤝 Contribuindo](docs/contributing.md) | Convenções, processo de PR            |
 | [📝 Guia de Docs](docs/docs-guide.md)   | Como manter documentação              |
 
 ### 📋 Gestão
 
 | Documento                                 | Descrição                  |
 | ----------------------------------------- | -------------------------- |
-| [🗺️ Roadmap](docs/ROADMAP.md)             | Planejamento futuro        |
-| [📋 TODO](docs/TODO.md)                   | Tarefas organizadas        |
-| [✨ Features](docs/PENDING_FEATURES.md)   | Backlog de funcionalidades |
+| [🗺️ Roadmap](docs/roadmap.md)             | Planejamento futuro        |
+| [📋 TODO](docs/todo.md)                   | Tarefas organizadas        |
+| [✨ Features](docs/pending-features.md)   | Backlog de funcionalidades |
 | [📋 Changelog](CHANGELOG.md)              | Histórico de versões       |
-| [🚀 Deploy](docs/DEPLOYMENT_CHECKLIST.md) | Checklist de implantação   |
+| [🚀 Deploy](docs/deployment-checklist.md) | Checklist de implantação   |
 
 ---
 

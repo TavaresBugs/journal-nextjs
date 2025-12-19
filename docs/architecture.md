@@ -382,9 +382,9 @@ R: Testes automatizados que tentam acessar dados de outro usuário devem falhar.
 
 ## 🔗 Referências
 
-- [PROJETO_CONTEXTO.md](./PROJETO_CONTEXTO.md) - Visão geral do projeto
-- [DATABASE.md](./DATABASE.md) - Schema e RLS policies
-- [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) - Componentes UI
+- [overview.md](./overview.md) - Visão geral do projeto
+- [database.md](./database.md) - Schema e RLS policies
+- [design-system.md](./design-system.md) - Componentes UI
 - [Next.js App Router](https://nextjs.org/docs/app)
 - [Supabase Docs](https://supabase.com/docs)
 

@@ -312,5 +312,5 @@ SUPABASE_SERVICE_ROLE_KEY=...  // Apenas server-side
 - [OWASP Top 10](https://owasp.org/Top10/)
 - [Supabase RLS](https://supabase.com/docs/guides/auth/row-level-security)
 - [Next.js Security](https://nextjs.org/docs/advanced-features/security-headers)
-- [ARCHITECTURE.md](./architecture.md) - Arquitetura do projeto
-- [DATABASE.md](./database.md) - Schema e RLS policies
+- [architecture.md](./architecture.md) - Arquitetura do projeto
+- [database.md](./database.md) - Schema e RLS policies
