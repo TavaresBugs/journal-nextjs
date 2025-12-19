@@ -140,7 +140,8 @@ const SelectTrigger = React.forwardRef<
         if (typeof ref === "function") ref(node);
         else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
         // eslint-disable-next-line
-        if (internalRef) (internalRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        if (internalRef)
+          (internalRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
       }}
       type="button"
       onClick={() => context?.setOpen(!context.open)}

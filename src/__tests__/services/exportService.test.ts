@@ -72,12 +72,10 @@ describe("exportService", () => {
       // Generic mock implementation for supabase.from(table).select().eq().range() chain
       const createQueryMock = (data: any[]) => {
         const rangeMock = vi.fn().mockReturnValue({ data, error: null });
-        const eqMock = vi
-          .fn()
-          .mockReturnValue({
-            range: rangeMock,
-            maybeSingle: vi.fn().mockReturnValue({ data: data[0] || null, error: null }),
-          });
+        const eqMock = vi.fn().mockReturnValue({
+          range: rangeMock,
+          maybeSingle: vi.fn().mockReturnValue({ data: data[0] || null, error: null }),
+        });
         const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
         return { select: selectMock };
       };

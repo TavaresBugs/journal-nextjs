@@ -243,13 +243,13 @@ const VARIANT_CONFIG: Record<
     hoverBg: "hover:bg-purple-500/10",
     defaultTitle: "Sync Histórico",
     icon: (
-      <svg 
-        className="h-5 w-5" 
-        fill="none" 
-        viewBox="0 0 24 24" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       >
         <ellipse cx="12" cy="5" rx="9" ry="3" />

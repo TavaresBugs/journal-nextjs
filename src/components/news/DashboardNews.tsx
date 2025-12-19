@@ -1,5 +1,5 @@
-import { EconomicCalendar } from './EconomicCalendar'
-import { Card, CardContent } from '@/components/ui'
+import { EconomicCalendar } from "./EconomicCalendar";
+import { Card, CardContent } from "@/components/ui";
 
 /**
  * Dashboard News tab wrapper component.
@@ -12,5 +12,5 @@ export function DashboardNews() {
         <EconomicCalendar />
       </CardContent>
     </Card>
-  )
+  );
 }
