@@ -326,6 +326,7 @@ export function WeekPicker({ selectedWeek, onWeekChange, className = "" }: WeekP
   const selectedWeekEnd = endOfWeek(selectedWeekStart, { weekStartsOn: 1 });
   const weekNumber = getWeek(selectedWeekStart, { weekStartsOn: 1, locale: ptBR });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleWeekSelect = (weekStart: Date, _weekEnd: Date) => {
     const weekString = formatWeekString(weekStart);
     onWeekChange(weekString);
