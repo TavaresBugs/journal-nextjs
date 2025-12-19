@@ -76,6 +76,7 @@ Trading Journal Pro é uma plataforma completa para traders registrarem, analisa
 - **Testes:** Vitest (287 tests passing)
 - **Linting:** ESLint + Prettier
 - **Type Check:** TypeScript strict
+- **Git Hooks:** Husky + lint-staged (pre-commit)
 - **Git:** Commits atômicos, conventional commits
 
 ---
@@ -279,8 +280,15 @@ Este é um projeto privado em desenvolvimento ativo. Para contribuir:
 **Convenções:**
 
 - Commits: [Conventional Commits](https://www.conventionalcommits.org/)
-- Code style: ESLint + Prettier (rodado automaticamente)
+- Code style: ESLint + Prettier (rodado automaticamente via Husky pre-commit)
 - Testes: Obrigatórios para novas features
+
+**Pre-commit Hooks:**
+
+O projeto usa [Husky](https://typicode.github.io/husky/) + [lint-staged](https://github.com/lint-staged/lint-staged) para garantir qualidade do código antes de cada commit:
+
+- Arquivos `.ts`, `.tsx`, `.js`, `.mjs` → ESLint --fix + Prettier
+- Arquivos `.json`, `.md`, `.css` → Prettier
 
 ---
 
