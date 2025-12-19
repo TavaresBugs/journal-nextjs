@@ -1,6 +1,0 @@
-[test]
-preload = ["./tests/setup.ts"]
-
-# Use happy-dom for DOM environment in tests
-[[test.env]]
-DOM_ENV = "happy-dom"
