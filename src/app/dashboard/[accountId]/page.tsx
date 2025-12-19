@@ -32,6 +32,7 @@ import { DashboardPlaybooks } from "@/components/dashboard/tabs/DashboardPlayboo
 import { DashboardLaboratory } from "@/components/dashboard/tabs/DashboardLaboratory";
 import { DashboardModals } from "@/components/dashboard/DashboardModals";
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+import { DashboardNews } from "@/components/news";
 
 // Types
 import type { Trade, Playbook } from "@/types";
@@ -43,6 +44,7 @@ const tabsOptions = [
   { value: "calendario", label: <>📅 Calendário</> },
   { value: "playbook", label: <>📖 Playbook</> },
   { value: "laboratorio", label: <>🧪 Laboratório</> },
+  { value: "news", label: <>📰 News</> },
   { value: "relatorios", label: <>📊 Relatórios</> },
 ];
 
@@ -238,6 +240,10 @@ export default function DashboardPage({
                 accountId: t.accountId,
               }))}
             />
+          </TabPanel>
+
+          <TabPanel value="news" activeTab={activeTab}>
+            <DashboardNews />
           </TabPanel>
 
           <TabPanel value="relatorios" activeTab={activeTab}>

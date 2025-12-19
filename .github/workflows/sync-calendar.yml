@@ -1,0 +1,55 @@
+name: Sync Forex Calendar
+
+on:
+  schedule:
+    # 2x por dia: 00:00 UTC (21:00 BRT) e 12:00 UTC (09:00 BRT)
+    - cron: "0 0,12 * * *"
+
+  # Permite trigger manual no GitHub
+  workflow_dispatch:
+    inputs:
+      cleanup:
+        description: "Limpar eventos antigos (mais de 30 dias)?"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  sync:
+    name: Sync Calendar from Forex Factory
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Sync calendar
+        run: |
+          CLEANUP_FLAG=""
+          if [ "${{ github.event.inputs.cleanup }}" = "true" ] || [ "${{ github.event.schedule }}" = "0 0 * * *" ]; then
+            CLEANUP_FLAG="--cleanup"
+          fi
+          bun run sync-calendar $CLEANUP_FLAG
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Report success
+        if: success()
+        run: |
+          echo "✅ Calendário sincronizado com sucesso!"
+          echo "📅 Fonte: nfs.faireconomy.media/ff_calendar_thisweek.json"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ Sincronização falhou!"
+          echo "Verifique os logs acima para mais detalhes."
