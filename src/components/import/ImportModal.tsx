@@ -2,12 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
-import {
-  RawTradeData,
-  processImportFile,
-  parseNinjaTraderCSV,
-  getNinjaTraderAutoMapping,
-} from "@/services/trades/import";
+import { RawTradeData, processImportFile, parseNinjaTraderCSV } from "@/services/trades/import";
 import {
   ColumnMapping,
   DataSource,
@@ -140,8 +135,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         if (data.length === 0) throw new Error("Nenhum dado encontrado no arquivo.");
         detectedHeaders = Object.keys(data[0]);
 
-        // Auto-map NinjaTrader columns
-        setMapping(getNinjaTraderAutoMapping());
+        // Auto-map NinjaTrader columns using detected headers
+        setMapping(detectColumnMapping(detectedHeaders));
         setBrokerTimezone("America/Sao_Paulo"); // Default for NinjaTrader users in Brazil
       }
 

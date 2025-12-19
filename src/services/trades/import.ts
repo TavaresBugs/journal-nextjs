@@ -557,53 +557,83 @@ export const parseNinjaTraderCSV = async (file: File): Promise<ImportResult> => 
 
     reader.onload = (e) => {
       try {
-        const content = e.target?.result as string;
-        if (!content) throw new Error("File is empty");
+        const buffer = e.target?.result as ArrayBuffer;
+        if (!buffer) throw new Error("File is empty");
 
-        // Split by lines and filter empty lines
-        const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+        // Use TextDecoder to handle encodings (UTF-8, UTF-16, ISO-8859-1) better than readAsText
+        // Check for common BOMs
+        const uint8Array = new Uint8Array(buffer);
+        let content = "";
 
-        if (lines.length < 2) {
-          throw new Error("CSV file must have at least a header and one data row");
+        if (uint8Array.length > 2 && uint8Array[0] === 0xff && uint8Array[1] === 0xfe) {
+          const decoder = new TextDecoder("utf-16le");
+          content = decoder.decode(buffer);
+        } else {
+          const decoder = new TextDecoder("utf-8");
+          content = decoder.decode(buffer);
         }
 
-        // First line is headers
-        const headerLine = lines[0];
-        const headers = headerLine.split(";").map((h) => h.trim());
-
-        // Parse data rows
-        const rawData: RawTradeData[] = [];
-
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i];
-          const values = line.split(";");
-
-          // Skip if not enough values
-          if (values.length < 3) continue;
-
-          const rowData: RawTradeData = {};
-          headers.forEach((header, index) => {
-            if (index < values.length && header) {
-              rowData[header] = values[index]?.trim() || "";
-            }
-          });
-
-          // Only add rows that look like trade data (have a trade number)
-          const tradeNum = rowData["Núm. Neg."];
-          if (tradeNum && !isNaN(Number(tradeNum))) {
-            rawData.push(rowData);
-          }
-        }
-
-        resolve({ data: rawData });
+        const result = parseNinjaTraderContent(content);
+        resolve(result);
       } catch (error) {
         reject(error);
       }
     };
 
     reader.onerror = (error) => reject(error);
-    reader.readAsText(file, "UTF-8");
+    reader.readAsArrayBuffer(file);
   });
+};
+
+/**
+ * Parsing logic extracted for testing and reusability
+ */
+export const parseNinjaTraderContent = (content: string): ImportResult => {
+  if (!content) throw new Error("File is empty");
+
+  // Split by lines and filter empty lines
+  const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+
+  if (lines.length < 2) {
+    throw new Error("CSV file must have at least a header and one data row");
+  }
+
+  // Detect Delimiter (semicolon vs comma) based on the header row
+  const headerLine = lines[0];
+  const semicolonCount = (headerLine.match(/;/g) || []).length;
+  const commaCount = (headerLine.match(/,/g) || []).length;
+  const delimiter = semicolonCount > commaCount ? ";" : ",";
+
+  const headers = headerLine.split(delimiter).map((h) => h.trim());
+
+  // Parse data rows
+  const rawData: RawTradeData[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const values = line.split(delimiter);
+
+    // Skip if not enough values
+    if (values.length < 3) continue;
+
+    const rowData: RawTradeData = {};
+    headers.forEach((header, index) => {
+      if (index < values.length && header) {
+        const val = values[index]?.trim() || "";
+        // Clean quotes if comma delimiter used (CSV standard)
+        rowData[header] = val.replace(/^"|"$/g, "");
+      }
+    });
+
+    // Only add rows that look like trade data (have a trade number)
+    // Check English "Trade number" or Portuguese "Núm. Neg."
+    const tradeNum = rowData["Núm. Neg."] || rowData["Trade number"];
+    if (tradeNum && !isNaN(Number(tradeNum))) {
+      rawData.push(rowData);
+    }
+  }
+
+  return { data: rawData };
 };
 
 /**
@@ -613,41 +643,66 @@ export const parseNinjaTraderMoney = (value: string | number): number => {
   if (typeof value === "number") return value;
   if (!value || typeof value !== "string") return 0;
 
-  // Remove $ and spaces, handle negative sign
+  // Remove spaces
   let str = value.trim();
-  const isNegative = str.startsWith("-");
 
-  // Remove -$ or $ prefix
-  str = str.replace(/^-?\s*\$\s*/, "");
+  // Check for parenthesis format (100.00) = negative
+  const isParenthesis = str.startsWith("(") && str.endsWith(")");
+  if (isParenthesis) {
+    str = str.replace(/[()]/g, "");
+  }
 
-  // Replace comma with dot for decimal
-  str = str.replace(",", ".");
+  // Remove currency symbol and spaces
+  str = str.replace(/\$/g, "").replace(/\s/g, "");
 
-  // Remove any remaining spaces
-  str = str.replace(/\s/g, "");
+  // Detect format:
+  // PT: 1.000,00 (dot thousand, comma decimal)
+  // EN: 1,000.00 (comma thousand, dot decimal)
 
-  const num = parseFloat(str);
+  // Simple heuristic: if it has comma and dot
+  if (str.includes(",") && str.includes(".")) {
+    const lastComma = str.lastIndexOf(",");
+    const lastDot = str.lastIndexOf(".");
+    if (lastComma > lastDot) {
+      // Comma is last, assume PT (decimal)
+      str = str.replace(/\./g, "").replace(",", ".");
+    } else {
+      // Dot is last, assume EN (decimal)
+      str = str.replace(/,/g, "");
+    }
+  } else if (str.includes(",")) {
+    // Only comma. Could be 1,000 (EN 1k) or 1,00 (PT 1)
+    // NinjaTrader usually provides decimals.
+    // If it's a small number like 1,00 -> likely PT.
+    // If it's 1,000 -> likely EN.
+    // Let's assume standard NinjaTrader CSV export usually follows the locale of the headers.
+    // But since we don't have that context easily passed here without refactoring signature,
+    // let's try replacing comma with dot if there are no other separators.
+    // (This matches previous logic for PT support)
+    str = str.replace(",", ".");
+  }
+  // If only dot, keeps as is (EN decimal or PT thousand? usually EN decimal in standard exports)
+
+  let num = parseFloat(str);
   if (isNaN(num)) return 0;
 
-  return isNegative ? -num : num;
+  if (isParenthesis) {
+    num = -Math.abs(num);
+  }
+
+  return num;
 };
 
 /**
  * Parses NinjaTrader price format: "25370,25" -> 25370.25
  */
 export const parseNinjaTraderPrice = (value: string | number): number => {
-  if (typeof value === "number") return value;
-  if (!value || typeof value !== "string") return 0;
-
-  // Replace comma with dot for decimal
-  const str = value.trim().replace(",", ".");
-  const num = parseFloat(str);
-
-  return isNaN(num) ? 0 : num;
+  // Use same logic as Money but without currency handling
+  return parseNinjaTraderMoney(value);
 };
 
 /**
- * Parses NinjaTrader date format: "dd/MM/yyyy HH:mm:ss" -> Date
+ * Parses NinjaTrader date format: "dd/MM/yyyy HH:mm:ss" OR "M/d/yyyy h:mm:ss a" -> Date
  */
 export const parseNinjaTraderDate = (dateStr: string | number): Date | null => {
   if (!dateStr) return null;
@@ -657,15 +712,26 @@ export const parseNinjaTraderDate = (dateStr: string | number): Date | null => {
   if (!str) return null;
 
   try {
-    // Format: dd/MM/yyyy HH:mm:ss
     const referenceDate = new Date();
     referenceDate.setSeconds(0, 0);
 
-    // Try parsing with date-fns
-    const date = parse(str, "dd/MM/yyyy HH:mm:ss", referenceDate);
+    // 1. Try PT/EU format: dd/MM/yyyy HH:mm:ss
+    let date = parse(str, "dd/MM/yyyy HH:mm:ss", referenceDate);
     if (isValid(date)) return date;
 
-    // Also try without seconds
+    // 2. Try English format: MM/dd/yyyy h:mm:ss a (e.g. 12/19/2024 8:44:03 AM)
+    date = parse(str, "MM/dd/yyyy h:mm:ss a", referenceDate);
+    if (isValid(date)) return date;
+
+    // 3. Try English format without seconds: MM/dd/yyyy h:mm a
+    date = parse(str, "MM/dd/yyyy h:mm a", referenceDate);
+    if (isValid(date)) return date;
+
+    // 4. Try generic ISO-like or fallback
+    date = new Date(str);
+    if (isValid(date)) return date;
+
+    // 5. Try without seconds (PT)
     const dateNoSec = parse(str, "dd/MM/yyyy HH:mm", referenceDate);
     if (isValid(dateNoSec)) return dateNoSec;
 

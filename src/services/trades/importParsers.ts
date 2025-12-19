@@ -69,35 +69,89 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   // Entry Date
   if (headers.includes("Open Time")) autoMapping.entryDate = "Open Time";
   else {
-    const h = findHeader(["Open Time", "Time", "Entry Time", "Data Abertura", "Hora Entrada"]);
+    const h = findHeader([
+      "Open Time",
+      "Time",
+      "Entry Time",
+      "Data Abertura",
+      "Hora Entrada",
+      "Hora entrada",
+      "Entry time",
+      "Data Entrada",
+      "Entrada",
+      "Date",
+    ]);
     if (h) autoMapping.entryDate = h;
   }
 
   // Symbol
   if (headers.includes("Symbol")) autoMapping.symbol = "Symbol";
   else {
-    const h = findHeader(["Symbol", "Ativo", "Instrumento", "Instrument"]);
+    const h = findHeader([
+      "Symbol",
+      "Ativo",
+      "Instrumento",
+      "Instrument",
+      "Asset",
+      "Ticker",
+      "Contract",
+      "Contrato",
+    ]);
     if (h) autoMapping.symbol = h;
   }
 
   // Direction/Type
   if (headers.includes("Type")) autoMapping.direction = "Type";
   else {
-    const h = findHeader(["Type", "Tipo", "Direção", "Direcao", "Market pos.", "Pos mercado."]);
+    const h = findHeader([
+      "Type",
+      "Tipo",
+      "Direção",
+      "Direcao",
+      "Market pos.",
+      "Pos mercado.",
+      "Side",
+      "Lado",
+      "Direction",
+      "Position",
+      "Posicao",
+      "Posição",
+    ]);
     if (h) autoMapping.direction = h;
   }
 
   // Volume
   if (headers.includes("Volume")) autoMapping.volume = "Volume";
   else {
-    const h = findHeader(["Volume", "Size", "Lote", "Qtd", "Quantidade", "Qty"]);
+    const h = findHeader([
+      "Volume",
+      "Size",
+      "Lote",
+      "Qtd",
+      "Quantidade",
+      "Qty",
+      "Quantity",
+      "Contracts",
+      "Contratos",
+      "Lots",
+    ]);
     if (h) autoMapping.volume = h;
   }
 
   // Entry Price
   if (headers.includes("Open Price")) autoMapping.entryPrice = "Open Price";
   else {
-    const h = findHeader(["Open Price", "Price", "Entry Price", "Preço Entrada", "Preco Entrada"]);
+    const h = findHeader([
+      "Open Price",
+      "Price",
+      "Entry Price",
+      "Preço Entrada",
+      "Preco Entrada",
+      "Entry price",
+      "Preço entrada",
+      "Avg Entry",
+      "Avg Fill",
+    ]);
     if (h) autoMapping.entryPrice = h;
   }
 
@@ -110,6 +164,12 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
       "Data Fechamento",
       "Hora Saída",
       "Hora Saida",
+      "Hora saída",
+      "Exit time",
+      "Data Saída",
+      "Data Saida",
+      "Saída",
+      "Saida",
     ]);
     if (h) autoMapping.exitDate = h;
   }
@@ -117,21 +177,40 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   // Exit Price
   if (headers.includes("Close Price")) autoMapping.exitPrice = "Close Price";
   else {
-    const h = findHeader(["Close Price", "Exit Price", "Preço Saída", "Preco Saida"]);
+    const h = findHeader([
+      "Close Price",
+      "Exit Price",
+      "Preço Saída",
+      "Preco Saida",
+      "Exit price",
+      "Preço saída",
+      "Avg Exit",
+    ]);
     if (h) autoMapping.exitPrice = h;
   }
 
   // Stop Loss / Take Profit
-  const slHeader = findHeader(["S / L", "SL", "Stop Loss", "S/L", "StopLoss"]);
+  const slHeader = findHeader(["S / L", "SL", "Stop Loss", "S/L", "StopLoss", "Stop"]);
   if (slHeader) autoMapping.sl = slHeader;
 
-  const tpHeader = findHeader(["T / P", "TP", "Take Profit", "T/P", "TakeProfit"]);
+  const tpHeader = findHeader(["T / P", "TP", "Take Profit", "T/P", "TakeProfit", "Target"]);
   if (tpHeader) autoMapping.tp = tpHeader;
 
   // Profit
   if (headers.includes("Profit")) autoMapping.profit = "Profit";
   else {
-    const h = findHeader(["Profit", "Lucro", "P/L", "PnL"]);
+    const h = findHeader([
+      "Profit",
+      "Lucro",
+      "P/L",
+      "PnL",
+      "Net Profit",
+      "Resultado",
+      "Gross Profit",
+      "Net P/L",
+      "Ganho",
+      "Result",
+    ]);
     if (h) autoMapping.profit = h;
   }
 
