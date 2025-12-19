@@ -81,10 +81,10 @@ setInterval(
 );
 
 // ============================================
-// MIDDLEWARE
+// PROXY (formerly Middleware)
 // ============================================
 
-export async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: req.headers,
