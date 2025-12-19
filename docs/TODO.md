@@ -70,11 +70,11 @@
 
 ### 🧪 Tests
 
-| Tarefa                | Estimativa | Descrição         | Status |
-| --------------------- | ---------- | ----------------- | ------ |
-| Testes E2E Playwright | 8h         | Fluxos críticos   | TODO   |
-| Aumentar coverage 70% | 4h         | Mais unit tests   | TODO   |
-| Testes de RLS         | 2h         | Validar segurança | TODO   |
+| Tarefa                    | Estimativa | Descrição         | Status  |
+| ------------------------- | ---------- | ----------------- | ------- |
+| Testes E2E Playwright     | 8h         | Fluxos críticos   | TODO    |
+| ~~Aumentar coverage 70%~~ | 4h         | Mais unit tests   | ✅ DONE |
+| Testes de RLS             | 2h         | Validar segurança | TODO    |
 
 ---
 
@@ -82,8 +82,8 @@
 
 | Métrica         | Atual | Meta  |
 | --------------- | ----- | ----- |
-| Testes passando | 287   | 350   |
-| Coverage        | ~60%  | 70%   |
+| Testes passando | 643   | 350   |
+| Coverage        | 72.8% | 70%   |
 | Lint errors     | 12    | 0     |
 | Docs completos  | 6/12  | 12/12 |
 

@@ -1,0 +1,15 @@
+import { createMockTrade } from "../utils/factories";
+
+export const mockTrades = {
+    standard: createMockTrade(),
+    winner: createMockTrade({ pnl: 100, outcome: 'Win' }),
+    loser: createMockTrade({ pnl: -50, outcome: 'Loss' }),
+    breakeven: createMockTrade({ pnl: 0, outcome: 'BreakEven' }),
+    open: createMockTrade({ exitPrice: undefined, exitDate: undefined }),
+};
+
+export const mockTradeList = [
+    mockTrades.winner,
+    mockTrades.loser,
+    mockTrades.breakeven
+];

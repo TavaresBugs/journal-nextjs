@@ -1,7 +1,8 @@
 # Test Plan - Trading Journal Pro
 
-> Status: 287 testes passando (Vitest)
-> Cobertura: ~60%
+> Status: 640+ testes passando (Vitest)
+> Cobertura: ~72.8% (Meta: 70%) - Atingida!
+> Última atualização: 19/12/2025
 
 ---
 

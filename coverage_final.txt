@@ -1,0 +1,954 @@
+
+> projeto-nextjs@0.1.0 test
+> vitest --coverage --no-color
+
+Loaded  vitest@4.0.16  and  @vitest/coverage-v8@4.0.15 .
+Running mixed versions is not supported and may lead into bugs
+Update your dependencies and make sure the versions match.
+
+ DEV  v4.0.16 /home/jhontavares/Documents/Programacao/Journal-NextJs
+      Coverage enabled with v8
+
+stdout | src/lib/__tests__/production-smoke.test.ts
+[dotenv@17.2.3] injecting env (6) from .env.local -- tip: 🔄 add secrets lifecycle management: https://dotenvx.com/ops
+
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests
+✅ Supabase client initialized for production tests
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should fetch 100 trades with basic fragment in less than 500ms
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.024Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { detailed: [33mfalse[39m, limit: [33m100[39m }
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should fetch 100 trades with basic fragment in less than 500ms
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.079Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m100[39m,
+  durationMs: [33m55[39m
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should fetch trades with pagination in less than 300ms
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.081Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { detailed: [33mfalse[39m, limit: [33m10[39m, offset: [33m0[39m }
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should fetch trades with pagination in less than 300ms
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.111Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m50[39m,
+  durationMs: [33m31[39m
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should handle detailed fragments without significant performance degradation
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.112Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { detailed: [33mfalse[39m }
+}
+
+ ✓ src/components/trades/__tests__/TradeResultBadge.test.tsx (18 tests) 84ms
+stderr | src/__tests__/components/journal/form/JournalEntryForm.test.tsx > JournalEntryForm > opens link trade modal
+An update to JournalEntryForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should handle detailed fragments without significant performance degradation
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.163Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m50[39m,
+  durationMs: [33m51[39m
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should handle detailed fragments without significant performance degradation
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.164Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { detailed: [33mtrue[39m }
+}
+
+ ✓ src/__tests__/components/journal/form/JournalEntryForm.test.tsx (4 tests) 65ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Query Performance > should query 100 trades in less than 2000ms
+✅ Query took 277.81ms (0 trades)
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should handle detailed fragments without significant performance degradation
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.214Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m50[39m,
+  durationMs: [33m50[39m
+}
+
+stdout | src/lib/__tests__/performance.test.ts > TradeRepository Performance > Query Performance Benchmarks > should return results in acceptable time for getByIdDomain
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:08.215Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-1'[39m,
+  withAuthCheck: [33mfalse[39m
+}
+
+ ✓ src/lib/__tests__/performance.test.ts (4 tests) 217ms
+ ✓ src/__tests__/components/journal/form/LinkTradeModal.test.tsx (5 tests) 262ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Query Performance > should query trades by date range efficiently
+✅ Date range query took 218.12ms (0 trades)
+
+ ✓ src/__tests__/components/ui/UIComponents.test.tsx (10 tests) 357ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Query Performance > should query journal entries efficiently
+✅ Journal entries query took 196.64ms (6 entries)
+
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+ ✓ src/components/journal/__tests__/DayDetailModal.state.test.tsx (2 tests) 89ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Query Performance > should query junction table efficiently
+✅ Junction table query took 213.16ms (7 rows)
+
+ ✓ src/components/trades/__tests__/ConfluenceTags.test.tsx (13 tests) 407ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Index Verification > should verify indexes exist via information_schema
+✅ Index verification query took 204.17ms
+
+ ✓ src/__tests__/components/journal/form/JournalAnalysis.test.tsx (3 tests) 50ms
+ ✓ src/components/trades/__tests__/SelectValueWithIcon.test.tsx (8 tests) 74ms
+ ✓ src/components/trades/__tests__/useTradeValidation.test.ts (23 tests) 55ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Data Transfer Optimization > should return minimal data with specific select
+⚠️ No trades found, skipping data transfer test
+
+ ✓ src/__tests__/components/journal/form/TradeLinker.test.tsx (4 tests) 97ms
+ ✓ src/components/trades/__tests__/RiskRewardCards.test.tsx (8 tests) 78ms
+stdout | src/lib/__tests__/production-smoke.test.ts > Production Performance Tests > Concurrent Operations > should handle multiple concurrent queries
+✅ 5 concurrent queries took 443.12ms
+
+ ✓ src/lib/__tests__/production-smoke.test.ts (7 tests) 1971ms
+       ✓ should return minimal data with specific select  402ms
+       ✓ should handle multiple concurrent queries  444ms
+ ✓ src/__tests__/components/journal/form/JournalReview.test.tsx (4 tests) 59ms
+ ✓ src/__tests__/components/journal/form/EntryHeader.test.tsx (4 tests) 57ms
+ ✓ src/__tests__/hooks/useImageCache.test.ts (12 tests) 60ms
+ ✓ src/__tests__/services/reportService.test.ts (1 test) 73ms
+ ✓ src/__tests__/lib/errorMetrics.test.ts (6 tests) 34ms
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should handle Error objects
+❌ [testContext] Error: Test error
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:28:21
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should handle string errors
+❌ [testContext] String error
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should handle Supabase-style errors
+❌ [dbInfo] { message: [32m'Supabase error'[39m, code: [32m'PGRST116'[39m }
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should handle unknown errors
+❌ [unknownCtx] [33m123[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should increment metrics
+❌ [metricsCtx] Error: metrics
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:81:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should call toast handler if registered and enabled
+❌ [toastCtx] Error: Toast me
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:89:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should utilize userMessage for toast
+❌ [userMsgCtx] Error: Technical error
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:97:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > handleServiceError > should not call toast if showToast is false
+❌ [hiddenCtx] Error: Hidden
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:108:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+stderr | src/__tests__/lib/errorHandler.test.ts > errorHandler > safeAsync > should return null and handle error on failure
+❌ [asyncFailCtx] Error: Async failure
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/lib/errorHandler.test.ts:121:21
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1653:12[90m)[39m
+
+ ✓ src/__tests__/lib/errorHandler.test.ts (11 tests) 32ms
+ ✓ src/__tests__/hooks/useBlockBodyScroll.test.ts (3 tests) 50ms
+ ✓ src/__tests__/lib/calculations.test.ts (16 tests) 23ms
+ ✓ src/__tests__/hooks/useError.test.ts (1 test) 24ms
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should return empty array if journal has no trades
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.113Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-with-no-trades'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should return empty array if journal has no trades
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.118Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-with-no-trades'[39m,
+  count: [33m0[39m,
+  durationMs: [33m5[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should return trades for valid journal ID
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.121Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should return trades for valid journal ID
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.122Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should respect limit option
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.124Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  options: { limit: [33m5[39m }
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should respect limit option
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.124Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should respect offset and limit for pagination
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.125Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  options: { limit: [33m10[39m, offset: [33m5[39m }
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByJournalId > should respect offset and limit for pagination
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.126Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdDomain > should return trade by ID without auth check
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.127Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  withAuthCheck: [33mfalse[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdDomain > should return trade if userId matches
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.128Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdDomain > should return error if userId does not match
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.129Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stderr | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdDomain > should return error if userId does not match
+{
+  level: [32m'WARN'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Unauthorized trade access attempt'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.129Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'wrong-user'[39m,
+  ownerId: [32m'user-abc'[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return trade if userId is correct
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade with strict auth'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.130Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'user-abc'[39m
+}
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.130Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return error if userId is incorrect
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade with strict auth'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.131Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'wrong-user-id'[39m
+}
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.131Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stderr | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return error if userId is incorrect
+{
+  level: [32m'WARN'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Unauthorized trade access attempt'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.131Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'wrong-user-id'[39m,
+  ownerId: [32m'user-abc'[39m
+}
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > inviteMentee > should return null if not authenticated
+[inviteMentee] No authenticated user
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > inviteMentee > should return null on supabase error
+[inviteMentee] Error creating invite: { message: [32m'DB Error'[39m }
+
+stderr | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return error if userId is incorrect
+{
+  level: [32m'WARN'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trade access denied'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.131Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'wrong-user-id'[39m,
+  errorCode: [32m'AUTH_FORBIDDEN'[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return error if trade not found
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade with strict auth'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.132Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'non-existent-trade'[39m,
+  userId: [32m'user-abc'[39m
+}
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.132Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'non-existent-trade'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stderr | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByIdWithAuth > should return error if trade not found
+{
+  level: [32m'WARN'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trade access denied'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.133Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'non-existent-trade'[39m,
+  userId: [32m'user-abc'[39m,
+  errorCode: [32m'DB_NOT_FOUND'[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByAccountId > should return trades for account ID
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by account ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.133Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-xyz'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > getByAccountId > should use basic fragment by default
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by account ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.134Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-xyz'[39m,
+  options: { detailed: [33mfalse[39m }
+}
+
+stdout | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > Database Error Handling > should handle database errors gracefully
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.135Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  options: [90mundefined[39m
+}
+
+stderr | src/lib/__tests__/unit/TradeRepository.test.ts > TradeRepository Unit Tests > Database Error Handling > should handle database errors gracefully
+{
+  level: [32m'ERROR'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Failed to fetch trades by journal ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.135Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: { message: [32m'Database connection failed'[39m, code: [32m'CONNECTION_ERROR'[39m },
+  journalId: [32m'journal-123'[39m
+}
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > getSentInvites > should return empty array on error
+[getSentInvites] Error: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > acceptInvite > should return false on error
+Erro ao aceitar convite: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > rejectInvite > should return false on error
+Erro ao rejeitar convite: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > revokeInvite > should return false on error
+Erro ao revogar convite: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > getMentees > should return empty array on error
+Erro ao buscar alunos: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/mentor/inviteService.test.ts > MentorService > getMentors > should return empty array on error
+Erro ao buscar mentores: { message: [32m'Error'[39m }
+
+ ✓ src/lib/__tests__/unit/TradeRepository.test.ts (13 tests) 27ms
+ ✓ src/__tests__/services/mentor/inviteService.test.ts (23 tests) 27ms
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > createReview > should return null if not authenticated
+[createReview] No authenticated user
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > createReview > should return null on DB error
+[createReview] Error creating review: { message: [32m'DB Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > updateReview > should return false on DB error
+[updateReview] Error updating review: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > deleteReview > should return false on DB error
+[deleteReview] Error deleting review: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getReviewsForMentee > should return empty array on invalid data or error
+[getReviewsForMentee] Error fetching reviews: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getMyReviews > should return empty array if not authenticated
+[getMyReviews] No authenticated user
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getMyReviews > should return empty array on DB error
+[getMyReviews] Error fetching reviews: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getReviewsForTrade > should handle errors
+[getReviewsForTrade] Error fetching reviews: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getReviewsForJournalEntry > should handle errors
+[getReviewsForJournalEntry] Error fetching reviews: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getReviewsForContext > should handle errors
+[getReviewsForContext] Error fetching reviews: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > markReviewAsRead > should handle error
+[markReviewAsRead] Error updating read status: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/review.test.ts > Review Service > getUnreadReviewCount > should return 0 on error
+[getUnreadReviewCount] Error fetching count: { message: [32m'Error'[39m }
+
+ ✓ src/__tests__/services/journal/review.test.ts (25 tests) 30ms
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > getDailyRoutines > should return empty array if user not authenticated
+User not authenticated
+
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > getDailyRoutines > should return empty array on DB error
+Error fetching daily routines: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > saveDailyRoutine > should return false if user not authenticated
+User not authenticated
+
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > saveDailyRoutine > should return false on DB error
+Error saving daily routine: { message: [32m'Error'[39m }
+
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > deleteDailyRoutine > should return false if user not authenticated
+User not authenticated
+
+stderr | src/__tests__/services/journal/routine.test.ts > Routine Service > deleteDailyRoutine > should return false on DB error
+Error deleting daily routine: { message: [32m'Error'[39m }
+
+ ✓ src/__tests__/services/journal/routine.test.ts (11 tests) 15ms
+stdout | src/__tests__/services/journal/journalEntry.crud.test.ts > Journal Entry - CRUD Operations > deleteJournalEntry > deve deletar imagens do storage antes de deletar entrada
+Deleting images from storage: [ [32m'user/image1.png'[39m, [32m'user/image2.png'[39m ]
+
+ ✓ src/__tests__/services/journal/journalEntry.crud.test.ts (16 tests) 24ms
+stdout | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByIdDomain > should return trade if found
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.677Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't1'[39m,
+  withAuthCheck: [33mfalse[39m
+}
+
+stdout | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByIdDomain > should perform ownership check if userId provided
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.683Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't1'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stdout | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByIdDomain > should return error if ownership check fails
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.684Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't1'[39m,
+  withAuthCheck: [33mtrue[39m
+}
+
+stderr | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByIdDomain > should return error if ownership check fails
+{
+  level: [32m'WARN'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Unauthorized trade access attempt'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.684Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't1'[39m,
+  userId: [32m'u2'[39m,
+  ownerId: [32m'u1'[39m
+}
+
+stdout | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByJournalId > should fetch trades via junction table join
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.686Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'j1'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/repositories/__tests__/TradeRepository.test.ts > TradeRepository > getByJournalId > should fetch trades via junction table join
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:11.687Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'j1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+ ✓ src/lib/repositories/__tests__/TradeRepository.test.ts (4 tests) 15ms
+ ✓ src/__tests__/services/importService.test.ts (13 tests) 17ms
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should return data with same structure as old queries
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.099Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should return data with same structure as old queries
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.105Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m6[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should return trade objects with expected keys
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.107Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should return trade objects with expected keys
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.108Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should properly map snake_case to camelCase
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.109Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: [90mundefined[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Data Structure Compatibility > should properly map snake_case to camelCase
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.109Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Filter and Order Compatibility > should apply orderBy correctly
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.112Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { orderBy: [32m'entry_date'[39m, ascending: [33mtrue[39m }
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Filter and Order Compatibility > should apply orderBy correctly
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.113Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Filter and Order Compatibility > should apply limit and offset correctly
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Fetching trades by journal ID via junction table'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.115Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  options: { limit: [33m10[39m, offset: [33m20[39m }
+}
+
+stdout | src/lib/__tests__/integration/backward-compat.test.ts > Backward Compatibility > Filter and Order Compatibility > should apply limit and offset correctly
+{
+  level: [32m'INFO'[39m,
+  context: [32m'tradesRepository'[39m,
+  message: [32m'Trades fetched successfully'[39m,
+  timestamp: [32m'2025-12-19T21:20:12.116Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-1'[39m,
+  count: [33m1[39m,
+  durationMs: [33m0[39m
+}
+
+ ✓ src/lib/validation/tradeValidation.test.ts (40 tests) 15ms
+ ✓ src/lib/__tests__/integration/backward-compat.test.ts (8 tests) 21ms
+stdout | src/__tests__/services/journal/journalEntry.images.test.ts > Journal Entry - Images > deleteJournalEntry with images > deve deletar imagens do storage ao deletar entrada
+Deleting images from storage: [ [32m'user/2025/12/11/image1.png'[39m, [32m'user/2025/12/11/image2.png'[39m ]
+
+ ✓ src/__tests__/services/importParsers.test.ts (5 tests) 18ms
+stdout | src/__tests__/services/journal/journalEntry.images.test.ts > Journal Entry - Images > deleteJournalEntry with images > deve continuar deletando entrada mesmo se storage falhar
+Deleting images from storage: [ [32m'test.png'[39m ]
+
+ ✓ src/__tests__/services/journal/journalEntry.images.test.ts (6 tests) 18ms
+ ✓ src/__tests__/services/exportService.test.ts (3 tests) 11ms
+ ✓ src/__tests__/services/trades/trade.test.ts (16 tests) 17ms
+ ✓ src/__tests__/lib/utils/general.test.ts (16 tests) 13ms
+ ✓ src/__tests__/services/tradovateParser.test.ts (19 tests) 16ms
+ ✓ src/__tests__/lib/timeframeUtils.test.ts (26 tests) 9ms
+ ✓ src/__tests__/services/core/account.test.ts (19 tests) 16ms
+ ✓ src/__tests__/services/journal/journalEntry.security.test.ts (9 tests) 9ms
+ ✓ src/__tests__/services/journal/journalEntry.trades.test.ts (5 tests) 9ms
+Cancelling test run. Press CTRL+c again to exit forcefully.
+
+ ✓ src/__tests__/services/journal/journalEntry.business.test.ts (12 tests) 9ms
+ ✓ src/__tests__/schemas/schemas.test.ts (10 tests) 7ms
+ ↓ src/__tests__/services/ninjaTraderParser.test.ts (13 tests)
+ ✓ src/__tests__/services/journal/journalEntry.validation.test.ts (11 tests) 9ms
+ ✓ src/__tests__/lib/password-validator.test.ts (9 tests) 7ms
+ ✓ src/__tests__/laboratory/recap-journal-link.test.ts (10 tests) 5ms
+ ✓ src/__tests__/services/tagAnalyticsService.test.ts (12 tests) 5ms
+ ✓ src/__tests__/services/taxService.test.ts (7 tests) 5ms
+
+ Test Files  48 passed | 1 skipped (50)
+      Tests  515 passed (528)
+   Start at  18:20:06
+   Duration  7.42s (transform 1.68s, setup 4.18s, import 7.32s, tests 4.59s, environment 26.70s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   57.93 |       50 |   56.27 |   59.39 |                   
+ ...sts__/fixtures |     100 |      100 |     100 |     100 |                   
+  ...y.fixtures.ts |     100 |      100 |     100 |     100 |                   
+ ...onents/journal |   46.93 |    47.36 |   46.15 |   48.83 |                   
+  ...tailModal.tsx |   46.93 |    47.36 |   46.15 |   48.83 | ...81-190,239-279 
+ ...s/journal/form |   81.03 |    78.26 |      76 |   85.18 |                   
+  EntryHeader.tsx  |     100 |      100 |     100 |     100 |                   
+  ...lAnalysis.tsx |     100 |      100 |     100 |     100 |                   
+  ...EntryForm.tsx |   71.79 |    74.35 |   33.33 |   77.77 | ...23-130,134,207 
+  ...nalReview.tsx |     100 |      100 |     100 |     100 |                   
+  ...radeModal.tsx |     100 |    72.22 |     100 |     100 | 65-114            
+  TradeLinker.tsx  |     100 |      100 |     100 |     100 |                   
+ components/shared |   11.11 |        0 |       0 |    12.5 |                   
+  AssetIcon.tsx    |   11.11 |        0 |       0 |    12.5 | 46-137            
+ ...s/trades/hooks |    93.1 |       70 |   85.71 |   96.07 |                   
+  ...Validation.ts |    93.1 |       70 |   85.71 |   96.07 | 121,198           
+ .../trades/shared |   91.83 |    93.54 |      75 |     100 |                   
+  ...uenceTags.tsx |   85.18 |      100 |   66.66 |     100 |                   
+  ...wardCards.tsx |     100 |      100 |     100 |     100 |                   
+  ...eWithIcon.tsx |     100 |      100 |     100 |     100 |                   
+  ...sultBadge.tsx |     100 |     87.5 |     100 |     100 | 40                
+ components/ui     |   20.25 |    30.82 |    17.8 |   20.81 |                   
+  AssetBadge.tsx   |     100 |      100 |     100 |     100 |                   
+  Button.tsx       |     100 |    51.06 |     100 |     100 | 151,159-209       
+  Card.tsx         |       0 |        0 |       0 |       0 | 12-51             
+  ...rProgress.tsx |       0 |        0 |       0 |       0 | 22-26             
+  FormLayout.tsx   |      80 |    56.25 |   66.66 |      80 | 35                
+  GlassCard.tsx    |       0 |        0 |       0 |       0 | 29-103            
+  ...ionButton.tsx |     100 |      100 |     100 |     100 |                   
+  Input.tsx        |     100 |    89.65 |     100 |     100 | 18-19,27          
+  Modal.tsx        |   78.57 |    56.25 |      80 |   83.33 | 34-35             
+  ...erActions.tsx |       0 |        0 |       0 |       0 | 64-115            
+  PageSkeleton.tsx |       0 |      100 |       0 |       0 | 8-50              
+  ...tedToggle.tsx |    8.33 |        0 |       0 |    9.09 | 36-68             
+  Select.tsx       |     100 |     90.9 |     100 |     100 | 30                
+  Tabs.tsx         |       0 |        0 |       0 |       0 | 19-57             
+  Toast.tsx        |    9.09 |        0 |       0 |    9.52 | 34-94             
+  WeekPicker.tsx   |     1.8 |        0 |       0 |     1.9 | 33-385            
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  switch.tsx       |   66.66 |      100 |       0 |   66.66 | 11                
+ constants         |   22.22 |        0 |       0 |   22.22 |                   
+  assetIcons.ts    |   22.22 |        0 |       0 |   22.22 | 345-371           
+ hooks             |   97.58 |    85.36 |     100 |   97.54 |                   
+  ...BodyScroll.ts |     100 |      100 |     100 |     100 |                   
+  useError.ts      |     100 |      100 |     100 |     100 |                   
+  useImageCache.ts |   96.87 |    82.85 |     100 |   96.84 | 131,141,332       
+ lib               |   46.95 |    42.94 |   41.89 |   49.71 |                   
+  calculations.ts  |   12.77 |    13.13 |    11.9 |   13.19 | ...42-165,182-390 
+  errorHandler.ts  |     100 |    89.28 |     100 |     100 | 102,134           
+  errorMetrics.ts  |   95.83 |    76.47 |     100 |   95.23 | 57                
+  errors.ts        |      50 |    18.18 |      50 |   48.38 | 42-77             
+  ...-validator.ts |   91.66 |    83.33 |     100 |   94.11 | 67,69             
+  storage.ts       |       0 |        0 |       0 |       0 |                   
+  ...frameUtils.ts |   62.26 |       60 |   72.72 |   64.04 | ...85-311,359,379 
+  utils.ts         |       0 |      100 |       0 |       0 | 5                 
+ lib/logging       |   27.41 |    19.29 |      50 |   27.58 |                   
+  Logger.ts        |      50 |       50 |      70 |   51.72 | 17,48,68-96       
+  safeError.ts     |    3.33 |        0 |       0 |    3.44 | 29-53,100-151     
+ lib/repositories  |   45.65 |    48.52 |   46.15 |   48.83 |                   
+  ...Repository.ts |   26.66 |    16.66 |   16.66 |      32 | 25-31,48-84       
+  ...Repository.ts |   50.92 |    55.35 |   71.42 |   52.88 | ...54-347,398-445 
+ lib/supabase      |     100 |      100 |     100 |     100 |                   
+  fragments.ts     |     100 |      100 |     100 |     100 |                   
+ lib/utils         |   36.99 |    34.69 |   26.92 |   37.19 |                   
+  general.ts       |   98.11 |    95.65 |     100 |     100 | 113               
+  ...ompression.ts |       0 |        0 |       0 |       0 | 47-381            
+  trade.ts         |   66.66 |       60 |     100 |      75 | 24,29-33          
+ lib/validation    |   85.18 |    76.97 |   94.44 |   85.93 |                   
+  ...Validation.ts |    87.6 |    79.16 |    92.3 |   87.06 | ...04,420,436-439 
+  ...tion.types.ts |   64.28 |     37.5 |     100 |      75 | 94-96             
+ schemas           |     100 |      100 |     100 |     100 |                   
+  authSchema.ts    |     100 |      100 |     100 |     100 |                   
+  journalSchema.ts |     100 |      100 |     100 |     100 |                   
+  tradeSchema.ts   |     100 |      100 |     100 |     100 |                   
+ services/admin    |       0 |        0 |       0 |       0 |                   
+  migration.ts     |       0 |        0 |       0 |       0 | 18-151            
+ ...ices/analytics |   72.51 |    45.77 |   76.78 |   74.67 |                   
+  report.ts        |    87.6 |    53.33 |   95.23 |   89.62 | 128,197,215-223   
+  tagAnalytics.ts  |   48.78 |    27.77 |   59.25 |   48.52 | 79,143-232        
+  tax.ts           |   74.57 |    64.28 |    87.5 |   78.18 | 189-209           
+ services/core     |   73.03 |    67.85 |     100 |   78.94 |                   
+  account.ts       |   73.03 |    67.85 |     100 |   78.94 | ...94-295,340-341 
+ services/journal  |   75.44 |     67.8 |   92.85 |      75 |                   
+  journal.ts       |   53.38 |     52.5 |   83.33 |   52.67 | ...92,306,342,352 
+  review.ts        |     100 |    84.61 |     100 |     100 | ...41,261,302,346 
+  routine.ts       |     100 |    92.85 |     100 |     100 | 84                
+ ...mentor/invites |    42.4 |    37.12 |   35.29 |   42.94 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  manage.ts        |   52.94 |    36.36 |   42.85 |   53.12 | 78-158            
+  receive.ts       |   38.28 |    32.95 |   31.81 |   38.18 | ...13,167,191-439 
+  send.ts          |   48.14 |    44.44 |   33.33 |      50 | 15-40,68,101-102  
+  types.ts         |      50 |      100 |      50 |      50 | 55                
+ services/trades   |   64.64 |    56.18 |   65.51 |   66.37 |                   
+  export.ts        |   69.09 |       75 |   78.57 |   67.34 | 36-37,169,220-240 
+  import.ts        |   55.64 |    43.18 |   55.17 |   58.97 | ...71,690,723-741 
+  importParsers.ts |   90.96 |    66.91 |    87.5 |   91.12 | ...30,401-402,426 
+  mappers.ts       |      75 |    83.33 |      50 |     100 | 84                
+  trade.ts         |   76.25 |    65.51 |     100 |      80 | ...59-260,282-283 
+  ...vateParser.ts |    52.4 |     54.8 |      50 |   53.23 | ...72-324,336-399 
+-------------------|---------|----------|---------|---------|-------------------
+ CANCELLED  Test run cancelled. Watching for file changes...
+       press h to show help, press q to quit

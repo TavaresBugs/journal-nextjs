@@ -1,223 +1,101 @@
-# 🧪 Testing Guide
+# Test Guide - How to Write Tests
 
-**Versão:** 1.0  
-**Atualizado:** 2025-12-14  
-**Framework:** Vitest + Testing Library
+## 🚀 Running Tests
 
----
-
-## 🎯 Visão Geral
-
-O projeto usa **Vitest** para testes. Atualmente temos **287 testes** passando.
-
----
-
-## 📦 Comandos
+### Commands
 
 ```bash
-# Rodar todos os testes
+# Run all tests
 npm test
 
-# Rodar testes específicos
-npm test -- TradeRepository
-npm test -- production-smoke
+# Run specific test file
+npm test src/__tests__/path/to/file.test.ts
 
-# Watch mode (dev)
-npm test -- --watch
+# Run inside UI (watch mode)
+npm run test:ui
 
-# Com coverage
-npm test -- --coverage
+# Watch mode (terminal)
+npm run test:watch
 
-# Testes de um arquivo específico
-npm test -- src/lib/__tests__/unit/TradeRepository.test.ts
+# Generate Coverage
+npm run test:coverage
 ```
 
----
+## 📝 Writing a New Test
 
-## 📁 Estrutura de Testes
+### 1. Where to put it?
 
-```
-src/
-├── __tests__/                    # Testes globais
-│   ├── schemas/                  # Validação de schemas
-│   └── services/                 # Testes de serviços
-│       └── journal/
-│           ├── journalEntry.crud.test.ts
-│           ├── journalEntry.business.test.ts
-│           └── journalEntry.validation.test.ts
-│
-└── lib/
-    └── __tests__/                # Testes de lib
-        ├── unit/
-        │   └── TradeRepository.test.ts
-        ├── integration/
-        │   └── backward-compat.test.ts
-        ├── performance.test.ts
-        └── production-smoke.test.ts
-```
+- If testing `src/components/MyComponent.tsx`:
+  -> `src/__tests__/components/MyComponent.test.tsx`
+- If testing `src/services/myService.ts`:
+  -> `src/__tests__/services/myService.test.ts`
 
----
-
-## 🧪 Tipos de Testes
-
-### 1. Unit Tests (Mock)
-
-Testam lógica isolada com mocks do Supabase:
+### 2. Scaffold
 
 ```typescript
-import { vi, describe, it, expect } from "vitest";
-import { TradeRepository } from "@/lib/repositories/TradeRepository";
+import { render, screen } from "@testing-library/react";
+import { describe, it, expect } from "vitest";
+import { MyComponent } from "@/components/MyComponent";
 
-describe("TradeRepository", () => {
-  it("should return trades for valid account", async () => {
-    const mockSupabase = createMockSupabase({ trades: [mockTrade] });
-    const repo = new TradeRepository(mockSupabase);
-
-    const result = await repo.getByAccount("account-1");
-
-    expect(result.data).toHaveLength(1);
-    expect(result.error).toBeNull();
+describe("MyComponent", () => {
+  it("should render correctly", () => {
+    render(<MyComponent />);
+    expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 });
 ```
 
-### 2. Integration Tests
+### 3. Using Data Fixtures
 
-Testam compatibilidade com código existente:
+Don't create messy inline objects. Use shared fixtures.
 
 ```typescript
-describe("Backward Compatibility", () => {
-  it("should return same data format as legacy queries", async () => {
-    const legacyResult = await legacyGetTrades();
-    const repoResult = await repo.getByAccount(accountId);
+import { mockTrades } from "@/lib/tests/fixtures/tradeFixtures";
+import { createMockTrade } from "@/lib/tests/utils/factories";
 
-    expect(repoResult.data).toMatchObject(legacyResult);
-  });
+// standard
+const trade = mockTrades.standard;
+
+// custom
+const bigWinner = createMockTrade({ pnl: 5000 });
+```
+
+### 4. Mocking Supabase
+
+```typescript
+import { createSupabaseMock } from "@/lib/tests/utils/mockBuilders";
+
+const supabase = createSupabaseMock();
+// ... usage in mocks
+```
+
+### 5. Common Patterns
+
+**Testing Async Actions:**
+
+```typescript
+import { userEvent } from '@testing-library/user-event';
+
+it('submits form', async () => {
+  render(<Form />);
+  const user = userEvent.setup();
+
+  await user.click(screen.getByRole('button'));
+
+  expect(handleSubmit).toHaveBeenCalled();
 });
 ```
 
-### 3. Performance Tests
-
-Validam benchmarks de tempo:
+**Testing Hooks:**
 
 ```typescript
-describe("Performance", () => {
-  it("should complete query in under 500ms", async () => {
-    const start = performance.now();
-    await repo.getByAccount(accountId, { limit: 100 });
-    const duration = performance.now() - start;
+import { renderHook, act } from "@testing-library/react";
 
-    expect(duration).toBeLessThan(500);
-  });
+const { result } = renderHook(() => useCounter());
+
+act(() => {
+  result.current.increment();
 });
+
+expect(result.current.count).toBe(1);
 ```
-
-### 4. Production Smoke Tests
-
-Testam contra banco real (requer `.env.local`):
-
-```typescript
-// src/lib/__tests__/production-smoke.test.ts
-describe("Production Performance", () => {
-  it("should query trades efficiently", async () => {
-    const { data, error } = await supabase.from("trades").select("id, strategy").limit(100);
-
-    expect(error).toBeNull();
-  });
-});
-```
-
----
-
-## 🔧 Setup de Testes
-
-### Mock do Supabase
-
-```typescript
-// Criar mock completo
-const createMockSupabase = (options) => {
-  return {
-    from: vi.fn().mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockResolvedValue({ data: options.data, error: null }),
-    }),
-  };
-};
-```
-
-### Arquivo de Setup
-
-```typescript
-// src/__tests__/setup.ts
-import '@testing-library/jest-dom'
-import { vi } from 'vitest'
-
-// Mock do next/navigation
-vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn() }),
-  usePathname: () => '/',
-}))
-
-// Mock do Supabase client
-vi.mock('@/lib/supabase', () => ({
-  supabase: { ... }
-}))
-```
-
----
-
-## 📋 Convenções
-
-1. **Nomenclatura:** `*.test.ts` ou `*.spec.ts`
-2. **Localização:** `__tests__/` próximo ao código testado
-3. **Descrição:** Use `describe` para agrupar, `it` para casos
-4. **AAA Pattern:** Arrange, Act, Assert
-
-```typescript
-it("should do something", () => {
-  // Arrange
-  const input = "test";
-
-  // Act
-  const result = myFunction(input);
-
-  // Assert
-  expect(result).toBe("expected");
-});
-```
-
----
-
-## ⚡ Dicas
-
-```bash
-# Rodar apenas testes que mudaram
-npm test -- --changed
-
-# Rodar em paralelo (mais rápido)
-npm test -- --parallel
-
-# Ver output detalhado
-npm test -- --reporter=verbose
-```
-
----
-
-## 📊 Coverage Atual
-
-```
-✅ Repositories: 100%
-✅ Services: ~80%
-✅ Schemas: 100%
-⚠️ Components: ~30% (TODO)
-```
-
----
-
-## 📚 Arquivos Importantes
-
-- `vitest.config.ts` - Configuração
-- `src/__tests__/setup.ts` - Setup global
-- `src/lib/__tests__/` - Testes de lib

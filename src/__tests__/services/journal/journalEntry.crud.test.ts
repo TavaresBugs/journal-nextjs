@@ -5,7 +5,6 @@ import {
   deleteJournalEntry,
   mapJournalEntryFromDB,
 } from "@/services/journal/journal";
-import { supabase } from "@/lib/supabase";
 import * as accountService from "@/services/core/account";
 import {
   mockUserId,
@@ -16,18 +15,23 @@ import {
   multipleDbEntries,
 } from "../../fixtures/journalEntry.fixtures";
 
-// Mock do Supabase
-vi.mock("@/lib/supabase", () => ({
-  supabase: {
-    from: vi.fn(),
-    storage: {
-      from: vi.fn().mockReturnValue({
-        upload: vi.fn().mockResolvedValue({ data: { path: "test-path" }, error: null }),
-        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://test-url.com" } }),
-        remove: vi.fn().mockResolvedValue({ error: null }),
-      }),
+import { vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+    supabase: {
+        from: vi.fn(),
+        storage: {
+            from: vi.fn().mockReturnValue({
+                upload: vi.fn().mockResolvedValue({ data: { path: "test-path" }, error: null }),
+                getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://test-url.com" } }),
+                remove: vi.fn().mockResolvedValue({ error: null }),
+            }),
+        },
     },
-  },
+}));
+
+vi.mock("@/lib/supabase", () => ({
+    supabase: mocks.supabase,
 }));
 
 // Mock do accountService
@@ -51,7 +55,7 @@ describe("Journal Entry - CRUD Operations", () => {
   // ============================================
   describe("getJournalEntries", () => {
     it("deve retornar entradas de journal por accountId", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
@@ -70,7 +74,7 @@ describe("Journal Entry - CRUD Operations", () => {
       expect(result).toHaveLength(3);
       expect(result[0].id).toBe("entry-1");
       expect(result[0].accountId).toBe(mockAccountId);
-      expect(supabase.from).toHaveBeenCalledWith("journal_entries");
+      expect(mocks.supabase.from).toHaveBeenCalledWith("journal_entries");
     });
 
     it("deve retornar array vazio se usuário não autenticado", async () => {
@@ -82,7 +86,7 @@ describe("Journal Entry - CRUD Operations", () => {
     });
 
     it("deve retornar array vazio em caso de erro", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
@@ -102,7 +106,7 @@ describe("Journal Entry - CRUD Operations", () => {
     });
 
     it("deve retornar array vazio se data for null", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockReturnValue({
             eq: vi.fn().mockReturnValue({
@@ -127,7 +131,7 @@ describe("Journal Entry - CRUD Operations", () => {
   // ============================================
   describe("saveJournalEntry", () => {
     it("deve salvar uma entrada com dados válidos", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         upsert: vi.fn().mockResolvedValue({ error: null }),
         delete: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({ error: null }),
@@ -139,11 +143,11 @@ describe("Journal Entry - CRUD Operations", () => {
       const result = await saveJournalEntry(validJournalEntry);
 
       expect(result).toBe(true);
-      expect(supabase.from).toHaveBeenCalledWith("journal_entries");
+      expect(mocks.supabase.from).toHaveBeenCalledWith("journal_entries");
     });
 
     it("deve salvar uma entrada com dados mínimos", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         upsert: vi.fn().mockResolvedValue({ error: null }),
         delete: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({ error: null }),
@@ -166,7 +170,7 @@ describe("Journal Entry - CRUD Operations", () => {
     });
 
     it("deve retornar false em caso de erro no upsert", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         upsert: vi.fn().mockResolvedValue({
           error: { message: "Database error" },
         }),
@@ -184,7 +188,7 @@ describe("Journal Entry - CRUD Operations", () => {
   // ============================================
   describe("deleteJournalEntry", () => {
     it("deve deletar uma entrada existente", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({
             data: [], // Sem imagens
@@ -207,7 +211,7 @@ describe("Journal Entry - CRUD Operations", () => {
     it("deve deletar imagens do storage antes de deletar entrada", async () => {
       const mockImages = [{ path: "user/image1.png" }, { path: "user/image2.png" }];
 
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({
             data: mockImages,
@@ -225,7 +229,7 @@ describe("Journal Entry - CRUD Operations", () => {
       const result = await deleteJournalEntry("entry-1");
 
       expect(result).toBe(true);
-      expect(supabase.storage.from).toHaveBeenCalledWith("journal-images");
+      expect(mocks.supabase.storage.from).toHaveBeenCalledWith("journal-images");
     });
 
     it("deve retornar false se usuário não autenticado", async () => {
@@ -237,7 +241,7 @@ describe("Journal Entry - CRUD Operations", () => {
     });
 
     it("deve retornar false em caso de erro", async () => {
-      vi.mocked(supabase.from).mockReturnValue({
+      vi.mocked(mocks.supabase.from).mockReturnValue({
         select: vi.fn().mockReturnValue({
           eq: vi.fn().mockResolvedValue({ data: [], error: null }),
         }),

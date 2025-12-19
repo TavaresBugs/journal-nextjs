@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
 import { JournalEntryForm } from "@/components/journal/form/JournalEntryForm";
 
@@ -118,7 +118,9 @@ describe("JournalEntryForm", () => {
 
     expect(screen.queryByTestId("link-trade-modal")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByTestId("open-link-modal-btn"));
+    act(() => {
+        fireEvent.click(screen.getByTestId("open-link-modal-btn"));
+    });
 
     expect(screen.getByTestId("link-trade-modal")).toBeInTheDocument();
   });
