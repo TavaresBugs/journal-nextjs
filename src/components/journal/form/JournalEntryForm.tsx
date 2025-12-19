@@ -1,24 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { createPortal } from "react-dom";
-import {
-  Modal,
-  Input,
-  Textarea,
-  Button,
-  GlassCard,
-  IconActionButton,
-  ModalFooterActions,
-} from "@/components/ui";
-import { DatePickerInput } from "@/components/ui/DateTimePicker";
+import { Modal, IconActionButton, ModalFooterActions } from "@/components/ui";
 import type { Trade } from "@/types";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { useBlockBodyScroll } from "@/hooks/useBlockBodyScroll";
-import { TimeframeImageGrid, AssetCombobox } from "@/components/shared";
-import { formatCurrency } from "@/lib/calculations";
 import dayjs from "dayjs";
+import { EntryHeader } from "./EntryHeader";
+import { TradeLinker } from "./TradeLinker";
+import { JournalAnalysis } from "./JournalAnalysis";
+import { JournalReview } from "./JournalReview";
+import { LinkTradeModal } from "./LinkTradeModal";
 
 interface JournalEntryFormProps {
   isOpen: boolean;
@@ -162,247 +155,42 @@ export function JournalEntryForm({
         noBackdrop={noBackdrop}
       >
         <form onSubmit={handleFormSubmit} className="space-y-6">
-          {/* Header Inputs */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="md:col-span-1">
-              <Input
-                label="Título / Resumo do Dia"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Diário - 02/12/2025"
-                required
-              />
-            </div>
-            <div className="md:col-span-1">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-gray-400">
-                  Ativo <span className="ml-1 text-red-500">*</span>
-                </label>
-                <AssetCombobox
-                  value={asset}
-                  onChange={setAsset}
-                  className="h-12 border-gray-700 bg-[#232b32]"
-                />
-              </div>
-            </div>
-            <div className="md:col-span-1">
-              <DatePickerInput
-                label="Data"
-                value={date}
-                onChange={setDate}
-                required
-                openDirection="bottom"
-              />
-            </div>
-          </div>
+          <EntryHeader
+            title={title}
+            setTitle={setTitle}
+            asset={asset}
+            setAsset={setAsset}
+            date={date}
+            setDate={setDate}
+          />
 
-          {/* Trades Vinculados */}
-          <GlassCard className="border border-[#00c853]/50 bg-[#1b292b]/60 p-4 shadow-[0_0_15px_rgba(0,200,83,0.15)] backdrop-blur-md transition-shadow duration-300 hover:shadow-[0_0_20px_rgba(0,200,83,0.2)]">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-zorin-accent text-sm font-medium">
-                Trades Vinculados{" "}
-                {trades.length > 0 && <span className="text-cyan-300">({trades.length})</span>}
-              </h3>
-              <Button
-                type="button"
-                variant="gradient-success"
-                onClick={() => setIsLinkTradeModalOpen(true)}
-                className="flex h-8 items-center justify-center gap-2 rounded-lg px-3 text-white shadow-lg shadow-green-500/30 transition-all hover:scale-105"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span className="text-xs font-bold tracking-wide uppercase">Adicionar Trade</span>
-              </Button>
-            </div>
+          <TradeLinker
+            trades={trades}
+            onLinkTradeOpen={() => setIsLinkTradeModalOpen(true)}
+            onRemoveTrade={handleRemoveTrade}
+          />
 
-            {trades.length > 0 ? (
-              <div className="max-h-[200px] space-y-2 overflow-y-auto">
-                {trades.map((trade) => (
-                  <GlassCard
-                    key={trade.id}
-                    className="bg-zorin-bg/50 flex items-center justify-between gap-2 border-white/5 p-2"
-                  >
-                    <div className="flex flex-wrap items-center gap-1 text-sm">
-                      <span className="text-gray-400">
-                        {dayjs(trade.entryDate).format("DD/MM")} {trade.entryTime?.substring(0, 5)}
-                      </span>
-                      <span className="font-medium text-gray-200">{trade.symbol}</span>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${
-                          trade.type === "Long"
-                            ? "bg-zorin-accent/20 text-zorin-accent"
-                            : "bg-red-500/20 text-red-400"
-                        }`}
-                      >
-                        {trade.type}
-                        {trade.type === "Long" ? (
-                          <svg
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                            <polyline points="17 6 23 6 23 12"></polyline>
-                          </svg>
-                        ) : (
-                          <svg
-                            width="10"
-                            height="10"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                            <polyline points="17 18 23 18 23 12"></polyline>
-                          </svg>
-                        )}
-                      </span>
-                      {trade.pnl !== undefined && (
-                        <span
-                          className={`text-xs font-bold ${
-                            trade.pnl > 0 ? "text-zorin-accent" : "text-red-400"
-                          }`}
-                        >
-                          {formatCurrency(trade.pnl)}
-                        </span>
-                      )}
-                    </div>
-                    <Button
-                      variant="zorin-ghost"
-                      size="icon"
-                      type="button"
-                      onClick={() => handleRemoveTrade(trade.id)}
-                      className="h-6 w-6 border-0 bg-transparent text-gray-500 shadow-none transition-colors hover:text-red-400"
-                      title="Remover trade"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                      </svg>
-                    </Button>
-                  </GlassCard>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-400 italic">Nenhum trade vinculado a esta entrada.</p>
-            )}
-          </GlassCard>
+          <JournalAnalysis
+            emotion={emotion}
+            setEmotion={setEmotion}
+            analysis={analysis}
+            setAnalysis={setAnalysis}
+            images={images}
+            onPasteImage={handlePasteImage}
+            onFileSelect={handleFileSelect}
+            onRemoveImage={removeLastImage}
+            timeframes={timeframes}
+          />
 
-          {/* Análise Multi-Timeframe (Imagens) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm text-gray-400">Análise Multi-Timeframe (Imagens)</label>
-              <span className="text-xs text-gray-500">
-                Clique no ícone de upload ou use CTRL+V para colar
-              </span>
-            </div>
+          <JournalReview
+            technicalWins={technicalWins}
+            setTechnicalWins={setTechnicalWins}
+            improvements={improvements}
+            setImprovements={setImprovements}
+            errors={errors}
+            setErrors={setErrors}
+          />
 
-            <TimeframeImageGrid
-              timeframes={timeframes}
-              images={images}
-              onPaste={handlePasteImage}
-              onFileSelect={handleFileSelect}
-              onRemoveImage={removeLastImage}
-            />
-          </div>
-
-          {/* Estado Emocional */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-gray-400">
-              <span>🧠</span> Estado Emocional
-            </label>
-            <Input
-              value={emotion}
-              onChange={(e) => setEmotion(e.target.value)}
-              placeholder="Ex: Calmo, Ansioso, Focado, Vingativo..."
-              className=""
-            />
-          </div>
-
-          {/* Leitura do Ativo */}
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 text-sm text-gray-400">
-              <span>🔍</span> Leitura do Ativo Operado
-            </label>
-            <Textarea
-              value={analysis}
-              onChange={(e) => setAnalysis(e.target.value)}
-              placeholder="Descreva sua análise do ativo em cada timeframe..."
-              className="h-48 border-white/5 font-mono text-sm"
-            />
-          </div>
-
-          {/* Review */}
-          <GlassCard className="bg-zorin-bg/30 space-y-4 border-white/5 p-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
-              <span>📜</span> Review
-            </label>
-
-            <div className="space-y-2">
-              <label className="text-zorin-accent flex items-center gap-2 text-sm">
-                ✅ Acertos técnicos:
-              </label>
-              <Textarea
-                value={technicalWins}
-                onChange={(e) => setTechnicalWins(e.target.value)}
-                className="h-20 border-white/5"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm text-yellow-400">
-                ⚠️ Pontos a melhorar:
-              </label>
-              <Textarea
-                value={improvements}
-                onChange={(e) => setImprovements(e.target.value)}
-                className="h-20 border-white/5"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm text-red-400">
-                ❌ Erros/Indisciplina:
-              </label>
-              <Textarea
-                value={errors}
-                onChange={(e) => setErrors(e.target.value)}
-                className="h-20 border-white/5"
-              />
-            </div>
-          </GlassCard>
-
-          {/* Footer Actions */}
-          {/* Footer Actions */}
           <ModalFooterActions
             isSubmit
             onSecondary={isEditing ? onClose : undefined}
@@ -414,121 +202,12 @@ export function JournalEntryForm({
         </form>
       </Modal>
 
-      {/* Link Trade Modal */}
-      {isLinkTradeModalOpen &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-            <GlassCard className="bg-zorin-bg w-full max-w-md overflow-hidden border-white/10 p-0 shadow-2xl">
-              <div className="bg-zorin-surface/50 flex items-center justify-between border-b border-white/5 p-4">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-400">
-                  🔗 Vincular Trade
-                </h3>
-                <button
-                  onClick={() => setIsLinkTradeModalOpen(false)}
-                  className="text-gray-400 transition-colors hover:text-white"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="p-4">
-                <p className="mb-4 text-sm text-gray-400">
-                  Selecione um trade do dia para vincular a este diário:
-                </p>
-
-                <div className="max-h-[60vh] space-y-2 overflow-y-auto">
-                  {availableTrades.length > 0 ? (
-                    availableTrades.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => handleLinkTrade(t)}
-                        className="bg-zorin-bg/50 hover:bg-zorin-surface/50 hover:border-zorin-accent/50 group w-full rounded-lg border border-white/5 p-3 text-left transition-all"
-                      >
-                        <div className="mb-1 flex items-start justify-between">
-                          <span className="font-bold text-gray-200">{t.symbol}</span>
-                          <span
-                            className={`font-bold ${t.pnl && t.pnl >= 0 ? "text-zorin-accent" : "text-red-400"}`}
-                          >
-                            {formatCurrency(t.pnl || 0)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <span
-                              className={`flex items-center gap-1 ${t.type === "Long" ? "text-zorin-accent" : "text-red-400"}`}
-                            >
-                              {t.type}
-                              {t.type === "Long" ? (
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                                  <polyline points="17 6 23 6 23 12"></polyline>
-                                </svg>
-                              ) : (
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                                  <polyline points="17 18 23 18 23 12"></polyline>
-                                </svg>
-                              )}
-                            </span>
-                            <span className="text-gray-400">@ {t.entryPrice}</span>
-                          </span>
-                          <span>
-                            {(() => {
-                              // Dados já estão armazenados como horário NY
-                              const timeFormatted = t.entryTime ? t.entryTime.substring(0, 5) : "";
-                              return `${timeFormatted} (NY)`;
-                            })()}
-                          </span>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="rounded-lg border border-dashed border-gray-700 bg-gray-800/20 p-8 text-center">
-                      <div className="mb-3 text-4xl opacity-30">🔍</div>
-                      <h4 className="mb-1 font-medium text-gray-300">Nenhum trade encontrado</h4>
-                      <p className="text-xs text-gray-500">
-                        Não há trades nesta data disponíveis para vínculo.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </GlassCard>
-          </div>,
-          document.body
-        )}
+      <LinkTradeModal
+        isOpen={isLinkTradeModalOpen}
+        onClose={() => setIsLinkTradeModalOpen(false)}
+        availableTrades={availableTrades}
+        onSelectTrade={handleLinkTrade}
+      />
     </>
   );
 }
