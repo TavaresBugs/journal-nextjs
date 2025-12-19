@@ -68,7 +68,7 @@ O Trading Journal Pro é um projeto bem estruturado, com arquitetura sólida, do
    - Faltam: `JournalRepository`, `PlaybookRepository`
 
 2. **Services Distribuídos**
-   - Alguns em `src/services/`, outros em `src/lib/services/`
+   - Alguns em `src/services/`, consolidados em `src/services/`
    - Consolidar em local único
 
 ### 📊 Métricas

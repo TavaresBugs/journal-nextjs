@@ -224,7 +224,7 @@ src/
 | Componente UI base    | `src/components/ui/`        |
 | Componente específico | `src/components/[domínio]/` |
 | Query Supabase        | `src/lib/repositories/`     |
-| Lógica de negócio     | `src/lib/services/`         |
+| Lógica de negócio     | `src/services/`             |
 | Hook reutilizável     | `src/hooks/`                |
 | Type global           | `src/types/`                |
 

@@ -203,7 +203,7 @@ R: Velocidade de desenvolvimento. Auth, RLS e Storage prontos. Para um projeto c
 R: Server Components, melhor performance, layouts aninhados. É o futuro do Next.js.
 
 **P: Onde fica a lógica de negócio?**
-R: Em `src/lib/services/`. Repositories apenas buscam dados, services aplicam regras.
+R: Em `src/services/`. Repositories apenas buscam dados, services aplicam regras.
 
 **P: Como adicionar um novo componente UI?**
 R: Crie em `src/components/ui/`, exporte em `index.ts`, documente em `design-system.md`.

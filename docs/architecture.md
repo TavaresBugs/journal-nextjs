@@ -2,13 +2,91 @@
 
 > **Objetivo:** Documentar a arquitetura completa com diagramas e explicações didáticas.
 > **Público-alvo:** Desenvolvedores iniciantes a avançados
-> **Última atualização:** 18 de Dezembro de 2025
+> **Última atualização:** 19 de Dezembro de 2025
 
 ---
 
 ## 🎯 Resumo Executivo (TL;DR)
 
 O Trading Journal Pro usa arquitetura **Frontend-First com BaaS**, onde Next.js (App Router) é o centro de tudo e Supabase fornece backend completo (DB, Auth, Storage). A segurança é garantida por RLS (Row Level Security) no banco de dados.
+
+### Métricas Atuais
+
+| Métrica          | Valor      |
+| ---------------- | ---------- |
+| Linhas de código | ~55.000    |
+| Arquivos TS/TSX  | ~300       |
+| Componentes UI   | 28         |
+| Custom Hooks     | 15         |
+| Services         | 7 domínios |
+| Testes           | 671+       |
+
+---
+
+## 📁 Estrutura de Pastas
+
+```
+src/
+├── app/                    # 📄 PÁGINAS (Next.js App Router)
+│   ├── dashboard/          # Dashboard principal
+│   ├── trades/             # Gestão de operações (via dashboard)
+│   ├── admin/              # Painel administrativo
+│   ├── mentor/             # Sistema de mentoria
+│   ├── share/[token]/      # Compartilhamento público
+│   ├── api/                # API Routes
+│   └── auth/               # Callbacks de autenticação
+│
+├── components/             # 🧩 COMPONENTES REACT
+│   ├── ui/                 # Design System (28 componentes)
+│   ├── trades/             # Componentes de trade (24)
+│   ├── journal/            # Componentes de journal (17)
+│   ├── playbook/           # Componentes de playbook (10)
+│   ├── charts/             # Gráficos (13)
+│   ├── layout/             # Layout e navegação
+│   └── shared/             # Componentes compartilhados
+│
+├── services/               # ⚙️ LÓGICA DE NEGÓCIO
+│   ├── admin/              # Migração, configurações
+│   ├── analytics/          # Cálculos e métricas
+│   ├── community/          # Playbooks da comunidade
+│   ├── core/               # Forex, calendar, utils
+│   ├── journal/            # CRUD de journal
+│   ├── mentor/             # Sistema de mentoria
+│   └── trades/             # CRUD de trades, importação
+│
+├── hooks/                  # 🪝 CUSTOM HOOKS (15)
+│   ├── useAuth.ts          # Autenticação
+│   ├── useDashboardData.ts # Dados do dashboard
+│   ├── useImageUpload.ts   # Upload de imagens
+│   └── ...
+│
+├── lib/                    # 🔧 UTILITÁRIOS
+│   ├── repositories/       # Repository Pattern (acesso a dados)
+│   ├── supabase/           # Cliente Supabase
+│   ├── utils/              # Helpers e funções utilitárias
+│   ├── validation/         # Validação de dados
+│   └── logging/            # Sistema de logs
+│
+├── store/                  # 🗃️ ZUSTAND STORES (6)
+├── types/                  # 📐 TYPESCRIPT TYPES
+├── schemas/                # ✅ ZOD SCHEMAS
+├── providers/              # 🔌 REACT PROVIDERS
+├── constants/              # 📋 CONSTANTES
+└── __tests__/              # 🧪 TESTES
+    ├── components/
+    ├── services/
+    ├── hooks/
+    └── lib/
+```
+
+### Regra de Camadas
+
+```
+Pages → Components → Hooks → Services → Repositories → Supabase
+        (UI)        (State)  (Logic)    (Data)         (Infra)
+```
+
+> **Regra:** Cada camada só pode importar da camada abaixo.
 
 ---
 
@@ -221,7 +299,7 @@ export const tradeRepository = {
 **Analogia:** O Service é como um contador. Ele recebe os números (dados) e aplica as regras fiscais (lógica). Não importa de onde os números vieram.
 
 ```typescript
-// src/lib/services/taxCalculator.service.ts
+// src/services/analytics/taxCalculator.service.ts
 export function calculateDayTradeTax(trades: Trade[]): TaxResult {
   // Regra: Day trade = 20% sobre lucro líquido
   const profits = trades.filter((t) => t.outcome === "win").reduce((sum, t) => sum + t.pnl, 0);
