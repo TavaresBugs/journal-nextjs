@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 import { ToastProvider } from "@/providers/ToastProvider";
 import { ClientProviders } from "@/components/layout/ClientProviders";
+import { AxeAccessibility, SkipLinks } from "@/components/accessibility";
 
 export default function RootLayout({
   children,
@@ -20,6 +21,8 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
+        <SkipLinks />
+        <AxeAccessibility />
         <ToastProvider>
           <ClientProviders>{children}</ClientProviders>
         </ToastProvider>
