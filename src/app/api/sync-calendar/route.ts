@@ -198,7 +198,7 @@ export async function DELETE() {
       deleted,
       message: `${deleted} eventos da semana foram removidos.`,
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Falha ao limpar calendário" }, { status: 500 });
   }
 }

@@ -39,7 +39,8 @@ export function SegmentedToggle({
   const isResponsive = variant === "responsive";
 
   // Default Colors (Cyan)
-  const activeText = selectedOption?.activeTextColor ?? "text-cyan-400";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _activeText = selectedOption?.activeTextColor ?? "text-cyan-400";
   const activeBg =
     selectedOption?.activeBgColor ?? "bg-linear-to-r from-cyan-500/20 to-cyan-400/10";
   const activeShadow =

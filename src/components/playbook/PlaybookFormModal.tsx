@@ -261,7 +261,8 @@ export function PlaybookFormModal({
       }
       setActiveTab("general");
     }
-  }, [playbook, isEditMode, isOpen]); // removed handleReset from deps to avoid loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playbook, isEditMode, isOpen]);
 
   const initializeDefaultGroups = () => {
     setSortableGroups(
