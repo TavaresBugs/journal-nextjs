@@ -92,9 +92,9 @@ export function useImageUpload(
       try {
         setIsCompressing(true);
         const compressed = await compressImageForPreview(base64, {
-          maxWidth: 1200,
-          maxHeight: 900,
-          quality: 0.7,
+          maxWidth: 10000,
+          maxHeight: 10000,
+          quality: 0.95,
         });
         return compressed;
       } catch (error) {
