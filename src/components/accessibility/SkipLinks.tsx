@@ -10,10 +10,9 @@ export function SkipLinks() {
   return (
     <a
       href="#main-content"
-      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-cyan-600 focus:text-white focus:rounded-md focus:outline-none focus:ring-2 focus:ring-cyan-400"
+      className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:rounded-md focus:bg-cyan-600 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-cyan-400 focus:outline-none"
     >
       Pular para o conteúdo principal
     </a>
   );
 }
-

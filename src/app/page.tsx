@@ -162,7 +162,13 @@ export default function HomePage() {
             )}
 
             {/* Logout Button */}
-            <Button variant="secondary" size="icon" onClick={() => signOut()} title="Sair da Conta">
+            <Button
+              variant="primary"
+              size="icon"
+              onClick={() => signOut()}
+              title="Sair da Conta"
+              className="h-12 w-12 rounded-xl hover:!text-red-500"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
@@ -182,10 +188,11 @@ export default function HomePage() {
 
             {/* Settings Button */}
             <Button
-              variant="secondary"
+              variant="primary"
               size="icon"
               onClick={() => setIsSettingsModalOpen(true)}
               title="Configurações Globais"
+              className="h-12 w-12 rounded-xl"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

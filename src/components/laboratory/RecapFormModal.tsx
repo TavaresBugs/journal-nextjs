@@ -292,8 +292,6 @@ export function RecapFormModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
-
   const handleClose = () => {
     handleReset();
     onClose();

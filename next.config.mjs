@@ -79,7 +79,7 @@ const sentryWebpackPluginOptions = {
   // Upload source maps for better error tracking
   // Set SENTRY_AUTH_TOKEN in your environment
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  
+
   // Only upload source maps in production
   sourcemaps: {
     disable: process.env.NODE_ENV !== "production",
