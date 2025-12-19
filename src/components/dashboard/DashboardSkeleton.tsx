@@ -12,6 +12,7 @@ export function DashboardSkeleton() {
         <div className="sticky top-0 z-10 border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
           <div className="container mx-auto px-6 py-6" style={{ maxWidth: "1200px" }}>
             {/* Top Row */}
+            <h1 className="sr-only">Carregando Dashboard</h1>
             <div className="mb-6 flex animate-pulse items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* Back Button Skeleton */}
