@@ -261,20 +261,40 @@ npm run type-check
 
 ## 📚 Documentação
 
-| Documento                                 | Descrição                                |
-| ----------------------------------------- | ---------------------------------------- |
-| [📋 Contexto](docs/PROJETO_CONTEXTO.md)   | Visão geral, stack, estrutura e FAQ      |
-| [📐 Arquitetura](docs/ARCHITECTURE.md)    | Diagramas C4, fluxos de dados, padrões   |
-| [🗄️ Database](docs/DATABASE.md)           | ERD, RLS policies, queries comuns        |
-| [🎨 Design System](docs/DESIGN_SYSTEM.md) | Componentes UI, variantes, boas práticas |
-| [🗺️ Roadmap](docs/ROADMAP.md)             | Timeline visual, análise competitiva     |
-| [📋 TODO](docs/TODO.md)                   | Tarefas organizadas por prioridade       |
-| [🚧 Features](docs/PENDING_FEATURES.md)   | Backlog com user stories e critérios     |
-| [📖 Glossário](docs/GLOSSARIO.md)         | Termos técnicos A-Z                      |
-| [🤝 Contribuição](docs/CONTRIBUTING.md)   | Setup local, convenções, processo de PR  |
-| [📋 Changelog](CHANGELOG.md)              | Histórico de versões e mudanças          |
-| [🔒 Security](docs/SECURITY_AUDIT.md)     | Auditoria de segurança                   |
-| [🧪 Testes](docs/TEST_PLAN.md)            | Plano de testes e Vitest config          |
+### 🚀 Começando
+
+| Documento                                     | Descrição                        |
+| --------------------------------------------- | -------------------------------- |
+| [🚀 Getting Started](docs/getting-started.md) | Setup inicial e primeiro projeto |
+| [📋 Overview](docs/PROJETO_CONTEXTO.md)       | Visão técnica geral do projeto   |
+| [📖 Glossário](docs/GLOSSARIO.md)             | Termos técnicos explicados       |
+
+### 🏗️ Arquitetura & Design
+
+| Documento                                 | Descrição                       |
+| ----------------------------------------- | ------------------------------- |
+| [🏗️ Arquitetura](docs/ARCHITECTURE.md)    | Diagramas C4, padrões, decisões |
+| [🗄️ Database](docs/DATABASE.md)           | Schema, RLS policies, queries   |
+| [🎨 Design System](docs/DESIGN_SYSTEM.md) | Componentes UI, variantes       |
+
+### 🔧 Desenvolvimento
+
+| Documento                               | Descrição                             |
+| --------------------------------------- | ------------------------------------- |
+| [🧪 Testes](docs/testing.md)            | Estratégia, como escrever, inventário |
+| [🔒 Segurança](docs/security.md)        | Auth, RLS, logging seguro             |
+| [🤝 Contribuindo](docs/CONTRIBUTING.md) | Convenções, processo de PR            |
+| [📝 Guia de Docs](docs/docs-guide.md)   | Como manter documentação              |
+
+### 📋 Gestão
+
+| Documento                                 | Descrição                  |
+| ----------------------------------------- | -------------------------- |
+| [🗺️ Roadmap](docs/ROADMAP.md)             | Planejamento futuro        |
+| [📋 TODO](docs/TODO.md)                   | Tarefas organizadas        |
+| [✨ Features](docs/PENDING_FEATURES.md)   | Backlog de funcionalidades |
+| [📋 Changelog](CHANGELOG.md)              | Histórico de versões       |
+| [🚀 Deploy](docs/DEPLOYMENT_CHECKLIST.md) | Checklist de implantação   |
 
 ---
 
