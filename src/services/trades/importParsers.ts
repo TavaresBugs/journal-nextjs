@@ -26,7 +26,7 @@ export interface ColumnMapping {
   tp: string;
 }
 
-export type DataSource = "metatrader" | "ninjatrader" | null;
+export type DataSource = "metatrader" | "ninjatrader" | "tradovate" | null;
 
 /**
  * Robust UUID generator that works in insecure contexts (HTTP)

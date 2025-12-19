@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { Modal } from "@/components/ui/Modal";
+import { IconActionButton } from "@/components/ui/IconActionButton";
 import { RawTradeData, processImportFile, parseNinjaTraderCSV } from "@/services/trades/import";
+import {
+  parseTradovateCSV,
+  determineTradovateDirection,
+  cleanTradovateSymbol,
+  parseTradovateMoney,
+} from "@/services/trades/tradovateParser";
 import {
   ColumnMapping,
   DataSource,
@@ -138,6 +145,58 @@ export const ImportModal: React.FC<ImportModalProps> = ({
         // Auto-map NinjaTrader columns using detected headers
         setMapping(detectColumnMapping(detectedHeaders));
         setBrokerTimezone("America/Sao_Paulo"); // Default for NinjaTrader users in Brazil
+      } else if (source === "tradovate") {
+        const isPdf = selectedFile.name.endsWith(".pdf");
+        const isCsv = selectedFile.name.endsWith(".csv");
+
+        if (!isCsv && !isPdf) {
+          throw new Error("Tradovate aceita apenas arquivos .csv ou .pdf de Performance.");
+        }
+
+        // Import the PDF parser dynamically
+        const { parseTradovatePDF } = await import("@/services/trades/tradovateParser");
+
+        // Use appropriate parser based on file type
+        const result = isPdf
+          ? await parseTradovatePDF(selectedFile)
+          : await parseTradovateCSV(selectedFile);
+
+        // Convert Tradovate format to RawTradeData format
+        data = result.data.map((trade) => {
+          const direction = determineTradovateDirection(trade.boughtTimestamp, trade.soldTimestamp);
+          const isLong = direction === "Long";
+
+          return {
+            "Entry Time": isLong ? trade.boughtTimestamp : trade.soldTimestamp,
+            "Exit Time": isLong ? trade.soldTimestamp : trade.boughtTimestamp,
+            Symbol: cleanTradovateSymbol(trade.symbol),
+            Type: direction,
+            Volume: trade.qty,
+            "Entry Price": isLong ? trade.buyPrice : trade.sellPrice,
+            "Exit Price": isLong ? trade.sellPrice : trade.buyPrice,
+            Profit: String(parseTradovateMoney(trade.pnl)),
+          } as RawTradeData;
+        });
+
+        if (data.length === 0) throw new Error("Nenhum dado encontrado no arquivo.");
+        detectedHeaders = Object.keys(data[0]);
+
+        // Set standard mapping for Tradovate converted data
+        setMapping({
+          entryDate: "Entry Time",
+          exitDate: "Exit Time",
+          symbol: "Symbol",
+          direction: "Type",
+          volume: "Volume",
+          entryPrice: "Entry Price",
+          exitPrice: "Exit Price",
+          profit: "Profit",
+          commission: "",
+          swap: "",
+          sl: "",
+          tp: "",
+        });
+        setBrokerTimezone("America/New_York"); // Tradovate uses EST
       }
 
       setRawData(data);
@@ -282,13 +341,28 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     }
   };
 
+  // Dynamic title with back button when in upload step with source selected
+  const renderTitle = () => {
+    if (step === "complete") return "Resultado da Importação";
+
+    if (step === "upload" && dataSource) {
+      return (
+        <div className="flex items-center gap-2">
+          <IconActionButton
+            variant="back"
+            onClick={() => handleSourceSelect(null)}
+            title="Voltar para seleção"
+          />
+          <span className="text-xl font-bold text-gray-100">Importar Trades</span>
+        </div>
+      );
+    }
+
+    return "Importar Trades";
+  };
+
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={step === "complete" ? "Resultado da Importação" : "Importar Trades"}
-      maxWidth="4xl"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={renderTitle()} maxWidth="4xl">
       {renderStepContent()}
     </Modal>
   );

@@ -70,12 +70,36 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
             </div>
             <h4 className="mb-2 text-lg font-semibold text-white">NinjaTrader</h4>
             <p className="text-center text-sm text-gray-400">Arquivo CSV do Grid de Negociações.</p>
+          </button>
+
+          {/* Tradovate Option */}
+          <button
+            onClick={() => onSourceSelect("tradovate")}
+            className="hover:bg-gray-750 group flex flex-col items-center justify-center rounded-xl border border-gray-700 bg-gray-800 p-8 transition-all hover:border-blue-500/50"
+          >
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-500/10 transition-transform group-hover:scale-110">
+              <svg
+                className="h-8 w-8 text-blue-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+            <h4 className="mb-2 text-lg font-semibold text-white">Tradovate</h4>
+            <p className="text-center text-sm text-gray-400">Arquivo CSV ou PDF de Performance.</p>
           </button>
         </div>
 
@@ -166,8 +190,8 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
               ou <span className="font-medium text-orange-300">Account Performance</span>
             </li>
             <li>
-              Vá na aba <span className="font-medium text-orange-300">Grid</span>{" "}
-              (Trades/Executions)
+              Vá na aba <span className="font-medium text-orange-300">Grid</span> opção (
+              <span className="font-medium text-orange-300">Trades</span>)
             </li>
             <li>
               Clique com o botão direito →{" "}
@@ -258,15 +282,139 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
             <p className="mt-4 rounded bg-red-500/10 px-3 py-1 text-sm text-red-500">{error}</p>
           )}
         </div>
+      </div>
+    );
+  }
 
-        {/* Back Button */}
-        <div className="flex justify-center">
-          <button
-            onClick={() => onSourceSelect(null)}
-            className="text-sm text-gray-500 transition-colors hover:text-gray-300"
-          >
-            ← Voltar para seleção
-          </button>
+  // Tradovate Upload UI
+  if (selectedSource === "tradovate") {
+    const handleTradovateFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setFileName(file.name);
+        onFileSelect(e, "tradovate");
+      }
+    };
+
+    const handleTradovateClearFile = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      setFileName(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    };
+
+    const handleTradovateChooseFileClick = () => {
+      fileInputRef.current?.click();
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Instructions Box */}
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-4">
+          <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-blue-400">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Como exportar do Tradovate
+          </h4>
+          <ol className="list-inside list-decimal space-y-1 text-xs text-gray-400">
+            <li>
+              Acesse sua conta e vá em <span className="font-medium text-blue-300">Reports</span>
+            </li>
+            <li>
+              Selecione a aba <span className="font-medium text-blue-300">Orders</span>
+            </li>
+            <li>
+              Clique em <span className="font-medium text-blue-300">Download CSV</span> ou{" "}
+              <span className="font-medium text-blue-300">Download PDF</span>
+            </li>
+          </ol>
+        </div>
+
+        {/* Upload Area */}
+        <div className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 transition-all duration-300 hover:border-blue-500/50 hover:bg-gray-800/50">
+          <div className="mb-4 rounded-full bg-blue-500/10 p-4 transition-transform duration-300 group-hover:scale-110">
+            <svg
+              className="h-10 w-10 text-blue-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+          </div>
+          <p className="mb-2 font-medium text-gray-200">Arraste e solte ou clique para enviar</p>
+          <p className="mb-6 text-sm text-gray-500">
+            Arquivos <span className="font-medium text-blue-400">.csv</span> ou{" "}
+            <span className="font-medium text-blue-400">.pdf</span> do Tradovate
+          </p>
+
+          <div className="flex w-full max-w-md flex-col items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.pdf"
+              onChange={handleTradovateFileChange}
+              className="hidden"
+            />
+
+            {!fileName ? (
+              <button
+                onClick={handleTradovateChooseFileClick}
+                className="rounded-lg bg-blue-600 px-6 py-2.5 font-semibold text-white transition-colors hover:bg-blue-500"
+              >
+                Escolher Arquivo
+              </button>
+            ) : (
+              <div className="group/file flex w-full items-center justify-between gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <svg
+                    className="h-5 w-5 min-w-[20px] text-blue-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <span className="truncate text-sm text-gray-300">{fileName}</span>
+                </div>
+                <button
+                  onClick={handleTradovateClearFile}
+                  className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-400"
+                  title="Remover arquivo"
+                >
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <p className="mt-4 rounded bg-red-500/10 px-3 py-1 text-sm text-red-500">{error}</p>
+          )}
         </div>
       </div>
     );
@@ -305,76 +453,110 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
   };
 
   return (
-    <div className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 transition-all duration-300 hover:border-cyan-500/50 hover:bg-gray-800/50">
-      <div className="mb-4 rounded-full bg-cyan-500/10 p-4 transition-transform duration-300 group-hover:scale-110">
-        <svg
-          className="h-10 w-10 text-cyan-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
-        </svg>
+    <div className="space-y-6">
+      {/* Instructions Box */}
+      <div className="rounded-lg border border-green-500/20 bg-green-500/5 p-4">
+        <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-green-400">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          Como exportar do MetaTrader
+        </h4>
+        <ol className="list-inside list-decimal space-y-1 text-xs text-gray-400">
+          <li>
+            Vá na aba <span className="font-medium text-green-300">Histórico</span>
+          </li>
+          <li>Clique com o botão direito sobre um trade</li>
+          <li>
+            Selecione <span className="font-medium text-green-300">Relatório</span>
+          </li>
+          <li>
+            Salve como <span className="font-medium text-green-300">.html</span> ou{" "}
+            <span className="font-medium text-green-300">.xlsx</span>
+          </li>
+        </ol>
       </div>
 
-      <p className="mb-2 font-medium text-gray-200">Arraste e solte ou clique para enviar</p>
-      <p className="mb-6 text-sm text-gray-500">Suporta arquivos .xlsx e .html (MetaTrader)</p>
-
-      <div className="flex w-full max-w-md flex-col items-center gap-3">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".xlsx,.xls,.html,.htm"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-
-        {!fileName ? (
-          <button
-            onClick={handleChooseFileClick}
-            className="rounded-lg bg-cyan-600 px-6 py-2.5 font-semibold text-white transition-colors hover:bg-cyan-500"
+      {/* Upload Area */}
+      <div className="group flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-700 bg-gray-900/50 p-8 transition-all duration-300 hover:border-green-500/50 hover:bg-gray-800/50">
+        <div className="mb-4 rounded-full bg-green-500/10 p-4 transition-transform duration-300 group-hover:scale-110">
+          <svg
+            className="h-10 w-10 text-green-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            Escolher Arquivo
-          </button>
-        ) : (
-          <div className="group/file flex w-full items-center justify-between gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <svg
-                className="h-5 w-5 min-w-[20px] text-cyan-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <span className="truncate text-sm text-gray-300">{fileName}</span>
-            </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
+          </svg>
+        </div>
+
+        <p className="mb-2 font-medium text-gray-200">Arraste e solte ou clique para enviar</p>
+        <p className="mb-6 text-sm text-gray-500">
+          Arquivos <span className="font-medium text-green-400">.xlsx</span> ou{" "}
+          <span className="font-medium text-green-400">.html</span> do MetaTrader
+        </p>
+
+        <div className="flex w-full max-w-md flex-col items-center gap-3">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls,.html,.htm"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {!fileName ? (
             <button
-              onClick={handleClearFile}
-              className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-400"
-              title="Remover arquivo"
+              onClick={handleChooseFileClick}
+              className="rounded-lg bg-green-600 px-6 py-2.5 font-semibold text-white transition-colors hover:bg-green-500"
             >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              Escolher Arquivo
             </button>
-          </div>
-        )}
+          ) : (
+            <div className="group/file flex w-full items-center justify-between gap-2 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <svg
+                  className="h-5 w-5 min-w-[20px] text-green-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span className="truncate text-sm text-gray-300">{fileName}</span>
+              </div>
+              <button
+                onClick={handleClearFile}
+                className="rounded p-1 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-400"
+                title="Remover arquivo"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -403,16 +585,6 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
           <span>{error}</span>
         </div>
       )}
-
-      {/* Back Button */}
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={() => onSourceSelect(null)}
-          className="text-sm text-gray-500 transition-colors hover:text-gray-300"
-        >
-          ← Voltar para seleção
-        </button>
-      </div>
     </div>
   );
 };
