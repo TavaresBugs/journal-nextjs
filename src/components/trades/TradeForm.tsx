@@ -2,7 +2,6 @@
 
 import {
   Input,
-  Button,
   FormSection,
   FormRow,
   FormGroup,
@@ -52,13 +51,11 @@ import {
 
 // Helper component for Select Value with Icon
 interface SelectValueWithIconProps {
-  value: string;
   icon: string;
   label: string;
-  placeholder?: string;
 }
 
-function SelectValueWithIcon({ value, icon, label, placeholder }: SelectValueWithIconProps) {
+function SelectValueWithIcon({ icon, label }: SelectValueWithIconProps) {
   return (
     <div className="flex items-center gap-2.5">
       <span className="flex-shrink-0 text-lg">{icon}</span>
@@ -94,7 +91,7 @@ export function TradeForm({
   initialData,
   mode = "create",
 }: TradeFormProps) {
-  const { strategies, setups } = useSettingsStore();
+  const { setups } = useSettingsStore();
   const { playbooks } = usePlaybookStore();
   const { showToast } = useToast();
 
@@ -267,7 +264,6 @@ export function TradeForm({
               <SelectTrigger className="flex h-12 items-center gap-2.5 border-[#333b44] bg-[#232b32] text-white hover:bg-[#2a333a]">
                 {strategy ? (
                   <SelectValueWithIcon
-                    value={strategy}
                     icon={
                       playbooks.find((p) => p.name === strategy)?.icon || getStrategyIcon(strategy)
                     }
@@ -305,7 +301,6 @@ export function TradeForm({
               <SelectTrigger className="flex h-12 items-center gap-2.5 border-[#333b44] bg-[#232b32] text-white hover:bg-[#2a333a]">
                 {pdArray ? (
                   <SelectValueWithIcon
-                    value={pdArray}
                     icon={getPDArrayIcon(pdArray)}
                     label={
                       PD_ARRAY_OPTIONS.find((o) => o.value === pdArray)
@@ -520,11 +515,7 @@ export function TradeForm({
             <Select value={type} onValueChange={(v) => setType(v as "Long" | "Short")}>
               <SelectTrigger className="flex h-12 items-center gap-2.5 border-[#333b44] bg-[#232b32] text-white hover:bg-[#2a333a]">
                 {type ? (
-                  <SelectValueWithIcon
-                    value={type}
-                    icon={type === "Long" ? "📈" : "📉"}
-                    label={type}
-                  />
+                  <SelectValueWithIcon icon={type === "Long" ? "📈" : "📉"} label={type} />
                 ) : (
                   <SelectValue placeholder="Long/Short" />
                 )}

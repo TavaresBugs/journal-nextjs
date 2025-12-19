@@ -242,7 +242,8 @@ export function EconomicCalendar() {
     );
   };
 
-  const weekEnd = addDays(currentWeek, 6);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _weekEnd = addDays(currentWeek, 6);
 
   return (
     <div className="space-y-4">
@@ -545,6 +546,7 @@ export function EconomicCalendar() {
                     : "border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600"
                 } `}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`/assets/icons/flags/${currency.toLowerCase()}.svg`}
                   alt={currency}

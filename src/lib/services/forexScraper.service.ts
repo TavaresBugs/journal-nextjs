@@ -17,6 +17,7 @@ const FOREX_FACTORY_URL = "https://www.forexfactory.com/calendar";
 /**
  * Mapeamento de classes CSS/Title para níveis de impacto
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const IMPACT_MAP: Record<string, ScrapedEvent["impact"]> = {
   "High Impact": "high",
   high: "high",
@@ -102,6 +103,7 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
     const rawEvents = await page.evaluate(() => {
       // Selector correto: tr.calendar__row (com duplo underscore)
       const rows = Array.from(document.querySelectorAll("tr.calendar__row"));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results: any[] = [];
 
       // Armazena a data e hora correntes para preencher linhas vazias (comum no FF)
@@ -191,7 +193,7 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
         date: isoDate,
         time: time24,
         currency: raw.currency,
-        impact: raw.impact as any,
+        impact: raw.impact as "high" | "medium" | "low" | "none",
         event_name: raw.event_name,
         actual: raw.actual,
         forecast: raw.forecast,
@@ -268,6 +270,7 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
 
     const rawEvents = await page.evaluate(() => {
       const rows = Array.from(document.querySelectorAll("tr.calendar__row"));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results: any[] = [];
       let currentDateText = "";
       let currentTime = ""; // Propagar horário para eventos consecutivos
@@ -340,7 +343,7 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
         date: isoDate,
         time: time24,
         currency: raw.currency,
-        impact: raw.impact as any,
+        impact: raw.impact as "high" | "medium" | "low" | "none",
         event_name: raw.event_name,
         actual: raw.actual,
         forecast: raw.forecast,
@@ -369,9 +372,9 @@ function parseForexFactoryDateWithYear(dateStr: string, year: number): string {
     const monthStr = match[1];
     const dayStr = match[2];
 
-    let parsedDate = parse(`${monthStr} ${dayStr} ${year}`, "MMM d yyyy", new Date());
+    const parsedDate = parse(`${monthStr} ${dayStr} ${year}`, "MMM d yyyy", new Date());
     return format(parsedDate, "yyyy-MM-dd");
-  } catch (e) {
+  } catch {
     return "";
   }
 }
@@ -410,7 +413,7 @@ function convertTo24Hour(timeStr: string): string {
 
     const hoursStr = hours.toString().padStart(2, "0");
     return `${hoursStr}:${minutes}`;
-  } catch (_e) {
+  } catch {
     return cleanTime;
   }
 }
@@ -433,13 +436,13 @@ function parseForexFactoryDate(dateStr: string): string {
 
     // Tentar criar data com ano atual
     // MMM d yyyy -> Dec 14 2024
-    let parsedDate = parse(`${monthStr} ${dayStr} ${currentYear}`, "MMM d yyyy", new Date());
+    const parsedDate = parse(`${monthStr} ${dayStr} ${currentYear}`, "MMM d yyyy", new Date());
 
     // Se a data parseada for muito antiga (ex: scrapper rodando em Jan pegando Dezembro), ajustar ano?
     // Por enquanto assume ano corrente. O Forex Factory geralmente mostra o ano na URL mas não na célula.
 
     return format(parsedDate, "yyyy-MM-dd");
-  } catch (e) {
+  } catch {
     return "";
   }
 }

@@ -128,6 +128,7 @@ export function EventRow({ event, isEven = false }: EventRowProps) {
       {/* Currency with flag */}
       <div className="w-16 shrink-0 border-r border-gray-700/50 px-2">
         <div className="flex items-center justify-center gap-1.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={`/assets/icons/flags/${event.currency.toLowerCase()}.svg`}
             alt={event.currency}
