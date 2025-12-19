@@ -223,12 +223,29 @@ export function RecapFormModal({
     };
   }, [weekTrades, selectedTradeIds]);
 
-  // Initialization Effect
+  const handleReset = () => {
+    setTitle("");
+    setLinkedType(undefined);
+    setLinkedId("");
+    setRecordSearch("");
+    setSelectedTradeIds([]);
+    setWhatWorked("");
+    setWhatFailed("");
+    setEmotionalState("");
+    setLessonsLearned("");
+    setSelectedFiles([]);
+    setPreviews([]);
+    setReviewType("daily");
+    setCarouselIndex(0);
+  };
+
+  // Initialization Effect - sets form state based on mode
   useEffect(() => {
     if (!isOpen) return;
 
     if (isEditMode && initialData) {
-      // EDIT MODE
+      // EDIT MODE - populate form with existing data
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(initialData.title);
       setReviewType(initialData.type === "weekly" ? "weekly" : "daily");
       setLinkedType(initialData.linkedType);
@@ -262,7 +279,6 @@ export function RecapFormModal({
       // CREATE MODE
       handleReset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isEditMode, initialData]);
 
   // Close dropdown on outside click
@@ -276,21 +292,7 @@ export function RecapFormModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleReset = () => {
-    setTitle("");
-    setLinkedType(undefined);
-    setLinkedId("");
-    setRecordSearch("");
-    setSelectedTradeIds([]);
-    setWhatWorked("");
-    setWhatFailed("");
-    setEmotionalState("");
-    setLessonsLearned("");
-    setSelectedFiles([]);
-    setPreviews([]);
-    setReviewType("daily");
-    setCarouselIndex(0);
-  };
+
 
   const handleClose = () => {
     handleReset();

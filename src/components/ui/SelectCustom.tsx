@@ -12,7 +12,8 @@ interface SelectContextType {
   value: string | undefined;
   onValueChange: (value: string) => void;
   placeholder?: string;
-  triggerRef: React.MutableRefObject<HTMLButtonElement | null>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+  setTriggerNode: (node: HTMLButtonElement | null) => void;
 }
 
 const SelectContext = React.createContext<SelectContextType | undefined>(undefined);
@@ -71,6 +72,11 @@ const Select = ({
     };
   }, [open, setOpen]);
 
+  // Callback to set trigger node (avoids mutating context ref directly)
+  const setTriggerNode = React.useCallback((node: HTMLButtonElement | null) => {
+    (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+  }, []);
+
   return (
     <SelectContext.Provider
       value={{
@@ -79,6 +85,7 @@ const Select = ({
         value,
         onValueChange: onValueChange || (() => {}),
         triggerRef,
+        setTriggerNode,
       }}
     >
       <div ref={ref} className="relative w-full">
@@ -130,18 +137,15 @@ const SelectTrigger = React.forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, children, ...props }, ref) => {
   const context = React.useContext(SelectContext);
-  // Merge internal ref with forwarded ref
-  const internalRef = context?.triggerRef;
 
   return (
     <button
       ref={(node) => {
-        // Handle both refs
+        // Handle forwarded ref
         if (typeof ref === "function") ref(node);
         else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
-        // eslint-disable-next-line
-        if (internalRef)
-          (internalRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        // Set trigger node via callback (not modifying context ref directly)
+        context?.setTriggerNode(node);
       }}
       type="button"
       onClick={() => context?.setOpen(!context.open)}
