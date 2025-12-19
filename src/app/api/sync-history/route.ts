@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { scrapeForexFactoryMonth } from "@/lib/services/forexScraper.service";
+import { scrapeForexFactoryMonth } from "@/services/core/forexScraper.service";
 import { startOfYear, addMonths, isBefore, format } from "date-fns";
 
 export const maxDuration = 300; // 5 minutos timeout (Vercel/NextJS limit)

@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { createClient } from "@supabase/supabase-js";
-import type { DBEvent } from "@/lib/services/forexCalendar.service";
+import type { DBEvent } from "@/services/core/forexCalendar.service";
 
 // Service role client for write operations (server-side only)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

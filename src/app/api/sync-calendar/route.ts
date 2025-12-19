@@ -3,13 +3,13 @@ import {
   scrapeForexFactory,
   compareScrapedEvents,
   type ScrapedEvent,
-} from "@/lib/services/forexScraper.service";
-import { syncForexCalendar } from "@/lib/services/forexCalendar.service";
+} from "@/services/core/forexScraper.service";
+import { syncForexCalendar } from "@/services/core/forexCalendar.service";
 import {
   upsertEconomicEvents,
   deleteCurrentWeekEvents,
 } from "@/lib/repositories/economicEvents.repository";
-import type { DBEvent } from "@/lib/services/forexCalendar.service";
+import type { DBEvent } from "@/services/core/forexCalendar.service";
 
 // Rate limit simples em memória (use Redis em produção para multi-instance)
 const lastSyncTime = new Map<string, number>();
