@@ -508,8 +508,8 @@ export const cleanSymbol = (symbol: string): string => {
   cleaned = cleaned.split(".")[0];
 
   // Remove NinjaTrader contract date (e.g., "MNQ 12-25" -> "MNQ")
-  // Pattern: space followed by MM-YY or similar contract notation
-  cleaned = cleaned.replace(/\s+\d{1,2}-\d{2,4}$/, "");
+  // Pattern: space followed by MM-YY or MMMYY (e.g. "DEC25")
+  cleaned = cleaned.replace(/\s+(\d{1,2}-\d{2,4}|[A-Z]{3}\d{2})$/i, "");
 
   // Also handle "ES 03-25" format
   cleaned = cleaned.trim();

@@ -76,21 +76,21 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   // Symbol
   if (headers.includes("Symbol")) autoMapping.symbol = "Symbol";
   else {
-    const h = findHeader(["Symbol", "Ativo", "Instrumento"]);
+    const h = findHeader(["Symbol", "Ativo", "Instrumento", "Instrument"]);
     if (h) autoMapping.symbol = h;
   }
 
   // Direction/Type
   if (headers.includes("Type")) autoMapping.direction = "Type";
   else {
-    const h = findHeader(["Type", "Tipo", "Direção", "Direcao"]);
+    const h = findHeader(["Type", "Tipo", "Direção", "Direcao", "Market pos.", "Pos mercado."]);
     if (h) autoMapping.direction = h;
   }
 
   // Volume
   if (headers.includes("Volume")) autoMapping.volume = "Volume";
   else {
-    const h = findHeader(["Volume", "Size", "Lote", "Qtd", "Quantidade"]);
+    const h = findHeader(["Volume", "Size", "Lote", "Qtd", "Quantidade", "Qty"]);
     if (h) autoMapping.volume = h;
   }
 
