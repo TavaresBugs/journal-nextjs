@@ -223,7 +223,7 @@ export function RecapFormModal({
     };
   }, [weekTrades, selectedTradeIds]);
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setTitle("");
     setLinkedType(undefined);
     setLinkedId("");
@@ -237,7 +237,7 @@ export function RecapFormModal({
     setPreviews([]);
     setReviewType("daily");
     setCarouselIndex(0);
-  };
+  }, []);
 
   // Initialization Effect - sets form state based on mode
   useEffect(() => {
@@ -279,7 +279,7 @@ export function RecapFormModal({
       // CREATE MODE
       handleReset();
     }
-  }, [isOpen, isEditMode, initialData]);
+  }, [isOpen, isEditMode, initialData, handleReset]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -292,10 +292,10 @@ export function RecapFormModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     handleReset();
     onClose();
-  };
+  }, [handleReset, onClose]);
 
   // File Handling
   const processFiles = useCallback((files: File[]) => {
@@ -312,12 +312,12 @@ export function RecapFormModal({
     }
   }, []);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     processFiles(files);
     // Reset input to allow selecting same file again if needed
     if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  }, [processFiles]);
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
@@ -350,7 +350,7 @@ export function RecapFormModal({
     return () => document.removeEventListener("paste", globalPasteHandler);
   }, [isOpen, handlePaste]);
 
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     // We need to know if the image being removed is an existing remote image (edit mode)
     // or a newly uploaded file.
     // Logic:
@@ -365,35 +365,33 @@ export function RecapFormModal({
 
     // Let's refine the logic:
 
-    const isNewFile = index >= previews.length - selectedFiles.length;
+    setPreviews((prev) => {
+      const isNewFile = index >= prev.length - selectedFiles.length;
 
-    if (isNewFile) {
-      // It's in selectedFiles. But at what index?
-      // If we have 3 existing images (0,1,2) and 2 new (3,4).
-      // Removing index 4 (2nd new file).
-      // Index in selectedFiles = 4 - 3 = 1.
-      const existingCount = previews.length - selectedFiles.length;
-      const fileIndex = index - existingCount;
-      setSelectedFiles((prev) => prev.filter((_, i) => i !== fileIndex));
-    }
+      if (isNewFile) {
+        const existingCount = prev.length - selectedFiles.length;
+        const fileIndex = index - existingCount;
+        setSelectedFiles((files) => files.filter((_, i) => i !== fileIndex));
+      }
 
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
-    setCarouselIndex((prev) => Math.max(0, Math.min(prev, previews.length - 2)));
-  };
+      setCarouselIndex((prevIndex) => Math.max(0, Math.min(prevIndex, prev.length - 2)));
+      return prev.filter((_, i) => i !== index);
+    });
+  }, [selectedFiles.length]);
 
   // Selection Handlers
-  const selectRecord = (record: SearchRecord) => {
+  const selectRecord = useCallback((record: SearchRecord) => {
     setLinkedType(record.type);
     setLinkedId(record.id);
     setRecordSearch(record.label);
     setShowRecordDropdown(false);
-  };
+  }, []);
 
-  const toggleTradeSelection = (id: string) => {
+  const toggleTradeSelection = useCallback((id: string) => {
     setSelectedTradeIds((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
     );
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

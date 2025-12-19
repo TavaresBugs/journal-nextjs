@@ -60,8 +60,8 @@ export function WinLossDistributionChart({ trades }: WinLossDistributionChartPro
             }}
             labelStyle={{ color: "#f3f4f6" }}
             itemStyle={{ color: "#f3f4f6" }}
-            formatter={(value: number, name: string) => [
-              value,
+            formatter={(value, name) => [
+              Number(value) || 0,
               name === "wins" ? "Wins" : "Losses",
             ]}
           />

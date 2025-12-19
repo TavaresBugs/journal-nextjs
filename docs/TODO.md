@@ -1,7 +1,7 @@
 # 📋 TODO - Trading Journal Pro
 
 > **Objetivo:** Tarefas organizadas por categoria e prioridade.
-> **Última atualização:** 18 de Dezembro de 2025
+> **Última atualização:** 19 de Dezembro de 2025
 
 ---
 
@@ -43,10 +43,11 @@
 
 ### 🔧 Refactor
 
-| Tarefa                        | Estimativa | Descrição                  | Status      |
-| ----------------------------- | ---------- | -------------------------- | ----------- |
-| Migrar `<img>` para `<Image>` | 2h         | Componentes com img nativo | TODO        |
-| Unificar combobox             | 1h         | Padrão único AssetCombobox | IN_PROGRESS |
+| Tarefa                                       | Estimativa | Descrição                     | Status      |
+| -------------------------------------------- | ---------- | ----------------------------- | ----------- |
+| ~~Revisar useCallback/useMemo em forms #39~~ | 2h         | Otimizar performance em forms | ✅ DONE     |
+| Migrar `<img>` para `<Image>`                | 2h         | Componentes com img nativo    | TODO        |
+| Unificar combobox                            | 1h         | Padrão único AssetCombobox    | IN_PROGRESS |
 
 ---
 

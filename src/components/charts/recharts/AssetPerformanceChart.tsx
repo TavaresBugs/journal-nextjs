@@ -63,7 +63,7 @@ export function AssetPerformanceChart({ trades, currency }: AssetPerformanceChar
               borderRadius: "0.5rem",
               color: "#f3f4f6",
             }}
-            formatter={(value: number) => [formatCurrency(value, currency), "P&L"]}
+            formatter={(value) => [formatCurrency(Number(value) || 0, currency), "P&L"]}
           />
           <ReferenceLine y={0} stroke="#6b7280" />
           <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>

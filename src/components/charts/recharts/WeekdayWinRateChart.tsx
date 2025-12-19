@@ -76,9 +76,10 @@ export function WeekdayWinRateChart({ trades }: WeekdayWinRateChartProps) {
             }}
             itemStyle={{ color: "#E5E7EB" }}
             labelStyle={{ color: "#9CA3AF" }}
-            formatter={(value: number, name: string, props: unknown) => {
+            formatter={(value, _name, props) => {
               const payload = (props as { payload: { wins: number; total: number } }).payload;
-              return [`${value.toFixed(1)}%`, `Win Rate (${payload.wins}/${payload.total})`];
+              const numValue = Number(value) || 0;
+              return [`${numValue.toFixed(1)}%`, `Win Rate (${payload.wins}/${payload.total})`];
             }}
           />
           <Bar dataKey="winRate" radius={[4, 4, 0, 0]}>

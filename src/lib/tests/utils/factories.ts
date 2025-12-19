@@ -1,5 +1,4 @@
-import { Trade } from "@/services/trades/types";
-import { JournalEntry } from "@/services/journal/types";
+import type { Trade, JournalEntry } from "@/types";
 
 // ==========================================
 // TRADE FACTORIES
@@ -51,15 +50,15 @@ export const createMockActiveTrade = (overrides?: Partial<Trade>): Trade => {
 export const createMockJournalEntry = (overrides?: Partial<JournalEntry>): JournalEntry => {
     return {
         id: "journal-1",
-        user_id: "user-123",
+        userId: "user-123",
         date: new Date().toISOString(),
         content: "Today was a good trading day.",
         mood: "Neutral",
         tags: ["discipline", "focus"],
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         trades: [],
         images: [],
         ...overrides
-    };
+    } as JournalEntry;
 };

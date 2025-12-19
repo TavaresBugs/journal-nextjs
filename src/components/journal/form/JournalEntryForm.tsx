@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Modal, IconActionButton, ModalFooterActions } from "@/components/ui";
 import type { Trade } from "@/types";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -95,7 +95,7 @@ export function JournalEntryForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
 
@@ -116,25 +116,25 @@ export function JournalEntryForm({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isSubmitting, onSubmit, date, title, asset, emotion, analysis, technicalWins, improvements, errors, images, trades]);
 
-  const handleLinkTrade = (selectedTrade: Trade) => {
+  const handleLinkTrade = useCallback((selectedTrade: Trade) => {
     // Add trade if not already linked
     if (!trades.find((t) => t.id === selectedTrade.id)) {
-      setTrades([...trades, selectedTrade]);
+      setTrades((prev) => [...prev, selectedTrade]);
       // Set asset from first trade if not set
       if (!asset && trades.length === 0) {
         setAsset(selectedTrade.symbol);
       }
     }
     setIsLinkTradeModalOpen(false);
-  };
+  }, [trades, asset]);
 
-  const handleRemoveTrade = (tradeId: string) => {
-    setTrades(trades.filter((t) => t.id !== tradeId));
-  };
+  const handleRemoveTrade = useCallback((tradeId: string) => {
+    setTrades((prev) => prev.filter((t) => t.id !== tradeId));
+  }, []);
 
-  const modalTitle = (
+  const modalTitle = useMemo(() => (
     <div className="flex items-center gap-3">
       {isEditing && (
         <IconActionButton variant="back" onClick={onClose} title="Voltar para visualização" />
@@ -143,7 +143,15 @@ export function JournalEntryForm({
         {isEditing ? "📝 Editando Diário" : "📝 Nova Entrada no Diário"}
       </h2>
     </div>
-  );
+  ), [isEditing, onClose]);
+
+  const openLinkTradeModal = useCallback(() => {
+    setIsLinkTradeModalOpen(true);
+  }, []);
+
+  const closeLinkTradeModal = useCallback(() => {
+    setIsLinkTradeModalOpen(false);
+  }, []);
 
   return (
     <>
@@ -166,7 +174,7 @@ export function JournalEntryForm({
 
           <TradeLinker
             trades={trades}
-            onLinkTradeOpen={() => setIsLinkTradeModalOpen(true)}
+            onLinkTradeOpen={openLinkTradeModal}
             onRemoveTrade={handleRemoveTrade}
           />
 
@@ -204,7 +212,7 @@ export function JournalEntryForm({
 
       <LinkTradeModal
         isOpen={isLinkTradeModalOpen}
-        onClose={() => setIsLinkTradeModalOpen(false)}
+        onClose={closeLinkTradeModal}
         availableTrades={availableTrades}
         onSelectTrade={handleLinkTrade}
       />

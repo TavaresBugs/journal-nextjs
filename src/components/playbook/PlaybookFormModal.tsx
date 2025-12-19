@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Modal,
   Input,
@@ -264,7 +264,7 @@ export function PlaybookFormModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playbook, isEditMode, isOpen]);
 
-  const initializeDefaultGroups = () => {
+  const initializeDefaultGroups = useCallback(() => {
     setSortableGroups(
       DEFAULT_GROUPS.map((g) => ({
         id: g.id,
@@ -272,9 +272,9 @@ export function PlaybookFormModal({
         rules: [],
       }))
     );
-  };
+  }, []);
 
-  const addRuleToGroup = (groupId: string) => {
+  const addRuleToGroup = useCallback((groupId: string) => {
     const ruleText = newRuleInputs[groupId]?.trim();
     if (ruleText) {
       const newRule: SortableRule = {
@@ -287,11 +287,11 @@ export function PlaybookFormModal({
           group.id === groupId ? { ...group, rules: [...group.rules, newRule] } : group
         )
       );
-      setNewRuleInputs({ ...newRuleInputs, [groupId]: "" });
+      setNewRuleInputs((prev) => ({ ...prev, [groupId]: "" }));
     }
-  };
+  }, [newRuleInputs]);
 
-  const removeRule = (groupId: string, ruleId: string) => {
+  const removeRule = useCallback((groupId: string, ruleId: string) => {
     setSortableGroups((groups) =>
       groups.map((group) =>
         group.id === groupId
@@ -299,14 +299,14 @@ export function PlaybookFormModal({
           : group
       )
     );
-  };
+  }, []);
 
-  const startEditingRule = (ruleId: string, currentText: string) => {
+  const startEditingRule = useCallback((ruleId: string, currentText: string) => {
     setEditingRuleId(ruleId);
     setEditingRuleText(currentText);
-  };
+  }, []);
 
-  const saveEditingRule = (groupId: string) => {
+  const saveEditingRule = useCallback((groupId: string) => {
     if (!editingRuleId || !editingRuleText.trim()) return;
 
     setSortableGroups((groups) =>
@@ -324,15 +324,15 @@ export function PlaybookFormModal({
 
     setEditingRuleId(null);
     setEditingRuleText("");
-  };
+  }, [editingRuleId, editingRuleText]);
 
-  const cancelEditingRule = () => {
+  const cancelEditingRule = useCallback(() => {
     setEditingRuleId(null);
     setEditingRuleText("");
-  };
+  }, []);
 
   // Drag and Drop Logic
-  const handleDragEnd = (event: DragEndEvent, groupId: string) => {
+  const handleDragEnd = useCallback((event: DragEndEvent, groupId: string) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -350,9 +350,21 @@ export function PlaybookFormModal({
         });
       });
     }
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  // Reset must be defined before handleSubmit for dependency order
+  const handleReset = useCallback(() => {
+    setName("");
+    setDescription("");
+    setSelectedIcon("📈");
+    setSelectedColor("#3B82F6");
+    initializeDefaultGroups();
+    setNewRuleInputs({});
+    setActiveTab("general");
+    setEditingRuleId(null);
+  }, [initializeDefaultGroups]);
+
+  const handleSubmit = useCallback(async () => {
     setIsSaving(true);
     try {
       // Convert SortableGroups back to clean RuleGroups (string arrays)
@@ -390,34 +402,28 @@ export function PlaybookFormModal({
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [sortableGroups, isEditMode, playbook, name, description, selectedIcon, selectedColor, updatePlaybook, addPlaybook, handleReset, onSuccess, onClose]);
 
-  const handleReset = () => {
-    setName("");
-    setDescription("");
-    setSelectedIcon("📈");
-    setSelectedColor("#3B82F6");
-    initializeDefaultGroups();
-    setNewRuleInputs({});
-    setActiveTab("general");
-    setEditingRuleId(null);
-  };
+  const modalTitle = useMemo(() => 
+    isEditMode ? "✏️ Editar Playbook" : "📖 Criar Playbook"
+  , [isEditMode]);
 
-  const modalTitle = isEditMode ? "✏️ Editar Playbook" : "📖 Criar Playbook";
-  const submitButtonText = isSaving
-    ? "Salvando..."
-    : isEditMode
-      ? "Atualizar Playbook"
-      : "Salvar Playbook";
+  const submitButtonText = useMemo(() =>
+    isSaving
+      ? "Salvando..."
+      : isEditMode
+        ? "Atualizar Playbook"
+        : "Salvar Playbook"
+  , [isSaving, isEditMode]);
 
-  const handleBackClick = () => {
+  const handleBackClick = useCallback(() => {
     handleReset();
     if (onBack) {
       onBack();
     } else {
       onClose();
     }
-  };
+  }, [handleReset, onBack, onClose]);
 
   const titleElement = (
     <div className="flex items-center gap-3">
