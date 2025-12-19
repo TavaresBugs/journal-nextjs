@@ -98,38 +98,48 @@ journal-nextjs/
 │   │   ├── mentor/             # Sistema de mentoria
 │   │   └── share/[token]/      # Compartilhamento público
 │   │
-│   ├── components/
-│   │   ├── ui/                 # Design System (13 componentes)
-│   │   │   ├── Button.tsx      # 20 variantes
-│   │   │   ├── IconActionButton.tsx  # 7 variantes
-│   │   │   ├── Modal.tsx       # Base de modais
-│   │   │   ├── ModalFooterActions.tsx  # Footers padronizados
-│   │   │   ├── FormField.tsx   # Formulários
-│   │   │   └── ...
-│   │   ├── trades/             # Componentes de trade
-│   │   ├── journal/            # Componentes de journal
-│   │   ├── playbook/           # Componentes de playbook
-│   │   └── shared/             # Componentes compartilhados
+│   ├── components/             # 📖 Ver README
+│   │   ├── ui/                 # Design System (28 componentes)
+│   │   ├── trades/             # Componentes de trade (24)
+│   │   ├── journal/            # Componentes de journal (17)
+│   │   ├── playbook/           # Componentes de playbook (10)
+│   │   └── ...                 # 23 pastas de componentes
+│   │
+│   ├── services/               # 📖 Ver README
+│   │   ├── admin/              # Serviços administrativos
+│   │   ├── analytics/          # Cálculos e análises
+│   │   ├── journal/            # Journal services
+│   │   ├── trades/             # Trade services
+│   │   └── ...                 # 7 domínios
 │   │
 │   ├── lib/
-│   │   ├── services/           # Lógica de negócio (7 domínios)
-│   │   ├── repositories/       # Acesso a dados (Supabase)
+│   │   ├── repositories/       # 📖 Ver README (Repository Pattern)
 │   │   ├── utils/              # Helpers gerais
 │   │   ├── logger/             # Sistema de logging
 │   │   └── supabase/           # Cliente Supabase
 │   │
-│   ├── hooks/                  # Custom hooks (13 hooks)
+│   ├── hooks/                  # 📖 Ver README (15 hooks)
 │   ├── store/                  # Zustand stores
-│   ├── types/                  # TypeScript types
+│   ├── types/                  # 📖 Ver README (TypeScript types)
 │   └── constants/              # Constantes globais
 │
 ├── docs/                       # Documentação completa
 ├── scripts/                    # Scripts utilitários
-├── tests/                      # Testes (287 passando)
+├── tests/                      # Testes (671 passando)
 └── supabase/migrations/        # Migrations do banco
 
-~71 diretórios, ~195 arquivos, ~29.600 linhas (após refatoração)
+~71 diretórios, ~195 arquivos, ~29.600 linhas
 ```
+
+### 📖 Documentação por Pasta
+
+| Pasta                   | README                                      | Descrição                         |
+| ----------------------- | ------------------------------------------- | --------------------------------- |
+| `src/components/`       | [📖 README](src/components/README.md)       | Componentes React e Design System |
+| `src/services/`         | [📖 README](src/services/README.md)         | Lógica de negócio                 |
+| `src/lib/repositories/` | [📖 README](src/lib/repositories/README.md) | Repository Pattern (Supabase)     |
+| `src/hooks/`            | [📖 README](src/hooks/README.md)            | Custom hooks React                |
+| `src/types/`            | [📖 README](src/types/README.md)            | Tipos TypeScript                  |
 
 ---
 
