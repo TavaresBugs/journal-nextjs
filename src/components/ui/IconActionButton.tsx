@@ -285,6 +285,7 @@ export function IconActionButton({
         className
       )}
       title={title ?? config.defaultTitle}
+      aria-label={title ?? config.defaultTitle}
       {...props}
     >
       {config.icon}
