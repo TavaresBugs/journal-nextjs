@@ -161,6 +161,7 @@ SelectTrigger.displayName = "SelectTrigger";
 const SelectContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { position?: "popper" | "item-aligned" }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 >(({ className, children, position = "popper", ...props }, ref) => {
   const context = React.useContext(SelectContext);
   const [coords, setCoords] = React.useState<{ top: number; left: number; width: number } | null>(
@@ -189,7 +190,7 @@ const SelectContent = React.forwardRef<
         window.removeEventListener("scroll", updatePosition, true);
       };
     }
-  }, [context?.open]);
+  }, [context?.open, context?.triggerRef]);
 
   if (!context?.open || !coords) return null;
 
@@ -267,9 +268,11 @@ const SelectSeparator = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HT
 SelectSeparator.displayName = "SelectSeparator";
 
 // Mock Scroll buttons as they are implicit in native scroll or standard div scroll
-const SelectScrollUpButton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SelectScrollUpButton = (_props: React.HTMLAttributes<HTMLDivElement>) =>
   null;
-const SelectScrollDownButton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SelectScrollDownButton = (_props: React.HTMLAttributes<HTMLDivElement>) =>
   null;
 
 export {
