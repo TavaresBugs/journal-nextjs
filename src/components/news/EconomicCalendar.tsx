@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useLayoutEffect } from 'react'
+import { useState, useMemo, useRef, useLayoutEffect, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getEventsForWeek, getEventsByDate } from '@/lib/repositories/economicEvents.repository'
@@ -11,6 +11,7 @@ import { WeekPickerCalendar } from '@/components/ui/WeekPicker'
 import { EventRow, EventsTableHeader } from './EventRow'
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, isToday } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { isAdmin } from '@/services/admin/admin'
 
 // Icons (inline SVGs)
 
@@ -60,7 +61,17 @@ export function EconomicCalendar() {
   const [refreshMessage, setRefreshMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [calendarCoords, setCalendarCoords] = useState<{ top: number; left: number } | null>(null)
+  const [isAdminUser, setIsAdminUser] = useState(false)
   const dateButtonRef = useRef<HTMLButtonElement>(null)
+
+  // Check if the current user is an admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const adminStatus = await isAdmin()
+      setIsAdminUser(adminStatus)
+    }
+    checkAdminStatus()
+  }, [])
 
   // Calculate position for portal dropdown
   useLayoutEffect(() => {
@@ -273,73 +284,78 @@ export function EconomicCalendar() {
               Semana
             </Button>
             
-            {/* Clear Button (Admin) */}
-            <IconActionButton
-              variant="delete"
-              onClick={async () => {
-                if (!window.confirm('Tem certeza? Isso apagará TODOS os eventos desta semana.')) return
-                
-                setIsRefreshing(true)
-                try {
-                  const res = await fetch('/api/sync-calendar', { method: 'DELETE' })
-                  // data variable was unused
-                  await res.json() 
-                  
-                  if (res.ok) {
-                    setRefreshMessage({ type: 'success', text: 'Calendário limpo com sucesso!' })
-                    await refetch()
-                  } else {
-                    setRefreshMessage({ type: 'error', text: 'Erro ao limpar.' })
-                  }
-                } catch {
-                  // error variable unused
-                  setRefreshMessage({ type: 'error', text: 'Erro de conexão.' })
-                } finally {
-                  setIsRefreshing(false)
-                  setTimeout(() => setRefreshMessage(null), 3000)
-                }
-              }}
-              disabled={isRefreshing}
-              title="Limpar Semana (Reset)"
-            />
+            {/* Admin Only Buttons */}
+            {isAdminUser && (
+              <>
+                {/* Clear Button (Admin) */}
+                <IconActionButton
+                  variant="delete"
+                  onClick={async () => {
+                    if (!window.confirm('Tem certeza? Isso apagará TODOS os eventos desta semana.')) return
+                    
+                    setIsRefreshing(true)
+                    try {
+                      const res = await fetch('/api/sync-calendar', { method: 'DELETE' })
+                      // data variable was unused
+                      await res.json() 
+                      
+                      if (res.ok) {
+                        setRefreshMessage({ type: 'success', text: 'Calendário limpo com sucesso!' })
+                        await refetch()
+                      } else {
+                        setRefreshMessage({ type: 'error', text: 'Erro ao limpar.' })
+                      }
+                    } catch {
+                      // error variable unused
+                      setRefreshMessage({ type: 'error', text: 'Erro de conexão.' })
+                    } finally {
+                      setIsRefreshing(false)
+                      setTimeout(() => setRefreshMessage(null), 3000)
+                    }
+                  }}
+                  disabled={isRefreshing}
+                  title="Limpar Semana (Reset)"
+                />
 
-            <IconActionButton
-              variant="refresh"
-              onClick={handleManualRefresh}
-              disabled={isRefreshing}
-              className={isRefreshing ? 'animate-spin text-blue-500' : ''}
-              title="Sincronizar com Forex Factory"
-            />
+                <IconActionButton
+                  variant="refresh"
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className={isRefreshing ? 'animate-spin text-blue-500' : ''}
+                  title="Sincronizar com Forex Factory"
+                />
 
-            {/* History Sync Button */}
-            <IconActionButton
-              variant="database"
-              onClick={async () => {
-                if (!window.confirm('Isso vai sincronizar o ano inteiro (Jan-Dez). Pode levar ~1 minuto. Continuar?')) return
-                
-                setIsRefreshing(true)
-                setRefreshMessage({ type: 'info', text: 'Sincronizando ano inteiro... Aguarde.' })
-                
-                try {
-                  const res = await fetch('/api/sync-history', { method: 'POST' })
-                  await res.json()
-                  
-                  if (res.ok) {
-                    setRefreshMessage({ type: 'success', text: 'Histórico anual atualizado!' })
-                    await refetch()
-                  } else {
-                    setRefreshMessage({ type: 'error', text: 'Erro no sync histórico.' })
-                  }
-                } catch {
-                  setRefreshMessage({ type: 'error', text: 'Erro de conexão.' })
-                } finally {
-                  setIsRefreshing(false)
-                  setTimeout(() => setRefreshMessage(null), 5000)
-                }
-              }}
-              disabled={isRefreshing}
-              title="Sincronizar Histórico (Ano Todo)"
-            />
+                {/* History Sync Button */}
+                <IconActionButton
+                  variant="database"
+                  onClick={async () => {
+                    if (!window.confirm('Isso vai sincronizar o ano inteiro (Jan-Dez). Pode levar ~1 minuto. Continuar?')) return
+                    
+                    setIsRefreshing(true)
+                    setRefreshMessage({ type: 'info', text: 'Sincronizando ano inteiro... Aguarde.' })
+                    
+                    try {
+                      const res = await fetch('/api/sync-history', { method: 'POST' })
+                      await res.json()
+                      
+                      if (res.ok) {
+                        setRefreshMessage({ type: 'success', text: 'Histórico anual atualizado!' })
+                        await refetch()
+                      } else {
+                        setRefreshMessage({ type: 'error', text: 'Erro no sync histórico.' })
+                      }
+                    } catch {
+                      setRefreshMessage({ type: 'error', text: 'Erro de conexão.' })
+                    } finally {
+                      setIsRefreshing(false)
+                      setTimeout(() => setRefreshMessage(null), 5000)
+                    }
+                  }}
+                  disabled={isRefreshing}
+                  title="Sincronizar Histórico (Ano Todo)"
+                />
+              </>
+            )}
           </div>
         </div>
 
