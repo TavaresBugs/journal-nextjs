@@ -5,7 +5,7 @@ interface EventRowProps {
     id: string
     time: string
     currency: string
-    impact: 'high' | 'medium' | 'low'
+    impact: 'high' | 'medium' | 'low' | 'none'
     event_name: string
     actual: string | null
     forecast: string | null
@@ -88,17 +88,19 @@ export function EventsTableHeader() {
  * Displays time, currency, impact indicator, event name, and values with vertical dividers.
  */
 export function EventRow({ event, isEven = false }: EventRowProps) {
-  // Impact color mapping (Forex Factory style: red=high, orange=medium, yellow=low)
-  const impactColors = {
+  // Impact color mapping (Forex Factory style: red=high, orange=medium, yellow=low, white=none)
+  const impactColors: Record<string, string> = {
     high: 'bg-red-500',
     medium: 'bg-orange-500',
-    low: 'bg-yellow-500'
+    low: 'bg-yellow-500',
+    none: 'bg-gray-400 border border-gray-300'
   }
 
-  const impactLabels = {
+  const impactLabels: Record<string, string> = {
     high: 'Alto',
     medium: 'Médio',
-    low: 'Baixo'
+    low: 'Baixo',
+    none: 'Sem Impacto'
   }
 
   // Compare actual vs forecast

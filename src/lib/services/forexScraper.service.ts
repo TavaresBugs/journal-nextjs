@@ -423,3 +423,48 @@ function parseForexFactoryDate(dateStr: string): string {
     return ''
   }
 }
+
+/**
+ * Compara dois arrays de eventos scraped para verificar consistência (Double-Check)
+ * @param scrape1 Primeiro resultado do scrape
+ * @param scrape2 Segundo resultado do scrape
+ * @returns { match: boolean, diff: string[] } - match true se iguais, diff com lista de diferenças
+ */
+export function compareScrapedEvents(
+  scrape1: ScrapedEvent[],
+  scrape2: ScrapedEvent[]
+): { match: boolean; diff: string[]; stats: { scrape1Count: number; scrape2Count: number } } {
+  const diff: string[] = []
+  
+  // Criar chave única para cada evento
+  const createKey = (e: ScrapedEvent) => `${e.date}|${e.time}|${e.currency}|${e.event_name}`
+  
+  const set1 = new Set(scrape1.map(createKey))
+  const set2 = new Set(scrape2.map(createKey))
+  
+  // Eventos no scrape1 mas não no scrape2
+  for (const key of set1) {
+    if (!set2.has(key)) {
+      diff.push(`[Apenas Scrape1] ${key}`)
+    }
+  }
+  
+  // Eventos no scrape2 mas não no scrape1
+  for (const key of set2) {
+    if (!set1.has(key)) {
+      diff.push(`[Apenas Scrape2] ${key}`)
+    }
+  }
+  
+  const match = diff.length === 0 && scrape1.length === scrape2.length
+  
+  return {
+    match,
+    diff,
+    stats: {
+      scrape1Count: scrape1.length,
+      scrape2Count: scrape2.length
+    }
+  }
+}
+

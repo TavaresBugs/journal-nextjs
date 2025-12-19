@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { scrapeForexFactory, type ScrapedEvent } from '@/lib/services/forexScraper.service'
+import { scrapeForexFactory, compareScrapedEvents, type ScrapedEvent } from '@/lib/services/forexScraper.service'
 import { syncForexCalendar } from '@/lib/services/forexCalendar.service'
 import { upsertEconomicEvents, deleteCurrentWeekEvents } from '@/lib/repositories/economicEvents.repository'
 import type { DBEvent } from '@/lib/services/forexCalendar.service'
@@ -31,25 +31,40 @@ export async function POST(request: NextRequest) {
     
     console.log(`[API] Sincronizando calendário para IP: ${clientIp}`)
     
-    let eventsToSave: DBEvent[] = []
-    let sourceUsed = 'scraper'
-
+    // ========================================
+    // DOUBLE-CHECK: Fazer 2 scrapes e comparar
+    // ========================================
+    
+    let scrape1: ScrapedEvent[] = []
+    let scrape2: ScrapedEvent[] = []
+    
     try {
-      // 1. Tentar via Scraper (Puppeteer)
-      console.log('[API] Tentando via Scraper (Puppeteer)...')
-      const scrapedEvents: ScrapedEvent[] = await scrapeForexFactory()
+      // 1. Primeiro Scrape
+      console.log('[API] 🔄 Scrape #1 iniciando...')
+      scrape1 = await scrapeForexFactory()
+      console.log(`[API] ✅ Scrape #1: ${scrape1.length} eventos`)
       
-      if (scrapedEvents.length > 0) {
-        eventsToSave = scrapedEvents as unknown as DBEvent[] // Temporarily cast, will be mapped below
-        console.log(`[API] Sucesso via Scraper: ${eventsToSave.length} eventos.`)
-      } else {
-        throw new Error('Scraper retornou 0 eventos.')
+      if (scrape1.length === 0) {
+        throw new Error('Scrape #1 retornou 0 eventos')
       }
+      
+      // 2. Aguarda 3 segundos para evitar cache/rate-limit
+      console.log('[API] ⏳ Aguardando 3s antes do Scrape #2...')
+      await new Promise(r => setTimeout(r, 3000))
+      
+      // 3. Segundo Scrape
+      console.log('[API] 🔄 Scrape #2 iniciando...')
+      scrape2 = await scrapeForexFactory()
+      console.log(`[API] ✅ Scrape #2: ${scrape2.length} eventos`)
+      
+      if (scrape2.length === 0) {
+        throw new Error('Scrape #2 retornou 0 eventos')
+      }
+      
     } catch (scraperError) {
       console.warn('[API] ⚠️ Falha no Scraper (possível 403/Timeout). Usando fallback JSON...', scraperError)
       
-      // 2. Fallback: Tentar via JSON oficial
-      sourceUsed = 'json_api'
+      // Fallback: JSON oficial (sem double-check, pois é API oficial)
       const jsonEvents = await syncForexCalendar()
       
       if (jsonEvents.length === 0) {
@@ -60,48 +75,61 @@ export async function POST(request: NextRequest) {
         })
       }
       
-      eventsToSave = jsonEvents
-      console.log(`[API] Sucesso via JSON Fallback: ${eventsToSave.length} eventos.`)
-    }
-    
-    // Se não houver eventos de nenhuma fonte, retornar
-    if (eventsToSave.length === 0) {
+      // JSON é confiável - salvar direto (delete + insert)
+      console.log(`[API] 📥 JSON Fallback: ${jsonEvents.length} eventos. Salvando...`)
+      await deleteCurrentWeekEvents()
+      await upsertEconomicEvents(jsonEvents)
+      
+      lastSyncTime.set(clientIp, now)
+      
       return NextResponse.json({
         success: true,
-        synced: 0,
-        message: 'Nenhum evento encontrado para sincronizar.'
+        synced: jsonEvents.length,
+        message: `${jsonEvents.length} eventos via JSON (fallback)`,
+        timestamp: new Date().toISOString()
       })
     }
-
-    // Modificação: remover 'deleteCurrentWeekEvents' para evitar perda de dados em scrape parcial
-    // const deleted = await deleteCurrentWeekEvents()
-    // console.log(`[API] ${deleted} eventos antigos deletados antes do sync`)
     
-    // Transformar para formato do banco com tratativa inteligente do sufixo "BR"
-    // Executa APENAS se a fonte for scraper (pois JSON já vem tratado no service ou precisa de ajuste aqui?)
-    // O service do JSON (forexCalendar.service) já retorna DBEvent. Precisamos checar se removemos o sufixo BR lá ou ajustamos aqui.
-    // Assumindo que o JSON service retorna 'time' formatado. Se for scraper, precisamos formatar.
+    // 4. Comparar os 2 scrapes
+    console.log('[API] 🔍 Comparando Scrape #1 vs Scrape #2...')
+    const { match, diff, stats } = compareScrapedEvents(scrape1, scrape2)
     
-    if (sourceUsed === 'scraper') {
-        eventsToSave = (eventsToSave as ScrapedEvent[]).map(event => {
-          // Verifica se parece um horário (ex: 13:30)
-          const isTime = event.time && event.time.includes(':')
-          const timeLabel = isTime ? `${event.time} BR` : event.time
-          
-          return {
-            date: event.date,
-            time: timeLabel,
-            currency: event.currency,
-            impact: mapImpact(event.impact),
-            event_name: event.event_name,
-            actual: event.actual,
-            forecast: event.forecast,
-            previous: event.previous
-          }
-        })
+    if (!match) {
+      // ❌ Scrapes divergentes - NÃO SALVAR
+      console.error('[API] ❌ DIVERGÊNCIA DETECTADA! Scrapes não correspondem.')
+      console.error(`[API] Scrape1: ${stats.scrape1Count}, Scrape2: ${stats.scrape2Count}`)
+      console.error('[API] Diferenças:', diff.slice(0, 10)) // Mostrar até 10 diferenças
+      
+      // TODO: Aqui poderia enviar email/webhook para admin
+      
+      return NextResponse.json({
+        success: false,
+        error: 'Scrapes divergentes - sincronização abortada',
+        message: 'Os dois scrapes retornaram dados diferentes. Admin notificado.',
+        stats,
+        divergences: diff.slice(0, 20) // Limitar resposta
+      }, { status: 409 }) // Conflict
     }
     
-    // Salvar no banco (Upsert = Inserir ou Atualizar)
+    // ✅ Scrapes iguais - SEGURO salvar
+    console.log('[API] ✅ Scrapes iguais! Prosseguindo com delete + insert...')
+    
+    // Transformar para formato do banco
+    const eventsToSave: DBEvent[] = scrape1.map(event => ({
+      date: event.date,
+      time: event.time,
+      currency: event.currency,
+      impact: mapImpact(event.impact),
+      event_name: event.event_name,
+      actual: event.actual,
+      forecast: event.forecast,
+      previous: event.previous
+    }))
+    
+    // Delete + Insert (seguro pois double-check passou)
+    const deleted = await deleteCurrentWeekEvents()
+    console.log(`[API] 🗑️ ${deleted} eventos antigos deletados`)
+    
     await upsertEconomicEvents(eventsToSave)
     
     // Atualizar rate limit
@@ -118,7 +146,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       synced: eventsToSave.length,
-      message: `${eventsToSave.length} eventos atualizados via ${sourceUsed === 'scraper' ? 'Scraper (Completo)' : 'JSON (Fallback)'}`,
+      deleted,
+      message: `${eventsToSave.length} eventos via Scraper (double-check OK)`,
       timestamp: new Date().toISOString()
     })
     

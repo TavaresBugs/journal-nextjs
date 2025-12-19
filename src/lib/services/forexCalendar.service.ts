@@ -110,7 +110,7 @@ export function transformEventsToDBFormat(events: ForexFactoryEvent[]): DBEvent[
     const timeMatch = event.date.match(/T(\d{2}):(\d{2})/)
     const hours = timeMatch ? timeMatch[1] : '00'
     const minutes = timeMatch ? timeMatch[2] : '00'
-    const time = `${hours}:${minutes} BR`
+    const time = `${hours}:${minutes}`
     
     // Mapear impacto
     const impactMap: Record<string, 'high' | 'medium' | 'low'> = {

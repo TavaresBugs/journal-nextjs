@@ -511,7 +511,7 @@ export function EconomicCalendar() {
                     {isToday(new Date(date + 'T00:00:00')) && (
                       <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs rounded">HOJE</span>
                     )}
-                    {format(new Date(date + 'T00:00:00'), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+                    {format(new Date(date + 'T00:00:00'), "EEEE, dd 'de' MMMM", { locale: ptBR }).replace(/^\w/, c => c.toUpperCase()).replace(/de (\w)/, (_, c) => `de ${c.toUpperCase()}`)}
                     <span className="text-xs text-gray-500">
                       ({dayEvents.length} {dayEvents.length === 1 ? 'evento' : 'eventos'})
                     </span>

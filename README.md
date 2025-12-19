@@ -249,19 +249,20 @@ npm run type-check
 
 ## 📚 Documentação
 
-| Documento                                 | Descrição                                      |
-| ----------------------------------------- | ---------------------------------------------- |
-| [📐 Arquitetura](docs/ARCHITECTURE.md)    | Estrutura completa, fluxos de dados, diagramas |
-| [🎨 Design System](docs/DESIGN_SYSTEM.md) | Componentes UI, variantes, boas práticas       |
-| [📋 Contexto](docs/PROJETO_CONTEXTO.md)   | Contexto completo para prompts e IA            |
-| [🗺️ Roadmap](docs/ROADMAP.md)             | Análise competitiva, roadmap até Q4 2025       |
-| [🗄️ Database](docs/DATABASE.md)           | Schema completo, tabelas, RLS policies         |
-| [📋 Changelog](CHANGELOG.md)              | Histórico de versões e mudanças                |
-| [🚧 Features](docs/PENDING_FEATURES.md)   | Features pendentes por prioridade              |
-| [📋 TODO](docs/TODO.md)                   | Tarefas do dia-a-dia                           |
-| [🤖 Jules Tasks](docs/JULES_TASKS.md)     | Histórico das tasks automatizadas              |
-| [🔒 Security](docs/SECURITY_AUDIT.md)     | Auditoria de segurança                         |
-| [🧪 Testes](docs/TEST_PLAN.md)            | Plano de testes e Vitest config                |
+| Documento                                 | Descrição                                |
+| ----------------------------------------- | ---------------------------------------- |
+| [📋 Contexto](docs/PROJETO_CONTEXTO.md)   | Visão geral, stack, estrutura e FAQ      |
+| [📐 Arquitetura](docs/ARCHITECTURE.md)    | Diagramas C4, fluxos de dados, padrões   |
+| [🗄️ Database](docs/DATABASE.md)           | ERD, RLS policies, queries comuns        |
+| [🎨 Design System](docs/DESIGN_SYSTEM.md) | Componentes UI, variantes, boas práticas |
+| [🗺️ Roadmap](docs/ROADMAP.md)             | Timeline visual, análise competitiva     |
+| [📋 TODO](docs/TODO.md)                   | Tarefas organizadas por prioridade       |
+| [🚧 Features](docs/PENDING_FEATURES.md)   | Backlog com user stories e critérios     |
+| [📖 Glossário](docs/GLOSSARIO.md)         | Termos técnicos A-Z                      |
+| [🤝 Contribuição](docs/CONTRIBUTING.md)   | Setup local, convenções, processo de PR  |
+| [📋 Changelog](CHANGELOG.md)              | Histórico de versões e mudanças          |
+| [🔒 Security](docs/SECURITY_AUDIT.md)     | Auditoria de segurança                   |
+| [🧪 Testes](docs/TEST_PLAN.md)            | Plano de testes e Vitest config          |
 
 ---
 
