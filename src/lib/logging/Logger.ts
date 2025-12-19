@@ -1,3 +1,5 @@
+import { sanitizeMeta, safeError } from "./safeError";
+
 export enum LogLevel {
   DEBUG = "DEBUG",
   INFO = "INFO",
@@ -9,13 +11,19 @@ export class Logger {
   constructor(private context: string) {}
 
   private log(level: LogLevel, message: string, metadata?: Record<string, unknown>) {
+    // Em produção, sanitizar automaticamente para remover PII
+    let safeMeta = metadata;
+    if (process.env.NODE_ENV === "production" && metadata) {
+      safeMeta = sanitizeMeta(metadata);
+    }
+
     const entry = {
       level,
       context: this.context,
       message,
       timestamp: new Date().toISOString(),
       userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "server",
-      ...metadata,
+      ...safeMeta,
     };
 
     // In production, send to logging service (Sentry, LogRocket, etc)
@@ -53,6 +61,17 @@ export class Logger {
   }
 
   /**
+   * Log an error with automatic sanitization
+   * Extracts only safe information from error objects
+   */
+  errorSafe(message: string, error: unknown, extraMeta?: Record<string, unknown>) {
+    this.log(LogLevel.ERROR, message, {
+      ...safeError(error),
+      ...extraMeta,
+    });
+  }
+
+  /**
    * Debug a trade object in development mode
    * Shows ownership verification, required fields validation, and full data
    */
@@ -77,3 +96,6 @@ export class Logger {
     console.groupEnd();
   }
 }
+
+// Re-export safeError for direct usage
+export { safeError, sanitizeMeta } from "./safeError";
