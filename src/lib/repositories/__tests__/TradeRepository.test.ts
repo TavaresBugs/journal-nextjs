@@ -279,4 +279,67 @@ describe("TradeRepository Unit Tests", () => {
       expect(result.error?.code).toBe(ErrorCode.DB_QUERY_FAILED);
     });
   });
+
+  describe("deleteDomain", () => {
+    it("should delete trade if authorized", async () => {
+      mockSupabase.from.mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi.fn().mockImplementation((cb) => cb({ error: null })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await repo.deleteDomain("trade-123", "user-123");
+      expect(result.data).toBe(true);
+      expect(result.error).toBeNull();
+    });
+
+    it("should return error if deletion fails", async () => {
+      mockSupabase.from.mockReturnValue({
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi
+          .fn()
+          .mockImplementation((cb) => cb({ error: { message: "Failed", code: "DeleteError" } })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await repo.deleteDomain("trade-123", "user-123");
+      expect(result.data).toBeNull();
+      expect(result.error).not.toBeNull();
+    });
+  });
+
+  describe("createDomain", () => {
+    it("should create trade without journal association", async () => {
+      const trade = createMockTrade();
+      const dbTrade = mapTradeToDB(trade);
+
+      mockSupabase.from.mockReturnValue({
+        upsert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: dbTrade, error: null }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await repo.createDomain(trade);
+      expect(result.data?.id).toBe(trade.id);
+      expect(result.error).toBeNull();
+    });
+
+    it("should return error if create fails", async () => {
+      const trade = createMockTrade();
+
+      mockSupabase.from.mockReturnValue({
+        upsert: vi.fn().mockReturnThis(),
+        select: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({ data: null, error: { message: "Upsert failed" } }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any);
+
+      const result = await repo.createDomain(trade);
+      expect(result.data).toBeNull();
+      expect(result.error?.code).toBe(ErrorCode.DB_QUERY_FAILED);
+    });
+  });
 });
