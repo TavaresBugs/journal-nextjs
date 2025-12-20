@@ -205,7 +205,81 @@ const [view, setView] = useState("grid");
 - **DatePickerInput**: Selector de data single.
 - **DateTimePicker**: Selector complexo de data e hora.
 - **Textarea**: Campo de texto multiline.
-- **Select**: Dropdown customizado (usar `shadcn` select ou nativo estilizado).
+- **Select**: Dropdown customizado (consolidado em 20/12/2025).
+
+### Select Component (Consolidado)
+
+**Path**: `src/components/ui/Select.tsx`
+
+O componente Select foi consolidado unificando `SelectCustom` e `SelectRadix`. Usa portal para renderização, evitando problemas de overflow.
+
+#### Importação
+
+```tsx
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
+} from "@/components/ui";
+```
+
+#### Uso Básico
+
+```tsx
+<Select value={value} onValueChange={setValue}>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Selecione uma opção" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="option1">Opção 1</SelectItem>
+    <SelectItem value="option2">Opção 2</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+#### Com Grupos
+
+```tsx
+<Select value={value} onValueChange={setValue}>
+  <SelectTrigger>
+    <SelectValue placeholder="Escolha" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      <SelectLabel>Categoria A</SelectLabel>
+      <SelectItem value="a1">Item A1</SelectItem>
+      <SelectItem value="a2">Item A2</SelectItem>
+    </SelectGroup>
+    <SelectSeparator />
+    <SelectGroup>
+      <SelectLabel>Categoria B</SelectLabel>
+      <SelectItem value="b1">Item B1</SelectItem>
+    </SelectGroup>
+  </SelectContent>
+</Select>
+```
+
+#### Props do Select
+
+| Prop            | Tipo                      | Descrição                    |
+| --------------- | ------------------------- | ---------------------------- |
+| `value`         | `string`                  | Valor selecionado            |
+| `onValueChange` | `(value: string) => void` | Callback de mudança          |
+| `open`          | `boolean`                 | Controle externo de abertura |
+| `onOpenChange`  | `(open: boolean) => void` | Callback de abertura         |
+
+#### Características
+
+- ✅ **Portal**: Renderiza fora do container pai (evita overflow)
+- ✅ **Click outside**: Fecha ao clicar fora
+- ✅ **Keyboard**: ESC para fechar
+- ✅ **Checkmark**: Indicador visual do item selecionado
+- ✅ **Dark mode**: Otimizado para temas escuros
 
 ### Padrão de Formulário (React Hook Form ou State)
 
