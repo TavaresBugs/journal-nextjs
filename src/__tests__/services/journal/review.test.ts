@@ -41,9 +41,9 @@ describe("Review Service", () => {
     created_at: mockDate,
     updated_at: mockDate,
     journal_entries: {
-        date: "2025-12-01",
-        account_id: "acc-1"
-    }
+      date: "2025-12-01",
+      account_id: "acc-1",
+    },
   };
 
   const mockReview = {
@@ -59,7 +59,7 @@ describe("Review Service", () => {
     createdAt: mockDate,
     updatedAt: mockDate,
     entryDate: "2025-12-01",
-    entryAccountId: "acc-1"
+    entryAccountId: "acc-1",
   };
 
   beforeEach(() => {
@@ -115,7 +115,7 @@ describe("Review Service", () => {
         menteeId: "mentee-1",
         reviewType: "comment",
         content: "test",
-      });
+      } as any);
 
       expect(result).toBeNull();
       expect(supabase.from).not.toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe("Review Service", () => {
         menteeId: "mentee-1",
         reviewType: "comment",
         content: "test",
-      });
+      } as any);
 
       expect(result).toBeNull();
     });
@@ -165,17 +165,17 @@ describe("Review Service", () => {
     });
 
     it("should return false on DB error", async () => {
-        const updateMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          update: updateMock,
-          eq: eqMock,
-        });
-  
-        const result = await updateReview("review-1", "Updated content");
-        expect(result).toBe(false);
+      const updateMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        update: updateMock,
+        eq: eqMock,
       });
+
+      const result = await updateReview("review-1", "Updated content");
+      expect(result).toBe(false);
+    });
   });
 
   describe("deleteReview", () => {
@@ -196,17 +196,17 @@ describe("Review Service", () => {
     });
 
     it("should return false on DB error", async () => {
-        const deleteMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          delete: deleteMock,
-          eq: eqMock,
-        });
-  
-        const result = await deleteReview("review-1");
-        expect(result).toBe(false);
+      const deleteMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        delete: deleteMock,
+        eq: eqMock,
       });
+
+      const result = await deleteReview("review-1");
+      expect(result).toBe(false);
+    });
   });
 
   describe("getReviewsForMentee", () => {
@@ -229,19 +229,19 @@ describe("Review Service", () => {
     });
 
     it("should return empty array on invalid data or error", async () => {
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-          order: orderMock,
-        });
-  
-        const result = await getReviewsForMentee("mentee-1");
-        expect(result).toEqual([]);
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        order: orderMock,
       });
+
+      const result = await getReviewsForMentee("mentee-1");
+      expect(result).toEqual([]);
+    });
   });
 
   describe("getMyReviews", () => {
@@ -266,26 +266,26 @@ describe("Review Service", () => {
     });
 
     it("should return empty array if not authenticated", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
-        const result = await getMyReviews();
-        expect(result).toEqual([]);
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
+      const result = await getMyReviews();
+      expect(result).toEqual([]);
     });
 
     it("should return empty array on DB error", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
 
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-          order: orderMock,
-        });
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
 
-        const result = await getMyReviews();
-        expect(result).toEqual([]);
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        order: orderMock,
+      });
+
+      const result = await getMyReviews();
+      expect(result).toEqual([]);
     });
   });
 
@@ -308,18 +308,18 @@ describe("Review Service", () => {
     });
 
     it("should handle errors", async () => {
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-          order: orderMock,
-        });
-  
-        const result = await getReviewsForTrade("trade-1");
-        expect(result).toEqual([]);
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        order: orderMock,
+      });
+
+      const result = await getReviewsForTrade("trade-1");
+      expect(result).toEqual([]);
     });
   });
 
@@ -342,80 +342,80 @@ describe("Review Service", () => {
     });
 
     it("should handle errors", async () => {
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-          order: orderMock,
-        });
-  
-        const result = await getReviewsForJournalEntry("entry-1");
-        expect(result).toEqual([]);
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        order: orderMock,
+      });
+
+      const result = await getReviewsForJournalEntry("entry-1");
+      expect(result).toEqual([]);
     });
   });
 
   describe("getReviewsForContext", () => {
     it("should return reviews for mixed context", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
-        
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orMock = vi.fn().mockResolvedValue({ data: [mockReviewDB], error: null });
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
 
-        (supabase.from as any).mockReturnValue({
-            select: selectMock,
-            eq: eqMock,
-            or: orMock,
-        });
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orMock = vi.fn().mockResolvedValue({ data: [mockReviewDB], error: null });
 
-        const result = await getReviewsForContext(["trade-1"], ["entry-1"]);
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        or: orMock,
+      });
 
-        expect(eqMock).toHaveBeenCalledWith("mentee_id", mockUser.id);
-        expect(orMock).toHaveBeenCalledWith("trade_id.in.(trade-1),journal_entry_id.in.(entry-1)");
-        expect(result).toEqual([mockReview]);
+      const result = await getReviewsForContext(["trade-1"], ["entry-1"]);
+
+      expect(eqMock).toHaveBeenCalledWith("mentee_id", mockUser.id);
+      expect(orMock).toHaveBeenCalledWith("trade_id.in.(trade-1),journal_entry_id.in.(entry-1)");
+      expect(result).toEqual([mockReview]);
     });
 
     it("should return empty array if not authenticated", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
-        const result = await getReviewsForContext([], []);
-        expect(result).toEqual([]);
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
+      const result = await getReviewsForContext([], []);
+      expect(result).toEqual([]);
     });
 
     it("should return empty array if no context provided", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
-        
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        
-        // Mock chain
-        (supabase.from as any).mockReturnValue({
-            select: selectMock,
-            eq: eqMock,
-        });
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
 
-        const result = await getReviewsForContext([], []);
-        expect(result).toEqual([]);
-        // Should not call or() or await result
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+
+      // Mock chain
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+      });
+
+      const result = await getReviewsForContext([], []);
+      expect(result).toEqual([]);
+      // Should not call or() or await result
     });
 
     it("should handle errors", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
-        
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
 
-        (supabase.from as any).mockReturnValue({
-            select: selectMock,
-            eq: eqMock,
-            or: orMock,
-        });
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
 
-        const result = await getReviewsForContext(["trade-1"], []);
-        expect(result).toEqual([]);
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        or: orMock,
+      });
+
+      const result = await getReviewsForContext(["trade-1"], []);
+      expect(result).toEqual([]);
     });
   });
 
@@ -437,16 +437,16 @@ describe("Review Service", () => {
     });
 
     it("should handle error", async () => {
-        const updateMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
-  
-        (supabase.from as any).mockReturnValue({
-          update: updateMock,
-          eq: eqMock,
-        });
-  
-        const result = await markReviewAsRead("review-1");
-        expect(result).toBe(false);
+      const updateMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
+
+      (supabase.from as any).mockReturnValue({
+        update: updateMock,
+        eq: eqMock,
+      });
+
+      const result = await markReviewAsRead("review-1");
+      expect(result).toBe(false);
     });
   });
 
@@ -475,28 +475,28 @@ describe("Review Service", () => {
     });
 
     it("should return 0 if not authenticated", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
-        const result = await getUnreadReviewCount();
-        expect(result).toBe(0);
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: null } });
+      const result = await getUnreadReviewCount();
+      expect(result).toBe(0);
     });
 
     it("should return 0 on error", async () => {
-        (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
-  
-        const selectMock = vi.fn().mockReturnThis();
-        // Setup chain for failure
-        const eqMock = vi.fn().mockReturnThis();
-        const eqMock2 = vi.fn().mockResolvedValue({ count: null, error: { message: "Error" } });
+      (supabase.auth.getUser as any).mockResolvedValue({ data: { user: mockUser } });
 
-        eqMock.mockReturnValue({ eq: eqMock2 });
-  
-        (supabase.from as any).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-        });
-  
-        const result = await getUnreadReviewCount();
-        expect(result).toBe(0);
+      const selectMock = vi.fn().mockReturnThis();
+      // Setup chain for failure
+      const eqMock = vi.fn().mockReturnThis();
+      const eqMock2 = vi.fn().mockResolvedValue({ count: null, error: { message: "Error" } });
+
+      eqMock.mockReturnValue({ eq: eqMock2 });
+
+      (supabase.from as any).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
       });
+
+      const result = await getUnreadReviewCount();
+      expect(result).toBe(0);
+    });
   });
 });

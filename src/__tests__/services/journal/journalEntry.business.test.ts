@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mapJournalEntryFromDB } from "@/services/journal/journal";
 import { mockUserId, mockAccountId } from "../../fixtures/journalEntry.fixtures";
@@ -35,7 +36,7 @@ describe("Journal Entry - Business Logic", () => {
         ],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.tradeIds).toHaveLength(3);
       expect(result.tradeIds).toContain("trade-1");
@@ -61,7 +62,7 @@ describe("Journal Entry - Business Logic", () => {
         journal_entry_trades: [],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.tradeIds).toEqual([]);
     });
@@ -117,7 +118,7 @@ describe("Journal Entry - Business Logic", () => {
         journal_entry_trades: [],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.images).toHaveLength(3);
       expect(result.images[0].timeframe).toBe("H1");
@@ -154,7 +155,7 @@ describe("Journal Entry - Business Logic", () => {
         journal_entry_trades: [],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.images[0].displayOrder).toBe(5);
     });
@@ -179,7 +180,7 @@ describe("Journal Entry - Business Logic", () => {
         journal_entry_trades: [],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.id).toBe("entry-complete");
       expect(result.userId).toBe(mockUserId);
@@ -212,7 +213,7 @@ describe("Journal Entry - Business Logic", () => {
         journal_entry_trades: [],
       };
 
-      const result = mapJournalEntryFromDB(dbEntry);
+      const result = mapJournalEntryFromDB(dbEntry as any);
 
       expect(result.title).toBe("");
     });
@@ -240,7 +241,7 @@ describe("Journal Entry - Business Logic", () => {
           journal_entry_trades: [],
         };
 
-        const result = mapJournalEntryFromDB(dbEntry);
+        const result = mapJournalEntryFromDB(dbEntry as any);
 
         expect(result.emotion).toBe(emotion);
       });

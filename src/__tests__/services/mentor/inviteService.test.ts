@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 
 // Use vi.hoisted to ensure the mock is created before vi.mock calls and imports
@@ -349,7 +350,7 @@ describe("MentorService", () => {
       setupAuth();
 
       const createLocalMock = () => {
-        const mock = { then: null } as unknown as MockSupabaseClient;
+        const mock = { then: null } as any;
         [
           "select",
           "insert",

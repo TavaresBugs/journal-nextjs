@@ -15,23 +15,21 @@ import {
   multipleDbEntries,
 } from "../../fixtures/journalEntry.fixtures";
 
-import { vi } from "vitest";
-
 const mocks = vi.hoisted(() => ({
-    supabase: {
-        from: vi.fn(),
-        storage: {
-            from: vi.fn().mockReturnValue({
-                upload: vi.fn().mockResolvedValue({ data: { path: "test-path" }, error: null }),
-                getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://test-url.com" } }),
-                remove: vi.fn().mockResolvedValue({ error: null }),
-            }),
-        },
+  supabase: {
+    from: vi.fn(),
+    storage: {
+      from: vi.fn().mockReturnValue({
+        upload: vi.fn().mockResolvedValue({ data: { path: "test-path" }, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://test-url.com" } }),
+        remove: vi.fn().mockResolvedValue({ error: null }),
+      }),
     },
+  },
 }));
 
 vi.mock("@/lib/supabase", () => ({
-    supabase: mocks.supabase,
+  supabase: mocks.supabase,
 }));
 
 // Mock do accountService

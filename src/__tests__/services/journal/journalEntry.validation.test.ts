@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { saveJournalEntry } from "@/services/journal/journal";
 import { supabase } from "@/lib/supabase";
@@ -43,7 +44,6 @@ describe("Journal Entry - Validation", () => {
       select: vi.fn().mockReturnValue({
         eq: vi.fn().mockResolvedValue({ data: [], error: null }),
       }),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
   });
 
@@ -232,7 +232,7 @@ describe("Journal Entry - Validation", () => {
         updatedAt: new Date().toISOString(),
       };
 
-      const result = await saveJournalEntry(entry);
+      const result = await saveJournalEntry(entry as any);
       expect(result).toBe(true);
     });
 
@@ -253,7 +253,7 @@ describe("Journal Entry - Validation", () => {
         updatedAt: new Date().toISOString(),
       };
 
-      const result = await saveJournalEntry(entry);
+      const result = await saveJournalEntry(entry as any);
       expect(result).toBe(true);
     });
   });
