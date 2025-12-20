@@ -3,6 +3,7 @@ import {
   identifyDayTrades,
   calculateMonthlyTax,
   enrichTradesWithCosts,
+  generateDARFData,
   TaxCostsConfig,
   TaxableTrade,
 } from "@/services/analytics/tax";
@@ -208,6 +209,70 @@ describe("Tax Service", () => {
 
       expect(result.accumulatedLoss).toBe(300);
       expect(result.taxableBasis).toBe(0);
+    });
+  });
+
+  describe("generateDARFData", () => {
+    it("should generate DARF with correct code", () => {
+      const calculation = {
+        month: "2023-10",
+        grossProfit: 1000,
+        costs: 100,
+        netResult: 900,
+        accumulatedLoss: 0,
+        taxableBasis: 900,
+        irrfDeduction: 9,
+        taxDue: 171,
+        dayTradeLossCarryForward: 0,
+      };
+
+      const result = generateDARFData(calculation);
+
+      expect(result.code).toBe("6015");
+      expect(result.amount).toBe(171);
+    });
+
+    it("should set amount to 0 for negative tax due", () => {
+      const calculation = {
+        month: "2023-10",
+        taxDue: -50, // IRRF greater than tax
+      };
+
+      const result = generateDARFData(calculation);
+
+      expect(result.amount).toBe(0);
+    });
+
+    it("should calculate due date in next month", () => {
+      const calculation = {
+        month: "2023-11",
+        taxDue: 100,
+      };
+
+      const result = generateDARFData(calculation);
+
+      expect(result.dueDate).toContain("2023-12");
+    });
+
+    it("should handle year change in due date", () => {
+      const calculation = {
+        month: "2023-12",
+        taxDue: 100,
+      };
+
+      const result = generateDARFData(calculation);
+
+      expect(result.dueDate).toContain("2024-01");
+    });
+  });
+
+  describe("identifyDayTrades edge cases", () => {
+    it("should return empty array for trades without exit date", () => {
+      const trades: Trade[] = [createMockTrade({ exitDate: undefined })];
+
+      const result = identifyDayTrades(trades);
+
+      expect(result).toHaveLength(0);
     });
   });
 });

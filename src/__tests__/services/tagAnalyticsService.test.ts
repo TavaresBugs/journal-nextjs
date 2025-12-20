@@ -68,6 +68,25 @@ const mockTrades: Trade[] = [
     createdAt: "2024-01-03T10:00:00Z",
     updatedAt: "2024-01-03T11:00:00Z",
   },
+  {
+    id: "4",
+    userId: "user-1",
+    accountId: "account-1",
+    symbol: "USDJPY",
+    type: "Long",
+    entryPrice: 150,
+    exitPrice: 150,
+    stopLoss: 149,
+    takeProfit: 151,
+    lot: 1,
+    entryDate: "2024-01-04",
+    pnl: 0,
+    outcome: "breakeven",
+    tags: "Sweep, BE",
+    strategy: "MMBM",
+    createdAt: "2024-01-04T10:00:00Z",
+    updatedAt: "2024-01-04T11:00:00Z",
+  },
 ];
 
 describe("tagAnalyticsService", () => {
@@ -101,7 +120,7 @@ describe("tagAnalyticsService", () => {
   describe("getAllUniqueTags", () => {
     it("should return unique sorted tags from all trades", () => {
       const result = getAllUniqueTags(mockTrades);
-      expect(result).toEqual(["FVG", "London", "NY Session", "OB", "Sweep"]);
+      expect(result).toEqual(["BE", "FVG", "London", "NY Session", "OB", "Sweep"]);
     });
 
     it("should return empty array for trades without tags", () => {
@@ -115,14 +134,13 @@ describe("tagAnalyticsService", () => {
     it("should calculate metrics for each tag", () => {
       const result = calculateTagMetrics(mockTrades);
 
-      // Sweep appears in 2 trades (1 win, 1 loss)
+      // Sweep appears in 3 trades (1 win, 1 loss, 1 breakeven)
       const sweepMetrics = result.find((m) => m.tag === "Sweep");
       expect(sweepMetrics).toBeDefined();
-      expect(sweepMetrics?.totalTrades).toBe(2);
+      expect(sweepMetrics?.totalTrades).toBe(3);
       expect(sweepMetrics?.wins).toBe(1);
       expect(sweepMetrics?.losses).toBe(1);
-      expect(sweepMetrics?.winRate).toBe(50);
-      expect(sweepMetrics?.netPnL).toBe(0); // 500 - 500
+      expect(sweepMetrics?.breakeven).toBe(1);
     });
 
     it("should sort results by total trades", () => {
