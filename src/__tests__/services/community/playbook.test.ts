@@ -159,8 +159,136 @@ describe("Playbook Service", () => {
       expect(result).toEqual([]);
     });
 
-    // We can add a more complex test for successful fetch with Author Stats later
-    // For coverage, validating the error path and basic flow is crucial first.
+    it("should return playbooks with calculated author stats", async () => {
+      // 1. Mock Auth
+      (supabase.auth.getUser as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+        data: { user: mockUser },
+      });
+
+      const mockSharedPlaybooks = [
+        {
+          id: "share-1",
+          playbook_id: "pb-1",
+          user_id: "user-A", // Outro user
+          is_public: true,
+          playbook: { name: "Strategy A", rule_groups: [] },
+          stars: 5,
+          downloads: 10,
+        },
+      ];
+
+      const mockTrades = [
+        {
+          user_id: "user-A",
+          strategy: "Strategy A",
+          outcome: "win",
+          pnl: 100,
+          entry_date: "2025-01-01",
+          entry_time: "10:00:00",
+          exit_date: "2025-01-01",
+          exit_time: "11:00:00",
+          entry_price: 1.05,
+          exit_price: 1.055,
+          stop_loss: 1.045,
+          symbol: "EURUSD",
+        },
+        {
+          user_id: "user-A",
+          strategy: "Strategy A",
+          outcome: "loss",
+          pnl: -50,
+          entry_date: "2025-01-02",
+          entry_time: "09:00:00",
+          exit_date: "2025-01-02",
+          exit_time: "09:30:00",
+          entry_price: 1.05,
+          exit_price: 1.048,
+          stop_loss: 1.048, // Was hit
+          symbol: "EURUSD",
+        },
+      ];
+
+      // Mock Implementation for dynamic table returns
+      const fromMock = vi.fn((table: string) => {
+        const basicChain = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          in: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          range: vi.fn().mockReturnThis(),
+          single: vi.fn().mockReturnThis(),
+        };
+
+        if (table === "shared_playbooks") {
+          return {
+            ...basicChain,
+            range: vi.fn().mockResolvedValue({ data: mockSharedPlaybooks, error: null }),
+          };
+        }
+        if (table === "playbook_stars") {
+          return {
+            ...basicChain,
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [{ shared_playbook_id: "share-1" }] }),
+            }),
+          };
+        }
+        if (table === "users_extended") {
+          return {
+            ...basicChain,
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockResolvedValue({ data: [{ id: "user-A", name: "Trader Pro" }] }),
+            }),
+          };
+        }
+        if (table === "trades") {
+          return {
+            ...basicChain,
+            select: vi.fn().mockReturnValue({
+              in: vi.fn().mockReturnThis(),
+              // Mock the second .in() call which executes the query?
+              // Actually in Supabase chaining, .in returns the builder. The await executes it.
+              // We need to ensure the final chain returns data.
+              // Since 'in' allows chaining, we need the last one to have a 'then' or behave like promise.
+              // But here we are mocking the return of .select().in().in() chain.
+              // Assuming simple mock implementation:
+              // Chain: select -> in -> in -> await
+            }),
+          };
+        }
+        return basicChain;
+      });
+
+      // Refine trades mock because chaining is deeply nested: .select().in().in()
+      // We can just spy on the chain.
+      const tradesSelectMock = vi.fn().mockReturnValue({
+        in: vi.fn().mockReturnValue({
+          in: vi.fn().mockResolvedValue({ data: mockTrades, error: null }),
+        }),
+      });
+
+      (supabase.from as unknown as ReturnType<typeof vi.fn>).mockImplementation((table: string) => {
+        if (table === "trades") return { select: tradesSelectMock };
+        return fromMock(table);
+      });
+
+      const result = await getPublicPlaybooks();
+
+      expect(result).toHaveLength(1);
+      expect(result[0].userName).toBe("Trader Pro");
+      expect(result[0].hasUserStarred).toBe(true);
+
+      // Stats check
+      const stats = result[0].authorStats;
+      expect(stats).toBeDefined();
+      if (stats) {
+        expect(stats.totalTrades).toBe(2);
+        // expect(stats.wins).toBe(1); // 'wins' is not exposed in final object
+        expect(stats.netPnl).toBe(50); // 100 - 50
+        expect(stats.winRate).toBe(50);
+        expect(stats.preferredSymbol).toBe("EURUSD");
+      }
+    });
   });
 
   describe("getMySharedPlaybooks", () => {
