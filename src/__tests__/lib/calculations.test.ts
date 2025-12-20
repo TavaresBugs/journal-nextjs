@@ -4,6 +4,12 @@ import {
   determineTradeOutcome,
   formatCurrency,
   groupTradesByDay,
+  filterTrades,
+  formatDuration,
+  formatPercentage,
+  formatTimeMinutes,
+  calculateTradeMetrics,
+  calculateConsecutiveStreaks,
 } from "@/lib/calculations";
 import type { Trade } from "@/types";
 
@@ -249,5 +255,254 @@ describe("groupTradesByDay", () => {
 
     expect(grouped["2024-01-15"][0].symbol).toBe("EURUSD");
     expect(grouped["2024-01-15"][1].symbol).toBe("GBPUSD");
+  });
+});
+
+// ============================================
+// filterTrades Tests
+// ============================================
+
+describe("filterTrades", () => {
+  const trades: Trade[] = [
+    {
+      id: "1",
+      userId: "user1",
+      accountId: "acc1",
+      symbol: "EURUSD",
+      type: "Long",
+      entryPrice: 1.1,
+      lot: 1,
+      entryDate: "2024-01-15",
+      pnl: 100,
+      outcome: "win",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      userId: "user1",
+      accountId: "acc2",
+      symbol: "GBPUSD",
+      type: "Short",
+      entryPrice: 1.25,
+      lot: 1,
+      entryDate: "2024-01-20",
+      pnl: -50,
+      outcome: "loss",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  it("should filter by accountId", () => {
+    const result = filterTrades(trades, { accountId: "acc1" });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("1");
+  });
+
+  it("should filter by symbol", () => {
+    const result = filterTrades(trades, { symbol: "GBPUSD" });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("2");
+  });
+
+  it("should filter by type", () => {
+    const result = filterTrades(trades, { type: "Long" });
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe("Long");
+  });
+
+  it("should filter by outcome", () => {
+    const result = filterTrades(trades, { outcome: "loss" });
+    expect(result).toHaveLength(1);
+    expect(result[0].outcome).toBe("loss");
+  });
+
+  it("should filter by dateFrom", () => {
+    const result = filterTrades(trades, { dateFrom: "2024-01-18" });
+    expect(result).toHaveLength(1);
+    expect(result[0].entryDate).toBe("2024-01-20");
+  });
+
+  it("should filter by dateTo", () => {
+    const result = filterTrades(trades, { dateTo: "2024-01-16" });
+    expect(result).toHaveLength(1);
+    expect(result[0].entryDate).toBe("2024-01-15");
+  });
+
+  it("should return all if no filters", () => {
+    const result = filterTrades(trades, {});
+    expect(result).toHaveLength(2);
+  });
+});
+
+// ============================================
+// formatDuration Tests
+// ============================================
+
+describe("formatDuration", () => {
+  it("should format minutes only", () => {
+    expect(formatDuration(45)).toBe("45m");
+  });
+
+  it("should format hours and minutes", () => {
+    expect(formatDuration(90)).toBe("1h 30m");
+  });
+
+  it("should format days and hours", () => {
+    expect(formatDuration(1500)).toBe("1d 1h");
+  });
+});
+
+// ============================================
+// formatPercentage Tests
+// ============================================
+
+describe("formatPercentage", () => {
+  it("should format with default 2 decimals", () => {
+    expect(formatPercentage(75.5678)).toBe("75.57%");
+  });
+
+  it("should format with custom decimals", () => {
+    expect(formatPercentage(75.5678, 1)).toBe("75.6%");
+  });
+});
+
+// ============================================
+// formatTimeMinutes Tests
+// ============================================
+
+describe("formatTimeMinutes", () => {
+  it("should format minutes only", () => {
+    expect(formatTimeMinutes(45)).toBe("45m");
+  });
+
+  it("should format exact hours", () => {
+    expect(formatTimeMinutes(120)).toBe("2h");
+  });
+
+  it("should format hours and minutes", () => {
+    expect(formatTimeMinutes(90)).toBe("1h 30m");
+  });
+});
+
+// ============================================
+// calculateTradeMetrics Tests
+// ============================================
+
+describe("calculateTradeMetrics", () => {
+  const trades: Trade[] = [
+    {
+      id: "1",
+      userId: "user1",
+      accountId: "acc1",
+      symbol: "EURUSD",
+      type: "Long",
+      entryPrice: 1.1,
+      lot: 1,
+      entryDate: "2024-01-15",
+      pnl: 100,
+      outcome: "win",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "2",
+      userId: "user1",
+      accountId: "acc1",
+      symbol: "GBPUSD",
+      type: "Short",
+      entryPrice: 1.25,
+      lot: 1,
+      entryDate: "2024-01-16",
+      pnl: -50,
+      outcome: "loss",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "3",
+      userId: "user1",
+      accountId: "acc1",
+      symbol: "USDJPY",
+      type: "Long",
+      entryPrice: 150,
+      lot: 1,
+      entryDate: "2024-01-17",
+      pnl: 0,
+      outcome: "breakeven",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  it("should calculate basic metrics", () => {
+    const metrics = calculateTradeMetrics(trades);
+
+    expect(metrics.totalTrades).toBe(3);
+    expect(metrics.wins).toBe(1);
+    expect(metrics.losses).toBe(1);
+    expect(metrics.breakeven).toBe(1);
+    expect(metrics.totalPnL).toBe(50);
+  });
+
+  it("should calculate win rate", () => {
+    const metrics = calculateTradeMetrics(trades);
+    expect(metrics.winRate).toBe(50);
+  });
+
+  it("should handle empty trades", () => {
+    const metrics = calculateTradeMetrics([]);
+    expect(metrics.totalTrades).toBe(0);
+    expect(metrics.winRate).toBe(0);
+  });
+});
+
+// ============================================
+// calculateConsecutiveStreaks Tests
+// ============================================
+
+describe("calculateConsecutiveStreaks", () => {
+  const baseTrade = {
+    userId: "user1",
+    accountId: "acc1",
+    symbol: "EURUSD",
+    type: "Long" as const,
+    entryPrice: 1.1,
+    lot: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  it("should calculate win streaks", () => {
+    const trades: Trade[] = [
+      { ...baseTrade, id: "1", entryDate: "2024-01-01", pnl: 100, outcome: "win" },
+      { ...baseTrade, id: "2", entryDate: "2024-01-02", pnl: 100, outcome: "win" },
+      { ...baseTrade, id: "3", entryDate: "2024-01-03", pnl: 100, outcome: "win" },
+      { ...baseTrade, id: "4", entryDate: "2024-01-04", pnl: -50, outcome: "loss" },
+    ];
+
+    const result = calculateConsecutiveStreaks(trades);
+    expect(result.maxWinStreak).toBe(3);
+    expect(result.currentStreak.type).toBe("loss");
+    expect(result.currentStreak.count).toBe(1);
+  });
+
+  it("should calculate loss streaks", () => {
+    const trades: Trade[] = [
+      { ...baseTrade, id: "1", entryDate: "2024-01-01", pnl: -50, outcome: "loss" },
+      { ...baseTrade, id: "2", entryDate: "2024-01-02", pnl: -50, outcome: "loss" },
+    ];
+
+    const result = calculateConsecutiveStreaks(trades);
+    expect(result.maxLossStreak).toBe(2);
+    expect(result.currentStreak.type).toBe("loss");
+  });
+
+  it("should handle empty trades", () => {
+    const result = calculateConsecutiveStreaks([]);
+    expect(result.maxWinStreak).toBe(0);
+    expect(result.maxLossStreak).toBe(0);
+    expect(result.currentStreak.type).toBe("none");
   });
 });
