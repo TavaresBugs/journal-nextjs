@@ -255,7 +255,22 @@ npm run lint
 
 # Type check
 npm run type-check
+
+# Performance (Lighthouse)
+npx lhci autorun
 ```
+
+### Performance (Lighthouse CI)
+
+O projeto utiliza Lighthouse CI para garantir métricas de Core Web Vitals.
+A configuração está em `lighthouserc.json` e roda automaticamente no GitHub Actions.
+
+**Budgets definidos:**
+
+- Performance: ≥ 75
+- Accessibility: ≥ 90
+- SEO: ≥ 90
+- Best Practices: ≥ 85
 
 ---
 
