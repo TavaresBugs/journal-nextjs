@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "sync-calendar": "tsx scripts/sync-calendar.ts",
+    "sync-monthly": "tsx scripts/sync-monthly.ts",
     "prepare": "husky"
   },
   "dependencies": {

@@ -18,7 +18,6 @@ import { syncForexCalendar, DBEvent } from "../src/services/core/forexCalendar.s
 import {
   scrapeForexFactory,
   compareScrapedEvents,
-  ScrapedEvent,
 } from "../src/services/core/forexScraper.service";
 import {
   upsertEconomicEvents,
@@ -89,7 +88,7 @@ async function main() {
         const scrape2 = await scrapeForexFactory();
         console.log(`   ✅ Recebidos ${scrape2.length} eventos`);
 
-        const { match, stats, diff } = compareScrapedEvents(scrape1, scrape2);
+        const { match, diff } = compareScrapedEvents(scrape1, scrape2);
 
         if (match && scrape1.length > 0) {
           console.log("   ✅ Scrapes coincidem! (Dados consistentes)");
