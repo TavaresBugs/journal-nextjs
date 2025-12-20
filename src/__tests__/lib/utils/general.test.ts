@@ -154,5 +154,10 @@ describe("general utils", () => {
       const res = ensureFreshImageUrl("path");
       expect(res).toContain("path?v=");
     });
+
+    it("should return empty string as-is", () => {
+      const res = ensureFreshImageUrl("");
+      expect(res).toBe("");
+    });
   });
 });
