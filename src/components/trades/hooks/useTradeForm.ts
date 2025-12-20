@@ -142,6 +142,9 @@ export interface TradeFormState {
   entryTime: string;
   exitDate: string;
   exitTime: string;
+
+  // Trade Mode (open/closed) - controlled by toggle, not by exitPrice content
+  tradeMode: "open" | "closed";
 }
 
 export interface TradeFormSetters {
@@ -168,6 +171,7 @@ export interface TradeFormSetters {
   setEntryTime: (v: string) => void;
   setExitDate: (v: string) => void;
   setExitTime: (v: string) => void;
+  setTradeMode: (v: "open" | "closed") => void;
 }
 
 export interface TradeFormComputedValues {
@@ -240,6 +244,12 @@ export function useTradeForm(initialData?: Partial<Trade>) {
   const [exitDate, setExitDate] = useState(initialData?.exitDate || "");
   const [exitTime, setExitTime] = useState(initialData?.exitTime || "");
 
+  // Trade Mode - controlled by toggle, not by exitPrice content
+  // Determines if trade is open/closed independently of field editing
+  const [tradeMode, setTradeMode] = useState<"open" | "closed">(
+    initialData?.exitPrice ? "closed" : "open"
+  );
+
   // Sync form when initialData changes (important for Edit Modal)
   useEffect(() => {
     if (initialData) {
@@ -274,11 +284,14 @@ export function useTradeForm(initialData?: Partial<Trade>) {
       setEntryTime(initialData.entryTime || "");
       setExitDate(initialData.exitDate || "");
       setExitTime(initialData.exitTime || "");
+      setTradeMode(initialData.exitPrice ? "closed" : "open");
     }
   }, [initialData]);
 
   // Computed values
-  const isTradeOpen = !exitPrice || exitPrice === "";
+  // isTradeOpen now uses tradeMode for toggle state, not exitPrice content
+  // This prevents the toggle from switching when user is just editing the field
+  const isTradeOpen = tradeMode === "open";
 
   const detectedSession = useMemo(() => {
     if (entryDate && entryTime) {
@@ -334,6 +347,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     setEntryTime("");
     setExitDate("");
     setExitTime("");
+    setTradeMode("open");
     setTfAnalise("");
     setTfEntrada("");
     setTagsList([]);
@@ -371,6 +385,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
       entryTime,
       exitDate,
       exitTime,
+      tradeMode,
     } as TradeFormState,
 
     // Setters object
@@ -398,6 +413,7 @@ export function useTradeForm(initialData?: Partial<Trade>) {
       setEntryTime,
       setExitDate,
       setExitTime,
+      setTradeMode,
     } as TradeFormSetters,
 
     // Computed values

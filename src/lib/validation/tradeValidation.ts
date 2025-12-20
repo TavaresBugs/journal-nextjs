@@ -256,6 +256,16 @@ export function validatePrices(
     }
   }
 
+  // Warning: Direction is required to calculate win/loss when trade is closed
+  if (!type && exit !== null && exit > 0) {
+    warnings.push({
+      field: "type",
+      message: ERROR_MESSAGES.DIRECTION_REQUIRED_FOR_OUTCOME,
+      code: "WARNING",
+      isWarning: true,
+    });
+  }
+
   // Position validation (warnings only) - only if we have valid numbers
   if (type && entry !== null && entry > 0) {
     if (type === "Long") {

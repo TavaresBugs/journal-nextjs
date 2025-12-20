@@ -103,6 +103,8 @@ export const ERROR_MESSAGES = {
   SL_BELOW_ENTRY_SHORT: "Stop Loss está abaixo do preço de entrada (Short)",
   TP_BELOW_ENTRY_LONG: "Take Profit está abaixo do preço de entrada (Long)",
   TP_ABOVE_ENTRY_SHORT: "Take Profit está acima do preço de entrada (Short)",
+  DIRECTION_REQUIRED_FOR_OUTCOME:
+    "Defina a direção (Long/Short) para calcular se o trade foi Win ou Loss",
 } as const;
 
 /**

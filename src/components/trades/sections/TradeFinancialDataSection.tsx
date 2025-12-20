@@ -219,8 +219,8 @@ export const TradeFinancialDataSection = React.memo(function TradeFinancialDataS
       {/* Estimates - Risk/Return Cards */}
       <RiskRewardCards risk={estimates.risk} reward={estimates.reward} />
 
-      {/* Result Badge */}
-      {!isTradeOpen && exitPrice && entryPrice && (
+      {/* Result Badge - Only show when trade is closed and we have all required data */}
+      {!isTradeOpen && entryPrice && exitPrice && type && (
         <TradeResultBadge
           entryPrice={entryPrice}
           exitPrice={exitPrice}

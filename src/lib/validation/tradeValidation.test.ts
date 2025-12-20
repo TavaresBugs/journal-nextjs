@@ -68,6 +68,13 @@ describe("validateDates", () => {
     const errors = validateDates("invalid-date", "", "", "");
     expect(errors.some((e) => e.code === "INVALID_DATE")).toBe(true);
   });
+
+  it("should allow exit next day even with earlier time (overnight trade)", () => {
+    // Entry: 17/01/2024 15:00, Exit: 18/01/2024 03:15
+    // This is a valid overnight trade - exit IS after entry
+    const errors = validateDates("2024-01-17", "15:00", "2024-01-18", "03:15");
+    expect(errors.filter((e) => e.code === "DATE_SEQUENCE")).toHaveLength(0);
+  });
 });
 
 // ============================================
@@ -128,6 +135,16 @@ describe("validatePrices", () => {
   it("should not warn when SL/TP are correctly positioned for Short", () => {
     const { warnings } = validatePrices("100", "", "110", "90", "Short");
     expect(warnings).toHaveLength(0);
+  });
+
+  it("should warn when direction is not defined but trade has exit price", () => {
+    const { warnings } = validatePrices("100", "105", "", "", "");
+    expect(warnings.some((e) => e.field === "type" && e.isWarning)).toBe(true);
+  });
+
+  it("should not warn about direction when trade is open (no exit price)", () => {
+    const { warnings } = validatePrices("100", "", "", "", "");
+    expect(warnings.filter((e) => e.field === "type")).toHaveLength(0);
   });
 });
 

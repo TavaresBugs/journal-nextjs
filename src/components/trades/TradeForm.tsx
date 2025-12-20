@@ -115,11 +115,16 @@ export function TradeForm({
                 activeShadowColor: "shadow-[0_0_15px_rgba(34,197,94,0.15)]",
               },
             ]}
-            value={isTradeOpen ? "open" : "closed"}
+            value={state.tradeMode}
             onChange={(val) => {
-              if (val === "open") {
+              const newMode = val as "open" | "closed";
+              setters.setTradeMode(newMode);
+
+              if (newMode === "open") {
+                // Clear exit price when switching to open
                 setters.setExitPrice("");
-              } else {
+              } else if (!state.exitPrice) {
+                // Pre-fill exit price only if it's empty
                 setters.setExitPrice(state.entryPrice || "0");
               }
             }}
