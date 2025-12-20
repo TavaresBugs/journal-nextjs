@@ -66,16 +66,16 @@ describe("Routine Service", () => {
     });
 
     it("should map from App to DB correctly", () => {
-        // Mock Date to ensure updatedAt consistency if needed, 
-        // but the function creates a new Date(). 
-        // We can just check properties.
-        const result = mapDailyRoutineToDB(mockRoutineApp);
-        
-        expect(result.id).toBe(mockRoutineApp.id);
-        expect(result.user_id).toBe(mockRoutineApp.userId);
-        expect(result.pre_market).toBe(mockRoutineApp.preMarket);
-        // Date will be different for updatedAt
-        expect(result.updated_at).toBeDefined();
+      // Mock Date to ensure updatedAt consistency if needed,
+      // but the function creates a new Date().
+      // We can just check properties.
+      const result = mapDailyRoutineToDB(mockRoutineApp);
+
+      expect(result.id).toBe(mockRoutineApp.id);
+      expect(result.user_id).toBe(mockRoutineApp.userId);
+      expect(result.pre_market).toBe(mockRoutineApp.preMarket);
+      // Date will be different for updatedAt
+      expect(result.updated_at).toBeDefined();
     });
   });
 
@@ -103,27 +103,27 @@ describe("Routine Service", () => {
     });
 
     it("should return empty array if user not authenticated", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(null);
-        const result = await getDailyRoutines("account-1");
-        expect(result).toEqual([]);
-        expect(supabase.from).not.toHaveBeenCalled();
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await getDailyRoutines("account-1");
+      expect(result).toEqual([]);
+      expect(supabase.from).not.toHaveBeenCalled();
     });
 
     it("should return empty array on DB error", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
-  
-        const selectMock = vi.fn().mockReturnThis();
-        const eqMock = vi.fn().mockReturnThis();
-        const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
-  
-        (supabase.from as Mock).mockReturnValue({
-          select: selectMock,
-          eq: eqMock,
-          order: orderMock,
-        });
-  
-        const result = await getDailyRoutines("account-1");
-        expect(result).toEqual([]);
+      (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
+
+      const selectMock = vi.fn().mockReturnThis();
+      const eqMock = vi.fn().mockReturnThis();
+      const orderMock = vi.fn().mockResolvedValue({ data: null, error: { message: "Error" } });
+
+      (supabase.from as Mock).mockReturnValue({
+        select: selectMock,
+        eq: eqMock,
+        order: orderMock,
+      });
+
+      const result = await getDailyRoutines("account-1");
+      expect(result).toEqual([]);
     });
   });
 
@@ -142,28 +142,28 @@ describe("Routine Service", () => {
       expect(getCurrentUserId).toHaveBeenCalled();
       expect(upsertMock).toHaveBeenCalledWith(
         expect.objectContaining({
-            user_id: mockUserId,
-            account_id: "account-1",
-            date: "2025-12-19"
-        }), 
+          user_id: mockUserId,
+          account_id: "account-1",
+          date: "2025-12-19",
+        }),
         { onConflict: "account_id, date" }
       );
       expect(result).toBe(true);
     });
 
     it("should return false if user not authenticated", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(null);
-        const result = await saveDailyRoutine(mockRoutineApp);
-        expect(result).toBe(false);
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await saveDailyRoutine(mockRoutineApp);
+      expect(result).toBe(false);
     });
 
     it("should return false on DB error", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
-        const upsertMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
-        (supabase.from as Mock).mockReturnValue({ upsert: upsertMock });
-  
-        const result = await saveDailyRoutine(mockRoutineApp);
-        expect(result).toBe(false);
+      (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
+      const upsertMock = vi.fn().mockResolvedValue({ error: { message: "Error" } });
+      (supabase.from as Mock).mockReturnValue({ upsert: upsertMock });
+
+      const result = await saveDailyRoutine(mockRoutineApp);
+      expect(result).toBe(false);
     });
   });
 
@@ -189,24 +189,24 @@ describe("Routine Service", () => {
     });
 
     it("should return false if user not authenticated", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(null);
-        const result = await deleteDailyRoutine("routine-1");
-        expect(result).toBe(false);
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await deleteDailyRoutine("routine-1");
+      expect(result).toBe(false);
     });
 
     it("should return false on DB error", async () => {
-        (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
-        
-        const queryBuilder = {
-            delete: vi.fn().mockReturnThis(),
-            eq: vi.fn().mockReturnThis(),
-            then: vi.fn((resolve) => resolve({ error: { message: "Error" } })),
-        };
+      (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
 
-        (supabase.from as Mock).mockReturnValue(queryBuilder);
-  
-        const result = await deleteDailyRoutine("routine-1");
-        expect(result).toBe(false);
+      const queryBuilder = {
+        delete: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        then: vi.fn((resolve) => resolve({ error: { message: "Error" } })),
+      };
+
+      (supabase.from as Mock).mockReturnValue(queryBuilder);
+
+      const result = await deleteDailyRoutine("routine-1");
+      expect(result).toBe(false);
     });
   });
 });

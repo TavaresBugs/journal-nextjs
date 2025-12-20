@@ -1,7 +1,15 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Modal, SegmentedToggle } from "@/components/ui";
+import {
+  Modal,
+  SegmentedToggle,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import { Button } from "@/components/ui/Button";
 import { CustomCheckbox } from "./CustomCheckbox";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
@@ -137,21 +145,35 @@ export function ChecklistModal({ isOpen, onClose, onTradeStart }: ChecklistModal
               <label className="mb-2 block text-sm font-medium text-gray-300">
                 Selecione o Playbook
               </label>
-              <select
-                value={selectedPlaybookId}
-                onChange={(e) => handlePlaybookChange(e.target.value)}
-                className="w-full rounded-xl border border-gray-700 bg-gray-800 px-4 py-3 text-gray-100 transition-colors focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                disabled={isLoading}
-              >
-                <option value="">
-                  {isLoading ? "Carregando..." : "-- Escolha uma estratégia --"}
-                </option>
-                {playbooks.map((playbook: Playbook) => (
-                  <option key={playbook.id} value={playbook.id}>
-                    {playbook.icon} {playbook.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={selectedPlaybookId} onValueChange={handlePlaybookChange}>
+                <SelectTrigger
+                  className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800 px-4 text-gray-100 transition-colors hover:bg-gray-700/50 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  disabled={isLoading}
+                >
+                  {selectedPlaybookId ? (
+                    <span className="flex items-center gap-2">
+                      {playbooks.find((p) => p.id === selectedPlaybookId)?.icon}{" "}
+                      {playbooks.find((p) => p.id === selectedPlaybookId)?.name}
+                    </span>
+                  ) : (
+                    <SelectValue
+                      placeholder={isLoading ? "Carregando..." : "-- Escolha uma estratégia --"}
+                    />
+                  )}
+                </SelectTrigger>
+                <SelectContent className="border-gray-700 bg-gray-800">
+                  {playbooks.map((playbook: Playbook) => (
+                    <SelectItem
+                      key={playbook.id}
+                      value={playbook.id}
+                      className="flex cursor-pointer items-center gap-2 py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700 focus:text-white"
+                    >
+                      <span className="text-lg">{playbook.icon}</span>
+                      <span>{playbook.name}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Checklist Content */}

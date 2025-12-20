@@ -17,6 +17,12 @@ interface SegmentedToggleProps {
   className?: string;
   variant?: "default" | "responsive";
   size?: ToggleSize;
+  /** ID for accessibility skip links */
+  id?: string;
+  /** ARIA role for the navigation element */
+  role?: "navigation" | "tablist";
+  /** Accessible label for screen readers */
+  "aria-label"?: string;
 }
 
 const SIZE_CONFIG: Record<ToggleSize, string> = {
@@ -32,6 +38,9 @@ export function SegmentedToggle({
   className = "",
   variant = "default",
   size = "lg",
+  id,
+  role,
+  "aria-label": ariaLabel,
 }: SegmentedToggleProps) {
   const selectedIndex = options.findIndex((o) => o.value === value);
   const selectedOption = options[selectedIndex];
@@ -48,7 +57,11 @@ export function SegmentedToggle({
 
   return (
     <div
-      className={`relative rounded-xl border border-gray-700/50 bg-gray-900/80 p-1 backdrop-blur-md ${
+      id={id}
+      role={role}
+      aria-label={ariaLabel}
+      tabIndex={id ? -1 : undefined}
+      className={`relative rounded-xl border border-gray-700/50 bg-gray-900/80 p-1 backdrop-blur-md outline-none ${
         isResponsive ? "grid grid-cols-2 gap-1 sm:grid-cols-3 md:flex md:gap-0" : "flex"
       } ${className} `}
     >
@@ -68,8 +81,8 @@ export function SegmentedToggle({
           onClick={() => onChange(option.value)}
           className={`relative z-10 flex flex-1 items-center justify-center gap-2 rounded-lg font-medium transition-all outline-none select-none focus:outline-none ${SIZE_CONFIG[size]} ${isResponsive ? "w-full" : ""} ${
             value === option.value
-              ? `${option.activeTextColor ?? "text-cyan-400"} font-semibold ${isResponsive ? `${option.activeBgColor ?? "bg-linear-to-r from-cyan-500/20 to-cyan-400/10"} ${option.activeShadowColor ?? "shadow-[0_0_15px_rgba(6,182,212,0.15)]"} md:!bg-transparent md:!shadow-none` : ""}`
-              : `${isResponsive ? "bg-gray-800/30 hover:bg-gray-800/50 md:!bg-transparent" : ""} text-gray-400 hover:text-gray-200`
+              ? `${option.activeTextColor ?? "text-cyan-400"} font-semibold ${isResponsive ? `${option.activeBgColor ?? "bg-linear-to-r from-cyan-500/20 to-cyan-400/10"} ${option.activeShadowColor ?? "shadow-[0_0_15px_rgba(6,182,212,0.15)]"} md:bg-transparent! md:shadow-none!` : ""}`
+              : `${isResponsive ? "bg-gray-800/30 hover:bg-gray-800/50 md:bg-transparent!" : ""} text-gray-400 hover:text-gray-200`
           } `}
           type="button"
         >

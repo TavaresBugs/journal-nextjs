@@ -95,55 +95,77 @@ export function JournalEntryForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleFormSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return;
+  const handleFormSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (isSubmitting) return;
 
-    setIsSubmitting(true);
-    try {
-      await onSubmit({
-        date,
-        title,
-        asset: asset || "Diário",
-        emotion,
-        analysis,
-        technicalWins,
-        improvements,
-        errors,
-        images,
-        tradeIds: trades.map((t) => t.id),
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [isSubmitting, onSubmit, date, title, asset, emotion, analysis, technicalWins, improvements, errors, images, trades]);
-
-  const handleLinkTrade = useCallback((selectedTrade: Trade) => {
-    // Add trade if not already linked
-    if (!trades.find((t) => t.id === selectedTrade.id)) {
-      setTrades((prev) => [...prev, selectedTrade]);
-      // Set asset from first trade if not set
-      if (!asset && trades.length === 0) {
-        setAsset(selectedTrade.symbol);
+      setIsSubmitting(true);
+      try {
+        await onSubmit({
+          date,
+          title,
+          asset: asset || "Diário",
+          emotion,
+          analysis,
+          technicalWins,
+          improvements,
+          errors,
+          images,
+          tradeIds: trades.map((t) => t.id),
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-    }
-    setIsLinkTradeModalOpen(false);
-  }, [trades, asset]);
+    },
+    [
+      isSubmitting,
+      onSubmit,
+      date,
+      title,
+      asset,
+      emotion,
+      analysis,
+      technicalWins,
+      improvements,
+      errors,
+      images,
+      trades,
+    ]
+  );
+
+  const handleLinkTrade = useCallback(
+    (selectedTrade: Trade) => {
+      // Add trade if not already linked
+      if (!trades.find((t) => t.id === selectedTrade.id)) {
+        setTrades((prev) => [...prev, selectedTrade]);
+        // Set asset from first trade if not set
+        if (!asset && trades.length === 0) {
+          setAsset(selectedTrade.symbol);
+        }
+      }
+      setIsLinkTradeModalOpen(false);
+    },
+    [trades, asset]
+  );
 
   const handleRemoveTrade = useCallback((tradeId: string) => {
     setTrades((prev) => prev.filter((t) => t.id !== tradeId));
   }, []);
 
-  const modalTitle = useMemo(() => (
-    <div className="flex items-center gap-3">
-      {isEditing && (
-        <IconActionButton variant="back" onClick={onClose} title="Voltar para visualização" />
-      )}
-      <h2 className="text-xl font-bold text-gray-100">
-        {isEditing ? "📝 Editando Diário" : "📝 Nova Entrada no Diário"}
-      </h2>
-    </div>
-  ), [isEditing, onClose]);
+  const modalTitle = useMemo(
+    () => (
+      <div className="flex items-center gap-3">
+        {isEditing && (
+          <IconActionButton variant="back" onClick={onClose} title="Voltar para visualização" />
+        )}
+        <h2 className="text-xl font-bold text-gray-100">
+          {isEditing ? "📝 Editando Diário" : "📝 Nova Entrada no Diário"}
+        </h2>
+      </div>
+    ),
+    [isEditing, onClose]
+  );
 
   const openLinkTradeModal = useCallback(() => {
     setIsLinkTradeModalOpen(true);

@@ -5,7 +5,14 @@ import { RawTradeData, parseTradeDate } from "@/services/trades/import";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils/general";
 import { format } from "date-fns-tz";
-import { Button } from "@/components/ui";
+import {
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 
 interface ImportStepMappingProps {
   rawData: RawTradeData[];
@@ -107,17 +114,22 @@ export const ImportStepMapping: React.FC<ImportStepMappingProps> = ({
 
       <div>
         <label className="mb-2 block text-sm font-medium text-gray-400">Conta de Destino</label>
-        <select
-          value={selectedAccountId}
-          onChange={(e) => setSelectedAccountId(e.target.value)}
-          className="block w-full rounded-lg border-gray-700 bg-gray-800 p-2.5 text-gray-200 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
-        >
-          {accounts.map((acc) => (
-            <option key={acc.id} value={acc.id}>
-              {acc.name} ({acc.currency})
-            </option>
-          ))}
-        </select>
+        <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+          <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
+            <SelectValue placeholder="Selecione..." />
+          </SelectTrigger>
+          <SelectContent className="border-gray-700 bg-gray-800">
+            {accounts.map((acc) => (
+              <SelectItem
+                key={acc.id}
+                value={acc.id}
+                className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+              >
+                {acc.name} ({acc.currency})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-800 bg-gray-900">
@@ -175,20 +187,49 @@ export const ImportStepMapping: React.FC<ImportStepMappingProps> = ({
               <label className="mb-1 block text-xs text-gray-500">
                 Qual o fuso do seu Broker/Arquivo? 🌍
               </label>
-              <select
-                value={brokerTimezone}
-                onChange={(e) => setBrokerTimezone(e.target.value)}
-                className="block w-full rounded-lg border-gray-700 bg-gray-800 p-2 text-white shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
-              >
-                <option value="Europe/Helsinki">
-                  Europe/Helsinki (FTMO, Eightcap, MT4 Default)
-                </option>
-                <option value="Etc/UTC">UTC (Universal Time)</option>
-                <option value="Europe/London">Europe/London (UK)</option>
-                <option value="America/New_York">America/New_York (US Eastern)</option>
-                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
-                <option value="America/Sao_Paulo">America/Sao_Paulo (Brasília)</option>
-              </select>
+              <Select value={brokerTimezone} onValueChange={setBrokerTimezone}>
+                <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-white focus:border-cyan-500 focus:ring-cyan-500">
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent className="border-gray-700 bg-gray-800">
+                  <SelectItem
+                    value="Europe/Helsinki"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    Europe/Helsinki (FTMO, Eightcap, MT4 Default)
+                  </SelectItem>
+                  <SelectItem
+                    value="Etc/UTC"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    UTC (Universal Time)
+                  </SelectItem>
+                  <SelectItem
+                    value="Europe/London"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    Europe/London (UK)
+                  </SelectItem>
+                  <SelectItem
+                    value="America/New_York"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    America/New_York (US Eastern)
+                  </SelectItem>
+                  <SelectItem
+                    value="Asia/Tokyo"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    Asia/Tokyo (JST)
+                  </SelectItem>
+                  <SelectItem
+                    value="America/Sao_Paulo"
+                    className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    America/Sao_Paulo (Brasília)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex-2 rounded border border-gray-700/50 bg-gray-800/50 p-2 text-xs text-gray-500">
               <p>O sistema converterá automaticamente considerando horários de verão (DST).</p>

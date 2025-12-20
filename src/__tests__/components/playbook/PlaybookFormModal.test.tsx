@@ -63,11 +63,19 @@ vi.mock("@/components/ui", () => ({
     </div>
   ),
   Button: ({ children, onClick, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled} data-testid={`btn-${String(children).toLowerCase().replace(/\s/g, "-")}`}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      data-testid={`btn-${String(children).toLowerCase().replace(/\s/g, "-")}`}
+    >
       {children}
     </button>
   ),
-  GlassCard: ({ children, className }: any) => <div className={className} data-testid="glass-card">{children}</div>,
+  GlassCard: ({ children, className }: any) => (
+    <div className={className} data-testid="glass-card">
+      {children}
+    </div>
+  ),
   IconActionButton: ({ variant, onClick }: any) => (
     <button onClick={onClick} data-testid={`icon-btn-${variant}`}>
       {variant}
@@ -161,9 +169,9 @@ describe("PlaybookFormModal", () => {
     render(<PlaybookFormModal {...defaultProps} />);
 
     // Should have emoji buttons in general tab
-    const emojiButtons = screen.getAllByRole("button").filter(
-      (btn) => btn.textContent?.match(/^[\u{1F300}-\u{1F9FF}]$/u)
-    );
+    const emojiButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.textContent?.match(/^[\u{1F300}-\u{1F9FF}]$/u));
 
     expect(emojiButtons.length).toBeGreaterThan(0);
   });
@@ -172,9 +180,9 @@ describe("PlaybookFormModal", () => {
     render(<PlaybookFormModal {...defaultProps} />);
 
     // Should have color selection buttons
-    const colorButtons = screen.getAllByRole("button").filter(
-      (btn) => btn.className.includes("rounded-lg") && btn.style.backgroundColor
-    );
+    const colorButtons = screen
+      .getAllByRole("button")
+      .filter((btn) => btn.className.includes("rounded-lg") && btn.style.backgroundColor);
 
     expect(colorButtons.length).toBeGreaterThan(0);
   });
@@ -228,7 +236,7 @@ describe("PlaybookFormModal", () => {
 
     // Submit
     const submitButton = screen.getByTestId("btn-primary");
-    
+
     await act(async () => {
       fireEvent.click(submitButton);
     });
@@ -246,9 +254,7 @@ describe("PlaybookFormModal", () => {
       description: "Test description",
       icon: "🎯",
       color: "#10B981",
-      ruleGroups: [
-        { id: "market", name: "Condições de mercado", rules: ["Rule 1", "Rule 2"] },
-      ],
+      ruleGroups: [{ id: "market", name: "Condições de mercado", rules: ["Rule 1", "Rule 2"] }],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

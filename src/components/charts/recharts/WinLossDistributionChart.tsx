@@ -60,10 +60,7 @@ export function WinLossDistributionChart({ trades }: WinLossDistributionChartPro
             }}
             labelStyle={{ color: "#f3f4f6" }}
             itemStyle={{ color: "#f3f4f6" }}
-            formatter={(value, name) => [
-              Number(value) || 0,
-              name === "wins" ? "Wins" : "Losses",
-            ]}
+            formatter={(value, name) => [Number(value) || 0, name === "wins" ? "Wins" : "Losses"]}
           />
           <Bar dataKey="wins" name="Wins" stackId="a" fill="#00c853" radius={[4, 4, 0, 0]} />
           <Bar dataKey="losses" name="Losses" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />

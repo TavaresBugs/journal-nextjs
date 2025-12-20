@@ -119,7 +119,7 @@ describe("JournalEntryForm", () => {
     expect(screen.queryByTestId("link-trade-modal")).not.toBeInTheDocument();
 
     act(() => {
-        fireEvent.click(screen.getByTestId("open-link-modal-btn"));
+      fireEvent.click(screen.getByTestId("open-link-modal-btn"));
     });
 
     expect(screen.getByTestId("link-trade-modal")).toBeInTheDocument();

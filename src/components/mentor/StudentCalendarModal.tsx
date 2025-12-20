@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Modal } from "@/components/ui/Modal";
+import {
+  Modal,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import { TradeCalendar } from "@/components/trades/TradeCalendar";
 import { MenteeDayDetailModal } from "@/components/mentor/MenteeDayDetailModal";
 import { getMenteeTrades, getMenteePermittedAccounts } from "@/services/mentor/invites";
@@ -102,18 +109,28 @@ export function StudentCalendarModal({
             {accounts.length > 0 && (
               <div className="mt-2 flex items-center gap-2 md:mt-0">
                 <span className="text-sm font-normal text-gray-400">Carteira:</span>
-                <select
-                  value={selectedAccountId}
-                  onChange={(e) => setSelectedAccountId(e.target.value)}
-                  className="block rounded-lg border border-gray-700 bg-gray-800 p-2 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500"
-                >
-                  <option value="">Todas (se permitido)</option>
-                  {accounts.map((acc) => (
-                    <option key={acc.id} value={acc.id}>
-                      {acc.name} ({acc.currency})
-                    </option>
-                  ))}
-                </select>
+                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                  <SelectTrigger className="flex h-9 min-w-[200px] items-center justify-between rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
+                    <SelectValue placeholder="Todas (se permitido)" />
+                  </SelectTrigger>
+                  <SelectContent className="border-gray-700 bg-gray-800">
+                    <SelectItem
+                      value=""
+                      className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      Todas (se permitido)
+                    </SelectItem>
+                    {accounts.map((acc) => (
+                      <SelectItem
+                        key={acc.id}
+                        value={acc.id}
+                        className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                      >
+                        {acc.name} ({acc.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>

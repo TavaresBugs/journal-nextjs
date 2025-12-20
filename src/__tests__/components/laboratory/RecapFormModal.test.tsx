@@ -77,9 +77,9 @@ describe("RecapFormModal", () => {
       symbol: "EURUSD",
       type: "Long" as const,
       entryDate: new Date().toISOString().split("T")[0],
-      entryPrice: 1.1000,
-      stopLoss: 1.0950,
-      takeProfit: 1.1100,
+      entryPrice: 1.1,
+      stopLoss: 1.095,
+      takeProfit: 1.11,
       lot: 1.0,
       pnl: 100,
       outcome: "win" as const,
@@ -90,9 +90,9 @@ describe("RecapFormModal", () => {
       symbol: "GBPUSD",
       type: "Short" as const,
       entryDate: new Date().toISOString().split("T")[0],
-      entryPrice: 1.2700,
-      stopLoss: 1.2750,
-      takeProfit: 1.2600,
+      entryPrice: 1.27,
+      stopLoss: 1.275,
+      takeProfit: 1.26,
       lot: 0.5,
       pnl: -50,
       outcome: "loss" as const,
@@ -243,7 +243,7 @@ describe("RecapFormModal", () => {
 
     // Submit
     const form = screen.getByTestId("modal").querySelector("form");
-    
+
     await act(async () => {
       fireEvent.submit(form!);
     });
@@ -261,7 +261,7 @@ describe("RecapFormModal", () => {
     fireEvent.change(titleInput, { target: { value: "Test" } });
 
     const form = screen.getByTestId("modal").querySelector("form");
-    
+
     await act(async () => {
       fireEvent.submit(form!);
     });
@@ -288,13 +288,7 @@ describe("RecapFormModal", () => {
       updatedAt: new Date().toISOString(),
     };
 
-    render(
-      <RecapFormModal
-        {...defaultProps}
-        mode="edit"
-        initialData={initialData}
-      />
-    );
+    render(<RecapFormModal {...defaultProps} mode="edit" initialData={initialData} />);
 
     const titleInput = screen.getByPlaceholderText(/Ex: Análise do trade/i);
     expect(titleInput).toHaveValue("Existing Recap");

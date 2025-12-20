@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { GlassCard, Button } from "@/components/ui";
+import {
+  GlassCard,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import {
   getMentalEntries,
   saveMentalEntry,
@@ -269,26 +277,40 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                 )}
               </td>
               <td className="px-1 py-1">
-                <select
+                <Select
                   value={newEntry.zoneDetected}
-                  onChange={(e) =>
-                    setNewEntry((prev) => ({ ...prev, zoneDetected: e.target.value }))
-                  }
-                  className="bg-zorin-bg focus:border-zorin-primary/50 w-full rounded border border-white/5 px-2 py-1 text-sm text-gray-200 focus:outline-none"
+                  onValueChange={(v) => setNewEntry((prev) => ({ ...prev, zoneDetected: v }))}
                 >
-                  <option value="" className="bg-gray-800">
-                    Zona
-                  </option>
-                  <option value="A-Game" className="bg-gray-800">
-                    A-Game
-                  </option>
-                  <option value="B-Game" className="bg-gray-800">
-                    B-Game
-                  </option>
-                  <option value="C-Game" className="bg-gray-800">
-                    C-Game
-                  </option>
-                </select>
+                  <SelectTrigger className="bg-zorin-bg focus:border-zorin-primary/50 flex h-8 w-full items-center justify-between rounded border border-white/5 px-2 text-sm text-gray-200 focus:outline-none">
+                    <SelectValue placeholder="Zona" />
+                  </SelectTrigger>
+                  <SelectContent className="border-gray-700 bg-gray-800">
+                    <SelectItem
+                      value=""
+                      className="cursor-pointer py-1.5 text-gray-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      Zona
+                    </SelectItem>
+                    <SelectItem
+                      value="A-Game"
+                      className="cursor-pointer py-1.5 text-green-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      🟢 A
+                    </SelectItem>
+                    <SelectItem
+                      value="B-Game"
+                      className="cursor-pointer py-1.5 text-orange-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      🟠 B
+                    </SelectItem>
+                    <SelectItem
+                      value="C-Game"
+                      className="cursor-pointer py-1.5 text-red-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      🔴 C
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </td>
               <td className="px-3 py-1 text-center">
                 <Button

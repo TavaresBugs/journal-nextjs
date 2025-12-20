@@ -312,12 +312,15 @@ export function RecapFormModal({
     }
   }, []);
 
-  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    processFiles(files);
-    // Reset input to allow selecting same file again if needed
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }, [processFiles]);
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
+      processFiles(files);
+      // Reset input to allow selecting same file again if needed
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    },
+    [processFiles]
+  );
 
   const handlePaste = useCallback(
     (e: React.ClipboardEvent<HTMLDivElement> | ClipboardEvent) => {
@@ -350,34 +353,37 @@ export function RecapFormModal({
     return () => document.removeEventListener("paste", globalPasteHandler);
   }, [isOpen, handlePaste]);
 
-  const removeImage = useCallback((index: number) => {
-    // We need to know if the image being removed is an existing remote image (edit mode)
-    // or a newly uploaded file.
-    // Logic:
-    // We have 'previews'. We have 'selectedFiles'.
-    // BUT 'previews' contains BOTH existing URLs AND new local blob URLs.
-    // We need to sync removals.
+  const removeImage = useCallback(
+    (index: number) => {
+      // We need to know if the image being removed is an existing remote image (edit mode)
+      // or a newly uploaded file.
+      // Logic:
+      // We have 'previews'. We have 'selectedFiles'.
+      // BUT 'previews' contains BOTH existing URLs AND new local blob URLs.
+      // We need to sync removals.
 
-    // This simple approach assumes updates send ALL 'newFiles'.
-    // For deleting existing files, the API likely expects the full list of remaining images or separate delete endpoint.
-    // Our 'UpdateRecapData' interface supports passing 'images' array (existing ones).
-    // So we need to separate 'remainingExistingImages' vs 'newlyAddedFiles'.
+      // This simple approach assumes updates send ALL 'newFiles'.
+      // For deleting existing files, the API likely expects the full list of remaining images or separate delete endpoint.
+      // Our 'UpdateRecapData' interface supports passing 'images' array (existing ones).
+      // So we need to separate 'remainingExistingImages' vs 'newlyAddedFiles'.
 
-    // Let's refine the logic:
+      // Let's refine the logic:
 
-    setPreviews((prev) => {
-      const isNewFile = index >= prev.length - selectedFiles.length;
+      setPreviews((prev) => {
+        const isNewFile = index >= prev.length - selectedFiles.length;
 
-      if (isNewFile) {
-        const existingCount = prev.length - selectedFiles.length;
-        const fileIndex = index - existingCount;
-        setSelectedFiles((files) => files.filter((_, i) => i !== fileIndex));
-      }
+        if (isNewFile) {
+          const existingCount = prev.length - selectedFiles.length;
+          const fileIndex = index - existingCount;
+          setSelectedFiles((files) => files.filter((_, i) => i !== fileIndex));
+        }
 
-      setCarouselIndex((prevIndex) => Math.max(0, Math.min(prevIndex, prev.length - 2)));
-      return prev.filter((_, i) => i !== index);
-    });
-  }, [selectedFiles.length]);
+        setCarouselIndex((prevIndex) => Math.max(0, Math.min(prevIndex, prev.length - 2)));
+        return prev.filter((_, i) => i !== index);
+      });
+    },
+    [selectedFiles.length]
+  );
 
   // Selection Handlers
   const selectRecord = useCallback((record: SearchRecord) => {

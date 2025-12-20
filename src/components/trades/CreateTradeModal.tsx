@@ -2,7 +2,16 @@
 
 import { useState } from "react";
 import dayjs from "dayjs";
-import { Modal, Input, Button } from "@/components/ui";
+import {
+  Modal,
+  Input,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import type { Trade } from "@/types";
 import { DEFAULT_ASSETS } from "@/types";
 import { calculateTradePnL, determineTradeOutcome } from "@/lib/calculations";
@@ -120,14 +129,25 @@ export function CreateTradeModal({
 
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Direção</label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value as "Long" | "Short")}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-            >
-              <option value="Long">Long (Compra)</option>
-              <option value="Short">Short (Venda)</option>
-            </select>
+            <Select value={type} onValueChange={(v) => setType(v as "Long" | "Short")}>
+              <SelectTrigger className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-4 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className="border-gray-700 bg-gray-800">
+                <SelectItem
+                  value="Long"
+                  className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                >
+                  📈 Long (Compra)
+                </SelectItem>
+                <SelectItem
+                  value="Short"
+                  className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                >
+                  📉 Short (Venda)
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

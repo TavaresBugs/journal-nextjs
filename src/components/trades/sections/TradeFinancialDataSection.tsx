@@ -1,14 +1,17 @@
 "use client";
 
 import React from "react";
-import { Input, FormSection, FormRow, FormGroup } from "@/components/ui";
 import {
+  Input,
+  FormSection,
+  FormRow,
+  FormGroup,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/SelectCustom";
+} from "@/components/ui";
 import { AssetCombobox } from "@/components/shared/AssetCombobox";
 import { SelectValueWithIcon, RiskRewardCards, TradeResultBadge } from "../shared";
 

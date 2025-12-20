@@ -274,22 +274,25 @@ export function PlaybookFormModal({
     );
   }, []);
 
-  const addRuleToGroup = useCallback((groupId: string) => {
-    const ruleText = newRuleInputs[groupId]?.trim();
-    if (ruleText) {
-      const newRule: SortableRule = {
-        id: Math.random().toString(36).substr(2, 9),
-        text: ruleText,
-      };
+  const addRuleToGroup = useCallback(
+    (groupId: string) => {
+      const ruleText = newRuleInputs[groupId]?.trim();
+      if (ruleText) {
+        const newRule: SortableRule = {
+          id: Math.random().toString(36).substr(2, 9),
+          text: ruleText,
+        };
 
-      setSortableGroups((groups) =>
-        groups.map((group) =>
-          group.id === groupId ? { ...group, rules: [...group.rules, newRule] } : group
-        )
-      );
-      setNewRuleInputs((prev) => ({ ...prev, [groupId]: "" }));
-    }
-  }, [newRuleInputs]);
+        setSortableGroups((groups) =>
+          groups.map((group) =>
+            group.id === groupId ? { ...group, rules: [...group.rules, newRule] } : group
+          )
+        );
+        setNewRuleInputs((prev) => ({ ...prev, [groupId]: "" }));
+      }
+    },
+    [newRuleInputs]
+  );
 
   const removeRule = useCallback((groupId: string, ruleId: string) => {
     setSortableGroups((groups) =>
@@ -306,25 +309,28 @@ export function PlaybookFormModal({
     setEditingRuleText(currentText);
   }, []);
 
-  const saveEditingRule = useCallback((groupId: string) => {
-    if (!editingRuleId || !editingRuleText.trim()) return;
+  const saveEditingRule = useCallback(
+    (groupId: string) => {
+      if (!editingRuleId || !editingRuleText.trim()) return;
 
-    setSortableGroups((groups) =>
-      groups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              rules: group.rules.map((rule) =>
-                rule.id === editingRuleId ? { ...rule, text: editingRuleText.trim() } : rule
-              ),
-            }
-          : group
-      )
-    );
+      setSortableGroups((groups) =>
+        groups.map((group) =>
+          group.id === groupId
+            ? {
+                ...group,
+                rules: group.rules.map((rule) =>
+                  rule.id === editingRuleId ? { ...rule, text: editingRuleText.trim() } : rule
+                ),
+              }
+            : group
+        )
+      );
 
-    setEditingRuleId(null);
-    setEditingRuleText("");
-  }, [editingRuleId, editingRuleText]);
+      setEditingRuleId(null);
+      setEditingRuleText("");
+    },
+    [editingRuleId, editingRuleText]
+  );
 
   const cancelEditingRule = useCallback(() => {
     setEditingRuleId(null);
@@ -402,19 +408,30 @@ export function PlaybookFormModal({
     } finally {
       setIsSaving(false);
     }
-  }, [sortableGroups, isEditMode, playbook, name, description, selectedIcon, selectedColor, updatePlaybook, addPlaybook, handleReset, onSuccess, onClose]);
+  }, [
+    sortableGroups,
+    isEditMode,
+    playbook,
+    name,
+    description,
+    selectedIcon,
+    selectedColor,
+    updatePlaybook,
+    addPlaybook,
+    handleReset,
+    onSuccess,
+    onClose,
+  ]);
 
-  const modalTitle = useMemo(() => 
-    isEditMode ? "✏️ Editar Playbook" : "📖 Criar Playbook"
-  , [isEditMode]);
+  const modalTitle = useMemo(
+    () => (isEditMode ? "✏️ Editar Playbook" : "📖 Criar Playbook"),
+    [isEditMode]
+  );
 
-  const submitButtonText = useMemo(() =>
-    isSaving
-      ? "Salvando..."
-      : isEditMode
-        ? "Atualizar Playbook"
-        : "Salvar Playbook"
-  , [isSaving, isEditMode]);
+  const submitButtonText = useMemo(
+    () => (isSaving ? "Salvando..." : isEditMode ? "Atualizar Playbook" : "Salvar Playbook"),
+    [isSaving, isEditMode]
+  );
 
   const handleBackClick = useCallback(() => {
     handleReset();

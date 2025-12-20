@@ -11,8 +11,8 @@ export const createMockTrade = (overrides?: Partial<Trade>): Trade => {
     accountId: "acc-123",
     symbol: "EURUSD",
     type: "Buy", // Was 'side' in factory but 'type' in mapper? mapper uses 'type'. Let's check Trade interface fully if possible, but mapper has 'type'
-    entryPrice: 1.1000,
-    exitPrice: 1.1050,
+    entryPrice: 1.1,
+    exitPrice: 1.105,
     lot: 1, // 'quantity' in factory -> 'lot' in mapper
     entryDate: new Date().toISOString(),
     exitDate: new Date().toISOString(),
@@ -35,12 +35,12 @@ export const createMockTrade = (overrides?: Partial<Trade>): Trade => {
 };
 
 export const createMockActiveTrade = (overrides?: Partial<Trade>): Trade => {
-    return createMockTrade({
-        exitDate: undefined,
-        exitPrice: undefined,
-        pnl: 0,
-        ...overrides
-    });
+  return createMockTrade({
+    exitDate: undefined,
+    exitPrice: undefined,
+    pnl: 0,
+    ...overrides,
+  });
 };
 
 // ==========================================
@@ -48,17 +48,17 @@ export const createMockActiveTrade = (overrides?: Partial<Trade>): Trade => {
 // ==========================================
 
 export const createMockJournalEntry = (overrides?: Partial<JournalEntry>): JournalEntry => {
-    return {
-        id: "journal-1",
-        userId: "user-123",
-        date: new Date().toISOString(),
-        content: "Today was a good trading day.",
-        mood: "Neutral",
-        tags: ["discipline", "focus"],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        trades: [],
-        images: [],
-        ...overrides
-    } as JournalEntry;
+  return {
+    id: "journal-1",
+    userId: "user-123",
+    date: new Date().toISOString(),
+    content: "Today was a good trading day.",
+    mood: "Neutral",
+    tags: ["discipline", "focus"],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    trades: [],
+    images: [],
+    ...overrides,
+  } as JournalEntry;
 };

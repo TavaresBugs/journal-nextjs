@@ -153,9 +153,12 @@ export default function DashboardPage({
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs Navigation */}
         <div className="container mx-auto mt-6 px-4" style={{ maxWidth: "1200px" }}>
           <SegmentedToggle
+            id="dashboard-navigation"
+            role="navigation"
+            aria-label="Navegação do dashboard"
             options={tabsOptions}
             value={activeTab}
             onChange={setActiveTab}

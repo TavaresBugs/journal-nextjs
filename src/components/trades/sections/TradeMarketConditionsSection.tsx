@@ -1,14 +1,16 @@
 "use client";
 
 import React from "react";
-import { FormSection, FormRow, FormGroup } from "@/components/ui";
 import {
+  FormSection,
+  FormRow,
+  FormGroup,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/SelectCustom";
+} from "@/components/ui";
 import {
   MARKET_CONDITIONS,
   PD_ARRAY_OPTIONS,

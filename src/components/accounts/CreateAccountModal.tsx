@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Modal, Input, Button } from "@/components/ui";
+import {
+  Modal,
+  Input,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import type { Account } from "@/types";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useAccountStore } from "@/store/useAccountStore";
@@ -66,17 +75,22 @@ export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateA
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Moeda</label>
-            <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-gray-100 uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-            >
-              {currencies.map((curr) => (
-                <option key={curr} value={curr}>
-                  {curr}
-                </option>
-              ))}
-            </select>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-4 text-gray-100 uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className="border-gray-700 bg-gray-800">
+                {currencies.map((curr) => (
+                  <SelectItem
+                    key={curr}
+                    value={curr}
+                    className="cursor-pointer py-2 text-gray-100 uppercase hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    {curr}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Input
@@ -93,17 +107,22 @@ export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateA
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Alavancagem</label>
-            <select
-              value={leverage}
-              onChange={(e) => setLeverage(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-            >
-              {leverages.map((lev) => (
-                <option key={lev} value={lev}>
-                  {lev}
-                </option>
-              ))}
-            </select>
+            <Select value={leverage} onValueChange={setLeverage}>
+              <SelectTrigger className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-4 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className="border-gray-700 bg-gray-800">
+                {leverages.map((lev) => (
+                  <SelectItem
+                    key={lev}
+                    value={lev}
+                    className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    {lev}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Input

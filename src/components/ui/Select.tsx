@@ -1,71 +1,291 @@
-import React, { useId } from "react";
-import { cn } from "@/lib/utils/general";
+"use client";
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  options: Array<{ value: string; label: string }>;
+import * as React from "react";
+import { Check, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { createPortal } from "react-dom";
+
+// Context to share state between components
+interface SelectContextType {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  value: string | undefined;
+  onValueChange: (value: string) => void;
   placeholder?: string;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
+  setTriggerNode: (node: HTMLButtonElement | null) => void;
 }
 
-/**
- * Glass-style Select Component - Zorin Glass Design System
- *
- * Matches the glassmorphism aesthetic with transparent background
- * and green accent on focus.
- */
-export function Select({
-  label,
-  error,
-  options,
-  placeholder,
-  className = "",
-  ...props
-}: SelectProps) {
-  const generatedId = useId();
-  const id = props.id || generatedId;
+const SelectContext = React.createContext<SelectContextType | undefined>(undefined);
+
+const Select = ({
+  children,
+  value,
+  onValueChange,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  children: React.ReactNode;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) => {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  // Ref for the trigger element to measure position
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+
+  const setOpen = React.useCallback(
+    (newOpen: boolean) => {
+      if (!isControlled) {
+        setUncontrolledOpen(newOpen);
+      }
+      onOpenChange?.(newOpen);
+    },
+    [isControlled, onOpenChange]
+  );
+
+  // Close on click outside
+  const ref = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      // Check if click is inside the trigger container
+      if (ref.current && ref.current.contains(target)) {
+        return;
+      }
+      // Check if click is inside the portaled SelectContent
+      const selectContent = document.querySelector("[data-select-content]");
+      if (selectContent && selectContent.contains(target)) {
+        return;
+      }
+      // If neither, close the dropdown
+      setOpen(false);
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open, setOpen]);
+
+  // Callback to set trigger node (avoids mutating context ref directly)
+  const setTriggerNode = React.useCallback((node: HTMLButtonElement | null) => {
+    (triggerRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+  }, []);
 
   return (
-    <div className="flex flex-col gap-1.5">
-      {label && (
-        <label htmlFor={id} className="text-xs font-medium text-gray-400">
-          {label}
-        </label>
+    <SelectContext.Provider
+      value={{
+        open: !!open,
+        setOpen,
+        value,
+        onValueChange: onValueChange || (() => {}),
+        triggerRef,
+        setTriggerNode,
+      }}
+    >
+      <div ref={ref} className="relative w-full">
+        {children}
+      </div>
+    </SelectContext.Provider>
+  );
+};
+
+const SelectGroup = ({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return <div className={className}>{children}</div>;
+};
+
+const SelectValue = ({ placeholder, className }: { placeholder?: string; className?: string }) => {
+  const context = React.useContext(SelectContext);
+  // Logic to display value usually happens in parent or Trigger extracts it differently.
+  // Radix way: child of Trigger.
+
+  // Since we don't have easy access to the *label* of the selected item here without traversing children,
+  // we rely on the consumer passing the label OR we can try to find it.
+  // However, most of our usage passes children to SelectValue, or relies on placeholder.
+
+  // For this specific replacement, users often put conditional rendering inside Trigger:
+  // {value ? ... : <SelectValue placeholder="..." />}
+
+  // If this component is rendered, it generally means "show the placeholder" if no value, or "Show value".
+  // Simplified:
+  return (
+    <span className={cn("block truncate", className)}>
+      {context?.value || placeholder}
+      {/* 
+         Note: This is a simplification. Real Radix SelectValue can look up the label.
+         In our current usage in TradeForm, we largely handle display logic manually 
+         with `SelectValueWithIcon` or conditional rendering.
+         Where `<SelectValue placeholder="..."/>` is used, it expects to show placeholder if empty.
+      */}
+    </span>
+  );
+};
+
+const SelectTrigger = React.forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ className, children, ...props }, ref) => {
+  const context = React.useContext(SelectContext);
+
+  return (
+    <button
+      ref={(node) => {
+        // Handle forwarded ref
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+        // Set trigger node via callback (not modifying context ref directly)
+        context?.setTriggerNode(node);
+      }}
+      type="button"
+      onClick={() => context?.setOpen(!context.open)}
+      className={cn(
+        "flex h-9 w-full items-center justify-between rounded-md border border-slate-200 bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-sm ring-offset-transparent placeholder:text-slate-500 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/50 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 [&>span]:line-clamp-1",
+        className
       )}
-      <select
-        id={id}
-        className={cn(
-          // Glass base - Specific user requested color
-          "w-full bg-[#232b32] px-3 py-2 backdrop-blur-sm",
-          // Border
-          "rounded-lg border",
-          error ? "border-red-500" : "border-gray-700",
-          // Text
-          "text-sm text-gray-100",
-          // Focus - Cyan focus to match DatePicker
-          "focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none",
-          // Transition
-          "transition-all duration-200",
-          // Cursor
-          "cursor-pointer",
-          // Arrow styling
-          "appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg%20xmlns%3d%22http%3a%2f%2fwww.w3.org%2f2000%2fsvg%22%20width%3d%2212%22%20height%3d%2212%22%20viewBox%3d%220%200%2012%2012%22%3e%3cpath%20fill%3d%22%239ca3af%22%20d%3d%22M2%204l4%204%204-4%22%2f%3e%3c%2fsvg%3e')] bg-[right_0.75rem_center] bg-no-repeat",
-          className
-        )}
-        {...props}
-      >
-        {placeholder && (
-          <option value="" disabled>
-            {placeholder}
-          </option>
-        )}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {...props}
+    >
+      {children}
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </button>
+  );
+});
+SelectTrigger.displayName = "SelectTrigger";
+
+const SelectContent = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { position?: "popper" | "item-aligned" }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+>(({ className, children, position = "popper", ...props }, ref) => {
+  const context = React.useContext(SelectContext);
+  const [coords, setCoords] = React.useState<{ top: number; left: number; width: number } | null>(
+    null
+  );
+
+  React.useLayoutEffect(() => {
+    if (context?.open && context.triggerRef.current) {
+      const updatePosition = () => {
+        if (context.triggerRef.current) {
+          const rect = context.triggerRef.current.getBoundingClientRect();
+          // Use viewport-relative positions (works inside modals with scroll)
+          setCoords({
+            top: rect.bottom + 4,
+            left: rect.left,
+            width: rect.width,
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener("resize", updatePosition);
+      window.addEventListener("scroll", updatePosition, true); // Capture phase to catch all scrolls
+
+      return () => {
+        window.removeEventListener("resize", updatePosition);
+        window.removeEventListener("scroll", updatePosition, true);
+      };
+    }
+  }, [context?.open, context?.triggerRef]);
+
+  if (!context?.open || !coords) return null;
+
+  return createPortal(
+    <div
+      ref={ref}
+      data-select-content
+      style={{
+        position: "fixed",
+        top: coords.top,
+        left: coords.left,
+        width: coords.width,
+        zIndex: 9999,
+      }}
+      className={cn(
+        "animate-in fade-in-0 zoom-in-95 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-950 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50",
+        className
+      )}
+      {...props}
+    >
+      <div className="max-h-96 overflow-y-auto p-1 text-sm">{children}</div>
+    </div>,
+    document.body
+  );
+});
+SelectContent.displayName = "SelectContent";
+
+const SelectLabel = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("px-2 py-1.5 text-sm font-semibold", className)} {...props} />
+  )
+);
+SelectLabel.displayName = "SelectLabel";
+
+const SelectItem = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & { value: string }
+>(({ className, children, value, ...props }, ref) => {
+  const context = React.useContext(SelectContext);
+  const isSelected = context?.value === value;
+
+  return (
+    <div
+      ref={ref}
+      onClick={(e) => {
+        e.stopPropagation();
+        context?.onValueChange(value);
+        context?.setOpen(false);
+      }}
+      className={cn(
+        "relative flex w-full cursor-pointer items-center rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none select-none hover:bg-[#2a333a] data-disabled:pointer-events-none data-disabled:opacity-50",
+        isSelected && "bg-[#2a333a]",
+        className
+      )}
+      {...props}
+    >
+      <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+        {isSelected && <Check className="h-4 w-4" />}
+      </span>
+      <span className="flex w-full items-center truncate text-left">{children}</span>
     </div>
   );
-}
+});
+SelectItem.displayName = "SelectItem";
+
+const SelectSeparator = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn("-mx-1 my-1 h-px bg-slate-100 dark:bg-slate-800", className)}
+      {...props}
+    />
+  )
+);
+SelectSeparator.displayName = "SelectSeparator";
+
+// Mock Scroll buttons as they are implicit in native scroll or standard div scroll
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SelectScrollUpButton = (_props: React.HTMLAttributes<HTMLDivElement>) => null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SelectScrollDownButton = (_props: React.HTMLAttributes<HTMLDivElement>) => null;
+
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+};

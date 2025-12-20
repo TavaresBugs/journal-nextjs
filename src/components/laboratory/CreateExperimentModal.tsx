@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Modal, Input, Button } from "@/components/ui";
+import {
+  Modal,
+  Input,
+  Button,
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui";
 import type { ExperimentStatus } from "@/types";
 import { CreateExperimentData } from "@/store/useLaboratoryStore";
 
@@ -120,17 +129,22 @@ export function CreateExperimentModal({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as ExperimentStatus)}
-              className="w-full rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3 text-white transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <Select value={status} onValueChange={(v) => setStatus(v as ExperimentStatus)}>
+              <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className="border-gray-700 bg-gray-800">
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    className="cursor-pointer py-2.5 text-white hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Input

@@ -1,4 +1,5 @@
 import React from "react";
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui";
 import { ColumnMapping } from "@/services/trades/importParsers";
 
 interface ColumnMapperProps {
@@ -61,18 +62,31 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, mapping, on
                 <label className="mb-1 block text-sm font-medium text-gray-400">
                   {FIELD_LABELS[field]} <span className="text-red-500">*</span>
                 </label>
-                <select
+                <Select
                   value={mapping[field] || ""}
-                  onChange={(e) => handleChange(field, e.target.value)}
-                  className="block w-full rounded-md border-gray-700 bg-gray-800 p-2.5 text-gray-200 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+                  onValueChange={(value) => handleChange(field, value)}
                 >
-                  <option value="">Selecione a coluna...</option>
-                  {headers.map((header) => (
-                    <option key={header} value={header}>
-                      {header}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
+                    <SelectValue placeholder="Selecione a coluna..." />
+                  </SelectTrigger>
+                  <SelectContent className="border-gray-700 bg-gray-800">
+                    <SelectItem
+                      value=""
+                      className="cursor-pointer py-2 text-gray-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      Selecione a coluna...
+                    </SelectItem>
+                    {headers.map((header) => (
+                      <SelectItem
+                        key={header}
+                        value={header}
+                        className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                      >
+                        {header}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ))}
           </div>
@@ -88,18 +102,31 @@ export const ColumnMapper: React.FC<ColumnMapperProps> = ({ headers, mapping, on
                 <label className="mb-1 block text-sm font-medium text-gray-400">
                   {FIELD_LABELS[field]}
                 </label>
-                <select
+                <Select
                   value={mapping[field] || ""}
-                  onChange={(e) => handleChange(field, e.target.value)}
-                  className="block w-full rounded-md border-gray-700 bg-gray-800 p-2.5 text-gray-200 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+                  onValueChange={(value) => handleChange(field, value)}
                 >
-                  <option value="">(Pular)</option>
-                  {headers.map((header) => (
-                    <option key={header} value={header}>
-                      {header}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
+                    <SelectValue placeholder="(Pular)" />
+                  </SelectTrigger>
+                  <SelectContent className="border-gray-700 bg-gray-800">
+                    <SelectItem
+                      value=""
+                      className="cursor-pointer py-2 text-gray-400 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      (Pular)
+                    </SelectItem>
+                    {headers.map((header) => (
+                      <SelectItem
+                        key={header}
+                        value={header}
+                        className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
+                      >
+                        {header}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             ))}
           </div>

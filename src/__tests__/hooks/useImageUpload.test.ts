@@ -50,7 +50,7 @@ describe("useImageUpload", () => {
 
   it("should handle paste image event with compression", async () => {
     const { result } = renderHook(() => useImageUpload());
-    
+
     // Simulate compression needed
     vi.mocked(shouldCompress).mockReturnValue(true);
     vi.mocked(compressImageForPreview).mockResolvedValue("compressed-base64");
@@ -75,9 +75,9 @@ describe("useImageUpload", () => {
 
     // Wait for async state update
     await vi.waitFor(() => {
-        expect(result.current.images["H1"]).toEqual(["compressed-base64"]);
+      expect(result.current.images["H1"]).toEqual(["compressed-base64"]);
     });
-    
+
     expect(shouldCompress).toHaveBeenCalled();
     expect(compressImageForPreview).toHaveBeenCalled();
     expect(mockImageCache.set).toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe("useImageUpload", () => {
 
   it("should handle paste NOT an image", async () => {
     const { result } = renderHook(() => useImageUpload());
-    
+
     const mockClipboardEvent = {
       clipboardData: {
         items: [
@@ -106,7 +106,7 @@ describe("useImageUpload", () => {
 
   it("should handle file select", async () => {
     const { result } = renderHook(() => useImageUpload());
-    
+
     const mockFile = new File(["dummy content"], "test.png", { type: "image/png" });
     const mockChangeEvent = {
       target: {
@@ -120,14 +120,14 @@ describe("useImageUpload", () => {
 
     // Need to wait for FileReader onload
     await vi.waitFor(() => {
-      // Since we mocked FileReader to standard behavior in browser/jsdom, 
-      // but here we are in a test env where FileReader implementation might vary 
+      // Since we mocked FileReader to standard behavior in browser/jsdom,
+      // but here we are in a test env where FileReader implementation might vary
       // or we rely on the mocked logic inside the hook if we mocked global FileReader (we didn't).
       // However, usually jsdom supports FileReader.
       // Let's check if 'shouldCompress' is called which implies the reader finished.
-       expect(shouldCompress).toHaveBeenCalled();
+      expect(shouldCompress).toHaveBeenCalled();
     });
-    
+
     // Check if state updated (assuming no compression for simplicity unless set)
     // Actually the hook calls processImage which calls shouldCompress
   });

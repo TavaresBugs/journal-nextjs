@@ -10,7 +10,19 @@ export {
   GlassCardContent,
   GlassCardFooter,
 } from "./GlassCard";
-export { Select } from "./Select";
+// Select components - consolidated
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+} from "./Select";
 export { Tabs, TabPanel } from "./Tabs";
 export { Toast } from "./Toast";
 export { CircularProgress } from "./CircularProgress";
