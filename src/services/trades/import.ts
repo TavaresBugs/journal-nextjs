@@ -1,5 +1,8 @@
 import ExcelJS from "exceljs";
-import { parse, isValid } from "date-fns";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 export interface RawTradeData {
   [key: string]: string | number;
@@ -444,34 +447,25 @@ export const parseTradeDate = (dateStr: string | number): Date | null => {
       // Normalize separators: 2025.12.05 -> 2025-12-05, 2025/12/05 -> 2025-12-05
       normalized = normalized.replace(/\./g, "-").replace(/\//g, "-");
 
-      const referenceDate = new Date();
-      referenceDate.setSeconds(0, 0);
+      // 1. Try ISO-like "YYYY-MM-DD HH:mm:ss"
+      let parsed = dayjs(normalized, "YYYY-MM-DD HH:mm:ss", true);
+      if (parsed.isValid()) return parsed.toDate();
 
-      // 1. Try ISO-like "yyyy-MM-dd HH:mm:ss"
-      let date = parse(normalized, "yyyy-MM-dd HH:mm:ss", referenceDate);
-      if (isValid(date)) return date;
+      // 2. Try "YYYY-MM-DD HH:mm"
+      parsed = dayjs(normalized, "YYYY-MM-DD HH:mm", true);
+      if (parsed.isValid()) return parsed.toDate();
 
-      // 2. Try "yyyy-MM-dd HH:mm"
-      date = parse(normalized, "yyyy-MM-dd HH:mm", referenceDate);
-      if (isValid(date)) {
-        date.setSeconds(0, 0);
-        return date;
-      }
+      // 3. Try "DD-MM-YYYY HH:mm:ss" (Brazilian/European format)
+      parsed = dayjs(normalized, "DD-MM-YYYY HH:mm:ss", true);
+      if (parsed.isValid()) return parsed.toDate();
 
-      // 3. Try "dd-MM-yyyy HH:mm:ss" (Brazilian/European format)
-      date = parse(normalized, "dd-MM-yyyy HH:mm:ss", referenceDate);
-      if (isValid(date)) return date;
-
-      // 4. Try "dd-MM-yyyy HH:mm"
-      date = parse(normalized, "dd-MM-yyyy HH:mm", referenceDate);
-      if (isValid(date)) {
-        date.setSeconds(0, 0);
-        return date;
-      }
+      // 4. Try "DD-MM-YYYY HH:mm"
+      parsed = dayjs(normalized, "DD-MM-YYYY HH:mm", true);
+      if (parsed.isValid()) return parsed.toDate();
 
       // 5. Try standard Date constructor as fallback
-      date = new Date(normalized);
-      if (isValid(date)) return date;
+      const fallback = new Date(normalized);
+      if (!isNaN(fallback.getTime())) return fallback;
     } catch (e) {
       console.warn("Date parse error:", e);
     }
@@ -712,28 +706,25 @@ export const parseNinjaTraderDate = (dateStr: string | number): Date | null => {
   if (!str) return null;
 
   try {
-    const referenceDate = new Date();
-    referenceDate.setSeconds(0, 0);
+    // 1. Try PT/EU format: DD/MM/YYYY HH:mm:ss
+    let parsed = dayjs(str, "DD/MM/YYYY HH:mm:ss", true);
+    if (parsed.isValid()) return parsed.toDate();
 
-    // 1. Try PT/EU format: dd/MM/yyyy HH:mm:ss
-    let date = parse(str, "dd/MM/yyyy HH:mm:ss", referenceDate);
-    if (isValid(date)) return date;
+    // 2. Try English format: MM/DD/YYYY h:mm:ss A (e.g. 12/19/2024 8:44:03 AM)
+    parsed = dayjs(str, "MM/DD/YYYY h:mm:ss A", true);
+    if (parsed.isValid()) return parsed.toDate();
 
-    // 2. Try English format: MM/dd/yyyy h:mm:ss a (e.g. 12/19/2024 8:44:03 AM)
-    date = parse(str, "MM/dd/yyyy h:mm:ss a", referenceDate);
-    if (isValid(date)) return date;
-
-    // 3. Try English format without seconds: MM/dd/yyyy h:mm a
-    date = parse(str, "MM/dd/yyyy h:mm a", referenceDate);
-    if (isValid(date)) return date;
+    // 3. Try English format without seconds: MM/DD/YYYY h:mm A
+    parsed = dayjs(str, "MM/DD/YYYY h:mm A", true);
+    if (parsed.isValid()) return parsed.toDate();
 
     // 4. Try generic ISO-like or fallback
-    date = new Date(str);
-    if (isValid(date)) return date;
+    const fallback = new Date(str);
+    if (!isNaN(fallback.getTime())) return fallback;
 
     // 5. Try without seconds (PT)
-    const dateNoSec = parse(str, "dd/MM/yyyy HH:mm", referenceDate);
-    if (isValid(dateNoSec)) return dateNoSec;
+    parsed = dayjs(str, "DD/MM/YYYY HH:mm", true);
+    if (parsed.isValid()) return parsed.toDate();
 
     return null;
   } catch (e) {

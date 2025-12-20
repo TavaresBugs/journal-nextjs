@@ -4,7 +4,7 @@ import { ColumnMapping, convertToNYTime } from "@/services/trades/importParsers"
 import { RawTradeData, parseTradeDate } from "@/services/trades/import";
 import { Account } from "@/types";
 import { cn } from "@/lib/utils/general";
-import { format } from "date-fns-tz";
+import dayjs from "dayjs";
 import {
   Button,
   Select,
@@ -254,11 +254,11 @@ export const ImportStepMapping: React.FC<ImportStepMappingProps> = ({
                   return <div className="text-xs text-red-400">Data Inválida ou Não Mapeada</div>;
 
                 // Face Value (Local interpretation of the numbers)
-                const faceValue = format(parsed, "dd/MM/yyyy HH:mm:ss");
+                const faceValue = dayjs(parsed).format("DD/MM/YYYY HH:mm:ss");
 
                 // Convert directly to NY time
                 const nyDate = convertToNYTime(parsed, brokerTimezone);
-                const nyStr = format(nyDate, "dd/MM/yyyy HH:mm:ss");
+                const nyStr = dayjs(nyDate).format("DD/MM/YYYY HH:mm:ss");
 
                 return (
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">

@@ -1,4 +1,10 @@
-import { fromZonedTime, toZonedTime, format } from "date-fns-tz";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+// Extend dayjs with timezone support
+dayjs.extend(utc);
+dayjs.extend(timezone);
 import {
   RawTradeData,
   parseTradeDate,
@@ -248,13 +254,11 @@ export const convertToNYTime = (date: Date, sourceTimezone: string): Date => {
     const seconds = String(date.getSeconds()).padStart(2, "0");
     const isoString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-    // First convert to UTC assuming the date is in sourceTimezone
-    const utcDate = fromZonedTime(isoString, sourceTimezone);
+    // Parse as source timezone and convert to NY
+    const nyDate = dayjs.tz(isoString, sourceTimezone).tz("America/New_York");
 
-    // Then convert UTC to NY time and return as if it were a local date
-    // (This matches the behavior in the original component)
-    const nyDate = toZonedTime(utcDate, "America/New_York");
-    return nyDate;
+    // Return as JS Date
+    return nyDate.toDate();
   } catch (e) {
     console.warn("Timezone conversion failed", e);
     return date; // Fallback to original date
@@ -298,8 +302,8 @@ export const transformTrades = (
       if (!symbol || !type) continue;
 
       // 4. Format strings for storage
-      const entryDateStr = format(entryDate, "yyyy-MM-dd");
-      const entryTimeStr = format(entryDate, "HH:mm:ss");
+      const entryDateStr = dayjs(entryDate).format("YYYY-MM-DD");
+      const entryTimeStr = dayjs(entryDate).format("HH:mm:ss");
 
       // 5. Parse Entry Price
       let entryPrice: number;
@@ -363,8 +367,8 @@ export const transformTrades = (
           if (brokerTimezone) {
             exitDate = convertToNYTime(exitDate, brokerTimezone);
           }
-          trade.exitDate = format(exitDate, "yyyy-MM-dd");
-          trade.exitTime = format(exitDate, "HH:mm:ss");
+          trade.exitDate = dayjs(exitDate).format("YYYY-MM-DD");
+          trade.exitTime = dayjs(exitDate).format("HH:mm:ss");
         }
       }
 

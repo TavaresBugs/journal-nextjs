@@ -1,8 +1,10 @@
 import * as ExcelJS from "exceljs";
 import { Trade } from "@/types";
 import { getTrades } from "@/services/trades/trade";
-import { parseISO, isWithinInterval, format, parse } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+
+dayjs.locale("pt-br");
 
 interface ReportMetrics {
   totalTrades: number;
@@ -39,8 +41,11 @@ export async function generateReport(
   // Filter trades by date range
   const trades = allTrades.filter((t) => {
     if (!t.entryDate) return false;
-    const date = parseISO(t.entryDate);
-    return isWithinInterval(date, { start: startDate, end: endDate });
+    const date = dayjs(t.entryDate);
+    return (
+      date.isAfter(dayjs(startDate).subtract(1, "day")) &&
+      date.isBefore(dayjs(endDate).add(1, "day"))
+    );
   });
 
   const workbook = new ExcelJS.Workbook();
@@ -60,7 +65,7 @@ export async function generateReport(
     { header: "Valor", key: "value", width: 20 },
   ];
 
-  const periodStr = `${format(startDate, "dd/MM/yyyy")} a ${format(endDate, "dd/MM/yyyy")}`;
+  const periodStr = `${dayjs(startDate).format("DD/MM/YYYY")} a ${dayjs(endDate).format("DD/MM/YYYY")}`;
 
   summarySheet.addRows([
     { metric: "Período do Relatório", value: periodStr },
@@ -130,7 +135,7 @@ export async function generateReport(
     }
 
     const row = tradesSheet.addRow({
-      date: format(parseISO(trade.entryDate), "dd/MM/yyyy"),
+      date: dayjs(trade.entryDate).format("DD/MM/YYYY"),
       symbol: trade.symbol,
       type: trade.type,
       entry: trade.entryPrice,
@@ -271,8 +276,8 @@ function calculateMonthlyMetrics(trades: Trade[]): MonthlyMetrics[] {
 
   trades.forEach((t) => {
     if (!t.entryDate) return;
-    const date = parseISO(t.entryDate);
-    const key = format(date, "yyyy-MM"); // Key for sorting
+    const date = dayjs(t.entryDate);
+    const key = date.format("YYYY-MM"); // Key for sorting
     if (!groups[key]) groups[key] = [];
     groups[key].push(t);
   });
@@ -281,8 +286,8 @@ function calculateMonthlyMetrics(trades: Trade[]): MonthlyMetrics[] {
     .sort()
     .map((key) => {
       const monthlyTrades = groups[key];
-      const date = parse(key, "yyyy-MM", new Date());
-      const monthName = format(date, "MMMM yyyy", { locale: ptBR });
+      const date = dayjs(key, "YYYY-MM");
+      const monthName = date.format("MMMM YYYY");
 
       // Use first letter uppercase
       const formattedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
