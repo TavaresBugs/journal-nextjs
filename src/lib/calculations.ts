@@ -303,20 +303,38 @@ export function calculateAverageHoldTime(trades: Trade[]): {
     const entry = new Date(`${trade.entryDate}T${trade.entryTime || "00:00"}`);
     const exit = new Date(`${trade.exitDate}T${trade.exitTime}`);
 
-    return (exit.getTime() - entry.getTime()) / (1000 * 60); // minutes
+    // Validate that dates are valid
+    if (isNaN(entry.getTime()) || isNaN(exit.getTime())) return 0;
+
+    const durationMinutes = (exit.getTime() - entry.getTime()) / (1000 * 60);
+
+    // Ignore invalid durations (negative or unreasonably long > 7 days)
+    const MAX_REASONABLE_DURATION = 7 * 24 * 60; // 7 days in minutes = 10080
+    if (durationMinutes < 0 || durationMinutes > MAX_REASONABLE_DURATION) return 0;
+
+    return durationMinutes;
   };
 
+  // Calculate durations and filter out invalid ones (duration = 0)
+  const winnerDurations = winners.map(calcDuration).filter((d) => d > 0);
+  const loserDurations = losers.map(calcDuration).filter((d) => d > 0);
+  const allDurations = trades
+    .filter((t) => t.exitDate && t.exitTime)
+    .map(calcDuration)
+    .filter((d) => d > 0);
+
   const avgWinnerTime =
-    winners.length > 0 ? winners.reduce((sum, t) => sum + calcDuration(t), 0) / winners.length : 0;
+    winnerDurations.length > 0
+      ? winnerDurations.reduce((sum, d) => sum + d, 0) / winnerDurations.length
+      : 0;
 
   const avgLoserTime =
-    losers.length > 0 ? losers.reduce((sum, t) => sum + calcDuration(t), 0) / losers.length : 0;
-
-  const allWithTime = trades.filter((t) => t.exitDate && t.exitTime);
-  const avgAllTrades =
-    allWithTime.length > 0
-      ? allWithTime.reduce((sum, t) => sum + calcDuration(t), 0) / allWithTime.length
+    loserDurations.length > 0
+      ? loserDurations.reduce((sum, d) => sum + d, 0) / loserDurations.length
       : 0;
+
+  const avgAllTrades =
+    allDurations.length > 0 ? allDurations.reduce((sum, d) => sum + d, 0) / allDurations.length : 0;
 
   return {
     avgWinnerTime,

@@ -147,7 +147,7 @@ export function PlaybookGrid({
   }
 
   const getWinRateColor = (winRate: number) => {
-    if (winRate >= 70) return "#10b981"; // green
+    if (winRate >= 70) return "#00c853"; // green
     if (winRate >= 50) return "#3b82f6"; // blue
     if (winRate >= 30) return "#f59e0b"; // amber
     return "#ef4444"; // red
@@ -243,7 +243,7 @@ export function PlaybookGrid({
                   <div className="mb-1 text-xs text-gray-500">Net P&L</div>
                   <div
                     className={`text-2xl font-bold ${
-                      strategy.netPnL >= 0 ? "text-green-400" : "text-red-400"
+                      strategy.netPnL >= 0 ? "text-[#04df73]" : "text-[#ff6467]"
                     }`}
                   >
                     {formatCurrency(strategy.netPnL, currency)}
@@ -268,13 +268,13 @@ export function PlaybookGrid({
                   </div>
                   <div>
                     <div className="mb-1 text-xs text-gray-500">Average winner</div>
-                    <div className="text-lg font-bold text-green-400">
+                    <div className="text-lg font-bold text-[#04df73]">
                       {formatCurrency(strategy.avgWin, currency)}
                     </div>
                   </div>
                   <div>
                     <div className="mb-1 text-xs text-gray-500">Average loser</div>
-                    <div className="text-lg font-bold text-red-400">
+                    <div className="text-lg font-bold text-[#ff6467]">
                       {formatCurrency(strategy.avgLoss, currency)}
                     </div>
                   </div>

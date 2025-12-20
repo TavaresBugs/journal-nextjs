@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
 import { Trade, TradeMetrics } from "@/types";
 import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
+import { calculateWolfScore } from "@/lib/wolfScore";
+import { WolfScoreCard } from "@/components/dashboard/WolfScoreCard";
+import { WeekdayPerformanceCard } from "@/components/dashboard/WeekdayPerformanceCard";
 import dynamic from "next/dynamic";
 
 interface AdvancedMetrics {
@@ -41,6 +44,12 @@ export function DashboardOverview({
   initialBalance,
   accountCreatedAt,
 }: DashboardOverviewProps) {
+  // Calculate Wolf Score
+  const wolfScore = useMemo(
+    () => calculateWolfScore(allHistory, metrics, initialBalance),
+    [allHistory, metrics, initialBalance]
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -78,7 +87,7 @@ export function DashboardOverview({
               <div className="mb-2 text-xs tracking-wider text-gray-400 uppercase">
                 Média de Lucro
               </div>
-              <div className="text-2xl font-bold text-green-400">
+              <div className="text-2xl font-bold text-[#04df73]">
                 {formatCurrency(metrics.avgWin, currency)}
               </div>
               <div className="absolute top-4 right-4 text-gray-600">
@@ -102,7 +111,7 @@ export function DashboardOverview({
               <div className="mb-2 text-xs tracking-wider text-gray-400 uppercase">
                 Média de Perda
               </div>
-              <div className="text-2xl font-bold text-red-400">
+              <div className="text-2xl font-bold text-[#ff6467]">
                 {formatCurrency(metrics.avgLoss, currency)}
               </div>
               <div className="absolute top-4 right-4 text-gray-600">
@@ -126,7 +135,7 @@ export function DashboardOverview({
               <div className="mb-2 text-xs tracking-wider text-gray-400 uppercase">
                 Max Drawdown
               </div>
-              <div className="text-2xl font-bold text-yellow-400">
+              <div className="text-2xl font-bold text-[#ff6467]">
                 {formatCurrency(metrics.maxDrawdown, currency)}
               </div>
               <div className="absolute top-4 right-4 text-gray-600">
@@ -155,12 +164,12 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.sharpe >= 2
-                    ? "text-green-400"
+                    ? "text-[#00c853]"
                     : advancedMetrics.sharpe >= 1
-                      ? "text-cyan-400"
+                      ? "text-[#00c853]"
                       : advancedMetrics.sharpe >= 0
-                        ? "text-amber-400"
-                        : "text-red-400"
+                        ? "text-yellow-400"
+                        : "text-[#ef4444]"
                 }`}
               >
                 {advancedMetrics.sharpe.toFixed(2)}
@@ -189,12 +198,12 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.calmar >= 3
-                    ? "text-green-400"
+                    ? "text-[#00c853]"
                     : advancedMetrics.calmar >= 1
-                      ? "text-cyan-400"
+                      ? "text-[#00c853]"
                       : advancedMetrics.calmar >= 0
-                        ? "text-amber-400"
-                        : "text-red-400"
+                        ? "text-yellow-400"
+                        : "text-[#ef4444]"
                 }`}
               >
                 {advancedMetrics.calmar.toFixed(2)}
@@ -225,8 +234,8 @@ export function DashboardOverview({
               <div
                 className={`text-xl font-bold ${
                   advancedMetrics.holdTime.avgWinnerTime > advancedMetrics.holdTime.avgLoserTime
-                    ? "text-green-400"
-                    : "text-red-400"
+                    ? "text-[#00c853]"
+                    : "text-[#ef4444]"
                 }`}
               >
                 {formatTimeMinutes(advancedMetrics.holdTime.avgWinnerTime)} /{" "}
@@ -257,9 +266,9 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.streaks.currentStreak.type === "win"
-                    ? "text-green-400"
+                    ? "text-[#00c853]"
                     : advancedMetrics.streaks.currentStreak.type === "loss"
-                      ? "text-red-400"
+                      ? "text-[#ef4444]"
                       : "text-gray-400"
                 }`}
               >
@@ -315,6 +324,13 @@ export function DashboardOverview({
                 {advancedMetrics.streaks.maxWinStreak}G / {advancedMetrics.streaks.maxLossStreak}P
               </div>
             </div>
+          </div>
+
+          {/* Wolf Score */}
+          {/* Advanced Performance Section */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <WolfScoreCard wolfScore={wolfScore} />
+            <WeekdayPerformanceCard trades={allHistory} />
           </div>
 
           <Charts

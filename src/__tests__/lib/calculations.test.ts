@@ -277,6 +277,8 @@ describe("filterTrades", () => {
       outcome: "win",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      stopLoss: 0,
+      takeProfit: 0,
     },
     {
       id: "2",
@@ -291,6 +293,8 @@ describe("filterTrades", () => {
       outcome: "loss",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      stopLoss: 0,
+      takeProfit: 0,
     },
   ];
 
@@ -405,6 +409,8 @@ describe("calculateTradeMetrics", () => {
       outcome: "win",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      stopLoss: 0,
+      takeProfit: 0,
     },
     {
       id: "2",
@@ -419,6 +425,8 @@ describe("calculateTradeMetrics", () => {
       outcome: "loss",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      stopLoss: 0,
+      takeProfit: 0,
     },
     {
       id: "3",
@@ -433,6 +441,8 @@ describe("calculateTradeMetrics", () => {
       outcome: "breakeven",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      stopLoss: 0,
+      takeProfit: 0,
     },
   ];
 
@@ -476,10 +486,42 @@ describe("calculateConsecutiveStreaks", () => {
 
   it("should calculate win streaks", () => {
     const trades: Trade[] = [
-      { ...baseTrade, id: "1", entryDate: "2024-01-01", pnl: 100, outcome: "win" },
-      { ...baseTrade, id: "2", entryDate: "2024-01-02", pnl: 100, outcome: "win" },
-      { ...baseTrade, id: "3", entryDate: "2024-01-03", pnl: 100, outcome: "win" },
-      { ...baseTrade, id: "4", entryDate: "2024-01-04", pnl: -50, outcome: "loss" },
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        pnl: 100,
+        outcome: "win",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        pnl: 100,
+        outcome: "win",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
+      {
+        ...baseTrade,
+        id: "3",
+        entryDate: "2024-01-03",
+        pnl: 100,
+        outcome: "win",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
+      {
+        ...baseTrade,
+        id: "4",
+        entryDate: "2024-01-04",
+        pnl: -50,
+        outcome: "loss",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
     ];
 
     const result = calculateConsecutiveStreaks(trades);
@@ -490,8 +532,24 @@ describe("calculateConsecutiveStreaks", () => {
 
   it("should calculate loss streaks", () => {
     const trades: Trade[] = [
-      { ...baseTrade, id: "1", entryDate: "2024-01-01", pnl: -50, outcome: "loss" },
-      { ...baseTrade, id: "2", entryDate: "2024-01-02", pnl: -50, outcome: "loss" },
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        pnl: -50,
+        outcome: "loss",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        pnl: -50,
+        outcome: "loss",
+        stopLoss: 0,
+        takeProfit: 0,
+      },
     ];
 
     const result = calculateConsecutiveStreaks(trades);
@@ -504,5 +562,163 @@ describe("calculateConsecutiveStreaks", () => {
     expect(result.maxWinStreak).toBe(0);
     expect(result.maxLossStreak).toBe(0);
     expect(result.currentStreak.type).toBe("none");
+  });
+});
+
+// ============================================
+// calculateAverageHoldTime Tests
+// ============================================
+
+import { calculateAverageHoldTime } from "@/lib/calculations";
+
+describe("calculateAverageHoldTime", () => {
+  const baseTrade = {
+    userId: "user1",
+    accountId: "acc1",
+    symbol: "EURUSD",
+    type: "Long" as const,
+    entryPrice: 1.1,
+    lot: 1,
+    stopLoss: 0,
+    takeProfit: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  it("should calculate average hold time for valid trades", () => {
+    const trades: Trade[] = [
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        entryTime: "10:00",
+        exitDate: "2024-01-01",
+        exitTime: "11:30",
+        pnl: 100,
+        outcome: "win",
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        entryTime: "09:00",
+        exitDate: "2024-01-02",
+        exitTime: "09:45",
+        pnl: -50,
+        outcome: "loss",
+      },
+    ];
+
+    const result = calculateAverageHoldTime(trades);
+    expect(result.avgWinnerTime).toBe(90); // 1h 30m = 90 minutes
+    expect(result.avgLoserTime).toBe(45); // 45 minutes
+  });
+
+  it("should return zeros for empty trades array", () => {
+    const result = calculateAverageHoldTime([]);
+    expect(result.avgWinnerTime).toBe(0);
+    expect(result.avgLoserTime).toBe(0);
+    expect(result.avgAllTrades).toBe(0);
+  });
+
+  it("should ignore trades with invalid dates", () => {
+    const trades: Trade[] = [
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "invalid-date",
+        entryTime: "10:00",
+        exitDate: "2024-01-01",
+        exitTime: "11:30",
+        pnl: 100,
+        outcome: "win",
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        entryTime: "09:00",
+        exitDate: "2024-01-02",
+        exitTime: "10:00",
+        pnl: 100,
+        outcome: "win",
+      },
+    ];
+
+    const result = calculateAverageHoldTime(trades);
+    expect(result.avgWinnerTime).toBe(60); // Only the valid trade (60 min)
+  });
+
+  it("should ignore trades with negative duration (exit before entry)", () => {
+    const trades: Trade[] = [
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        entryTime: "12:00",
+        exitDate: "2024-01-01",
+        exitTime: "10:00", // Exit before entry = negative duration
+        pnl: 100,
+        outcome: "win",
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        entryTime: "09:00",
+        exitDate: "2024-01-02",
+        exitTime: "10:30",
+        pnl: 100,
+        outcome: "win",
+      },
+    ];
+
+    const result = calculateAverageHoldTime(trades);
+    expect(result.avgWinnerTime).toBe(90); // Only the valid trade (90 min)
+  });
+
+  it("should ignore trades with extremely long duration (> 7 days)", () => {
+    const trades: Trade[] = [
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        entryTime: "10:00",
+        exitDate: "2024-02-01", // 31 days later = way too long
+        exitTime: "10:00",
+        pnl: -50,
+        outcome: "loss",
+      },
+      {
+        ...baseTrade,
+        id: "2",
+        entryDate: "2024-01-02",
+        entryTime: "09:00",
+        exitDate: "2024-01-02",
+        exitTime: "10:00",
+        pnl: -50,
+        outcome: "loss",
+      },
+    ];
+
+    const result = calculateAverageHoldTime(trades);
+    expect(result.avgLoserTime).toBe(60); // Only the valid trade (60 min)
+  });
+
+  it("should handle trades without exit time/date", () => {
+    const trades: Trade[] = [
+      {
+        ...baseTrade,
+        id: "1",
+        entryDate: "2024-01-01",
+        entryTime: "10:00",
+        pnl: 100,
+        outcome: "win",
+      },
+    ];
+
+    const result = calculateAverageHoldTime(trades);
+    expect(result.avgWinnerTime).toBe(0);
+    expect(result.winnerCount).toBe(0);
   });
 });

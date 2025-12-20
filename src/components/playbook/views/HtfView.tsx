@@ -30,7 +30,7 @@ interface HtfViewProps {
 }
 
 const getWinRateColor = (winRate: number) => {
-  if (winRate >= 70) return "#10b981";
+  if (winRate >= 70) return "#00c853";
   if (winRate >= 50) return "#3b82f6";
   if (winRate > 0) return "#f59e0b";
   return "#ef4444";
@@ -63,14 +63,14 @@ function MetricCardContent({
         <div className="text-center">
           <div className="text-xs text-gray-500 uppercase">Win / Loss</div>
           <div className="text-lg font-medium">
-            <span className="text-emerald-400">{wins}</span>{" "}
-            <span className="text-gray-500">/</span> <span className="text-red-400">{losses}</span>
+            <span className="text-[#00c853]">{wins}</span> <span className="text-gray-500">/</span>{" "}
+            <span className="text-[#ef4444]">{losses}</span>
           </div>
         </div>
         <div className="text-center">
           <div className="text-xs text-gray-500 uppercase">Financeiro</div>
           <div
-            className={`text-base font-bold whitespace-nowrap ${pnl >= 0 ? "text-emerald-400" : "text-red-400"}`}
+            className={`text-base font-bold whitespace-nowrap ${pnl >= 0 ? "text-[#04df73]" : "text-[#ff6467]"}`}
           >
             {formatCurrency(pnl, currency)}
           </div>

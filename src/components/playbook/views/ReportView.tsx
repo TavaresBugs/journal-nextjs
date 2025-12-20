@@ -77,7 +77,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
         <>
           {/* Top 5 Best Setups */}
           <div className="space-y-4">
-            <div className="text-sm font-semibold text-emerald-400">🏆 TOP 5 MELHORES SETUPS</div>
+            <div className="text-sm font-semibold text-[#00c853]">🏆 TOP 5 MELHORES SETUPS</div>
             {bestSetups.slice(0, 5).map((setup, idx) => (
               <div
                 key={`${setup.htf}-${setup.tagCombo}-${setup.ltf}`}
@@ -112,17 +112,17 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                 {/* Stats Bar */}
                 <div className="mb-3 flex items-center gap-4 rounded-lg bg-gray-900/50 px-3 py-2 text-xs">
                   <span className="text-gray-400">{setup.stats.totalTrades} trades</span>
-                  <span className="font-medium text-emerald-400">
+                  <span className="font-medium text-[#00c853]">
                     {setup.stats.wins}W/{setup.stats.losses}L
                   </span>
                   <span
-                    className={`font-medium ${setup.stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"}`}
+                    className={`font-medium ${setup.stats.pnl >= 0 ? "text-[#04df73]" : "text-[#ff6467]"}`}
                   >
                     {formatCurrency(setup.stats.pnl, currency)}
                   </span>
                   {setup.stats.avgRR !== null && (
                     <span
-                      className={`font-medium ${setup.stats.avgRR >= 1 ? "text-emerald-400" : "text-amber-400"}`}
+                      className={`font-medium ${setup.stats.avgRR >= 1 ? "text-[#00c853]" : "text-amber-400"}`}
                     >
                       {setup.stats.avgRR >= 0 ? "+" : ""}
                       {setup.stats.avgRR.toFixed(2)}R
@@ -132,10 +132,10 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
 
                 {/* Execução */}
                 <div className="mb-2 rounded-lg bg-gray-900/50 p-3">
-                  <div className="mb-2 text-xs font-semibold text-emerald-400">🎯 EXECUÇÃO:</div>
+                  <div className="mb-2 text-xs font-semibold text-[#00c853]">🎯 EXECUÇÃO:</div>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 text-emerald-400">✓</span>
+                      <span className="mt-0.5 text-[#00c853]">✓</span>
                       <span className="text-gray-300">
                         Confirmar estrutura em{" "}
                         <span className="font-medium text-indigo-300">{setup.htf}</span>
@@ -143,7 +143,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                     </div>
                     {setup.pdArray && (
                       <div className="flex items-start gap-2">
-                        <span className="mt-0.5 text-emerald-400">✓</span>
+                        <span className="mt-0.5 text-[#00c853]">✓</span>
                         <span className="text-gray-300">
                           Buscar <span className="font-medium text-amber-300">{setup.pdArray}</span>{" "}
                           não mitigado
@@ -151,7 +151,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                       </div>
                     )}
                     <div className="flex items-start gap-2">
-                      <span className="mt-0.5 text-emerald-400">✓</span>
+                      <span className="mt-0.5 text-[#00c853]">✓</span>
                       <span className="text-gray-300">
                         Refinamento em{" "}
                         <span className="font-medium text-cyan-300">{setup.ltf}</span>
@@ -200,7 +200,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
           {/* Worst Setups */}
           {worstSetups.length > 0 && worstSetups[0].stats.winRate < 50 && (
             <div className="space-y-4">
-              <div className="text-sm font-semibold text-red-400">🚨 SETUPS PARA EVITAR</div>
+              <div className="text-sm font-semibold text-[#ef4444]">🚨 SETUPS PARA EVITAR</div>
               {worstSetups
                 .filter((s) => s.stats.winRate < 50)
                 .map((setup) => (
@@ -212,7 +212,7 @@ export function ReportView({ nestedMetrics, currency }: ReportViewProps) {
                       <div className="text-sm font-bold text-white">
                         ⚠️ WIN RATE {setup.stats.winRate.toFixed(0)}% ({setup.stats.totalTrades}T)
                       </div>
-                      <span className={setup.stats.pnl >= 0 ? "text-emerald-400" : "text-red-400"}>
+                      <span className={setup.stats.pnl >= 0 ? "text-[#04df73]" : "text-[#ff6467]"}>
                         {formatCurrency(setup.stats.pnl, currency)}
                       </span>
                     </div>
