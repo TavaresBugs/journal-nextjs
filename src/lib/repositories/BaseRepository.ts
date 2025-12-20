@@ -3,17 +3,37 @@ import { Result } from "./types";
 import { AppError, ErrorCode, toAppError } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
 
+/**
+ * Classe base abstrata para todos os repositórios.
+ * Fornece métodos CRUD genéricos e tratamento de erro padronizado para o Supabase.
+ *
+ * @template T O tipo da entidade que este repositório gerencia.
+ */
 export abstract class BaseRepository<T> {
   protected supabase: SupabaseClient;
   protected tableName: string;
   protected logger: Logger;
 
+  /**
+   * Cria uma nova instância do repositório.
+   *
+   * @param supabase - O cliente Supabase para interação com o banco de dados.
+   * @param tableName - O nome da tabela no banco de dados.
+   */
   constructor(supabase: SupabaseClient, tableName: string) {
     this.supabase = supabase;
     this.tableName = tableName;
     this.logger = new Logger(`${tableName}Repository`);
   }
 
+  /**
+   * Executa uma query do Supabase com tratamento de erro padronizado.
+   * Captura exceções e erros do Supabase, convertendo-os para AppError.
+   *
+   * @template R - O tipo de retorno esperado da query.
+   * @param fn - Uma função que retorna a promise da query do Supabase.
+   * @returns Um objeto Result contendo os dados (em caso de sucesso) ou um erro.
+   */
   protected async query<R>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fn: () => PromiseLike<{ data: R | null; error: any }>
@@ -55,26 +75,57 @@ export abstract class BaseRepository<T> {
 
   // Basic CRUD
 
+  /**
+   * Busca um registro pelo ID.
+   *
+   * @param id - O ID do registro.
+   * @returns O registro encontrado ou erro se falhar/não encontrar (dependendo da query).
+   */
   async getById(id: string): Promise<Result<T, AppError>> {
     return this.query<T>(() =>
       this.supabase.from(this.tableName).select("*").eq("id", id).single()
     );
   }
 
+  /**
+   * Busca múltiplos registros por uma lista de IDs.
+   *
+   * @param ids - Array de IDs para buscar.
+   * @returns Lista de registros encontrados.
+   */
   async getByIds(ids: string[]): Promise<Result<T[], AppError>> {
     return this.query<T[]>(() => this.supabase.from(this.tableName).select("*").in("id", ids));
   }
 
+  /**
+   * Cria um novo registro.
+   *
+   * @param data - Dados parciais da entidade a ser criada.
+   * @returns O registro criado.
+   */
   async create(data: Partial<T>): Promise<Result<T, AppError>> {
     return this.query<T>(() => this.supabase.from(this.tableName).insert(data).select().single());
   }
 
+  /**
+   * Atualiza um registro existente.
+   *
+   * @param id - O ID do registro a ser atualizado.
+   * @param data - Dados parciais para atualizar.
+   * @returns O registro atualizado.
+   */
   async update(id: string, data: Partial<T>): Promise<Result<T, AppError>> {
     return this.query<T>(() =>
       this.supabase.from(this.tableName).update(data).eq("id", id).select().single()
     );
   }
 
+  /**
+   * Remove um registro pelo ID.
+   *
+   * @param id - O ID do registro a ser removido.
+   * @returns True se removido com sucesso, ou erro em caso de falha.
+   */
   async delete(id: string): Promise<Result<boolean, AppError>> {
     const res = await this.query<null>(() =>
       this.supabase.from(this.tableName).delete().eq("id", id)

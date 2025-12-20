@@ -1,6 +1,13 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * Combina classes CSS condicionalmente e resolve conflitos do Tailwind.
+ * Utilitário padrão para usar com shadcn/ui.
+ *
+ * @param inputs - Lista de classes ou objetos condicionais
+ * @returns String com as classes combinadas e mergeadas
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -17,7 +24,13 @@ export function getErrorMessage(error: unknown): string {
   return "An unknown error occurred";
 }
 
-// Helper to convert Base64 to Blob
+/**
+ * Converte uma string Base64 em um objeto Blob.
+ * Útil para upload de imagens que estão em formato base64.
+ *
+ * @param base64 - String no formato "data:image/png;base64,..."
+ * @returns Blob pronto para upload
+ */
 export function base64ToBlob(base64: string): Blob {
   try {
     const arr = base64.split(",");
