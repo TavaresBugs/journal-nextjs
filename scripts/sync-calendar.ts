@@ -14,7 +14,7 @@
  *   SUPABASE_SERVICE_ROLE_KEY - Chave de serviço do Supabase
  */
 
-import { syncForexCalendar } from "../src/lib/services/forexCalendar.service";
+import { syncForexCalendar } from "../src/services/core/forexCalendar.service";
 import {
   upsertEconomicEvents,
   deleteOldEvents,
