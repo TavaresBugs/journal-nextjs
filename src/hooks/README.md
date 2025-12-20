@@ -6,21 +6,25 @@ Custom hooks React para gerenciar estado e side effects.
 
 ```
 hooks/
-├── useAdminData.ts        # Dados administrativos
-├── useAuth.ts             # Autenticação e sessão
-├── useBlockBodyScroll.ts  # Bloqueia scroll do body
-├── useCommunityData.ts    # Dados da comunidade
-├── useDashboardActions.ts # Ações do dashboard
-├── useDashboardData.ts    # Dados agregados do dashboard
-├── useDayStats.ts         # Estatísticas diárias
-├── useError.ts            # Gerenciamento de erros
-├── useImageCache.ts       # Cache de imagens
-├── useImageUpload.ts      # Upload de imagens
-├── useJournalForm.ts      # Estado do form de journal
-├── useLazyImage.tsx       # Lazy loading de imagens
-├── useMentalHub.ts        # Hub de controle emocional
-├── useMentorData.ts       # Dados do mentor AI
-└── usePlaybookMetrics.ts  # Métricas de playbooks
+├── useAccountValidation.ts # Validação de UUID de conta
+├── useAdminData.ts         # Dados administrativos
+├── useAuth.ts              # Autenticação e sessão
+├── useBlockBodyScroll.ts   # Bloqueia scroll do body
+├── useCommunityData.ts     # Dados da comunidade
+├── useDashboardActions.ts  # Ações do dashboard
+├── useDashboardData.ts     # Dados agregados do dashboard (orquestrador)
+├── useDashboardInit.ts     # Inicialização de dados do dashboard
+├── useDayStats.ts          # Estatísticas diárias
+├── useError.ts             # Gerenciamento de erros
+├── useImageCache.ts        # Cache de imagens
+├── useImageUpload.ts       # Upload de imagens
+├── useJournalForm.ts       # Estado do form de journal
+├── useLazyImage.tsx        # Lazy loading de imagens
+├── useMentalHub.ts         # Hub de controle emocional
+├── useMentorData.ts        # Dados do mentor AI
+├── usePlaybookMetrics.ts   # Métricas de playbooks
+├── useTradeMetrics.ts      # Cálculos de métricas de trades
+└── useUserPermissions.ts   # Verificação de permissões (admin/mentor)
 ```
 
 ## 📋 Categorias
@@ -37,17 +41,51 @@ const { user, signIn, signOut, loading } = useAuth();
 
 ### 📊 Data Fetching
 
-| Hook                 | Descrição                            |
-| -------------------- | ------------------------------------ |
-| `useDashboardData`   | Trades, stats, métricas consolidadas |
-| `useDayStats`        | Estatísticas de um dia específico    |
-| `useAdminData`       | Dados para o painel admin            |
-| `useCommunityData`   | Dados da comunidade                  |
-| `useMentorData`      | Dados para o sistema de mentoria     |
-| `usePlaybookMetrics` | Métricas detalhadas de playbooks     |
+| Hook                   | Descrição                                   |
+| ---------------------- | ------------------------------------------- |
+| `useDashboardData`     | Hook composto - orquestra os hooks abaixo   |
+| `useDashboardInit`     | Inicialização de dados (trades, entries...) |
+| `useTradeMetrics`      | Cálculos de métricas de trading             |
+| `useAccountValidation` | Validação de UUID de contas                 |
+| `useUserPermissions`   | Verificação de permissões (admin/mentor)    |
+| `useDayStats`          | Estatísticas de um dia específico           |
+| `useAdminData`         | Dados para o painel admin                   |
+| `useCommunityData`     | Dados da comunidade                         |
+| `useMentorData`        | Dados para o sistema de mentoria            |
+| `usePlaybookMetrics`   | Métricas detalhadas de playbooks            |
+
+#### Uso Simples (Composite Hook)
 
 ```typescript
-const { trades, stats, isLoading, error } = useDashboardData(accountId);
+// Usa o hook composto que orquestra todos os outros
+const data = useDashboardData(accountId);
+const { trades, metrics, isLoading, isAdminUser } = data;
+```
+
+#### Uso Granular (Individual Hooks)
+
+```typescript
+// Quando você precisa de controle mais fino
+import {
+  useAccountValidation,
+  useDashboardInit,
+  useTradeMetrics,
+  useUserPermissions,
+} from "@/hooks/useDashboardData";
+
+// Apenas validação de conta
+const { isValidAccount } = useAccountValidation(accountId);
+
+// Apenas métricas de trading
+const { metrics, advancedMetrics, pnlMetrics } = useTradeMetrics({
+  trades,
+  entries,
+  initialBalance: 10000,
+  currentBalance: 12500,
+});
+
+// Apenas permissões
+const { isAdminUser, isMentorUser } = useUserPermissions();
 ```
 
 ### 📝 Forms & State

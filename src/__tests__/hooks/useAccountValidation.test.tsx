@@ -1,0 +1,62 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { useAccountValidation } from "@/hooks/useAccountValidation";
+import { useRouter } from "next/navigation";
+
+vi.mock("next/navigation");
+
+describe("useAccountValidation", () => {
+  const mockRouter = { push: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
+  });
+
+  it("should return isValidAccount true for valid UUID", () => {
+    const validUUID = "123e4567-e89b-12d3-a456-426614174000";
+    const { result } = renderHook(() => useAccountValidation(validUUID));
+
+    expect(result.current.isValidAccount).toBe(true);
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it("should return isValidAccount false for invalid UUID", () => {
+    const invalidUUID = "invalid-id";
+    const { result } = renderHook(() => useAccountValidation(invalidUUID));
+
+    expect(result.current.isValidAccount).toBe(false);
+  });
+
+  it("should redirect to home for invalid UUID", async () => {
+    const invalidUUID = "not-a-uuid";
+    renderHook(() => useAccountValidation(invalidUUID));
+
+    await waitFor(() => {
+      expect(mockRouter.push).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("should accept uppercase UUIDs", () => {
+    const uppercaseUUID = "123E4567-E89B-12D3-A456-426614174000";
+    const { result } = renderHook(() => useAccountValidation(uppercaseUUID));
+
+    expect(result.current.isValidAccount).toBe(true);
+  });
+
+  it("should reject malformed UUIDs", () => {
+    const malformedUUIDs = [
+      "123e4567-e89b-12d3-a456", // too short
+      "123e4567-e89b-12d3-a456-426614174000-extra", // too long
+      "not-valid-at-all",
+      "",
+      "123e4567e89b12d3a456426614174000", // no dashes
+    ];
+
+    malformedUUIDs.forEach((uuid) => {
+      const { result } = renderHook(() => useAccountValidation(uuid));
+      expect(result.current.isValidAccount).toBe(false);
+    });
+  });
+});
