@@ -172,19 +172,35 @@ export async function getPublicPlaybooks(limit = 20, offset = 0): Promise<Shared
     userStars = new Set((stars || []).map((s) => s.shared_playbook_id));
   }
 
-  // Buscar nomes dos usuários de forma separada
+  // Buscar nomes e avatars dos usuários (profiles como fonte principal)
   const userIds = [...new Set((data || []).map((item) => item.user_id))];
   const userNames: Map<string, string> = new Map();
+  const userAvatars: Map<string, string> = new Map();
 
   if (userIds.length > 0) {
-    const { data: users } = await supabase
-      .from("users_extended")
-      .select("id, name")
+    // Buscar de profiles (fonte principal)
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_url")
       .in("id", userIds);
 
-    (users || []).forEach((u) => {
-      if (u.name) userNames.set(u.id, u.name);
+    (profiles || []).forEach((p) => {
+      if (p.display_name) userNames.set(p.id, p.display_name);
+      if (p.avatar_url) userAvatars.set(p.id, p.avatar_url);
     });
+
+    // Fallback para users_extended (nomes que não vieram de profiles)
+    const missingNameIds = userIds.filter((id) => !userNames.has(id));
+    if (missingNameIds.length > 0) {
+      const { data: users } = await supabase
+        .from("users_extended")
+        .select("id, name")
+        .in("id", missingNameIds);
+
+      (users || []).forEach((u) => {
+        if (u.name && !userNames.has(u.id)) userNames.set(u.id, u.name);
+      });
+    }
   }
 
   // Buscar stats do autor para cada playbook
@@ -407,7 +423,7 @@ export async function getPublicPlaybooks(limit = 20, offset = 0): Promise<Shared
       ...mapSharedPlaybookFromDB(item),
       playbook: mappedPlaybook,
       userName: userNames.get(item.user_id) || "Trader Anônimo",
-      userAvatar: undefined,
+      userAvatar: userAvatars.get(item.user_id),
       hasUserStarred: userStars.has(item.id),
       authorStats: authorStatsResult,
     };

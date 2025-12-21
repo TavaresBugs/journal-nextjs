@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import {
   Modal,
   Input,
@@ -20,6 +21,46 @@ interface CreateAccountModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateAccount: (account: Omit<Account, "id" | "createdAt" | "updatedAt" | "userId">) => void;
+}
+
+// Mapping of currency codes to flag SVG paths
+const CURRENCY_FLAGS: Record<string, string> = {
+  USD: "/assets/icons/flags/usd.svg",
+  EUR: "/assets/icons/flags/eur.svg",
+  GBP: "/assets/icons/flags/gbp.svg",
+  JPY: "/assets/icons/flags/jpy.svg",
+  AUD: "/assets/icons/flags/aud.svg",
+  CAD: "/assets/icons/flags/cad.svg",
+  CHF: "/assets/icons/flags/chf.svg",
+  NZD: "/assets/icons/flags/nzd.svg",
+  CNY: "/assets/icons/flags/cny.svg",
+};
+
+// Currency flag component
+function CurrencyFlag({ currency, size = 20 }: { currency: string; size?: number }) {
+  const flagPath = CURRENCY_FLAGS[currency.toUpperCase()];
+
+  if (!flagPath) {
+    // Fallback: show currency text in a colored circle
+    return (
+      <span
+        className="flex items-center justify-center rounded-full bg-gray-600 text-[10px] font-bold text-white"
+        style={{ width: size, height: size }}
+      >
+        {currency.slice(0, 2)}
+      </span>
+    );
+  }
+
+  return (
+    <Image
+      src={flagPath}
+      alt={`${currency} flag`}
+      width={size}
+      height={size}
+      className="rounded-full object-cover"
+    />
+  );
 }
 
 export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateAccountModalProps) {
@@ -73,20 +114,29 @@ export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateA
         />
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-300">Moeda</label>
+          {/* Currency Select with Flag */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-gray-400">
+              Moeda <span className="ml-1 text-red-500">*</span>
+            </label>
             <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-4 text-gray-100 uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none">
-                <SelectValue placeholder="Selecione..." />
+              <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-lg border border-gray-700 bg-[#232b32] px-3 text-sm text-gray-100 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <div className="flex items-center gap-2.5">
+                  <CurrencyFlag currency={currency} />
+                  <span className="uppercase">{currency}</span>
+                </div>
               </SelectTrigger>
-              <SelectContent className="border-gray-700 bg-gray-800">
+              <SelectContent className="border-gray-700 bg-[#232b32]">
                 {currencies.map((curr) => (
                   <SelectItem
                     key={curr}
                     value={curr}
-                    className="cursor-pointer py-2 text-gray-100 uppercase hover:bg-gray-700 focus:bg-gray-700"
+                    className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
                   >
-                    {curr}
+                    <div className="flex items-center gap-2.5">
+                      <CurrencyFlag currency={curr} />
+                      <span className="uppercase">{curr}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -105,18 +155,21 @@ export function CreateAccountModal({ isOpen, onClose, onCreateAccount }: CreateA
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-300">Alavancagem</label>
+          {/* Leverage Select */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-gray-400">
+              Alavancagem <span className="ml-1 text-red-500">*</span>
+            </label>
             <Select value={leverage} onValueChange={setLeverage}>
-              <SelectTrigger className="flex h-11 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-4 text-gray-100 focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+              <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-lg border border-gray-700 bg-[#232b32] px-3 text-sm text-gray-100 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
-              <SelectContent className="border-gray-700 bg-gray-800">
+              <SelectContent className="border-gray-700 bg-[#232b32]">
                 {leverages.map((lev) => (
                   <SelectItem
                     key={lev}
                     value={lev}
-                    className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                    className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
                   >
                     {lev}
                   </SelectItem>

@@ -6,6 +6,24 @@ import { supabase } from "./supabase";
 import { getErrorMessage } from "./utils";
 import type { User, AuthProvider } from "@/types";
 
+/**
+ * Atualiza o último login do usuário na tabela users_extended.
+ */
+async function updateLastLoginInternal(userId: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from("users_extended")
+      .update({ last_login_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("[updateLastLogin] Error:", error);
+    }
+  } catch (error) {
+    console.error("[updateLastLogin] Error:", error);
+  }
+}
+
 // ============================================
 // AUTH STATE
 // ============================================
@@ -52,9 +70,13 @@ export async function getCurrentUser(): Promise<User | null> {
 export function onAuthStateChange(callback: (user: User | null) => void) {
   const {
     data: { subscription },
-  } = supabase.auth.onAuthStateChange(async (_event, session) => {
+  } = supabase.auth.onAuthStateChange(async (event, session) => {
     if (session?.user) {
       const user = await getCurrentUser();
+      // Atualizar último login em SIGNED_IN
+      if (event === "SIGNED_IN" && session.user.id) {
+        updateLastLoginInternal(session.user.id).catch(() => {});
+      }
       callback(user);
     } else {
       callback(null);
@@ -131,6 +153,9 @@ export async function signInWithEmail(
       provider: "email",
       createdAt: data.user.created_at,
     };
+
+    // Atualizar último login
+    updateLastLoginInternal(data.user.id).catch(() => {});
 
     return { user, error: null };
   } catch (error: unknown) {

@@ -157,7 +157,40 @@ export async function getAllUsers(): Promise<UserExtended[]> {
     return [];
   }
 
-  return data ? data.map(mapUserFromDB) : [];
+  if (!data || data.length === 0) return [];
+
+  // Buscar dados de profiles (display_name e avatar como fonte principal)
+  const userIds = data.map((u) => u.id);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url")
+    .in("id", userIds);
+
+  // Criar mapas de profiles
+  const profileNameMap = new Map<string, string>();
+  const profileAvatarMap = new Map<string, string>();
+  if (profiles) {
+    profiles.forEach((p) => {
+      if (p.display_name) profileNameMap.set(p.id, p.display_name);
+      if (p.avatar_url) profileAvatarMap.set(p.id, p.avatar_url);
+    });
+  }
+
+  // Mesclar dados, priorizando profiles
+  return data.map((db) => ({
+    id: db.id,
+    email: db.email,
+    name: profileNameMap.get(db.id) || db.name || undefined,
+    avatarUrl: profileAvatarMap.get(db.id) || db.avatar_url || undefined,
+    status: db.status as UserStatus,
+    role: db.role as UserRole,
+    approvedAt: db.approved_at || undefined,
+    approvedBy: db.approved_by || undefined,
+    notes: db.notes || undefined,
+    lastLoginAt: db.last_login_at || undefined,
+    createdAt: db.created_at,
+    updatedAt: db.updated_at,
+  }));
 }
 
 /**

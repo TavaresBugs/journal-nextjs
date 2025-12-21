@@ -81,6 +81,7 @@ export function AdminUserTable({ users, onApprove, onSuspend, loading }: AdminUs
                         src={user.avatarUrl}
                         alt=""
                         fill
+                        sizes="40px"
                         className="object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = "none";

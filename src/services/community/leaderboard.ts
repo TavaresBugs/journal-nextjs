@@ -178,9 +178,34 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     return [];
   }
 
-  return (data || []).map((item, index) => ({
+  if (!data || data.length === 0) return [];
+
+  // Buscar nomes e avatars dos perfis (fonte principal)
+  const userIds = data.map((item) => item.user_id);
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, display_name, avatar_url")
+    .in("id", userIds);
+
+  // Criar mapas de nomes e avatars
+  const nameMap = new Map<string, string>();
+  const avatarMap = new Map<string, string>();
+  if (profiles) {
+    profiles.forEach((profile) => {
+      if (profile.display_name) {
+        nameMap.set(profile.id, profile.display_name);
+      }
+      if (profile.avatar_url) {
+        avatarMap.set(profile.id, profile.avatar_url);
+      }
+    });
+  }
+
+  return data.map((item, index) => ({
     userId: item.user_id,
-    displayName: item.display_name,
+    // Usar nome de profiles como prioridade, fallback para leaderboard_opt_in
+    displayName: nameMap.get(item.user_id) || item.display_name,
+    avatarUrl: avatarMap.get(item.user_id),
     showWinRate: item.show_win_rate,
     showProfitFactor: item.show_profit_factor,
     showTotalTrades: item.show_total_trades,

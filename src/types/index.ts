@@ -437,6 +437,7 @@ export interface SharedPlaybook {
 export interface LeaderboardEntry {
   userId: string;
   displayName: string;
+  avatarUrl?: string; // Profile avatar
   showWinRate: boolean;
   showProfitFactor: boolean;
   showTotalTrades: boolean;

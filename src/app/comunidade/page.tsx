@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button, SegmentedToggle } from "@/components/ui";
 import { ViewSharedPlaybookModal } from "@/components/playbook/ViewSharedPlaybookModal";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
@@ -234,9 +235,19 @@ function PlaybooksGrid({
               {/* Author Info */}
               <div className="mt-4 flex items-center justify-between border-t border-gray-700/50 pt-3 text-sm text-gray-500">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/20 text-xs font-bold text-cyan-400">
-                    {playbook.userName?.charAt(0).toUpperCase() || "T"}
-                  </div>
+                  {playbook.userAvatar ? (
+                    <Image
+                      src={playbook.userAvatar}
+                      alt={playbook.userName || "Avatar"}
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full border border-cyan-500/30 bg-cyan-500/20 text-xs font-bold text-cyan-400">
+                      {playbook.userName?.charAt(0).toUpperCase() || "T"}
+                    </div>
+                  )}
                   <span className="text-gray-400">{playbook.userName || "Trader Anônimo"}</span>
                 </div>
                 <span className="flex items-center gap-1">
@@ -372,19 +383,29 @@ function LeaderboardTable({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-full font-bold ${
-                          index === 0
-                            ? "border border-amber-500/30 bg-amber-500/20 text-amber-400"
-                            : index === 1
-                              ? "border border-gray-400/30 bg-gray-400/20 text-gray-300"
-                              : index === 2
-                                ? "border border-orange-500/30 bg-orange-500/20 text-orange-400"
-                                : "border border-gray-700 bg-gray-800 text-gray-400"
-                        }`}
-                      >
-                        {entry.displayName?.charAt(0).toUpperCase() || "T"}
-                      </div>
+                      {entry.avatarUrl ? (
+                        <Image
+                          src={entry.avatarUrl}
+                          alt={entry.displayName || "Avatar"}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full font-bold ${
+                            index === 0
+                              ? "border border-amber-500/30 bg-amber-500/20 text-amber-400"
+                              : index === 1
+                                ? "border border-gray-400/30 bg-gray-400/20 text-gray-300"
+                                : index === 2
+                                  ? "border border-orange-500/30 bg-orange-500/20 text-orange-400"
+                                  : "border border-gray-700 bg-gray-800 text-gray-400"
+                          }`}
+                        >
+                          {entry.displayName?.charAt(0).toUpperCase() || "T"}
+                        </div>
+                      )}
                       <span className="font-medium text-white">
                         {entry.displayName || "Trader"}
                       </span>

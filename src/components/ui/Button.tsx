@@ -15,6 +15,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | "ghost-success"
     | "gradient-success"
     | "gradient-danger"
+    | "gradient-info"
     | "gold"
     | "purple"
     | "zorin-primary"
@@ -84,6 +85,10 @@ export function Button({
     // Gradient Danger (Solid Red Gradient) - NO font-weight here
     "gradient-danger":
       "bg-linear-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-lg shadow-red-500/30 border-none",
+
+    // Gradient Info (Solid Blue Gradient) - NO font-weight here
+    "gradient-info":
+      "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/30 border-none",
 
     // Gold (for Edit buttons)
     gold: "bg-yellow-500/10 text-yellow-500 border border-yellow-500 hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] font-black",
@@ -170,7 +175,7 @@ export function Button({
                     : variant === "purple"
                       ? "bg-purple-500"
                       : variant === "zorin-success"
-                        ? "bg-[#00c853]"
+                        ? "bg-zorin-accent"
                         : variant === "zorin-danger"
                           ? "bg-[#ef4444]"
                           : variant === "zorin-warning"
