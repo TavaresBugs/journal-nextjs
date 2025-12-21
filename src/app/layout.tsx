@@ -31,7 +31,9 @@ export default function RootLayout({
         <SkipLinks />
         <AxeAccessibility />
         <ToastProvider>
-          <ClientProviders>{children}</ClientProviders>
+          <main id="main-content" tabIndex={-1} className="outline-none">
+            <ClientProviders>{children}</ClientProviders>
+          </main>
         </ToastProvider>
         <Analytics />
         <SpeedInsights />

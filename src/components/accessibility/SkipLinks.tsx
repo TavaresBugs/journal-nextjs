@@ -53,13 +53,6 @@ export function SkipLinks() {
       >
         ⏭️ Pular para o conteúdo principal
       </a>
-      <a
-        href="#dashboard-navigation"
-        onClick={(e) => handleClick(e, "dashboard-navigation")}
-        className={`${skipLinkStyles} focus:top-16 focus:left-4`}
-      >
-        🧭 Pular para a navegação
-      </a>
     </div>
   );
 }

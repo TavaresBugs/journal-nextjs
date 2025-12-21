@@ -9,9 +9,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
-      <main id="main-content" tabIndex={-1} className="outline-none">
-        {children}
-      </main>
+      {children}
       <CookieConsent />
     </QueryProvider>
   );
