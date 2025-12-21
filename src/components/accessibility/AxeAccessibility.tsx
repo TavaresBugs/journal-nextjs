@@ -11,7 +11,7 @@ export function AxeAccessibility() {
     if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
       import("@axe-core/react").then((axe) => {
         import("react-dom").then((ReactDOM) => {
-          axe.default(React, ReactDOM, 1000);
+          axe.default(React, ReactDOM, 2000);
           console.log("🔍 axe-core initialized - accessibility violations will appear in console");
         });
       });
