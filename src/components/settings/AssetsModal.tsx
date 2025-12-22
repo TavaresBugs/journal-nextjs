@@ -123,9 +123,9 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
   const groupOrder = ["Forex", "Futures", "Commodity", "Crypto"];
 
   const modalTitle = (
-    <div className="flex items-center gap-2">
-      <Settings2 className="h-5 w-5 text-gray-400" />
-      <span>Configuração de Ativos</span>
+    <div className="flex items-center gap-3">
+      <Settings2 className="h-6 w-6 text-[#bde6fb]" />
+      <span className="text-xl font-bold text-gray-100">Configuração de Ativos</span>
     </div>
   );
 

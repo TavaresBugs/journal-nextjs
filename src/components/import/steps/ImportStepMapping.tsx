@@ -2,7 +2,6 @@ import React from "react";
 import { ColumnMapper } from "../ColumnMapper";
 import { ColumnMapping, convertToNYTime } from "@/services/trades/importParsers";
 import { RawTradeData, parseTradeDate } from "@/services/trades/import";
-import { Account } from "@/types";
 import { cn } from "@/lib/utils/general";
 import dayjs from "dayjs";
 import {
@@ -19,9 +18,7 @@ interface ImportStepMappingProps {
   headers: string[];
   mapping: ColumnMapping;
   setMapping: (mapping: ColumnMapping) => void;
-  accounts: Account[];
   selectedAccountId: string;
-  setSelectedAccountId: (id: string) => void;
   brokerTimezone: string;
   setBrokerTimezone: (tz: string) => void;
   importMode: "append" | "replace";
@@ -35,9 +32,7 @@ export const ImportStepMapping: React.FC<ImportStepMappingProps> = ({
   headers,
   mapping,
   setMapping,
-  accounts,
   selectedAccountId,
-  setSelectedAccountId,
   brokerTimezone,
   setBrokerTimezone,
   importMode,
@@ -110,26 +105,6 @@ export const ImportStepMapping: React.FC<ImportStepMappingProps> = ({
             de importar.
           </p>
         </button>
-      </div>
-
-      <div>
-        <label className="mb-2 block text-sm font-medium text-gray-400">Conta de Destino</label>
-        <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-          <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
-            <SelectValue placeholder="Selecione..." />
-          </SelectTrigger>
-          <SelectContent className="border-gray-700 bg-gray-800">
-            {accounts.map((acc) => (
-              <SelectItem
-                key={acc.id}
-                value={acc.id}
-                className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
-              >
-                {acc.name} ({acc.currency})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-800 bg-gray-900">

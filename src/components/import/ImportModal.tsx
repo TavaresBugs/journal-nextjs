@@ -18,7 +18,6 @@ import {
 } from "@/services/trades/importParsers";
 import { getAccounts } from "@/services/core/account";
 import { saveTrade } from "@/services/trades/trade";
-import { Account } from "@/types";
 import { ImportStepUpload } from "./steps/ImportStepUpload";
 import { ImportStepMapping } from "./steps/ImportStepMapping";
 import { ImportStepReview } from "./steps/ImportStepReview";
@@ -42,8 +41,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   const [dataSource, setDataSource] = useState<DataSource>(null);
 
   const [error, setError] = useState<string | null>(null);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(defaultAccountId || "");
 
   // Timezone State
   const [brokerTimezone, setBrokerTimezone] = useState<string>("Europe/Helsinki"); // Default MT4
@@ -81,12 +79,14 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadAccounts = async () => {
-    const loadedAccounts = await getAccounts();
-    setAccounts(loadedAccounts);
+    // Use defaultAccountId if provided, otherwise load first account
     if (defaultAccountId) {
       setSelectedAccountId(defaultAccountId);
-    } else if (loadedAccounts.length > 0) {
-      setSelectedAccountId(loadedAccounts[0].id);
+    } else {
+      const loadedAccounts = await getAccounts();
+      if (loadedAccounts.length > 0) {
+        setSelectedAccountId(loadedAccounts[0].id);
+      }
     }
   };
 
@@ -314,9 +314,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             headers={headers}
             mapping={mapping}
             setMapping={setMapping}
-            accounts={accounts}
             selectedAccountId={selectedAccountId}
-            setSelectedAccountId={setSelectedAccountId}
             brokerTimezone={brokerTimezone}
             setBrokerTimezone={setBrokerTimezone}
             importMode={importMode}
