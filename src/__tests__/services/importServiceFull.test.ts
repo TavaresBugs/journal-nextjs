@@ -102,7 +102,9 @@ describe("Import Service Extended Tests", () => {
       // We expect it to fail later finding "Positions" section,
       // but it confirms it entered the CSV path if it throws the specific "Positions" error
       // instead of "Not a valid XLSX"
-      await expect(parseTradingFile(file)).rejects.toThrow('Section "Positions" not found');
+      await expect(parseTradingFile(file)).rejects.toThrow(
+        'Section "Positions"/"Posições" not found'
+      );
     });
 
     it("throws error for invalid XLSX (not ZIP and not HTML)", async () => {

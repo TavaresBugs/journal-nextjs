@@ -5,7 +5,6 @@ interface ImportStepUploadProps {
   onFileSelect: (e: React.ChangeEvent<HTMLInputElement>, source: DataSource) => void;
   onSourceSelect: (source: DataSource) => void;
   selectedSource: DataSource;
-  onCancel: () => void;
   error: string | null;
 }
 
@@ -13,7 +12,6 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
   onFileSelect,
   onSourceSelect,
   selectedSource,
-  onCancel,
   error,
 }) => {
   // Hooks must be at top level
@@ -133,15 +131,6 @@ export const ImportStepUpload: React.FC<ImportStepUploadProps> = ({
               </div>
             </div>
           </div>
-        </div>
-
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={onCancel}
-            className="text-sm text-gray-500 transition-colors hover:text-gray-300"
-          >
-            Cancelar
-          </button>
         </div>
       </div>
     );

@@ -302,7 +302,6 @@ export const ImportModal: React.FC<ImportModalProps> = ({
             onSourceSelect={handleSourceSelect}
             onFileSelect={handleFileSelect}
             selectedSource={dataSource}
-            onCancel={onClose}
             error={error}
           />
         );
