@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import { Modal } from "@/components/ui/Modal";
-import { ModalFooterActions } from "@/components/ui/ModalFooterActions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/switch";
@@ -107,7 +106,8 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
   };
 
   // Handle save
-  const handleSave = () => {
+  // Handle close - save changes automatically
+  const handleClose = () => {
     onSave?.(configs);
     onClose();
   };
@@ -124,13 +124,13 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
 
   const modalTitle = (
     <div className="flex items-center gap-2">
-      <Settings2 className="h-5 w-5 text-cyan-500" />
+      <Settings2 className="h-5 w-5 text-gray-400" />
       <span>Configuração de Ativos</span>
     </div>
   );
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="5xl">
+    <Modal isOpen={isOpen} onClose={handleClose} title={modalTitle} maxWidth="5xl">
       <div className="flex flex-col gap-4">
         {/* Description */}
         <p className="text-sm text-gray-400">
@@ -262,16 +262,6 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
             <div className="py-8 text-center text-gray-500">Nenhum ativo encontrado</div>
           )}
         </div>
-
-        {/* Footer */}
-        <ModalFooterActions
-          mode="save-cancel"
-          onPrimary={handleSave}
-          onSecondary={onClose}
-          primaryLabel="Salvar Alterações"
-          secondaryLabel="Cancelar"
-          isFullWidth
-        />
       </div>
     </Modal>
   );
