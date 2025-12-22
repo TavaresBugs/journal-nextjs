@@ -108,6 +108,12 @@ export const ASSET_OPTIONS: AssetOption[] = [
     type: "Futures",
   },
   {
+    value: "USTEC",
+    label: "USTEC",
+    name: "NASDAQ 100 (CFD)",
+    type: "Futures",
+  },
+  {
     value: "DXY",
     label: "DXY",
     name: "US Dollar Index",

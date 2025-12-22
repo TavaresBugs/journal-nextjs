@@ -170,6 +170,15 @@ export const DEFAULT_ASSETS: DefaultAsset[] = [
     icon: "SPX",
     color: "#10B981",
   },
+  {
+    symbol: "USTEC",
+    name: "NASDAQ-100 Index (CFD)",
+    type: "indices",
+    multiplier: 1,
+    market: "CFD",
+    icon: "USTEC",
+    color: "#F59E0B",
+  },
 
   // ============================================
   // COMMODITIES

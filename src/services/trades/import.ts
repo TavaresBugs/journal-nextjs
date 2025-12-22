@@ -118,15 +118,16 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
         let positionsRowIndex = -1;
         for (let i = 0; i < rows.length; i++) {
           const row = rows[i];
-          // Check if row contains "Positions" (usually first cell)
-          if (row && row[0] && String(row[0]).trim() === "Positions") {
+          // Check if row contains "Positions" or "Posições" (PT) (usually first cell)
+          const firstCell = row && row[0] ? String(row[0]).trim().toLowerCase() : "";
+          if (firstCell === "positions" || firstCell === "posições") {
             positionsRowIndex = i;
             break;
           }
         }
 
         if (positionsRowIndex === -1) {
-          throw new Error('Section "Positions" not found in the file.');
+          throw new Error('Section "Positions"/"Posições" not found in the file.');
         }
 
         // The header row is usually the next row after "Positions"
@@ -144,31 +145,44 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
         const uniqueHeaders: string[] = [];
         const headerCounts: { [key: string]: number } = {};
 
+        // Portuguese to English header translation map
+        const ptToEnHeaderMap: { [key: string]: string } = {
+          ativo: "Symbol",
+          tipo: "Type",
+          volume: "Volume",
+          comissão: "Commission",
+          lucro: "Profit",
+          position: "Position", // Already English but sometimes mixed
+          "s / l": "S/L",
+          "t / p": "T/P",
+        };
+
         originalHeaders.forEach((header, index) => {
           const trimmedHeader = String(header).trim();
-
-          // Specific logic for known duplicates based on position if they match standard MetaTrader export
-          // However, to be robust, we can rename specific indices if they match expectations,
-          // or just use a generic counter if the user didn't strictly specify relying on indices
-          // (though the prompt explicitly mentions indices 0, 5, 8, 9).
-
-          // Let's try to be smart about indices first as per requirements
+          const lowerHeader = trimmedHeader.toLowerCase();
           let newHeader = trimmedHeader;
 
-          if (trimmedHeader === "Time") {
+          // 1. Handle duplicate columns by FIXED SLOT POSITION (Time @ 0,8 | Price @ 5,9)
+          // This is more reliable than header names for MetaTrader exports
+          if (lowerHeader === "time" || lowerHeader === "horário") {
             if (index === 0) newHeader = "Entry Time";
             else if (index === 8) newHeader = "Exit Time";
             else {
-              // Fallback if structure is slightly different
               headerCounts["Time"] = (headerCounts["Time"] || 0) + 1;
               newHeader = `Time_${headerCounts["Time"]}`;
             }
-          } else if (trimmedHeader === "Price") {
+          } else if (lowerHeader === "price" || lowerHeader === "preço") {
             if (index === 5) newHeader = "Entry Price";
             else if (index === 9) newHeader = "Exit Price";
             else {
               headerCounts["Price"] = (headerCounts["Price"] || 0) + 1;
               newHeader = `Price_${headerCounts["Price"]}`;
+            }
+          } else {
+            // 2. Translate other Portuguese headers to English
+            const englishHeader = ptToEnHeaderMap[lowerHeader];
+            if (englishHeader) {
+              newHeader = englishHeader;
             }
           }
 
@@ -186,9 +200,10 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
           // Stop if row is empty or seems like a footer/total
           if (!row || row.length === 0) continue;
 
-          // Check if it's the start of another section
-          if (row[0] && String(row[0]).trim() === "Orders") break;
-          if (row[0] && String(row[0]).trim() === "Deals") break;
+          // Check if it's the start of another section (EN or PT)
+          const sectionName = row[0] ? String(row[0]).trim().toLowerCase() : "";
+          if (sectionName === "orders" || sectionName === "ordens") break;
+          if (sectionName === "deals" || sectionName === "ofertas") break;
 
           // Check if it's a new section header (e.g. "Orders") or just empty first cell
           // Sometimes total rows have empty first cell.
@@ -300,12 +315,17 @@ export const parseHTMLReport = async (file: File): Promise<ImportResult> => {
         while ((match = trRegex.exec(content)) !== null) {
           const rowContent = match[1];
 
-          // Check for section headers
-          if (rowContent.includes("<b>Positions</b>")) {
+          // Check for section headers (EN and PT)
+          if (rowContent.includes("<b>Positions</b>") || rowContent.includes("<b>Posições</b>")) {
             inPositionsSection = true;
             continue;
           }
-          if (rowContent.includes("<b>Orders</b>") || rowContent.includes("<b>Deals</b>")) {
+          if (
+            rowContent.includes("<b>Orders</b>") ||
+            rowContent.includes("<b>Ordens</b>") ||
+            rowContent.includes("<b>Deals</b>") ||
+            rowContent.includes("<b>Ofertas</b>")
+          ) {
             inPositionsSection = false;
             // Assuming Positions comes first, we can break here to be faster
             // But if order varies, we just disable the flag

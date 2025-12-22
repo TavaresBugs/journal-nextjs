@@ -79,6 +79,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
       "Open Time",
       "Time",
       "Entry Time",
+      "Horário", // PT MetaTrader
       "Data Abertura",
       "Hora Entrada",
       "Hora entrada",
@@ -95,7 +96,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   else {
     const h = findHeader([
       "Symbol",
-      "Ativo",
+      "Ativo", // PT MetaTrader
       "Instrumento",
       "Instrument",
       "Asset",
@@ -111,7 +112,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   else {
     const h = findHeader([
       "Type",
-      "Tipo",
+      "Tipo", // PT MetaTrader
       "Direção",
       "Direcao",
       "Market pos.",
@@ -151,6 +152,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
       "Open Price",
       "Price",
       "Entry Price",
+      "Preço", // PT MetaTrader
       "Preço Entrada",
       "Preco Entrada",
       "Entry price",
@@ -207,7 +209,7 @@ export const detectColumnMapping = (headers: string[]): ColumnMapping => {
   else {
     const h = findHeader([
       "Profit",
-      "Lucro",
+      "Lucro", // PT MetaTrader
       "P/L",
       "PnL",
       "Net Profit",

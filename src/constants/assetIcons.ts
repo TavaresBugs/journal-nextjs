@@ -112,6 +112,11 @@ export const ASSET_ICON_CONFIGS: Record<string, AssetIconConfig> = {
     color: "#F59E0B",
     bgColor: "#FFFFFF",
   },
+  USTEC: {
+    icons: [`${ICON_BASE}/indices/nasdaq-100.svg`],
+    color: "#F59E0B",
+    bgColor: "#FFFFFF",
+  },
 
   YM: {
     icons: [`${ICON_BASE}/indices/dow-jones.svg`],
