@@ -1,14 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Modal } from "@/components/ui/Modal";
 import { ModalFooterActions } from "@/components/ui/ModalFooterActions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -129,18 +122,20 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
 
   const groupOrder = ["Forex", "Futures", "Commodity", "Crypto"];
 
+  const modalTitle = (
+    <div className="flex items-center gap-2">
+      <Settings2 className="h-5 w-5 text-cyan-500" />
+      <span>Configuração de Ativos</span>
+    </div>
+  );
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex max-h-[85vh] w-full max-w-6xl flex-col border-gray-700 bg-gray-800">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
-            <Settings2 className="h-5 w-5 text-cyan-500" />
-            Configuração de Ativos
-          </DialogTitle>
-          <DialogDescription className="text-gray-400">
-            Configure multiplicadores e ative/desative ativos para o trading
-          </DialogDescription>
-        </DialogHeader>
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} maxWidth="5xl">
+      <div className="flex flex-col gap-4">
+        {/* Description */}
+        <p className="text-sm text-gray-400">
+          Configure multiplicadores e ative/desative ativos para o trading
+        </p>
 
         {/* Search and Filters */}
         <div className="space-y-3">
@@ -174,18 +169,18 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
         </div>
 
         {/* Asset List */}
-        <div className="mt-4 flex-1 space-y-6 overflow-y-auto pr-2">
+        <div className="max-h-[50vh] space-y-6 overflow-y-auto pr-2">
           {groupOrder.map((type) => {
             const typeConfigs = groupedConfigs[type];
             if (!typeConfigs || typeConfigs.length === 0) return null;
 
             return (
               <div key={type} className="space-y-2">
-                <h3 className="sticky top-0 z-50 bg-gray-800 py-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
+                <h3 className="bg-zorin-bg sticky top-0 z-10 py-1 text-xs font-semibold tracking-wider text-gray-400 uppercase">
                   {type}
                 </h3>
 
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {typeConfigs.map((config) => (
                     <div
                       key={config.symbol}
@@ -196,12 +191,12 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
                           : "border-gray-700 bg-gray-900/50 opacity-60"
                       )}
                     >
-                      <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center justify-between gap-3">
                         {/* LEFT: Icon and Info */}
-                        <div className="flex min-w-[140px] flex-1 items-center gap-3">
-                          <AssetIcon symbol={config.symbol} size="md" />
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <AssetIcon symbol={config.symbol} size="sm" />
                           <div className="min-w-0">
-                            <p className="font-semibold text-white">{config.symbol}</p>
+                            <p className="text-sm font-semibold text-white">{config.symbol}</p>
                             <p className="truncate text-xs text-gray-400">{config.name}</p>
                           </div>
                         </div>
@@ -209,7 +204,7 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
                         {/* CENTER: Multiplier Input */}
                         <div className="flex flex-col items-center">
                           <label className="mb-1 flex items-center justify-center gap-1 text-[10px] font-medium text-gray-400">
-                            Multiplicador
+                            Mult.
                             {config.isLocked && (
                               <div
                                 title="🔒 Multiplicador fixo definido pelo contrato"
@@ -230,32 +225,30 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
                               }
                               disabled={config.isLocked}
                               className={cn(
-                                "h-9 w-32 border-gray-600 bg-gray-800/80 text-center text-sm transition-colors focus:border-cyan-500",
+                                "h-8 w-20 border-gray-600 bg-gray-800/80 text-center text-xs transition-colors focus:border-cyan-500",
                                 config.isLocked && "cursor-not-allowed opacity-50"
                               )}
                             />
                             {!config.isLocked && config.multiplier !== config.defaultMultiplier && (
                               <button
                                 onClick={() => resetToDefault(config.symbol)}
-                                className="absolute top-1/2 -right-6 -translate-y-1/2 p-1 text-gray-500 transition-colors hover:text-cyan-400"
+                                className="absolute top-1/2 -right-5 -translate-y-1/2 p-0.5 text-gray-500 transition-colors hover:text-cyan-400"
                                 title="Restaurar padrão"
                               >
-                                <RotateCcw className="h-3.5 w-3.5" />
+                                <RotateCcw className="h-3 w-3" />
                               </button>
                             )}
                           </div>
                         </div>
 
                         {/* RIGHT: Active Switch */}
-                        <div className="flex min-w-[60px] flex-col items-center">
-                          <span className="mb-1 text-[10px] font-medium text-gray-400">Busca</span>
-                          <div className="flex h-9 items-center justify-center">
-                            <Switch
-                              checked={config.isActive}
-                              onCheckedChange={() => toggleActive(config.symbol)}
-                              className="data-[state=checked]:bg-cyan-600"
-                            />
-                          </div>
+                        <div className="flex flex-col items-center">
+                          <span className="mb-1 text-[10px] font-medium text-gray-400">Ativo</span>
+                          <Switch
+                            checked={config.isActive}
+                            onCheckedChange={() => toggleActive(config.symbol)}
+                            className="data-[state=checked]:bg-cyan-600"
+                          />
                         </div>
                       </div>
                     </div>
@@ -271,18 +264,15 @@ export function AssetsModal({ isOpen, onClose, onSave }: AssetsModalProps) {
         </div>
 
         {/* Footer */}
-        <DialogFooter className="border-t border-gray-700 pt-0">
-          <ModalFooterActions
-            mode="save-cancel"
-            onPrimary={handleSave}
-            onSecondary={onClose}
-            primaryLabel="Salvar Alterações"
-            secondaryLabel="Cancelar"
-            isFullWidth
-            className="w-full border-t-0"
-          />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <ModalFooterActions
+          mode="save-cancel"
+          onPrimary={handleSave}
+          onSecondary={onClose}
+          primaryLabel="Salvar Alterações"
+          secondaryLabel="Cancelar"
+          isFullWidth
+        />
+      </div>
+    </Modal>
   );
 }
