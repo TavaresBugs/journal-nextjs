@@ -15,7 +15,7 @@
 
 import { prismaTradeRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
-import { Trade } from "@/types";
+import { Trade, TradeLite } from "@/types";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -267,8 +267,26 @@ export async function getTradeDashboardMetricsAction(accountId: string): Promise
 }
 
 /**
- * Get trades associated with a journal entry.
+ * Get lightweight trade history for analytics.
  */
+export async function getTradeHistoryLiteAction(accountId: string): Promise<TradeLite[]> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const result = await prismaTradeRepo.getHistoryLite(accountId, userId);
+
+    if (result.error) {
+      console.error("[getTradeHistoryLiteAction] Error:", result.error);
+      return [];
+    }
+
+    return result.data || [];
+  } catch (error) {
+    console.error("[getTradeHistoryLiteAction] Unexpected error:", error);
+    return [];
+  }
+}
 export async function getTradesByJournalAction(journalId: string): Promise<Trade[]> {
   try {
     const userId = await getCurrentUserId();

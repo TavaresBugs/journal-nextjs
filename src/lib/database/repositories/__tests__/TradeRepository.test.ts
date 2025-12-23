@@ -177,4 +177,22 @@ describe("PrismaTradeRepository Unit Tests", () => {
       expect(result.data?.winRate).toBe(60);
     });
   });
+
+  describe("getHistoryLite", () => {
+    it("should return lightweight trade history", async () => {
+      const mockTrades = [createMockData.trade()];
+      mockPrisma.trades.findMany.mockResolvedValue(mockTrades);
+
+      const result = await prismaTradeRepo.getHistoryLite("account-123", "user-123");
+
+      expect(mockPrisma.trades.findMany).toHaveBeenCalledWith({
+        where: { account_id: "account-123", user_id: "user-123" },
+        select: expect.any(Object),
+        orderBy: [{ entry_date: "desc" }, { entry_time: "desc" }],
+      });
+      expect(result.data).toHaveLength(1);
+      expect(result.data?.[0]).toHaveProperty("id");
+      expect(result.data?.[0]).toHaveProperty("entryPrice");
+    });
+  });
 });

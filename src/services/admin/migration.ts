@@ -2,7 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from "@/types";
 import { base64ToBlob } from "@/lib/utils/general";
 import { saveAccount, getCurrentUserId } from "@/services/core/account";
-import { saveTrade } from "@/services/trades/trade";
+import { saveTradeAction } from "@/app/actions/trades";
 import { saveJournalEntry } from "@/services/journal/journal";
 import { saveDailyRoutine } from "@/services/journal/routine";
 import { saveSettings } from "@/services/core/account";
@@ -37,7 +37,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const allTrades: Trade[] = allTradesData ? JSON.parse(allTradesData) : [];
     console.log(`Found ${allTrades.length} trades to migrate.`);
     for (const trade of allTrades) {
-      await saveTrade({ ...trade, userId });
+      await saveTradeAction({ ...trade, userId });
     }
 
     // Migrar journal entries

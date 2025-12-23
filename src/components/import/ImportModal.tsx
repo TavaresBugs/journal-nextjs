@@ -17,7 +17,11 @@ import {
   transformTrades,
 } from "@/services/trades/importParsers";
 import { getAccounts } from "@/services/core/account";
-import { saveTrade } from "@/services/trades/trade";
+import {
+  saveTradeAction,
+  getTradeHistoryLiteAction,
+  deleteTradesByAccountAction,
+} from "@/app/actions/trades";
 import { ImportStepUpload } from "./steps/ImportStepUpload";
 import { ImportStepMapping } from "./steps/ImportStepMapping";
 import { ImportStepReview } from "./steps/ImportStepReview";
@@ -220,14 +224,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     let skippedCount = 0;
 
     try {
-      const { getTradeHistoryLite, deleteTradesByAccount } =
-        await import("@/services/trades/trade");
-
       // Optional: Replace Mode - Delete all existing trades
       if (importMode === "replace") {
-        const deleted = await deleteTradesByAccount(selectedAccountId);
-        if (!deleted) {
-          throw new Error("Failed to clear existing trades.");
+        const result = await deleteTradesByAccountAction(selectedAccountId);
+        if (!result.success) {
+          throw new Error("Failed to clear existing trades: " + result.error);
         }
       }
 
@@ -235,7 +236,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
       // Only fetch existing trades for deduplication if we are appending
       if (importMode === "append") {
-        const existingTrades = await getTradeHistoryLite(selectedAccountId);
+        const existingTrades = await getTradeHistoryLiteAction(selectedAccountId);
         existingSignatures = new Set(
           existingTrades.map((t) => {
             const time = t.entryTime ? t.entryTime.substring(0, 5) : "00:00";
@@ -264,8 +265,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           continue;
         }
 
-        const saved = await saveTrade(trade);
-        if (saved) {
+        const result = await saveTradeAction(trade);
+        if (result.success) {
           successCount++;
         } else {
           failedCount++;

@@ -1,9 +1,9 @@
 /**
  * Mentor Service - Receive/Get Data Functions
  */
+"use server";
 
 import { supabase } from "@/lib/supabase";
-import { mapTradeFromDB } from "@/services/trades/trade";
 import {
   MentorInvite,
   MentorPermission,
@@ -13,7 +13,6 @@ import {
   JournalEntry,
   DailyRoutine,
 } from "@/types";
-import { DBTrade } from "@/types/database";
 import { mapInviteFromDB, mapCommentFromDB } from "./types";
 
 /**
@@ -125,6 +124,10 @@ export async function getMyMentors(): Promise<MentorInvite[]> {
   }));
 }
 
+import { prismaTradeRepo } from "@/lib/database/repositories";
+
+// ... existing imports
+
 /**
  * Lista os alunos do usuário logado (convites aceitos onde sou mentor).
  */
@@ -150,23 +153,14 @@ export async function getMentees(): Promise<MenteeOverview[]> {
   for (const invite of invites || []) {
     if (!invite.mentee_id) continue;
 
-    const { data: trades } = await supabase
-      .from("trades")
-      .select("id, outcome, entry_date")
-      .eq("user_id", invite.mentee_id);
-
-    const totalTrades = trades?.length || 0;
-    const wins = trades?.filter((t) => t.outcome === "win").length || 0;
-    const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const recentTrades = trades?.filter((t) => new Date(t.entry_date) >= sevenDaysAgo).length || 0;
-
-    const sortedTrades = [...(trades || [])].sort(
-      (a, b) => new Date(b.entry_date).getTime() - new Date(a.entry_date).getTime()
-    );
-    const lastTradeDate = sortedTrades[0]?.entry_date;
+    const statsDetail = await prismaTradeRepo.getMenteeStats(invite.mentee_id);
+    const stats = statsDetail.data || {
+      totalTrades: 0,
+      wins: 0,
+      winRate: 0,
+      recentTradesCount: 0,
+      lastTradeDate: undefined,
+    };
 
     mentees.push({
       menteeId: invite.mentee_id,
@@ -174,10 +168,10 @@ export async function getMentees(): Promise<MenteeOverview[]> {
       menteeEmail: invite.mentee_email || "Email não disponível",
       menteeAvatar: undefined,
       permission: invite.permission as MentorPermission,
-      totalTrades,
-      winRate,
-      recentTradesCount: recentTrades,
-      lastTradeDate,
+      totalTrades: stats.totalTrades,
+      winRate: stats.winRate,
+      recentTradesCount: stats.recentTradesCount,
+      lastTradeDate: stats.lastTradeDate,
     });
   }
 
@@ -188,25 +182,14 @@ export async function getMentees(): Promise<MenteeOverview[]> {
  * Busca os trades de um aluno específico.
  */
 export async function getMenteeTrades(menteeId: string, accountId?: string): Promise<Trade[]> {
-  let query = supabase
-    .from("trades")
-    .select("*")
-    .eq("user_id", menteeId)
-    .order("entry_date", { ascending: false })
-    .order("entry_time", { ascending: false });
+  const result = await prismaTradeRepo.getByUserId(menteeId, { accountId });
 
-  if (accountId) {
-    query = query.eq("account_id", accountId);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Erro ao buscar trades do aluno:", error);
+  if (result.error) {
+    console.error("Erro ao buscar trades do aluno:", result.error);
     return [];
   }
 
-  return (data || []).map((dbTrade: DBTrade) => mapTradeFromDB(dbTrade));
+  return result.data || [];
 }
 
 /**
@@ -419,19 +402,18 @@ export async function canCommentOnTrade(tradeId: string): Promise<boolean> {
   } = await supabase.auth.getUser();
   if (!user) return false;
 
-  const { data: trade } = await supabase
-    .from("trades")
-    .select("user_id")
-    .eq("id", tradeId)
-    .single();
+  const result = await prismaTradeRepo.getById(tradeId);
+  const trade = result.data;
 
-  if (trade?.user_id === user.id) return true;
+  if (trade?.userId === user.id) return true;
+
+  if (!trade?.userId) return false;
 
   const { data: invite } = await supabase
     .from("mentor_invites")
     .select("permission")
     .eq("mentor_id", user.id)
-    .eq("mentee_id", trade?.user_id)
+    .eq("mentee_id", trade.userId)
     .eq("status", "accepted")
     .eq("permission", "comment")
     .maybeSingle();

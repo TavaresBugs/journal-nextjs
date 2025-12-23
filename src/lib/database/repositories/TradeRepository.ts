@@ -14,7 +14,7 @@ import { trades as PrismaTrade, Prisma } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
-import { Trade } from "@/types";
+import { Trade, TradeLite } from "@/types";
 
 /**
  * Maps Prisma trade to domain Trade type
@@ -543,6 +543,200 @@ class PrismaTradeRepository {
       return {
         data: null,
         error: new AppError("Failed to get metrics", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Fetches lightweight trade history for charts and analytics.
+   * Optimized to select only necessary fields.
+   */
+  async getHistoryLite(accountId: string, userId: string): Promise<Result<TradeLite[], AppError>> {
+    const startTime = performance.now();
+    this.logger.info("Fetching trade history lite", { accountId, userId });
+
+    try {
+      // Select only the fields used by TradeLite/Analytics
+      const trades = await prisma.trades.findMany({
+        where: {
+          account_id: accountId,
+          user_id: userId,
+        },
+        select: {
+          id: true,
+          entry_date: true,
+          entry_time: true,
+          exit_date: true,
+          exit_time: true,
+          pnl: true,
+          outcome: true,
+          account_id: true,
+          symbol: true,
+          type: true,
+          entry_price: true,
+          exit_price: true,
+          stop_loss: true,
+          take_profit: true,
+          lot: true,
+          tags: true,
+          strategy: true,
+          setup: true,
+          tf_analise: true,
+          tf_entrada: true,
+          market_condition: true,
+          entry_quality: true,
+          market_condition_v2: true,
+          pd_array: true,
+          session: true,
+          commission: true,
+          swap: true,
+        },
+        orderBy: [{ entry_date: "desc" }, { entry_time: "desc" }],
+      });
+
+      const durationMs = performance.now() - startTime;
+      this.logSlowQuery("getHistoryLite", durationMs, { accountId, count: trades.length });
+
+      // Mapper for TradeLite (Partial Trade)
+      const tradeLites: TradeLite[] = trades.map((t) => ({
+        id: t.id,
+        accountId: t.account_id,
+        symbol: t.symbol,
+        type: t.type as "Long" | "Short",
+        entryDate:
+          t.entry_date instanceof Date
+            ? t.entry_date.toISOString().split("T")[0]
+            : String(t.entry_date),
+        entryTime: t.entry_time || undefined,
+        exitDate: t.exit_date
+          ? t.exit_date instanceof Date
+            ? t.exit_date.toISOString().split("T")[0]
+            : String(t.exit_date)
+          : undefined,
+        exitTime: t.exit_time || undefined,
+        pnl: t.pnl ? Number(t.pnl) : undefined,
+        outcome: t.outcome as TradeLite["outcome"],
+        entryPrice: Number(t.entry_price),
+        exitPrice: t.exit_price ? Number(t.exit_price) : undefined,
+        stopLoss: t.stop_loss ? Number(t.stop_loss) : 0,
+        takeProfit: t.take_profit ? Number(t.take_profit) : 0,
+        lot: Number(t.lot),
+        tags: t.tags || undefined,
+        strategy: t.strategy || undefined,
+        setup: t.setup || undefined,
+        tfAnalise: t.tf_analise || undefined,
+        tfEntrada: t.tf_entrada || undefined,
+        marketCondition: t.market_condition as TradeLite["marketCondition"],
+        entry_quality: t.entry_quality as TradeLite["entry_quality"],
+        market_condition_v2: t.market_condition_v2 as TradeLite["market_condition_v2"],
+        pdArray: t.pd_array as TradeLite["pdArray"],
+        session: t.session || undefined,
+        commission: t.commission ? Number(t.commission) : undefined,
+        swap: t.swap ? Number(t.swap) : undefined,
+      }));
+
+      return { data: tradeLites, error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch trade history lite", { error, accountId });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch trade history", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Fetches all trades for a user across all accounts.
+   */
+  async getByUserId(
+    userId: string,
+    options?: { limit?: number; offset?: number; accountId?: string }
+  ): Promise<Result<Trade[], AppError>> {
+    const startTime = performance.now();
+    this.logger.info("Fetching trades by user ID", { userId });
+
+    try {
+      const where: Prisma.tradesWhereInput = { user_id: userId };
+      if (options?.accountId) {
+        where.account_id = options.accountId;
+      }
+
+      const trades = await prisma.trades.findMany({
+        where,
+        orderBy: [{ entry_date: "desc" }, { entry_time: "desc" }],
+        take: options?.limit,
+        skip: options?.offset,
+      });
+
+      const durationMs = performance.now() - startTime;
+      this.logSlowQuery("getByUserId", durationMs, { userId, count: trades.length });
+
+      return { data: trades.map(mapPrismaToTrade), error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch trades by user", { error, userId });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch trades", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Gets stats for a mentee (user).
+   */
+  async getMenteeStats(userId: string): Promise<
+    Result<
+      {
+        totalTrades: number;
+        wins: number;
+        winRate: number;
+        recentTradesCount: number;
+        lastTradeDate: string | undefined;
+      },
+      AppError
+    >
+  > {
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const trades = await prisma.trades.findMany({
+        where: { user_id: userId },
+        select: {
+          id: true,
+          outcome: true,
+          entry_date: true,
+        },
+        orderBy: { entry_date: "desc" },
+      });
+
+      const totalTrades = trades.length;
+      const wins = trades.filter((t) => t.outcome === "win").length;
+      const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+      const recentTradesCount = trades.filter(
+        (t) => t.entry_date && new Date(t.entry_date) >= sevenDaysAgo
+      ).length;
+      const lastTradeDate = trades[0]?.entry_date
+        ? trades[0].entry_date instanceof Date
+          ? trades[0].entry_date.toISOString().split("T")[0]
+          : String(trades[0].entry_date)
+        : undefined;
+
+      return {
+        data: {
+          totalTrades,
+          wins,
+          winRate,
+          recentTradesCount,
+          lastTradeDate,
+        },
+        error: null,
+      };
+    } catch (error) {
+      this.logger.error("Failed to get mentee stats", { error, userId });
+      return {
+        data: null,
+        error: new AppError("Failed to get mentee stats", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }

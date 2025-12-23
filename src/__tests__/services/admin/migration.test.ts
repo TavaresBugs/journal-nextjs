@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { migrateLocalStorageToSupabase } from "@/services/admin/migration";
 import { supabase } from "@/lib/supabase";
 import { getCurrentUserId, saveAccount } from "@/services/core/account";
-import { saveTrade } from "@/services/trades/trade";
+import { saveTradeAction } from "@/app/actions/trades";
 import { saveJournalEntry } from "@/services/journal/journal";
 
 // Mocks
@@ -21,8 +21,8 @@ vi.mock("@/services/core/account", () => ({
   saveSettings: vi.fn(),
 }));
 
-vi.mock("@/services/trades/trade", () => ({
-  saveTrade: vi.fn(),
+vi.mock("@/app/actions/trades", () => ({
+  saveTradeAction: vi.fn(),
 }));
 
 vi.mock("@/services/journal/journal", () => ({
@@ -74,7 +74,7 @@ describe("Migration Service", () => {
 
     const result = await migrateLocalStorageToSupabase();
 
-    expect(saveTrade).toHaveBeenCalledWith({ ...trades[0], userId: mockUser });
+    expect(saveTradeAction).toHaveBeenCalledWith({ ...trades[0], userId: mockUser });
     expect(result).toBe(true);
   });
 

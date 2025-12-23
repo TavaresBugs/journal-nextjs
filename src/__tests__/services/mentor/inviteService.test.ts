@@ -53,6 +53,14 @@ const { queryMock } = vi.hoisted(() => {
   return { queryMock: createSupabaseMock() };
 });
 
+vi.mock("@/lib/database/repositories", () => ({
+  prismaTradeRepo: {
+    getMenteeStats: vi.fn(),
+    getByUserId: vi.fn(),
+    getById: vi.fn(),
+  },
+}));
+
 vi.mock("@/lib/supabase", () => {
   return {
     supabase: {
@@ -67,6 +75,7 @@ vi.mock("@/lib/supabase", () => {
 // Imports must be after mock setup
 import * as mentorService from "@/services/mentor/invites";
 import { supabase } from "@/lib/supabase";
+import { prismaTradeRepo } from "@/lib/database/repositories";
 
 describe("MentorService", () => {
   const mockUser = { id: "user-123", email: "mentor@example.com" };
@@ -377,19 +386,20 @@ describe("MentorService", () => {
           error: null,
         });
 
-      const tradesMock = createLocalMock() as unknown as {
-        then: (resolve: (value: { data: unknown; error: unknown }) => void) => void;
-      };
-      tradesMock.then = (resolve: (value: { data: unknown; error: unknown }) => void) =>
-        resolve({
-          data: [{ id: "t1", outcome: "win", entry_date: "2023-01-01" }],
-          error: null,
-        });
-
       (supabase.from as unknown as Mock).mockImplementation((table: string) => {
         if (table === "mentor_invites") return invitesMock;
-        if (table === "trades") return tradesMock;
         return queryMock;
+      });
+
+      (prismaTradeRepo.getMenteeStats as Mock).mockResolvedValue({
+        data: {
+          totalTrades: 1,
+          wins: 1,
+          winRate: 100,
+          recentTradesCount: 1,
+          lastTradeDate: "2023-01-01",
+        },
+        error: null,
       });
 
       const result = await mentorService.getMentees();

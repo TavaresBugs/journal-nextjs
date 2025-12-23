@@ -8,7 +8,7 @@ import {
   DEFAULT_SETUPS,
 } from "@/types";
 import type { Asset } from "@/types";
-import { getUserSettings, saveUserSettings } from "@/lib/storage";
+import { getUserSettings, saveUserSettings } from "@/services/core/account";
 
 interface SettingsStore {
   currencies: string[];

@@ -8,7 +8,7 @@ import { useToast } from "@/providers/ToastProvider";
 import { useImageCache } from "@/hooks/useImageCache";
 import { JournalEntryPreview } from "./preview";
 import { JournalEntryForm, type FormSubmissionData } from "./form";
-import { getTradesByIds } from "@/services/trades/trade";
+import { getTradesByIdsAction } from "@/app/actions/trades";
 import { ensureFreshImageUrl } from "@/lib/utils/general";
 import dayjs from "dayjs";
 
@@ -83,7 +83,7 @@ export function JournalEntryModal({
       const missingIds = existingEntry.tradeIds.filter((id) => !localIds.has(id));
 
       if (missingIds.length > 0) {
-        const trades = await getTradesByIds(missingIds);
+        const trades = await getTradesByIdsAction(missingIds);
         setFetchedTrades(trades);
       }
     };
