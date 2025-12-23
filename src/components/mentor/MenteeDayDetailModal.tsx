@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { Modal, Button } from "@/components/ui";
 import type { Trade, DailyRoutine, JournalEntry } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
-import { getMenteeJournalEntries, getMenteeRoutine } from "@/services/mentor/invites";
+import {
+  getMenteeJournalEntriesAction as getMenteeJournalEntries,
+  getMenteeRoutineAction as getMenteeRoutine,
+} from "@/app/actions/mentor";
 import { MenteeJournalReviewModal } from "@/components/mentor/MenteeJournalReviewModal";
 
 import dayjs from "dayjs";

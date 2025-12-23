@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, Playbook, DailyRoutine, UserSettings, Asset } from "@/types";
 import { DBAccount, DBTrade, DBJournalEntry, DBDailyRoutine, DBSettings } from "@/types/database";
-import { getCurrentUserId } from "@/services/core/account";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 export interface ExportData {
   exportedAt: string;

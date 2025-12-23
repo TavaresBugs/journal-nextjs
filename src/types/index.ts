@@ -168,7 +168,7 @@ export interface Playbook {
   userId: string; // User ID from Supabase Auth
   accountId?: string;
   name: string;
-  description?: string;
+  description?: string | null;
   icon: string;
   color: string;
   ruleGroups: RuleGroup[];
@@ -296,34 +296,34 @@ export interface UserSettings {
 // ADMIN TYPES
 // ============================================
 
-export type UserStatus = "pending" | "approved" | "suspended" | "banned";
+export type UserStatus = "pending" | "approved" | "suspended" | "banned" | "rejected";
 export type UserRole = "admin" | "user" | "guest" | "mentor";
 
 export interface UserExtended {
   id: string;
-  email: string;
-  name?: string;
-  avatarUrl?: string;
+  email: string | null;
+  name?: string | null;
+  avatarUrl?: string | null;
   status: UserStatus;
   role: UserRole;
-  approvedAt?: string;
-  approvedBy?: string;
-  notes?: string;
-  lastLoginAt?: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  notes?: string | null;
+  lastLoginAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AuditLog {
   id: string;
-  userId?: string;
-  userEmail?: string; // Para display
+  userId?: string | null;
+  userEmail?: string | null; // Para display
   action: string;
-  resourceType?: string;
-  resourceId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  metadata?: Record<string, unknown>;
+  resourceType?: string | null;
+  resourceId?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
 }
 
@@ -332,8 +332,10 @@ export interface AdminStats {
   pendingUsers: number;
   approvedUsers: number;
   suspendedUsers: number;
+  rejectedUsers: number;
   bannedUsers: number;
   adminUsers: number;
+  mentorUsers: number;
   todayLogins: number;
   todaySignups: number;
 }
@@ -402,6 +404,23 @@ export interface MentorAccountPermission {
   updatedAt?: string;
 }
 
+export interface MentorReview {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  tradeId?: string;
+  journalEntryId?: string;
+  reviewType: "correction" | "comment" | "suggestion";
+  content: string;
+  rating?: number;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Context data for notifications
+  entryDate?: string;
+  entryAccountId?: string;
+}
+
 // ============================================
 // COMMUNITY TYPES
 // ============================================
@@ -414,7 +433,7 @@ export interface SharedPlaybook {
   userName?: string;
   userAvatar?: string;
   isPublic: boolean;
-  description?: string;
+  description?: string | null;
   stars: number;
   downloads: number;
   hasUserStarred?: boolean; // Se o usuário atual deu star

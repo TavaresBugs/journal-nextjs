@@ -11,7 +11,7 @@ import { WeekPickerCalendar } from "@/components/ui/WeekPicker";
 import { EventRow, EventsTableHeader } from "./EventRow";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { isAdmin } from "@/services/admin/admin";
+import { isAdminAction as isAdmin } from "@/app/actions/admin";
 
 // Icons (inline SVGs)
 

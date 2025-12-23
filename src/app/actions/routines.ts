@@ -1,19 +1,5 @@
 "use server";
 
-/**
- * Routine Server Actions
- *
- * Server-side actions for daily routine operations using Prisma ORM.
- * These actions run exclusively on the server and can be called from client components.
- *
- * @example
- * // In a client component
- * import { getRoutinesAction, saveRoutineAction } from "@/app/actions/routines";
- *
- * const routines = await getRoutinesAction(accountId);
- * const success = await saveRoutineAction(routineData);
- */
-
 import { prismaRoutineRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { DailyRoutine } from "@/types";
@@ -21,70 +7,32 @@ import { revalidatePath } from "next/cache";
 
 /**
  * Get all daily routines for an account.
- * @param accountId - The account ID.
- * @returns List of routines or empty array.
  */
-export async function getRoutinesAction(accountId: string): Promise<DailyRoutine[]> {
+export async function getDailyRoutinesAction(accountId: string): Promise<DailyRoutine[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
     const result = await prismaRoutineRepo.getByAccountId(accountId);
-
     if (result.error) {
-      console.error("[getRoutinesAction] Error:", result.error);
+      console.error("[getDailyRoutinesAction] Error:", result.error);
       return [];
     }
 
-    // Filter by user_id for extra security (RLS backup)
+    // Filter for user ownership as extra security
     return (result.data || []).filter((r) => r.userId === userId);
   } catch (error) {
-    console.error("[getRoutinesAction] Unexpected error:", error);
+    console.error("[getDailyRoutinesAction] Unexpected error:", error);
     return [];
   }
 }
 
 /**
- * Get a single routine by account and date.
- * @param accountId - The account ID.
- * @param date - The date in YYYY-MM-DD format.
- * @returns The routine or null if not found.
- */
-export async function getRoutineByDateAction(
-  accountId: string,
-  date: string
-): Promise<DailyRoutine | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
-    const result = await prismaRoutineRepo.getByDate(accountId, date);
-
-    if (result.error) {
-      console.error("[getRoutineByDateAction] Error:", result.error);
-      return null;
-    }
-
-    // Verify ownership
-    if (result.data && result.data.userId !== userId) {
-      return null;
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error("[getRoutineByDateAction] Unexpected error:", error);
-    return null;
-  }
-}
-
-/**
  * Save (create or update) a daily routine.
- * @param routine - The routine data to save.
- * @returns Object with success status and optional error message.
  */
-export async function saveRoutineAction(
+export async function saveDailyRoutineAction(
   routine: Partial<DailyRoutine>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; routine?: DailyRoutine; error?: string }> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -92,33 +40,31 @@ export async function saveRoutineAction(
     }
 
     const routineWithUser = { ...routine, userId };
-
     const result = await prismaRoutineRepo.save(routineWithUser);
 
     if (result.error) {
-      console.error("[saveRoutineAction] Error:", result.error);
+      console.error("[saveDailyRoutineAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
 
-    // Revalidate dashboard to reflect changes
+    // Revalidate dashboard
     if (routine.accountId) {
       revalidatePath(`/dashboard/${routine.accountId}`, "page");
     }
 
-    return { success: true };
+    return { success: true, routine: result.data || undefined };
   } catch (error) {
-    console.error("[saveRoutineAction] Unexpected error:", error);
+    console.error("[saveDailyRoutineAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
   }
 }
 
 /**
  * Delete a daily routine.
- * @param routineId - The routine ID to delete.
- * @returns Object with success status and optional error message.
  */
-export async function deleteRoutineAction(
-  routineId: string
+export async function deleteDailyRoutineAction(
+  id: string,
+  accountId?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const userId = await getCurrentUserId();
@@ -126,16 +72,21 @@ export async function deleteRoutineAction(
       return { success: false, error: "Not authenticated" };
     }
 
-    const result = await prismaRoutineRepo.delete(routineId, userId);
+    const result = await prismaRoutineRepo.delete(id, userId);
 
     if (result.error) {
-      console.error("[deleteRoutineAction] Error:", result.error);
+      console.error("[deleteDailyRoutineAction] Error:", result.error);
       return { success: false, error: result.error.message };
+    }
+
+    // Revalidate dashboard
+    if (accountId) {
+      revalidatePath(`/dashboard/${accountId}`, "page");
     }
 
     return { success: true };
   } catch (error) {
-    console.error("[deleteRoutineAction] Unexpected error:", error);
+    console.error("[deleteDailyRoutineAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
   }
 }

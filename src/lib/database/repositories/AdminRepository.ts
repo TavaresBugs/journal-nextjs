@@ -51,9 +51,13 @@ export interface AdminStats {
   totalUsers: number;
   pendingUsers: number;
   approvedUsers: number;
+  suspendedUsers: number;
   rejectedUsers: number;
-  adminCount: number;
-  mentorCount: number;
+  bannedUsers: number;
+  adminUsers: number;
+  mentorUsers: number;
+  todayLogins: number;
+  todaySignups: number;
 }
 
 // Mappers
@@ -206,6 +210,37 @@ class PrismaAdminRepository {
   }
 
   /**
+   * Update user name/nickname.
+   */
+  async updateUserName(userId: string, name: string): Promise<Result<UserExtended, AppError>> {
+    this.logger.info("Updating user name", { userId, name });
+
+    try {
+      const updated = await prisma.users_extended.upsert({
+        where: { id: userId },
+        update: {
+          name,
+          updated_at: new Date(),
+        },
+        create: {
+          id: userId,
+          name,
+          status: "pending",
+          role: "user",
+        },
+      });
+
+      return { data: mapUserFromPrisma(updated), error: null };
+    } catch (error) {
+      this.logger.error("Failed to update user name", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to update user name", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
    * Update last login timestamp.
    */
   async updateLastLogin(userId: string): Promise<Result<boolean, AppError>> {
@@ -277,25 +312,46 @@ class PrismaAdminRepository {
   async getAdminStats(): Promise<Result<AdminStats, AppError>> {
     this.logger.info("Fetching admin stats");
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     try {
-      const [totalUsers, pendingUsers, approvedUsers, rejectedUsers, adminCount, mentorCount] =
-        await Promise.all([
-          prisma.users_extended.count(),
-          prisma.users_extended.count({ where: { status: "pending" } }),
-          prisma.users_extended.count({ where: { status: "approved" } }),
-          prisma.users_extended.count({ where: { status: "rejected" } }),
-          prisma.users_extended.count({ where: { role: "admin" } }),
-          prisma.users_extended.count({ where: { role: "mentor" } }),
-        ]);
+      const [
+        totalUsers,
+        pendingUsers,
+        approvedUsers,
+        suspendedUsers,
+        rejectedUsers,
+        bannedUsers,
+        adminUsers,
+        mentorUsers,
+        todayLogins,
+        todaySignups,
+      ] = await Promise.all([
+        prisma.users_extended.count(),
+        prisma.users_extended.count({ where: { status: "pending" } }),
+        prisma.users_extended.count({ where: { status: "approved" } }),
+        prisma.users_extended.count({ where: { status: "suspended" } }),
+        prisma.users_extended.count({ where: { status: "rejected" } }),
+        prisma.users_extended.count({ where: { status: "banned" } }),
+        prisma.users_extended.count({ where: { role: "admin" } }),
+        prisma.users_extended.count({ where: { role: "mentor" } }),
+        prisma.users_extended.count({ where: { last_login_at: { gte: today } } }),
+        prisma.users_extended.count({ where: { created_at: { gte: today } } }),
+      ]);
 
       return {
         data: {
           totalUsers,
           pendingUsers,
           approvedUsers,
+          suspendedUsers,
           rejectedUsers,
-          adminCount,
-          mentorCount,
+          bannedUsers,
+          adminUsers,
+          mentorUsers,
+          todayLogins,
+          todaySignups,
         },
         error: null,
       };

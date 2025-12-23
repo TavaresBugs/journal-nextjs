@@ -2,9 +2,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { migrateLocalStorageToSupabase } from "@/services/admin/migration";
 import { supabase } from "@/lib/supabase";
-import { getCurrentUserId, saveAccount } from "@/services/core/account";
+import { getCurrentUserId } from "@/lib/database/auth";
+import { saveAccountAction } from "@/app/actions/accounts";
 import { saveTradeAction } from "@/app/actions/trades";
-import { saveJournalEntry } from "@/services/journal/journal";
+import { saveJournalEntryAction } from "@/app/actions/journal";
 
 // Mocks
 vi.mock("@/lib/supabase", () => ({
@@ -15,22 +16,25 @@ vi.mock("@/lib/supabase", () => ({
   },
 }));
 
-vi.mock("@/services/core/account", () => ({
+vi.mock("@/lib/database/auth", () => ({
   getCurrentUserId: vi.fn(),
-  saveAccount: vi.fn(),
-  saveSettings: vi.fn(),
+}));
+
+vi.mock("@/app/actions/accounts", () => ({
+  saveAccountAction: vi.fn(),
+  saveSettingsAction: vi.fn(),
 }));
 
 vi.mock("@/app/actions/trades", () => ({
   saveTradeAction: vi.fn(),
 }));
 
-vi.mock("@/services/journal/journal", () => ({
-  saveJournalEntry: vi.fn(),
+vi.mock("@/app/actions/journal", () => ({
+  saveJournalEntryAction: vi.fn(),
 }));
 
-vi.mock("@/services/journal/routine", () => ({
-  saveDailyRoutine: vi.fn(),
+vi.mock("@/app/actions/routines", () => ({
+  saveDailyRoutineAction: vi.fn(),
 }));
 
 describe("Migration Service", () => {
@@ -59,7 +63,7 @@ describe("Migration Service", () => {
 
     const result = await migrateLocalStorageToSupabase();
 
-    expect(saveAccount).toHaveBeenCalledWith({ ...accounts[0], userId: mockUser });
+    expect(saveAccountAction).toHaveBeenCalledWith({ ...accounts[0], userId: mockUser });
     expect(result).toBe(true);
   });
 
@@ -111,7 +115,7 @@ describe("Migration Service", () => {
     const result = await migrateLocalStorageToSupabase();
 
     expect(uploadMock).toHaveBeenCalled();
-    expect(saveJournalEntry).toHaveBeenCalledWith(
+    expect(saveJournalEntryAction).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: mockUser,
         images: expect.arrayContaining([

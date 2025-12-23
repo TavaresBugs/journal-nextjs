@@ -3,11 +3,8 @@ import { GlassCard } from "@/components/ui";
 import { formatCurrency } from "@/lib/calculations";
 import type { Trade, JournalEntry } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  getReviewsForJournalEntry,
-  markReviewAsRead,
-  type MentorReview,
-} from "@/services/journal/review";
+import { getReviewsForJournalEntryAction, markReviewAsReadAction } from "@/app/actions/reviews";
+import type { MentorReview } from "@/types";
 import { getCachedImageUrl } from "@/lib/utils/general";
 import { ImagePreviewLightbox, type ImageItem } from "@/components/shared/ImagePreviewLightbox";
 import dayjs from "dayjs";
@@ -46,7 +43,7 @@ export function JournalEntryContent({
     if (showComments && entry.id && !isPending) {
       // eslint-disable-next-line
       setIsLoadingReviews(true);
-      getReviewsForJournalEntry(entry.id)
+      getReviewsForJournalEntryAction(entry.id)
         .then((data) => {
           setReviews(data);
 
@@ -54,7 +51,7 @@ export function JournalEntryContent({
           if (user) {
             const unread = data.filter((r) => !r.isRead && r.menteeId === user.id);
             if (unread.length > 0) {
-              Promise.all(unread.map((r) => markReviewAsRead(r.id))).catch((err) =>
+              Promise.all(unread.map((r) => markReviewAsReadAction(r.id))).catch((err) =>
                 console.error("Error marking reviews as read:", err)
               );
             }

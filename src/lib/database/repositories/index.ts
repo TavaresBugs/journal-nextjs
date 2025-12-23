@@ -51,3 +51,4 @@ export {
   type TradeComment,
 } from "./MentorRepository";
 export { prismaShareRepo, PrismaShareRepository, type SharedJournal } from "./ShareRepository";
+export { prismaSettingsRepo, PrismaSettingsRepository } from "./SettingsRepository";

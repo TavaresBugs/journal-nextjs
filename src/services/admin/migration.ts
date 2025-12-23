@@ -1,11 +1,11 @@
 import { supabase } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from "@/types";
 import { base64ToBlob } from "@/lib/utils/general";
-import { saveAccount, getCurrentUserId } from "@/services/core/account";
+import { getCurrentUserId } from "@/lib/database/auth";
+import { saveAccountAction, saveSettingsAction } from "@/app/actions/accounts";
 import { saveTradeAction } from "@/app/actions/trades";
-import { saveJournalEntry } from "@/services/journal/journal";
-import { saveDailyRoutine } from "@/services/journal/routine";
-import { saveSettings } from "@/services/core/account";
+import { saveJournalEntryAction } from "@/app/actions/journal";
+import { saveDailyRoutineAction } from "@/app/actions/routines";
 
 // ============================================
 // MIGRATION HELPER
@@ -29,7 +29,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const accounts: Account[] = accountsData ? JSON.parse(accountsData) : [];
     console.log(`Found ${accounts.length} accounts to migrate.`);
     for (const account of accounts) {
-      await saveAccount({ ...account, userId });
+      await saveAccountAction({ ...account, userId });
     }
 
     // Migrar trades
@@ -125,7 +125,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
         images: newImages,
       };
 
-      await saveJournalEntry(entryWithImages);
+      await saveJournalEntryAction(entryWithImages);
     }
 
     // Migrar daily routines
@@ -133,14 +133,14 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const allRoutines: DailyRoutine[] = allRoutinesData ? JSON.parse(allRoutinesData) : [];
     console.log(`Found ${allRoutines.length} daily routines to migrate.`);
     for (const routine of allRoutines) {
-      await saveDailyRoutine({ ...routine, userId });
+      await saveDailyRoutineAction({ ...routine, userId });
     }
 
     // Migrar settings
     const settingsData = localStorage.getItem("tj_settings");
     if (settingsData) {
       const settings: Settings = JSON.parse(settingsData);
-      await saveSettings({ ...settings, userId });
+      await saveSettingsAction({ ...settings, userId });
       console.log("Settings migrated.");
     }
 

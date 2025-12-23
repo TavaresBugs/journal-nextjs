@@ -14,9 +14,13 @@
  * const success = await saveAccountAction(accountData);
  */
 
-import { prismaAccountRepo } from "@/lib/database/repositories";
+import {
+  prismaAccountRepo,
+  prismaSettingsRepo,
+  prismaTradeRepo,
+} from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
-import { Account } from "@/types";
+import { Account, Settings, UserSettings } from "@/types";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -76,7 +80,7 @@ export async function getAccountAction(accountId: string): Promise<Account | nul
  */
 export async function saveAccountAction(
   account: Partial<Account>
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; data?: Account; error?: string }> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -106,7 +110,7 @@ export async function saveAccountAction(
     // Revalidate dashboard to reflect changes
     revalidatePath("/dashboard/[accountId]", "page");
 
-    return { success: true };
+    return { success: true, data: result.data as Account };
   } catch (error) {
     console.error("[saveAccountAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
@@ -180,5 +184,133 @@ export async function updateAccountBalanceAction(
   } catch (error) {
     console.error("[updateAccountBalanceAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Get settings for a specific account or user's default settings.
+ * @param accountId - Optional account ID.
+ * @returns Settings or null.
+ */
+export async function getSettingsAction(accountId?: string): Promise<Settings | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    const result = await prismaSettingsRepo.getSettings(userId, accountId);
+
+    if (result.error) {
+      if (result.error.code !== "DB_NOT_FOUND") {
+        console.error("[getSettingsAction] Error:", result.error);
+      }
+      return null;
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("[getSettingsAction] Unexpected error:", error);
+    return null;
+  }
+}
+
+/**
+ * Save account settings.
+ * @param settings - The settings data.
+ * @returns Success status and optional error.
+ */
+export async function saveSettingsAction(
+  settings: Partial<Settings>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return { success: false, error: "Not authenticated" };
+
+    const result = await prismaSettingsRepo.saveSettings({ ...settings, userId });
+
+    if (result.error) {
+      console.error("[saveSettingsAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[saveSettingsAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Get global user settings.
+ * @returns UserSettings or null.
+ */
+export async function getUserSettingsAction(): Promise<UserSettings | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    const result = await prismaSettingsRepo.getUserSettings(userId);
+
+    if (result.error) {
+      if (result.error.code !== "DB_NOT_FOUND") {
+        console.error("[getUserSettingsAction] Error:", result.error);
+      }
+      return null;
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("[getUserSettingsAction] Unexpected error:", error);
+    return null;
+  }
+}
+
+/**
+ * Save global user settings.
+ * @param settings - The user settings data.
+ * @returns Success status and optional error.
+ */
+export async function saveUserSettingsAction(
+  settings: Partial<UserSettings>
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return { success: false, error: "Not authenticated" };
+
+    const result = await prismaSettingsRepo.saveUserSettings(userId, settings);
+
+    if (result.error) {
+      console.error("[saveUserSettingsAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[saveUserSettingsAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Check if an account has any trades.
+ * Used for UI locks (e.g. disabling currency change if trades exist).
+ * @param accountId - The account ID.
+ * @returns Boolean or false on error.
+ */
+export async function checkAccountHasTradesAction(accountId: string): Promise<boolean> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return false;
+
+    const result = await prismaTradeRepo.countByAccountId(accountId, userId);
+
+    if (result.error) {
+      console.error("[checkAccountHasTradesAction] Error:", result.error);
+      return false;
+    }
+
+    return (result.data || 0) > 0;
+  } catch (error) {
+    console.error("[checkAccountHasTradesAction] Unexpected error:", error);
+    return false;
   }
 }

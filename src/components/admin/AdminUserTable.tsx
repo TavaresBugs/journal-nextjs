@@ -18,6 +18,7 @@ const getStatusBadge = (status: UserStatus) => {
     approved: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
     suspended: "bg-red-500/20 text-red-400 border border-red-500/30",
     banned: "bg-red-700/20 text-red-500 border border-red-700/30",
+    rejected: "bg-gray-700/20 text-gray-500 border border-gray-700/30",
   };
   return (
     <span className={`rounded px-2 py-1 text-xs font-medium ${styles[status]}`}>

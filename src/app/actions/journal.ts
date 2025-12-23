@@ -18,6 +18,7 @@
 
 import { prismaJournalRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
+import { createClient } from "@/lib/supabase/server";
 import { JournalEntry, JournalImage } from "@/types";
 import { revalidatePath } from "next/cache";
 
@@ -176,6 +177,32 @@ export async function deleteJournalEntryAction(
       return { success: false, error: "Not authenticated" };
     }
 
+    // 1. Fetch entry to get image paths for cleanup
+    const entryResult = await prismaJournalRepo.getById(entryId);
+    if (entryResult.data) {
+      // Always verify ownership if we had to refetch
+      if (entryResult.data.userId !== userId) {
+        return { success: false, error: "Unauthorized" };
+      }
+
+      // 2. Identify images to delete from Storage
+      const paths = entryResult.data.images
+        .map((img) => img.path)
+        .filter((path): path is string => !!path);
+
+      if (paths.length > 0) {
+        console.log(`[deleteJournalEntryAction] Deleting ${paths.length} images from storage`);
+        const supabase = await createClient();
+        const { error: storageError } = await supabase.storage.from("journal-images").remove(paths);
+
+        if (storageError) {
+          console.error("[deleteJournalEntryAction] Storage cleanup failed:", storageError);
+          // We continue to delete the DB entry anyway
+        }
+      }
+    }
+
+    // 3. Delete from DB
     const result = await prismaJournalRepo.delete(entryId, userId);
 
     if (result.error) {

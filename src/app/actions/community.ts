@@ -15,6 +15,7 @@
 
 import { prismaCommunityRepo, LeaderboardOptIn, SharedPlaybook } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
+import { prisma } from "@/lib/database";
 
 // ========================================
 // LEADERBOARD
@@ -146,6 +147,51 @@ export async function getLeaderboardOptInsAction(): Promise<LeaderboardOptIn[]> 
   } catch (error) {
     console.error("[getLeaderboardOptInsAction] Unexpected error:", error);
     return [];
+  }
+}
+
+/**
+ * Get current user display name.
+ */
+export async function getCurrentUserDisplayNameAction(): Promise<string | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    // 1. Try leaderboard_opt_in
+    const status = await prismaCommunityRepo.getMyLeaderboardStatus(userId);
+    if (status.data?.displayName) return status.data.displayName;
+
+    // 2. Try profile
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: { display_name: true },
+    });
+    if (profile?.display_name) return profile.display_name;
+
+    return null;
+  } catch (error) {
+    console.error("[getCurrentUserDisplayNameAction] Error:", error);
+    return null;
+  }
+}
+
+/**
+ * Get leaderboard entries.
+ * Note: Uses raw query to access the view if needed, or falls back to opt-ins.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function getLeaderboardAction(): Promise<any[]> {
+  try {
+    // For now, let's use a raw query to the view to maintain parity with legacy
+    const leaderboard = await prisma.$queryRaw`SELECT * FROM public.leaderboard_view LIMIT 100`;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (leaderboard as any[]) || [];
+  } catch (error) {
+    console.error("[getLeaderboardAction] Error:", error);
+    // Fallback to simple opt-ins if view fails
+    const result = await prismaCommunityRepo.getLeaderboardOptIns();
+    return result.data || [];
   }
 }
 

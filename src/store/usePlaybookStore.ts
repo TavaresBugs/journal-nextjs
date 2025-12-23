@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import type { Playbook } from "@/types";
-import { fetchPlaybooks, createPlaybook, updatePlaybook, deletePlaybook } from "@/actions/playbook";
+import {
+  getPlaybooksAction,
+  createPlaybookAction,
+  updatePlaybookAction,
+  deletePlaybookAction,
+} from "@/app/actions/playbooks";
 
 interface PlaybookStore {
   playbooks: Playbook[];
@@ -23,7 +28,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const playbooks = await fetchPlaybooks();
+      const playbooks = await getPlaybooksAction();
       set({ playbooks, isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
@@ -51,12 +56,12 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
         isLoading: false,
       }));
 
-      const created = await createPlaybook(playbookData);
+      const result = await createPlaybookAction(playbookData);
 
       // Update with real data if returned
-      if (created) {
+      if (result.success && result.playbook) {
         set((state) => ({
-          playbooks: state.playbooks.map((p) => (p.id === tempId ? created : p)),
+          playbooks: state.playbooks.map((p) => (p.id === tempId ? result.playbook! : p)),
         }));
       }
     } catch (error) {
@@ -82,7 +87,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
         isLoading: false,
       });
 
-      await updatePlaybook(updatedPlaybook);
+      await updatePlaybookAction(updatedPlaybook);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error updating playbook:", error);
@@ -100,7 +105,7 @@ export const usePlaybookStore = create<PlaybookStore>((set, get) => ({
         isLoading: false,
       });
 
-      await deletePlaybook(id);
+      await deletePlaybookAction(id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error removing playbook:", error);

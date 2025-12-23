@@ -46,6 +46,18 @@ export interface MentorAccountPermission {
   updatedAt: string;
 }
 
+export interface MenteeOverview {
+  menteeId: string;
+  menteeName: string;
+  menteeEmail: string;
+  menteeAvatar?: string;
+  permission: MentorInvite["permission"];
+  totalTrades: number;
+  winRate: number;
+  recentTradesCount: number;
+  lastTradeDate?: string;
+}
+
 export interface TradeComment {
   id: string;
   tradeId: string;
@@ -204,6 +216,58 @@ class PrismaMentorRepository {
       return {
         data: null,
         error: new AppError("Failed to fetch mentees", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Get mentees overview with performance stats.
+   */
+  async getMenteesOverview(mentorId: string): Promise<Result<MenteeOverview[], AppError>> {
+    this.logger.info("Fetching mentees overview", { mentorId });
+
+    try {
+      const invites = await prisma.mentor_invites.findMany({
+        where: {
+          mentor_id: mentorId,
+          status: "accepted",
+        },
+        orderBy: { accepted_at: "desc" },
+      });
+
+      const overviews: MenteeOverview[] = [];
+      const { prismaTradeRepo } = await import("./TradeRepository");
+
+      for (const invite of invites) {
+        if (!invite.mentee_id) continue;
+
+        const statsResult = await prismaTradeRepo.getMenteeStats(invite.mentee_id);
+        const stats = statsResult.data || {
+          totalTrades: 0,
+          wins: 0,
+          winRate: 0,
+          recentTradesCount: 0,
+          lastTradeDate: undefined,
+        };
+
+        overviews.push({
+          menteeId: invite.mentee_id,
+          menteeName: invite.mentee_email?.split("@")[0] || "Mentorado",
+          menteeEmail: invite.mentee_email || "",
+          permission: (invite.permission as MenteeOverview["permission"]) || "view",
+          totalTrades: stats.totalTrades,
+          winRate: stats.winRate,
+          recentTradesCount: stats.recentTradesCount,
+          lastTradeDate: stats.lastTradeDate,
+        });
+      }
+
+      return { data: overviews, error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch mentees overview", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch mentees overview", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }

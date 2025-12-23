@@ -16,7 +16,7 @@ import {
   detectColumnMapping,
   transformTrades,
 } from "@/services/trades/importParsers";
-import { getAccounts } from "@/services/core/account";
+import { getAccountsAction } from "@/app/actions/accounts";
 import {
   saveTradeAction,
   getTradeHistoryLiteAction,
@@ -87,7 +87,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     if (defaultAccountId) {
       setSelectedAccountId(defaultAccountId);
     } else {
-      const loadedAccounts = await getAccounts();
+      const loadedAccounts = await getAccountsAction();
       if (loadedAccounts.length > 0) {
         setSelectedAccountId(loadedAccounts[0].id);
       }

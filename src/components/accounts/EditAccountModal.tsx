@@ -16,7 +16,7 @@ import type { Account } from "@/types";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useToast } from "@/providers/ToastProvider";
-import { checkAccountHasTrades } from "@/actions/accounts";
+import { checkAccountHasTradesAction } from "@/app/actions/accounts";
 
 interface EditAccountModalProps {
   isOpen: boolean;
@@ -88,7 +88,7 @@ export function EditAccountModal({ isOpen, onClose, onSave, account }: EditAccou
       setMaxDrawdown(account.maxDrawdown.toString());
 
       // Check if account has trades
-      checkAccountHasTrades(account.id).then(setHasTrades);
+      checkAccountHasTradesAction(account.id).then(setHasTrades);
     }
   }, [account, isOpen]);
 

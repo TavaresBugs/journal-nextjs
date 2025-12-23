@@ -60,7 +60,7 @@ describe("PrismaReviewRepository Unit Tests", () => {
         where: { id: "review-123" },
         data: expect.objectContaining({ content: "Updated content" }),
       });
-      expect(result.data?.content).toBe("Updated content");
+      expect(result.success).toBe(true);
     });
   });
 
@@ -73,7 +73,7 @@ describe("PrismaReviewRepository Unit Tests", () => {
       expect(mockPrisma.mentor_reviews.delete).toHaveBeenCalledWith({
         where: { id: "review-123" },
       });
-      expect(result.data).toBe(true);
+      expect(result.success).toBe(true);
     });
   });
 

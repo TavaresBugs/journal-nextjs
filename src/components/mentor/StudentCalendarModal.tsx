@@ -11,7 +11,10 @@ import {
 } from "@/components/ui";
 import { TradeCalendar } from "@/components/trades/TradeCalendar";
 import { MenteeDayDetailModal } from "@/components/mentor/MenteeDayDetailModal";
-import { getMenteeTrades, getMenteePermittedAccounts } from "@/services/mentor/invites";
+import {
+  getMenteeTradesAction as getMenteeTrades,
+  getMenteePermittedAccountsAction as getMenteePermittedAccounts,
+} from "@/app/actions/mentor";
 import { Trade } from "@/types";
 
 interface StudentCalendarModalProps {

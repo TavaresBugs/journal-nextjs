@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getZoneAverage, getZoneStats } from "@/services/core/mental";
+import { getZoneAverageAction, getZoneStatsAction } from "@/app/actions/mental";
 
 interface PerformanceGaugeProps {
   refreshTrigger?: number; // Increment to force refresh
@@ -16,7 +16,10 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const [avg, zoneStats] = await Promise.all([getZoneAverage(5), getZoneStats(30)]);
+        const [avg, zoneStats] = await Promise.all([
+          getZoneAverageAction(5),
+          getZoneStatsAction(30),
+        ]);
         setPosition(avg);
         setStats(zoneStats);
       } catch (error) {

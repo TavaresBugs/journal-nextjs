@@ -17,5 +17,6 @@ export * from "./mental";
 export * from "./laboratory";
 export * from "./admin";
 export * from "./community";
+export * from "./playbooks";
 export * from "./mentor";
 export * from "./share";

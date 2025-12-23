@@ -31,7 +31,12 @@ export async function createReviewAction(
     }
 
     const result = await prismaReviewRepo.create({
-      ...data,
+      menteeId: data.menteeId,
+      tradeId: data.tradeId,
+      journalEntryId: data.journalEntryId,
+      reviewType: data.reviewType,
+      content: data.content,
+      rating: data.rating,
       mentorId,
     });
 

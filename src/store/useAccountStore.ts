@@ -2,12 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Account } from "@/types";
 import {
-  fetchAccounts,
-  createAccount,
-  updateAccount,
-  deleteAccount,
-  updateAccountBalance,
-} from "@/actions/accounts";
+  getAccountsAction,
+  saveAccountAction,
+  deleteAccountAction,
+  updateAccountBalanceAction,
+} from "@/app/actions/accounts";
 
 interface AccountStore {
   accounts: Account[];
@@ -37,7 +36,7 @@ export const useAccountStore = create<AccountStore>()(
       loadAccounts: async () => {
         set({ isLoading: true, error: null });
         try {
-          const accounts = await fetchAccounts();
+          const accounts = await getAccountsAction();
           set({ accounts, isLoading: false });
 
           // Refresh current account object if selected
@@ -69,13 +68,16 @@ export const useAccountStore = create<AccountStore>()(
         set({ accounts: [...accounts, newAccount] });
 
         try {
-          const created = await createAccount(accountData);
-          if (created) {
+          const result = await saveAccountAction(accountData);
+          if (result.success && result.data) {
             set((state) => ({
-              accounts: state.accounts.map((a) => (a.id === tempId ? created : a)),
+              accounts: state.accounts.map((a) => (a.id === tempId ? result.data! : a)),
               // If this was the first account or set as current, update it
-              currentAccount: state.currentAccountId === tempId ? created : state.currentAccount,
+              currentAccount:
+                state.currentAccountId === tempId ? result.data! : state.currentAccount,
             }));
+          } else if (result.error) {
+            throw new Error(result.error);
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
@@ -95,7 +97,10 @@ export const useAccountStore = create<AccountStore>()(
         });
 
         try {
-          await updateAccount(account);
+          const result = await saveAccountAction(account);
+          if (!result.success) {
+            throw new Error(result.error);
+          }
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
           console.error("Error updating account:", error);
@@ -125,7 +130,8 @@ export const useAccountStore = create<AccountStore>()(
         // The detailed plan said `updateAccountBalance` action exists.
 
         try {
-          await updateAccountBalance(accountId, newBalance);
+          const result = await updateAccountBalanceAction(accountId, newBalance);
+          if (!result.success) throw new Error(result.error);
         } catch (error) {
           console.error("Error updating balance:", error);
           // Rollback handling complex here due to optimistic update call above
@@ -146,7 +152,8 @@ export const useAccountStore = create<AccountStore>()(
         });
 
         try {
-          await deleteAccount(id);
+          const result = await deleteAccountAction(id);
+          if (!result.success) throw new Error(result.error);
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unknown error";
           console.error("Error deleting account:", error);

@@ -8,7 +8,7 @@ import {
   DEFAULT_SETUPS,
 } from "@/types";
 import type { Asset } from "@/types";
-import { getUserSettings, saveUserSettings } from "@/services/core/account";
+import { getUserSettingsAction, saveUserSettingsAction } from "@/app/actions/accounts";
 
 interface SettingsStore {
   currencies: string[];
@@ -44,10 +44,11 @@ const syncToSupabase = async (
   state: Pick<SettingsStore, "currencies" | "leverages" | "assets" | "strategies" | "setups">
 ) => {
   try {
-    await saveUserSettings({
+    await saveUserSettingsAction({
       currencies: state.currencies,
       leverages: state.leverages,
-      assets: state.assets,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      assets: state.assets as any, // Cast to any to handle type mismatch if needed, or fix Asset type
       strategies: state.strategies,
       setups: state.setups,
     });
@@ -69,7 +70,7 @@ export const useSettingsStore = create<SettingsStore>()(
       loadSettings: async () => {
         set({ isLoading: true });
         try {
-          const settings = await getUserSettings();
+          const settings = await getUserSettingsAction();
           if (settings) {
             set({
               currencies: settings.currencies.length > 0 ? settings.currencies : DEFAULT_CURRENCIES,

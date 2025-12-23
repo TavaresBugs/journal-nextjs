@@ -1,15 +1,13 @@
 import { create } from "zustand";
 import type { JournalEntry, DailyRoutine } from "@/types";
 import {
-  fetchJournalEntries,
-  createJournalEntry,
-  updateJournalEntry,
-  deleteJournalEntry,
-  fetchDailyRoutines,
-  saveDailyRoutine,
-} from "@/actions/journal";
+  getJournalEntriesAction,
+  saveJournalEntryAction,
+  deleteJournalEntryAction,
+} from "@/app/actions/journal";
+import { getDailyRoutinesAction, saveDailyRoutineAction } from "@/app/actions/routines";
 import { uploadJournalImages, isRawImageMap } from "@/services/journal/imageUpload";
-import { getCurrentUserId } from "@/services/core/account";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 interface JournalStore {
   entries: JournalEntry[];
@@ -45,7 +43,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   loadEntries: async (accountId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const entries = await fetchJournalEntries(accountId);
+      const entries = await getJournalEntriesAction(accountId);
       set({ entries, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -96,21 +94,21 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
       console.log("[useJournalStore] Calling createJournalEntry Server Action...");
 
       // Call Server Action with processed data
-      const id = await createJournalEntry({
+      const result = await saveJournalEntryAction({
         ...entryData,
         id: entryId,
         images: processedImages,
       });
 
-      console.log("[useJournalStore] Server Action returned ID:", id);
+      console.log("[useJournalStore] Server Action result:", result);
 
       // Reload to ensure consistency and get fresh data with relations
       console.log("[useJournalStore] Reloading entries for account:", entryData.accountId);
-      const freshEntries = await fetchJournalEntries(entryData.accountId);
+      const freshEntries = await getJournalEntriesAction(entryData.accountId);
       console.log("[useJournalStore] Loaded", freshEntries.length, "fresh entries");
       set({ entries: freshEntries });
 
-      return id || entryId;
+      return result.entry?.id || entryId;
     } catch (error) {
       console.error("[useJournalStore] Error in addEntry:", error);
       set({ error: (error as Error).message, isLoading: false });
@@ -159,10 +157,10 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
       }));
 
       // Call Server Action with processed data
-      await updateJournalEntry(updatedEntry);
+      await saveJournalEntryAction(updatedEntry);
 
       // Reload to ensure consistency (e.g. relations)
-      const freshEntries = await fetchJournalEntries(entry.accountId);
+      const freshEntries = await getJournalEntriesAction(entry.accountId);
       set({ entries: freshEntries });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -179,7 +177,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         isLoading: false,
       }));
 
-      await deleteJournalEntry(id);
+      await deleteJournalEntryAction(id);
     } catch (error) {
       set({
         error: (error as Error).message,
@@ -207,7 +205,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   loadRoutines: async (accountId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const routines = await fetchDailyRoutines(accountId);
+      const routines = await getDailyRoutinesAction(accountId);
       set({ routines, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -230,7 +228,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         isLoading: false,
       }));
 
-      await saveDailyRoutine(routineData);
+      await saveDailyRoutineAction(routineData);
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -249,7 +247,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         isLoading: false,
       }));
 
-      await saveDailyRoutine(updatedRoutine);
+      await saveDailyRoutineAction(updatedRoutine);
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

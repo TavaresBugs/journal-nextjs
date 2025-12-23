@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Modal, ModalFooterActions } from "@/components/ui";
-import { inviteMentee } from "@/services/mentor/invites";
+import { inviteMenteeAction as inviteMentee } from "@/app/actions/mentor";
 import { MentorPermission } from "@/types";
 
 interface InviteMenteeModalProps {

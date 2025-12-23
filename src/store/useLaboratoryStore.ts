@@ -15,7 +15,7 @@ import {
 import type {
   LaboratoryExperiment as RepoExperiment,
   LaboratoryRecap as RepoRecap,
-} from "@/lib/database/repositories";
+} from "@/lib/database/repositories/LaboratoryRepository";
 import type { ExperimentStatus, EmotionalState, RecapLinkedType } from "@/types";
 
 /**

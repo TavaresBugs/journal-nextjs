@@ -9,8 +9,8 @@ import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
 import { DailyHabitsRow, DayStatsCards, DayTradesTable } from "@/components/journal/day-detail";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
-import { getMyMentors } from "@/services/mentor/invites";
-import { getReviewsForContext } from "@/services/journal/review";
+import { getMyMentorsAction as getMyMentors } from "@/app/actions/mentor";
+import { getReviewsForContextAction } from "@/app/actions/reviews";
 
 dayjs.locale("pt-br");
 
@@ -92,7 +92,7 @@ export function DayDetailModal({
 
       if (tradeIds.length === 0 && entryIds.length === 0) return;
 
-      const reviews = await getReviewsForContext(tradeIds, entryIds);
+      const reviews = await getReviewsForContextAction(tradeIds, entryIds);
 
       // Process reviews into map
       const map: Record<string, { hasUnread: boolean; count: number }> = {};

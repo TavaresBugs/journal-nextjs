@@ -2,8 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { getReceivedInvites, acceptInvite, rejectInvite } from "@/services/mentor/invites";
-import { getMyReviews } from "@/services/journal/review";
+import {
+  getReceivedInvitesAction as getReceivedInvites,
+  acceptInviteAction as acceptInvite,
+  rejectInviteAction as rejectInvite,
+} from "@/app/actions/mentor";
+import { getMyReviewsAction } from "@/app/actions/reviews";
 import { MentorInvite, Notification } from "@/types";
 import { NotificationsModal } from "./NotificationsModal";
 
@@ -49,7 +53,7 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
       }));
 
       // 2. Carregar Feedback (Reviews)
-      const reviews = await getMyReviews();
+      const reviews = await getMyReviewsAction();
       const reviewNotifs: Notification[] = reviews
         .filter((r) => !r.isRead)
         .map((r) => ({

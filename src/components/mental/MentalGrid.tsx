@@ -11,20 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui";
 import {
-  getMentalEntries,
-  saveMentalEntry,
-  deleteMentalEntry,
-  searchProfiles,
-  type MentalEntry,
-  type MentalProfile,
-} from "@/services/core/mental";
+  getMentalEntriesAction,
+  saveMentalEntryAction,
+  deleteMentalEntryAction,
+  searchMentalProfilesAction,
+} from "@/app/actions/mental";
+import type { MentalEntry, MentalProfile } from "@/lib/database/repositories/MentalRepository";
 
 interface MentalGridProps {
   refreshTrigger?: number;
   onEntryChange?: () => void;
 }
-
-type ZoneType = "A-Game" | "B-Game" | "C-Game";
 
 export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
   const [entries, setEntries] = useState<MentalEntry[]>([]);
@@ -63,7 +60,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
   const loadEntries = async () => {
     setIsLoading(true);
     try {
-      const data = await getMentalEntries(50);
+      const data = await getMentalEntriesAction(50);
       setEntries(data);
     } catch (error) {
       console.error("Error loading entries:", error);
@@ -77,7 +74,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
       setActiveField(field);
       if (value.length >= 2) {
         try {
-          const results = await searchProfiles(value);
+          const results = await searchMentalProfilesAction(value);
           setSuggestions(results);
         } catch (error) {
           console.error("Error searching profiles:", error);
@@ -102,12 +99,12 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
     if (!newEntry.triggerEvent.trim() && !newEntry.emotion.trim()) return;
 
     try {
-      await saveMentalEntry({
+      await saveMentalEntryAction({
         triggerEvent: newEntry.triggerEvent,
         emotion: newEntry.emotion,
         behavior: newEntry.behavior,
         mistake: newEntry.mistake,
-        zoneDetected: (newEntry.zoneDetected as ZoneType) || undefined,
+        zoneDetected: newEntry.zoneDetected || undefined,
         source: "grid",
       });
 
@@ -129,7 +126,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
   const handleDelete = async (id: string) => {
     if (!confirm("Excluir esta entrada?")) return;
     try {
-      await deleteMentalEntry(id);
+      await deleteMentalEntryAction(id);
       await loadEntries();
       onEntryChange?.();
     } catch (error) {
@@ -359,7 +356,7 @@ export function MentalGrid({ refreshTrigger, onEntryChange }: MentalGridProps) {
                   <td className="px-3 py-2 text-sm text-gray-300">
                     {entry.behavior || entry.correction || "-"}
                   </td>
-                  <td className="px-3 py-2">{getZoneBadge(entry.zoneDetected)}</td>
+                  <td className="px-3 py-2">{getZoneBadge(entry.zoneDetected || undefined)}</td>
                   <td className="px-3 py-2 text-center">
                     <Button
                       onClick={() => handleDelete(entry.id)}

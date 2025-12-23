@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { isAdmin } from "@/services/admin/admin";
-import { isMentor } from "@/services/mentor/invites";
+import { isAdminAction } from "@/app/actions/admin";
+import { isMentorAction } from "@/app/actions/mentor";
 
 export interface UserPermissions {
   isAdminUser: boolean;
@@ -31,7 +31,7 @@ export function useUserPermissions(): UserPermissions {
       }
 
       try {
-        const [adminStatus, mentorStatus] = await Promise.all([isAdmin(), isMentor()]);
+        const [adminStatus, mentorStatus] = await Promise.all([isAdminAction(), isMentorAction()]);
 
         setIsAdminUser(adminStatus);
         setIsMentorUser(mentorStatus);

@@ -2,7 +2,7 @@ import { SharedPlaybook } from "@/types";
 import { Modal, ModalFooterActions, IconActionButton } from "@/components/ui";
 import { formatCurrency } from "@/lib/calculations";
 import { useToast } from "@/providers/ToastProvider";
-import { clonePlaybook } from "@/actions/playbook";
+import { clonePlaybookAction } from "@/app/actions/playbooks";
 import { useState } from "react";
 
 interface ViewSharedPlaybookModalProps {
@@ -25,9 +25,13 @@ export function ViewSharedPlaybookModal({ playbook, onClose }: ViewSharedPlayboo
   const handleClone = async () => {
     try {
       setIsCloning(true);
-      await clonePlaybook(playbook);
-      showToast("Playbook clonado com sucesso! Verifique sua biblioteca.", "success");
-      onClose();
+      const result = await clonePlaybookAction(playbook);
+      if (result.success) {
+        showToast("Playbook clonado com sucesso! Verifique sua biblioteca.", "success");
+        onClose();
+      } else {
+        showToast(result.error || "Erro ao clonar playbook.", "error");
+      }
     } catch (error) {
       console.error("Failed to clone playbook:", error);
       showToast("Erro ao clonar playbook.", "error");

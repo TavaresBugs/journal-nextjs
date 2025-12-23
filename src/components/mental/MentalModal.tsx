@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Modal, GlassCard, SegmentedToggle } from "@/components/ui";
-import { saveMentalLog, type MentalLog } from "@/services/core/mental";
+import { saveMentalLogAction } from "@/app/actions/mental";
+import type { MentalLog } from "@/lib/database/repositories/MentalRepository";
 import { PerformanceGauge } from "./PerformanceGauge";
 import { MentalGrid } from "./MentalGrid";
 
@@ -132,7 +133,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
     if (!moodTag) return;
     setIsSaving(true);
     try {
-      const log = await saveMentalLog({
+      const result = await saveMentalLogAction({
         moodTag,
         step1Problem: step1,
         step2Validation: step2,
@@ -140,9 +141,14 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
         step4Correction: step4,
         step5Logic: step5,
       });
-      if (log && onSave) onSave(log);
-      setRefreshTrigger((prev) => prev + 1); // Refresh gauge/grid
-      handleClose();
+
+      if (result.success && result.log) {
+        if (onSave) onSave(result.log);
+        setRefreshTrigger((prev) => prev + 1); // Refresh gauge/grid
+        handleClose();
+      } else {
+        throw new Error(result.error || "Erro ao salvar");
+      }
     } catch (error) {
       console.error("Error saving mental log:", error);
       alert("Erro ao salvar. Tente novamente.");

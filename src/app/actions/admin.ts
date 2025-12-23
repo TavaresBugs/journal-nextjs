@@ -84,9 +84,34 @@ export async function updateLastLoginAction(): Promise<boolean> {
 
     const result = await prismaAdminRepo.updateLastLogin(userId);
     return result.data || false;
-  } catch (error) {
-    console.error("[updateLastLoginAction] Unexpected error:", error);
+  } catch {
     return false;
+  }
+}
+
+/**
+ * Update current user's display name.
+ */
+export async function updateUserNameAction(
+  name: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const result = await prismaAdminRepo.updateUserName(userId, name);
+
+    if (result.error) {
+      console.error("[updateUserNameAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[updateUserNameAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
   }
 }
 

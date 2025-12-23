@@ -1,7 +1,12 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getMentees, getSentInvites, inviteMentee, revokeInvite } from "@/services/mentor/invites";
+import {
+  getMenteesOverviewAction,
+  getSentInvitesAction,
+  inviteMenteeAction,
+  revokeInviteAction,
+} from "@/app/actions/mentor";
 import type { MentorPermission } from "@/types";
 
 // Query Keys for cache management
@@ -17,7 +22,7 @@ export const mentorKeys = {
 export function useMentorMentees() {
   return useQuery({
     queryKey: mentorKeys.mentees(),
-    queryFn: getMentees,
+    queryFn: getMenteesOverviewAction,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -28,7 +33,7 @@ export function useMentorMentees() {
 export function useMentorInvites() {
   return useQuery({
     queryKey: mentorKeys.invites(),
-    queryFn: getSentInvites,
+    queryFn: getSentInvitesAction,
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -44,24 +49,28 @@ export function useMentorActions() {
     permission: MentorPermission = "comment"
   ) => {
     console.log("[handleSendInvite] Starting invite for:", menteeEmail);
-    const result = await inviteMentee(menteeEmail, permission);
+    const result = await inviteMenteeAction(
+      menteeEmail,
+      permission === "comment" ? "comment" : "view"
+    );
 
-    if (result) {
-      console.log("[handleSendInvite] SUCCESS:", result);
+    if (result.success) {
+      console.log("[handleSendInvite] SUCCESS:", result.invite);
       queryClient.invalidateQueries({ queryKey: mentorKeys.all });
       return true;
     }
-    console.error("[handleSendInvite] FAILED: returned null");
+    console.error("[handleSendInvite] FAILED:", result.error);
     return false;
   };
 
   const handleRevokeAccess = async (inviteId: string) => {
     if (!confirm("Tem certeza que deseja revogar o acesso?")) return false;
-    const success = await revokeInvite(inviteId);
-    if (success) {
+    const result = await revokeInviteAction(inviteId);
+    if (result.success) {
       queryClient.invalidateQueries({ queryKey: mentorKeys.all });
+      return true;
     }
-    return success;
+    return false;
   };
 
   return {
@@ -79,12 +88,12 @@ export function usePrefetchMentorData() {
   return () => {
     queryClient.prefetchQuery({
       queryKey: mentorKeys.mentees(),
-      queryFn: getMentees,
+      queryFn: getMenteesOverviewAction,
       staleTime: 2 * 60 * 1000,
     });
     queryClient.prefetchQuery({
       queryKey: mentorKeys.invites(),
-      queryFn: getSentInvites,
+      queryFn: getSentInvitesAction,
       staleTime: 2 * 60 * 1000,
     });
   };

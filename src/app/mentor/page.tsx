@@ -11,7 +11,11 @@ import {
   StudentCalendarModal,
   InviteMenteeModal,
 } from "@/components/mentor";
-import { getMentees, getSentInvites, revokeInvite } from "@/services/mentor/invites";
+import {
+  getMenteesOverviewAction as getMentees,
+  getSentInvitesAction as getSentInvites,
+  revokeInviteAction as revokeInvite,
+} from "@/app/actions/mentor";
 import { MentorInvite, MenteeOverview } from "@/types";
 
 export default function MentoriaPage() {
