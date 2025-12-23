@@ -14,3 +14,40 @@ export { prismaJournalRepo, PrismaJournalRepository } from "./JournalRepository"
 export { prismaAccountRepo, PrismaAccountRepository } from "./AccountRepository";
 export { prismaPlaybookRepo, PrismaPlaybookRepository } from "./PlaybookRepository";
 export { prismaRoutineRepo, PrismaRoutineRepository } from "./RoutineRepository";
+export { prismaReviewRepo, PrismaReviewRepository, type MentorReview } from "./ReviewRepository";
+export {
+  prismaMentalRepo,
+  PrismaMentalRepository,
+  type MentalProfile,
+  type MentalEntry,
+  type MentalLog,
+} from "./MentalRepository";
+export {
+  prismaLaboratoryRepo,
+  PrismaLaboratoryRepository,
+  type LaboratoryExperiment,
+  type LaboratoryRecap,
+  type LaboratoryImage,
+} from "./LaboratoryRepository";
+export {
+  prismaAdminRepo,
+  PrismaAdminRepository,
+  type UserExtended,
+  type AuditLog,
+  type AdminStats,
+} from "./AdminRepository";
+export {
+  prismaCommunityRepo,
+  PrismaCommunityRepository,
+  type LeaderboardOptIn,
+  type LeaderboardEntry,
+  type SharedPlaybook,
+} from "./CommunityRepository";
+export {
+  prismaMentorRepo,
+  PrismaMentorRepository,
+  type MentorInvite,
+  type MentorAccountPermission,
+  type TradeComment,
+} from "./MentorRepository";
+export { prismaShareRepo, PrismaShareRepository, type SharedJournal } from "./ShareRepository";
