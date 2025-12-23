@@ -313,7 +313,7 @@ class PrismaCommunityRepository {
   }
 
   /**
-   * Get public playbooks.
+   * Get public playbooks with related data.
    */
   async getPublicPlaybooks(limit = 20, offset = 0): Promise<Result<SharedPlaybook[], AppError>> {
     this.logger.info("Fetching public playbooks", { limit, offset });
@@ -324,9 +324,36 @@ class PrismaCommunityRepository {
         orderBy: { stars: "desc" },
         take: limit,
         skip: offset,
+        include: {
+          playbooks: true,
+          users: {
+            include: {
+              profiles: true,
+            },
+          },
+        },
       });
 
-      return { data: playbooks.map(mapSharedPlaybookFromPrisma), error: null };
+      // Map with related data
+      const mapped = playbooks.map((sp) => {
+        const profile = sp.users?.profiles;
+        return {
+          ...mapSharedPlaybookFromPrisma(sp),
+          playbook: sp.playbooks
+            ? {
+                id: sp.playbooks.id,
+                name: sp.playbooks.name,
+                icon: sp.playbooks.icon,
+                color: sp.playbooks.color,
+                description: sp.playbooks.description,
+              }
+            : undefined,
+          userName: profile?.display_name || "Trader Anônimo",
+          userAvatar: profile?.avatar_url || undefined,
+        };
+      });
+
+      return { data: mapped as SharedPlaybook[], error: null };
     } catch (error) {
       this.logger.error("Failed to fetch public playbooks", { error });
       return {
