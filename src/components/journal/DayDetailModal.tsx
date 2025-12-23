@@ -45,7 +45,7 @@ export function DayDetailModal({
     loadRoutines,
     loadEntries,
     getEntryByTradeId,
-    removeEntry,
+    deleteEntry,
   } = useJournalStore();
 
   const { showToast } = useToast();
@@ -183,14 +183,14 @@ export function DayDetailModal({
       }
 
       try {
-        await removeEntry(entryId);
+        await deleteEntry(entryId);
         showToast("Entrada excluída com sucesso!", "success");
       } catch (error) {
         console.error("Error deleting entry:", error);
         showToast("Erro ao excluir entrada", "error");
       }
     },
-    [removeEntry, showToast]
+    [deleteEntry, showToast]
   );
 
   // Calculate Stats with useMemo

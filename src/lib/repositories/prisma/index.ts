@@ -13,3 +13,4 @@ export { prismaTradeRepo, PrismaTradeRepository } from "./TradeRepository";
 export { prismaJournalRepo, PrismaJournalRepository } from "./JournalRepository";
 export { prismaAccountRepo, PrismaAccountRepository } from "./AccountRepository";
 export { prismaPlaybookRepo, PrismaPlaybookRepository } from "./PlaybookRepository";
+export { prismaRoutineRepo, PrismaRoutineRepository } from "./RoutineRepository";

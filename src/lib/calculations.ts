@@ -85,7 +85,9 @@ export function calculateTradeMetrics(trades: Trade[]): TradeMetrics {
       ? Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0) / losingTrades.length)
       : 0;
 
-  const profitFactor = avgLoss > 0 ? (avgWin * wins) / (avgLoss * losses) : 0;
+  // Profit Factor: if no losses, return Infinity (mathematically correct)
+  const profitFactor =
+    avgLoss > 0 ? (avgWin * wins) / (avgLoss * losses) : avgWin > 0 ? Infinity : 0;
 
   // Calcular max drawdown
   let peak = 0;

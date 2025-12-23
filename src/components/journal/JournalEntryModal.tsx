@@ -62,7 +62,7 @@ export function JournalEntryModal({
   hasUnreadComments = false,
   noBackdrop = true,
 }: JournalEntryModalProps) {
-  const { addEntry, updateEntry } = useJournalStore();
+  const { addEntry, updateEntry, deleteEntry } = useJournalStore();
   const { trades: allTrades } = useTradeStore();
   const { showToast } = useToast();
 
@@ -143,12 +143,19 @@ export function JournalEntryModal({
   useEffect(() => {
     // If we have an existing entry (ID matches or just presence for new creation)
     if (existingEntry) {
-      // If we were in optimistic mode, clear it
-      if (optimisticEntry) {
-        setOptimisticEntry(null);
+      // If we were in optimistic mode (pending save), we transition to "confirmed" mode
+      // BUT we keep the optimistic images to prevent the "blink" effect of loading remote URLs
+      // The user will see the local base64/blob images until they close the modal
+      if (optimisticEntry && optimisticEntry._isPending) {
+        setOptimisticEntry({
+          ...existingEntry,
+          _isPending: false,
+          _optimisticImages: optimisticEntry._optimisticImages,
+        });
       }
     }
-  }, [existingEntry, optimisticEntry]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- optimisticEntry intentionally omitted to avoid infinite loop
+  }, [existingEntry]);
 
   // Handle share functionality
   const handleShare = async () => {
@@ -302,6 +309,21 @@ export function JournalEntryModal({
     };
   };
 
+  // Handle entry deletion
+  const handleDelete = async () => {
+    if (!existingEntry?.id) return;
+
+    try {
+      showToast("Excluindo entrada...", "loading", 0);
+      await deleteEntry(existingEntry.id);
+      showToast("Entrada excluída com sucesso!", "success");
+      onClose();
+    } catch (error) {
+      console.error("Error deleting entry:", error);
+      showToast("Erro ao excluir entrada", "error");
+    }
+  };
+
   if (!isOpen) return null;
 
   // Show preview mode if we have an existing entry (or optimistic) and not editing
@@ -317,6 +339,7 @@ export function JournalEntryModal({
         hasMentor={hasMentor}
         hasUnreadComments={hasUnreadComments}
         noBackdrop={noBackdrop}
+        onDelete={existingEntry ? handleDelete : undefined}
       />
     );
   }

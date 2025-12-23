@@ -315,19 +315,33 @@ export function useTradeForm(initialData?: Partial<Trade>) {
   }, [entryPrice, exitPrice, stopLoss, type]);
 
   const calculateEstimates = useCallback(() => {
-    if (!entryPrice || !lot || !stopLoss || !takeProfit) {
+    // We need entryPrice, lot, stopLoss, and EITHER takeProfit OR exitPrice to calculate returns
+    if (!entryPrice || !lot || !stopLoss) {
       return { risk: 0, reward: 0 };
     }
     const entry = parseFloat(entryPrice);
     const sl = parseFloat(stopLoss);
-    const tp = parseFloat(takeProfit);
     const lotSize = parseFloat(lot);
     const asset = assets.find((a) => a.symbol === symbol.toUpperCase());
     const assetMultiplier = asset ? asset.multiplier : 1;
+
+    // Calculate Risk (always based on Entry vs SL)
     const risk = Math.abs((entry - sl) * lotSize * assetMultiplier);
-    const reward = Math.abs((tp - entry) * lotSize * assetMultiplier);
+
+    // Calculate Reward: Prioritize Exit Price if available, otherwise use Take Profit
+    // If neither is available, reward is 0
+    let reward = 0;
+
+    if (exitPrice) {
+      const exit = parseFloat(exitPrice);
+      reward = Math.abs((exit - entry) * lotSize * assetMultiplier);
+    } else if (takeProfit) {
+      const tp = parseFloat(takeProfit);
+      reward = Math.abs((tp - entry) * lotSize * assetMultiplier);
+    }
+
     return { risk, reward };
-  }, [entryPrice, lot, stopLoss, takeProfit, symbol, assets]);
+  }, [entryPrice, lot, stopLoss, takeProfit, exitPrice, symbol, assets]);
 
   const estimates = calculateEstimates();
 

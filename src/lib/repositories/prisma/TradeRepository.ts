@@ -85,9 +85,9 @@ function mapTradeToPrisma(trade: Partial<Trade>): Prisma.tradesCreateInput {
     pnl: trade.pnl,
     commission: trade.commission,
     swap: trade.swap,
-    entry_date: trade.entryDate!,
+    entry_date: new Date(trade.entryDate!),
     entry_time: trade.entryTime,
-    exit_date: trade.exitDate,
+    exit_date: trade.exitDate ? new Date(trade.exitDate) : undefined,
     exit_time: trade.exitTime,
     tf_analise: trade.tfAnalise,
     tf_entrada: trade.tfEntrada,
@@ -153,6 +153,47 @@ class PrismaTradeRepository {
       return {
         data: null,
         error: new AppError("Failed to fetch trades", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  async getMany(options?: {
+    where?: Prisma.tradesWhereInput;
+    orderBy?: Prisma.tradesOrderByWithRelationInput;
+    take?: number;
+    skip?: number;
+  }): Promise<Result<Trade[], AppError>> {
+    this.logger.info("Fetching many trades", { options });
+
+    try {
+      const trades = await prisma.trades.findMany(options);
+      return { data: trades.map(mapPrismaToTrade), error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch many trades", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch trades", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Counts trades for a specific account.
+   */
+  async countByAccountId(accountId: string, userId: string): Promise<Result<number, AppError>> {
+    try {
+      const count = await prisma.trades.count({
+        where: {
+          account_id: accountId,
+          user_id: userId,
+        },
+      });
+      return { data: count, error: null };
+    } catch (error) {
+      this.logger.error("Failed to count trades", { error, accountId });
+      return {
+        data: null,
+        error: new AppError("Failed to count trades", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }
@@ -254,7 +295,11 @@ class PrismaTradeRepository {
       this.logger.error("Failed to create trade", { error });
       return {
         data: null,
-        error: new AppError("Failed to create trade", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to create trade: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -316,7 +361,11 @@ class PrismaTradeRepository {
 
       return {
         data: null,
-        error: new AppError("Failed to create trade", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to create trade with journal: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -380,7 +429,11 @@ class PrismaTradeRepository {
       this.logger.error("Failed to update trade", { error, tradeId });
       return {
         data: null,
-        error: new AppError("Failed to update trade", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to update trade: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }

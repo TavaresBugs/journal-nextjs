@@ -56,6 +56,8 @@ export default function LoginPage() {
       } else {
         await signUpWithEmail(email, password);
       }
+      // Force navigation to trigger middleware checks (pending/approved status)
+      window.location.href = "/";
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {
@@ -167,6 +169,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-200"
                 >
                   {showPassword ? (

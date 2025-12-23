@@ -1,13 +1,20 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Account } from "@/types";
-import { getAccounts, saveAccount, deleteAccount } from "@/lib/storage";
+import {
+  fetchAccounts,
+  createAccount,
+  updateAccount,
+  deleteAccount,
+  updateAccountBalance,
+} from "@/actions/accounts";
 
 interface AccountStore {
   accounts: Account[];
   currentAccountId: string | null;
   currentAccount: Account | null;
   isLoading: boolean;
+  error: string | null;
 
   // Actions
   loadAccounts: () => Promise<void>;
@@ -25,34 +32,75 @@ export const useAccountStore = create<AccountStore>()(
       currentAccountId: null,
       currentAccount: null,
       isLoading: false,
+      error: null,
 
       loadAccounts: async () => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          const accounts = await getAccounts();
+          const accounts = await fetchAccounts();
           set({ accounts, isLoading: false });
+
+          // Refresh current account object if selected
+          const { currentAccountId } = get();
+          if (currentAccountId) {
+            const current = accounts.find((a) => a.id === currentAccountId) || null;
+            if (current) {
+              set({ currentAccount: current });
+            }
+          }
         } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
           console.error("Error loading accounts:", error);
-          set({ isLoading: false });
+          set({ isLoading: false, error: message });
         }
       },
 
-      addAccount: async (account: Account) => {
+      addAccount: async (accountData) => {
         const { accounts } = get();
-        await saveAccount(account);
-        set({ accounts: [...accounts, account] });
+        // Optimistic update
+        const tempId = crypto.randomUUID();
+        const newAccount: Account = {
+          ...accountData,
+          id: tempId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        set({ accounts: [...accounts, newAccount] });
+
+        try {
+          const created = await createAccount(accountData);
+          if (created) {
+            set((state) => ({
+              accounts: state.accounts.map((a) => (a.id === tempId ? created : a)),
+              // If this was the first account or set as current, update it
+              currentAccount: state.currentAccountId === tempId ? created : state.currentAccount,
+            }));
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          console.error("Error adding account:", error);
+          set({ error: message, accounts }); // Rollback
+        }
       },
 
-      updateAccount: async (account: Account) => {
+      updateAccount: async (account) => {
         const { accounts, currentAccountId } = get();
-        await saveAccount(account);
 
+        // Optimistic
         const updatedAccounts = accounts.map((acc) => (acc.id === account.id ? account : acc));
-
         set({
           accounts: updatedAccounts,
           currentAccount: currentAccountId === account.id ? account : get().currentAccount,
         });
+
+        try {
+          await updateAccount(account);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          console.error("Error updating account:", error);
+          set({ error: message, accounts }); // Rollback
+        }
       },
 
       updateAccountBalance: async (accountId: string, totalPnL: number) => {
@@ -61,26 +109,49 @@ export const useAccountStore = create<AccountStore>()(
 
         if (!account) return;
 
+        const newBalance = account.initialBalance + totalPnL;
+
         const updatedAccount: Account = {
           ...account,
-          currentBalance: account.initialBalance + totalPnL,
+          currentBalance: newBalance,
           updatedAt: new Date().toISOString(),
         };
 
-        await get().updateAccount(updatedAccount);
+        // Optimistic via updateAccount
+        get().updateAccount(updatedAccount);
+
+        // Persist logic is in updateAccount, but specific balance update logic exists in server
+        // so we might want to ensure we call the specific action if needed, or rely on generic update
+        // The detailed plan said `updateAccountBalance` action exists.
+
+        try {
+          await updateAccountBalance(accountId, newBalance);
+        } catch (error) {
+          console.error("Error updating balance:", error);
+          // Rollback handling complex here due to optimistic update call above
+          // For now assuming updateAccount handles the view state
+          get().loadAccounts();
+        }
       },
 
       removeAccount: async (id: string) => {
         const { accounts, currentAccountId } = get();
-        await deleteAccount(id);
 
+        // Optimistic
         const filteredAccounts = accounts.filter((acc) => acc.id !== id);
-
         set({
           accounts: filteredAccounts,
           currentAccountId: currentAccountId === id ? null : currentAccountId,
           currentAccount: currentAccountId === id ? null : get().currentAccount,
         });
+
+        try {
+          await deleteAccount(id);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown error";
+          console.error("Error deleting account:", error);
+          set({ error: message, accounts }); // Rollback
+        }
       },
 
       setCurrentAccount: (id: string) => {

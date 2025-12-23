@@ -65,7 +65,7 @@ export function DashboardOverview({
                 Profit Factor
               </div>
               <div className="text-2xl font-bold text-gray-100">
-                {metrics.profitFactor.toFixed(2)}
+                {!isFinite(metrics.profitFactor) ? "∞" : metrics.profitFactor.toFixed(2)}
               </div>
               <div className="absolute top-4 right-4 text-gray-600">
                 <svg

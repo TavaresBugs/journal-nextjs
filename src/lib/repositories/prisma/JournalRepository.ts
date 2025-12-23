@@ -95,7 +95,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to fetch journal entries", { error, accountId });
       return {
         data: null,
-        error: new AppError("Failed to fetch journal entries", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to fetch journal entries: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -127,7 +131,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to fetch journal entry", { error, id });
       return {
         data: null,
-        error: new AppError("Failed to fetch journal entry", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to fetch journal entry: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -166,7 +174,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to fetch journal entries by date range", { error });
       return {
         data: null,
-        error: new AppError("Failed to fetch journal entries", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to fetch journal entries: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -203,7 +215,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to search journal entries", { error });
       return {
         data: null,
-        error: new AppError("Failed to search journal entries", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to search journal entries: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -212,42 +228,147 @@ class PrismaJournalRepository {
    * Creates or updates a journal entry.
    */
   async save(entry: Partial<JournalEntry>): Promise<Result<JournalEntry, AppError>> {
-    this.logger.info("Saving journal entry", { id: entry.id });
-
     try {
-      const saved = await prisma.journal_entries.upsert({
-        where: { id: entry.id || "" },
-        create: {
-          accounts: { connect: { id: entry.accountId } },
-          users: entry.userId ? { connect: { id: entry.userId } } : undefined,
-          date: new Date(entry.date!),
-          title: entry.title || "",
-          asset: entry.asset,
-          emotion: entry.emotion,
-          analysis: entry.analysis,
-          notes: entry.notes,
-        },
-        update: {
-          date: entry.date ? new Date(entry.date) : undefined,
-          title: entry.title,
-          asset: entry.asset,
-          emotion: entry.emotion,
-          analysis: entry.analysis,
-          notes: entry.notes,
-          updated_at: new Date(),
-        },
-        include: {
-          journal_images: true,
-          journal_entry_trades: true,
-        },
-      });
+      console.log("[JournalRepository] Saving entry:", JSON.stringify(entry, null, 2));
+
+      if (!entry.accountId || !entry.userId) {
+        return {
+          error: new AppError("Missing accountId or userId", ErrorCode.VALIDATION_ERROR, 400),
+          data: null,
+        };
+      }
+
+      // Convert date string to Date object
+      const entryDate = entry.date ? new Date(entry.date) : new Date();
+
+      let saved;
+
+      if (entry.id) {
+        // Update or insert with specific ID (if valid)
+        saved = await prisma.journal_entries.upsert({
+          where: { id: entry.id },
+          create: {
+            accounts: { connect: { id: entry.accountId } },
+            users: entry.userId ? { connect: { id: entry.userId } } : undefined,
+            date: entryDate,
+            title: entry.title || "",
+            asset: entry.asset,
+            emotion: entry.emotion,
+            analysis: entry.analysis,
+            notes: entry.notes,
+            journal_images: entry.images
+              ? {
+                  create: entry.images.map((img) => ({
+                    user_id: entry.userId || img.userId,
+                    url: img.url,
+                    path: img.path,
+                    timeframe: img.timeframe,
+                    display_order: img.displayOrder || 0,
+                  })),
+                }
+              : undefined,
+          },
+          update: {
+            date: entry.date ? new Date(entry.date) : undefined,
+            title: entry.title,
+            asset: entry.asset,
+            emotion: entry.emotion,
+            analysis: entry.analysis,
+            notes: entry.notes,
+            updated_at: new Date(),
+            journal_images: entry.images
+              ? {
+                  deleteMany: {},
+                  create: entry.images.map((img) => ({
+                    user_id: entry.userId || img.userId,
+                    url: img.url,
+                    path: img.path,
+                    timeframe: img.timeframe,
+                    display_order: img.displayOrder || 0,
+                  })),
+                }
+              : undefined,
+          },
+          include: {
+            journal_images: true,
+            journal_entry_trades: true,
+          },
+        });
+      } else {
+        // Create new entry (let DB generate ID)
+        saved = await prisma.journal_entries.create({
+          data: {
+            accounts: { connect: { id: entry.accountId } },
+            users: entry.userId ? { connect: { id: entry.userId } } : undefined,
+            date: entryDate,
+            title: entry.title || "",
+            asset: entry.asset,
+            emotion: entry.emotion,
+            analysis: entry.analysis,
+            notes: entry.notes,
+            journal_images: entry.images
+              ? {
+                  create: entry.images.map((img) => ({
+                    user_id: entry.userId || img.userId,
+                    url: img.url,
+                    path: img.path,
+                    timeframe: img.timeframe,
+                    display_order: img.displayOrder || 0,
+                  })),
+                }
+              : undefined,
+          },
+          include: {
+            journal_images: true,
+            journal_entry_trades: true,
+          },
+        });
+      }
+
+      // Handle trade links - delete existing and recreate
+      if (entry.tradeIds !== undefined) {
+        const savedId = saved.id;
+
+        // Delete existing trade links
+        await prisma.journal_entry_trades.deleteMany({
+          where: { journal_entry_id: savedId },
+        });
+
+        // Create new trade links if there are any
+        if (entry.tradeIds && entry.tradeIds.length > 0) {
+          console.log("[JournalRepository] Linking trades:", entry.tradeIds);
+          await prisma.journal_entry_trades.createMany({
+            data: entry.tradeIds.map((tradeId) => ({
+              journal_entry_id: savedId,
+              trade_id: tradeId,
+            })),
+          });
+        }
+
+        // Refetch to include updated trade links
+        const refreshed = await prisma.journal_entries.findUnique({
+          where: { id: savedId },
+          include: {
+            journal_images: true,
+            journal_entry_trades: true,
+          },
+        });
+
+        if (refreshed) {
+          saved = refreshed;
+        }
+      }
 
       return { data: mapJournalFromPrisma(saved as JournalWithRelations), error: null };
     } catch (error) {
       this.logger.error("Failed to save journal entry", { error });
       return {
         data: null,
-        error: new AppError("Failed to save journal entry", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to save journal entry: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -279,7 +400,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to delete journal entry", { error });
       return {
         data: null,
-        error: new AppError("Failed to delete journal entry", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to delete journal entry: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }
@@ -303,7 +428,11 @@ class PrismaJournalRepository {
       this.logger.error("Failed to link trade", { error });
       return {
         data: null,
-        error: new AppError("Failed to link trade", ErrorCode.DB_QUERY_FAILED, 500),
+        error: new AppError(
+          `Failed to link trade: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
       };
     }
   }

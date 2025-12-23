@@ -1,6 +1,9 @@
 import { SharedPlaybook } from "@/types";
-import { Modal, ModalFooterActions } from "@/components/ui";
+import { Modal, ModalFooterActions, IconActionButton } from "@/components/ui";
 import { formatCurrency } from "@/lib/calculations";
+import { useToast } from "@/providers/ToastProvider";
+import { clonePlaybook } from "@/actions/playbook";
+import { useState } from "react";
 
 interface ViewSharedPlaybookModalProps {
   playbook: SharedPlaybook | null;
@@ -8,6 +11,9 @@ interface ViewSharedPlaybookModalProps {
 }
 
 export function ViewSharedPlaybookModal({ playbook, onClose }: ViewSharedPlaybookModalProps) {
+  const { showToast } = useToast();
+  const [isCloning, setIsCloning] = useState(false);
+
   if (!playbook) return null;
 
   const stats = playbook.authorStats;
@@ -16,10 +22,32 @@ export function ViewSharedPlaybookModal({ playbook, onClose }: ViewSharedPlayboo
   const maxWinStreak = stats?.maxWinStreak || 0;
   const avgRR = stats?.avgRR || 0;
 
+  const handleClone = async () => {
+    try {
+      setIsCloning(true);
+      await clonePlaybook(playbook);
+      showToast("Playbook clonado com sucesso! Verifique sua biblioteca.", "success");
+      onClose();
+    } catch (error) {
+      console.error("Failed to clone playbook:", error);
+      showToast("Erro ao clonar playbook.", "error");
+    } finally {
+      setIsCloning(false);
+    }
+  };
+
   return (
     <Modal
       isOpen={!!playbook}
       onClose={onClose}
+      headerActions={
+        <IconActionButton
+          variant="copy"
+          onClick={handleClone}
+          title="Clonar este Playbook"
+          disabled={isCloning}
+        />
+      }
       title={
         <div className="flex items-center gap-4">
           <div
