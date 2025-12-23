@@ -340,13 +340,15 @@ class PrismaCommunityRepository {
           const profile = sp.users?.profiles;
           const playbookName = sp.playbooks?.name;
 
-          // Calculate author stats from trades with this strategy
+          // Calculate author stats from trades with this strategy in this account
           let authorStats = undefined;
           if (playbookName && sp.user_id) {
+            const accountId = sp.playbooks?.account_id;
             const trades = await prisma.trades.findMany({
               where: {
                 user_id: sp.user_id,
                 strategy: playbookName,
+                ...(accountId && { account_id: accountId }),
               },
               select: {
                 pnl: true,
