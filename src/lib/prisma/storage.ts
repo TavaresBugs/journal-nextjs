@@ -6,7 +6,7 @@
  *
  * @example
  * // In useTradeStore.ts, change:
- * import { getTradesPaginated } from '@/lib/storage';
+
  * // To:
  * import { getTradesPaginated } from '@/lib/prisma/storage';
  */
