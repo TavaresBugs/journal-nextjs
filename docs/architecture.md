@@ -45,14 +45,12 @@ src/
 │   ├── layout/             # Layout e navegação
 │   └── shared/             # Componentes compartilhados
 │
-├── services/               # ⚙️ LÓGICA DE NEGÓCIO
-│   ├── admin/              # Migração, configurações
+├── services/               # ⚙️ LÓGICA DE NEGÓCIO (Minimizado)
+│   ├── admin/              # migration.ts (storage → Supabase)
 │   ├── analytics/          # Cálculos e métricas
-│   ├── community/          # Playbooks da comunidade
-│   ├── core/               # Forex, calendar, utils
-│   ├── journal/            # CRUD de journal
-│   ├── mentor/             # Sistema de mentoria
-│   └── trades/             # CRUD de trades, importação
+│   ├── core/               # Forex calendar, scraper
+│   ├── journal/            # imageUpload.ts (browser-side)
+│   └── trades/             # import.ts, export.ts, parsers
 │
 ├── hooks/                  # 🪝 CUSTOM HOOKS (15)
 │   ├── useAuth.ts          # Autenticação

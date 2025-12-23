@@ -2,78 +2,114 @@
 
 Este documento detalha o processo de migração e a nova estrutura de pastas implementada em Dezembro de 2025 para consolidar a camada de acesso a dados.
 
-## 🔄 Mudanças Recentes (Dezembro 2025)
+## ✅ Status da Migração (Completo - Dezembro 2025)
 
-### 1. Camada de Dados Centralizada (`src/lib/database`)
+A migração de Supabase Client direto → Prisma ORM + Server Actions está **100% completa**.
 
-Anteriormente, tínhamos arquivos espalhados em `lib/prisma` e `lib/repositories/prisma`. Agora, tudo foi centralizado.
+### Serviços Migrados
 
-**Antes:**
+| Serviço Antigo             | Novo Server Action     | Status |
+| :------------------------- | :--------------------- | :----: |
+| `core/account.ts`          | `actions/accounts.ts`  |   ✅   |
+| `journal/journal.ts`       | `actions/journal.ts`   |   ✅   |
+| `journal/routine.ts`       | `actions/routines.ts`  |   ✅   |
+| `journal/review.ts`        | `actions/reviews.ts`   |   ✅   |
+| `core/mental.ts`           | `actions/mental.ts`    |   ✅   |
+| `admin/admin.ts`           | `actions/admin.ts`     |   ✅   |
+| `mentor/invites/*.ts`      | `actions/mentor.ts`    |   ✅   |
+| `community/playbook.ts`    | `actions/playbooks.ts` |   ✅   |
+| `community/leaderboard.ts` | `actions/community.ts` |   ✅   |
+| `trades/trade.ts`          | `actions/trades.ts`    |   ✅   |
 
-```
-src/lib/
-├── prisma/               # Client e Auth
-│   ├── index.ts
-│   └── auth.ts
-└── repositories/
-    └── prisma/           # Implementações
-        ├── AccountRepository.ts
-        └── ...
-```
+---
 
-**Depois (Nova Estrutura):**
+## 📁 Estrutura de Dados Centralizada (`src/lib/database`)
 
 ```
 src/lib/
 └── database/             # ✅ Hub Central
-    ├── client.ts         # Prisma Client (antigo index.ts)
-    ├── auth.ts           # Auth helpers
-    └── repositories/     # ✅ Todas implementações aqui
+    ├── client.ts         # Prisma Client Singleton
+    ├── auth.ts           # Auth helpers (getCurrentUserId - SERVER ONLY)
+    └── repositories/     # Prisma Implementations
         ├── AccountRepository.ts
+        ├── AdminRepository.ts
+        ├── CommunityRepository.ts
         ├── JournalRepository.ts
-        └── ...
+        ├── LaboratoryRepository.ts
+        ├── MentalRepository.ts
+        ├── MentorRepository.ts
+        ├── PlaybookRepository.ts
+        ├── ReviewRepository.ts
+        ├── RoutineRepository.ts
+        ├── SettingsRepository.ts
+        ├── ShareRepository.ts
+        └── TradeRepository.ts
 ```
 
-### 2. Imports Atualizados
+### Server Actions (`src/app/actions/`)
 
-Se você está procurando onde importar o Prisma ou Repositórios:
+| Action          | Descrição                              |
+| :-------------- | :------------------------------------- |
+| `accounts.ts`   | CRUD de contas + settings              |
+| `admin.ts`      | Gestão de usuários + audit logs        |
+| `community.ts`  | Leaderboard + Playbooks compartilhados |
+| `journal.ts`    | Entradas do diário + imagens           |
+| `laboratory.ts` | Recaps + experimentos                  |
+| `mental.ts`     | Mental Hub + profiles + logs           |
+| `mentor.ts`     | Invites + permissions + trade comments |
+| `playbooks.ts`  | CRUD de playbooks pessoais             |
+| `reviews.ts`    | Reviews de mentor/mentorado            |
+| `routines.ts`   | Rotinas diárias                        |
+| `share.ts`      | Compartilhamento público de journals   |
+| `trades.ts`     | CRUD de trades                         |
+
+---
+
+## 🔐 Autenticação Client vs Server
+
+> **IMPORTANTE**: A autenticação funciona diferente em componentes cliente e servidor.
+
+| Contexto          | Função                     | Import                |
+| :---------------- | :------------------------- | :-------------------- |
+| Server Actions    | `getCurrentUserId()`       | `@/lib/database/auth` |
+| Client Components | `getCurrentUserIdClient()` | `@/lib/supabase`      |
+
+**Regra:** Nunca importe `@/lib/database/auth` em componentes cliente (`"use client"`).
+
+---
+
+## 📐 Imports Atualizados
 
 | O que você quer? | Import Antigo               | **Novo Import**                   |
 | :--------------- | :-------------------------- | :-------------------------------- |
 | Prisma Client    | `@/lib/prisma`              | **`@/lib/database`**              |
-| Auth Helpers     | `@/lib/prisma/auth`         | **`@/lib/database/auth`**         |
+| Auth (Server)    | `@/lib/prisma/auth`         | **`@/lib/database/auth`**         |
+| Auth (Client)    | N/A                         | **`@/lib/supabase`**              |
 | Repositories     | `@/lib/repositories/prisma` | **`@/lib/database/repositories`** |
-
-> **Dica:** O VS Code deve sugerir os novos caminhos automaticamente.
+| Server Actions   | `@/services/...`            | **`@/app/actions/...`**           |
 
 ---
 
-## 📂 Guia Rápido de Arquivos
+## 📂 Services Restantes (Mínimos)
 
-### Onde encontro...
+Após a migração, a pasta `services/` contém apenas lógica que **não pode** rodar no servidor:
 
-- **Schema do Banco?** `prisma/schema.prisma`
-- **Queries SQL?** Elas estão encapsuladas dentro de `src/lib/database/repositories/*.ts`.
-- **Server Actions?** `src/app/actions/*.ts` (elas chamam os repositórios).
-- **Tipos de Banco?** `src/types/database.ts` (gerados automaticamente ou manuais).
-- **Tipos de Domínio?** `src/types/index.ts` (Interfaces principais como `Trade`, `JournalEntry`).
-
-### Adicionando Nova Funcionalidade
-
-1. **Modelagem:** Adicione tabelas em `prisma/schema.prisma`.
-2. **Migração:** Rode `npx prisma migrate dev`.
-3. **Repositório:**
-   - Crie `src/lib/database/repositories/[Nome]Repository.ts`.
-   - Implemente métodos CRUD usando `prisma.[tabela]`.
-4. **Action:** Crie `src/app/actions/[nome].ts` para expor dados ao frontend.
+```
+src/services/
+├── admin/migration.ts      # Migração localStorage → Supabase (browser)
+├── analytics/              # Cálculos puros (sem DB)
+├── core/forexScraper.ts    # Scraper de calendário
+├── journal/imageUpload.ts  # Upload de imagens (browser)
+└── trades/import.ts        # Parser de CSV/PDF (browser)
+```
 
 ---
 
 ## 🛠️ Notas para Desenvolvedores
 
-- **Não use `prisma` diretamente em componentes.** Sempre use Server Actions.
-- **Não use `prisma` diretamente em Actions (idealmente).** Use os Repositories para manter a lógica encapsulada.
-- **Tipagem:** Os repositórios devem retornar objetos de domínio (`JournalEntry`), não objetos crus do Prisma (`DBJournalEntry`), sempre que possível (use mappers).
+1. **Não use `prisma` diretamente em componentes.** Sempre use Server Actions.
+2. **Repositories** devem retornar objetos de domínio, não objetos crus do Prisma.
+3. **Services restantes** são apenas para lógica browser-side.
 
 ---
 

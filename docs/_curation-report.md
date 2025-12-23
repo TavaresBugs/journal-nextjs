@@ -300,15 +300,18 @@ Usar para comparações, métricas, e listagens estruturadas.
 
 ### Issues Criadas para Melhorias
 
-| Issue | Título                                        | Prioridade |
-| ----- | --------------------------------------------- | ---------- |
-| #62   | Prisma Migration Phase 2 - Secondary Features | Alta       |
-| #63   | Remove Legacy Supabase Repositories           | Média      |
-| #64   | Improve Performance Report Calculations       | Baixa      |
-| #65   | Update Architecture Documentation             | Média      |
+| Issue | Título                                        | Prioridade | Status       |
+| ----- | --------------------------------------------- | ---------- | ------------ |
+| #62   | Prisma Migration Phase 2 - Secondary Features | Alta       | ✅ Concluída |
+| #63   | Remove Legacy Supabase Repositories           | Média      | ✅ Concluída |
+| #64   | Improve Performance Report Calculations       | Baixa      | Aberta       |
+| #65   | Update Architecture Documentation             | Média      | ✅ Concluída |
 
 ### Issues Fechadas
 
-| Issue | Título                           | Status       |
-| ----- | -------------------------------- | ------------ |
-| #61   | Prisma ORM - Integração Completa | ✅ Concluída |
+| Issue | Título                              | Status       | Data       |
+| ----- | ----------------------------------- | ------------ | ---------- |
+| #61   | Prisma ORM - Integração Completa    | ✅ Concluída | 22/12/2025 |
+| #62   | Prisma Migration Phase 2            | ✅ Concluída | 23/12/2025 |
+| #63   | Remove Legacy Supabase Repositories | ✅ Concluída | 23/12/2025 |
+| #65   | Update Architecture Documentation   | ✅ Concluída | 23/12/2025 |
