@@ -6,7 +6,7 @@
  * security checks at the application level.
  *
  * @example
- * import { withUserContext, assertOwnership } from '@/lib/prisma/security';
+ * import { withUserContext, assertOwnership } from '@/lib/database/security';
  *
  * // Wrap queries with user context
  * const trades = await withUserContext(userId, async () => {
@@ -14,7 +14,7 @@
  * });
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import { AppError, ErrorCode } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
 

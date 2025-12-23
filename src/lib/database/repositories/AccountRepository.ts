@@ -5,11 +5,11 @@
  * Handles trading accounts with balance management.
  *
  * @example
- * import { prismaAccountRepo } from '@/lib/repositories/prisma';
+ * import { prismaAccountRepo } from '@/lib/database/repositories';
  * const accounts = await prismaAccountRepo.getByUserId('user-uuid');
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import { accounts as PrismaAccount } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";

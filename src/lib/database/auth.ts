@@ -6,7 +6,7 @@
  *
  * @example
  * // In a component or action
- * import { getSecurePrismaClient } from '@/lib/prisma/auth';
+ * import { getSecurePrismaClient } from '@/lib/database/auth';
  *
  * const client = await getSecurePrismaClient();
  * const trades = await client.query(userId =>

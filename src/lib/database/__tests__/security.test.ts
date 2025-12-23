@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { AppError, ErrorCode } from "@/lib/errors";
 
 // Mock prisma before importing security module
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/database", () => ({
   prisma: {
     accounts: {
       findFirst: vi.fn(),

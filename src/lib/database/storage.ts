@@ -8,10 +8,10 @@
  * // In useTradeStore.ts, change:
 
  * // To:
- * import { getTradesPaginated } from '@/lib/prisma/storage';
+ * import { getTradesPaginated } from '@/lib/database/storage';
  */
 
-import { prismaTradeRepo, prismaJournalRepo } from "@/lib/repositories/prisma";
+import { prismaTradeRepo, prismaJournalRepo } from "@/lib/database/repositories";
 import type { Trade, TradeLite, JournalEntry } from "@/types";
 import { supabase } from "@/lib/supabase";
 

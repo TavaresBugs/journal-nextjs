@@ -5,11 +5,11 @@
  * Handles journal entries with images and trade associations.
  *
  * @example
- * import { prismaJournalRepo } from '@/lib/repositories/prisma';
+ * import { prismaJournalRepo } from '@/lib/database/repositories';
  * const entries = await prismaJournalRepo.getByAccountId('account-uuid');
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import {
   journal_entries as PrismaJournalEntry,
   journal_images as PrismaJournalImage,

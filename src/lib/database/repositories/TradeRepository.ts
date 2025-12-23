@@ -5,11 +5,11 @@
  * Provides full TypeScript support with autocompletion for all trade fields.
  *
  * @example
- * import { prismaTradeRepo } from '@/lib/repositories/prisma';
+ * import { prismaTradeRepo } from '@/lib/database/repositories';
  * const trades = await prismaTradeRepo.getByAccountId('account-uuid', 'user-uuid');
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import { trades as PrismaTrade, Prisma } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";

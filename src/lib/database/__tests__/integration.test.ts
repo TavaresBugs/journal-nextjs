@@ -9,7 +9,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { User } from "@supabase/supabase-js";
 
 // Mock both prisma and supabase before imports
-vi.mock("@/lib/prisma", () => ({
+vi.mock("@/lib/database", () => ({
   prisma: {
     trades: { findMany: vi.fn() },
     accounts: { findMany: vi.fn() },

@@ -1,16 +1,122 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 import { compressToWebP } from "@/lib/utils/imageCompression";
+import {
+  getExperimentsAction,
+  createExperimentAction,
+  updateExperimentAction,
+  deleteExperimentAction,
+  addExperimentImagesAction,
+  getRecapsAction,
+  createRecapAction,
+  updateRecapAction,
+  deleteRecapAction,
+} from "@/app/actions";
 import type {
-  LaboratoryExperiment,
-  LaboratoryImage,
-  LaboratoryRecap,
-  ExperimentStatus,
-  EmotionalState,
-  TradeLite,
-  RecapLinkedType,
-  JournalEntryLite,
-} from "@/types";
+  LaboratoryExperiment as RepoExperiment,
+  LaboratoryRecap as RepoRecap,
+} from "@/lib/database/repositories";
+import type { ExperimentStatus, EmotionalState, RecapLinkedType } from "@/types";
+
+/**
+ * useLaboratoryStore - Zustand Store
+ *
+ * Manages Laboratory experiments and recaps.
+ *
+ * @migrated Phase 6a - Database operations now use Server Actions.
+ *           Image uploads remain in Supabase Storage (client-side).
+ */
+
+// Re-export repository types as store types with null -> undefined conversion
+export interface LaboratoryImage {
+  id: string;
+  experimentId: string;
+  imageUrl: string;
+  description?: string;
+  uploadedAt: string;
+}
+
+export interface LaboratoryExperiment {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  status: ExperimentStatus;
+  category?: string;
+  expectedWinRate?: number;
+  expectedRiskReward?: number;
+  promotedToPlaybook: boolean;
+  createdAt: string;
+  updatedAt: string;
+  images: LaboratoryImage[];
+}
+
+export interface LaboratoryRecap {
+  id: string;
+  userId: string;
+  tradeId?: string;
+  tradeIds: string[];
+  title: string;
+  whatWorked?: string;
+  whatFailed?: string;
+  emotionalState?: EmotionalState;
+  lessonsLearned?: string;
+  images: string[];
+  createdAt: string;
+  reviewType: "daily" | "weekly";
+  weekStartDate?: string;
+  weekEndDate?: string;
+  linkedType?: RecapLinkedType;
+  linkedId?: string;
+  linkedTrade?: { asset: string; pnl: number; date: string };
+  linkedJournal?: { date: string; accountId: string };
+}
+
+// Mapper functions - convert repository types to store types
+function mapStatus(status: string): ExperimentStatus {
+  // Map repository status to UI status
+  const statusMap: Record<string, ExperimentStatus> = {
+    em_aberto: "em_aberto",
+    em_teste: "testando",
+    validado: "validado",
+    invalidado: "descartado",
+    testando: "testando",
+    descartado: "descartado",
+  };
+  return statusMap[status] || "em_aberto";
+}
+
+function mapExperiment(exp: RepoExperiment): LaboratoryExperiment {
+  return {
+    ...exp,
+    status: mapStatus(exp.status),
+    description: exp.description ?? undefined,
+    category: exp.category ?? undefined,
+    expectedWinRate: exp.expectedWinRate ?? undefined,
+    expectedRiskReward: exp.expectedRiskReward ?? undefined,
+    images: exp.images.map((img) => ({
+      ...img,
+      description: img.description ?? undefined,
+    })),
+  };
+}
+
+function mapRecap(recap: RepoRecap): LaboratoryRecap {
+  return {
+    ...recap,
+    tradeId: recap.tradeId ?? undefined,
+    whatWorked: recap.whatWorked ?? undefined,
+    whatFailed: recap.whatFailed ?? undefined,
+    emotionalState: (recap.emotionalState as EmotionalState) ?? undefined,
+    lessonsLearned: recap.lessonsLearned ?? undefined,
+    weekStartDate: recap.weekStartDate ?? undefined,
+    weekEndDate: recap.weekEndDate ?? undefined,
+    linkedType: (recap.linkedType as RecapLinkedType) ?? undefined,
+    linkedId: recap.linkedId ?? undefined,
+    linkedTrade: recap.linkedTrade ?? undefined,
+    linkedJournal: recap.linkedJournal ?? undefined,
+  };
+}
 
 // ============================================
 // Create/Update DTOs
@@ -32,12 +138,9 @@ export interface UpdateExperimentData extends CreateExperimentData {
 
 export interface CreateRecapData {
   title: string;
-  /** @deprecated Use linkedType + linkedId instead */
-  tradeId?: string; // For daily review (single trade)
-  tradeIds?: string[]; // For weekly review (multiple trades)
-  /** Type of linked record (trade or journal) */
+  tradeId?: string;
+  tradeIds?: string[];
   linkedType?: RecapLinkedType;
-  /** ID of the linked record (trade or journal entry) */
   linkedId?: string;
   reviewType?: "daily" | "weekly";
   weekStartDate?: string;
@@ -63,77 +166,22 @@ interface LaboratoryStore {
   isLoading: boolean;
   error: string | null;
 
-  // Experiment actions
   loadExperiments: () => Promise<void>;
   addExperiment: (data: CreateExperimentData, imageFiles?: File[]) => Promise<LaboratoryExperiment>;
   updateExperiment: (data: UpdateExperimentData, newImageFiles?: File[]) => Promise<void>;
   removeExperiment: (id: string) => Promise<void>;
   promoteToPlaybook: (experimentId: string) => Promise<void>;
 
-  // Recap actions
   loadRecaps: () => Promise<void>;
   addRecap: (data: CreateRecapData, imageFiles?: File[]) => Promise<LaboratoryRecap>;
   updateRecap: (data: UpdateRecapData, newImageFiles?: File[]) => Promise<void>;
   removeRecap: (id: string) => Promise<void>;
 
-  // Utility
   clearError: () => void;
 }
 
 // ============================================
-// Helper: Map DB row to LaboratoryExperiment
-// ============================================
-
-function mapExperimentFromDB(
-  row: Record<string, unknown>,
-  images: LaboratoryImage[] = []
-): LaboratoryExperiment {
-  return {
-    id: row.id as string,
-    userId: row.user_id as string,
-    title: row.title as string,
-    description: row.description as string | undefined,
-    status: row.status as ExperimentStatus,
-    category: row.category as string | undefined,
-    expectedWinRate: row.expected_win_rate as number | undefined,
-    expectedRiskReward: row.expected_risk_reward as number | undefined,
-    promotedToPlaybook: row.promoted_to_playbook as boolean,
-    images,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
-  };
-}
-
-// ============================================
-// Helper: Map DB row to LaboratoryRecap
-// ============================================
-
-function mapRecapFromDB(
-  row: Record<string, unknown>,
-  trade?: TradeLite,
-  journal?: JournalEntryLite
-): LaboratoryRecap {
-  return {
-    id: row.id as string,
-    userId: row.user_id as string,
-    tradeId: row.trade_id as string | undefined,
-    linkedType: row.linked_type as RecapLinkedType | undefined,
-    linkedId: row.linked_id as string | undefined,
-    title: row.title as string,
-    type: row.review_type as "daily" | "weekly" | undefined,
-    whatWorked: row.what_worked as string | undefined,
-    whatFailed: row.what_failed as string | undefined,
-    emotionalState: row.emotional_state as EmotionalState | undefined,
-    lessonsLearned: row.lessons_learned as string | undefined,
-    images: (row.images as string[]) || [],
-    createdAt: row.created_at as string,
-    trade,
-    journal,
-  };
-}
-
-// ============================================
-// Helper: Upload images to storage
+// Helper: Upload images to Supabase Storage
 // ============================================
 
 async function uploadExperimentImages(
@@ -146,7 +194,6 @@ async function uploadExperimentImages(
 
   for (const file of files) {
     try {
-      // Convert to WebP before upload (100% quality for storage)
       const compressed = await compressToWebP(file, {
         qualityWebP: 1.0,
         maxWidth: 1920,
@@ -170,7 +217,6 @@ async function uploadExperimentImages(
       }
 
       const { data: publicUrlData } = supabase.storage.from("laboratory-images").getPublicUrl(path);
-
       urls.push(publicUrlData.publicUrl);
 
       if (process.env.NODE_ENV === "development") {
@@ -201,7 +247,6 @@ async function uploadRecapImages(
 
   for (const file of files) {
     try {
-      // Convert to WebP before upload (100% quality for storage)
       const compressed = await compressToWebP(file, {
         qualityWebP: 1.0,
         maxWidth: 1920,
@@ -225,7 +270,6 @@ async function uploadRecapImages(
       }
 
       const { data: publicUrlData } = supabase.storage.from("laboratory-images").getPublicUrl(path);
-
       urls.push(publicUrlData.publicUrl);
 
       if (process.env.NODE_ENV === "development") {
@@ -245,6 +289,13 @@ async function uploadRecapImages(
   return urls;
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id || null;
+}
+
 // ============================================
 // Store Implementation
 // ============================================
@@ -255,62 +306,12 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
   isLoading: false,
   error: null,
 
-  // ====================================
-  // EXPERIMENTS
-  // ====================================
-
   loadExperiments: async () => {
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      // Load experiments
-      const { data: experimentsData, error: experimentsError } = await supabase
-        .from("laboratory_experiments")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (experimentsError) throw experimentsError;
-
-      // Load images for all experiments
-      const experimentIds = (experimentsData || []).map((e) => e.id);
-      let imagesMap: Record<string, LaboratoryImage[]> = {};
-
-      if (experimentIds.length > 0) {
-        const { data: imagesData, error: imagesError } = await supabase
-          .from("laboratory_images")
-          .select("*")
-          .in("experiment_id", experimentIds);
-
-        if (imagesError) throw imagesError;
-
-        imagesMap = (imagesData || []).reduce(
-          (acc, img) => {
-            const expId = img.experiment_id as string;
-            if (!acc[expId]) acc[expId] = [];
-            acc[expId].push({
-              id: img.id,
-              experimentId: img.experiment_id,
-              imageUrl: img.image_url,
-              description: img.description,
-              uploadedAt: img.uploaded_at,
-            });
-            return acc;
-          },
-          {} as Record<string, LaboratoryImage[]>
-        );
-      }
-
-      const experiments = (experimentsData || []).map((row) =>
-        mapExperimentFromDB(row, imagesMap[row.id] || [])
-      );
-
-      set({ experiments, isLoading: false });
+      const repoExperiments = await getExperimentsAction();
+      set({ experiments: repoExperiments.map(mapExperiment), isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error loading experiments:", error);
@@ -322,61 +323,51 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
 
-      // Insert experiment
-      const { data: insertedData, error: insertError } = await supabase
-        .from("laboratory_experiments")
-        .insert({
-          user_id: user.id,
-          title: data.title,
-          description: data.description,
-          status: data.status || "em_aberto",
-          category: data.category,
-          expected_win_rate: data.expectedWinRate,
-          expected_risk_reward: data.expectedRiskReward,
-        })
-        .select()
-        .single();
+      const result = await createExperimentAction({
+        title: data.title,
+        description: data.description,
+        status: data.status || "em_aberto",
+        category: data.category,
+        expectedWinRate: data.expectedWinRate,
+        expectedRiskReward: data.expectedRiskReward,
+      });
 
-      if (insertError) throw insertError;
+      if (!result.success || !result.experiment) {
+        throw new Error(result.error || "Failed to create experiment");
+      }
 
-      // Upload images if provided
-      const images: LaboratoryImage[] = [];
+      let images: LaboratoryImage[] = [];
+
       if (imageFiles && imageFiles.length > 0) {
-        const { urls, errors } = await uploadExperimentImages(user.id, insertedData.id, imageFiles);
+        const { urls, errors } = await uploadExperimentImages(
+          userId,
+          result.experiment.id,
+          imageFiles
+        );
 
         if (errors.length > 0) {
           console.warn("Some images failed to upload:", errors);
         }
 
-        // Save image records to database
-        for (const url of urls) {
-          const { data: imgData, error: imgError } = await supabase
-            .from("laboratory_images")
-            .insert({
-              experiment_id: insertedData.id,
-              image_url: url,
-            })
-            .select()
-            .single();
+        if (urls.length > 0) {
+          const imgResult = await addExperimentImagesAction(
+            result.experiment.id,
+            urls.map((url) => ({ imageUrl: url }))
+          );
 
-          if (!imgError && imgData) {
-            images.push({
-              id: imgData.id,
-              experimentId: imgData.experiment_id,
-              imageUrl: imgData.image_url,
-              description: imgData.description,
-              uploadedAt: imgData.uploaded_at,
-            });
+          if (imgResult.success && imgResult.images) {
+            images = imgResult.images.map((img) => ({
+              ...img,
+              description: img.description ?? undefined,
+            }));
           }
         }
       }
 
-      const newExperiment = mapExperimentFromDB(insertedData, images);
+      const newExperiment = { ...mapExperiment(result.experiment), images };
       set({
         experiments: [newExperiment, ...get().experiments],
         isLoading: false,
@@ -395,55 +386,44 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
 
-      const { error: updateError } = await supabase
-        .from("laboratory_experiments")
-        .update({
-          title: data.title,
-          description: data.description,
-          status: data.status,
-          category: data.category,
-          expected_win_rate: data.expectedWinRate,
-          expected_risk_reward: data.expectedRiskReward,
-          promoted_to_playbook: data.promotedToPlaybook,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", data.id);
+      const result = await updateExperimentAction(data.id, {
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        category: data.category,
+        expectedWinRate: data.expectedWinRate,
+        expectedRiskReward: data.expectedRiskReward,
+        promotedToPlaybook: data.promotedToPlaybook,
+      });
 
-      if (updateError) throw updateError;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update experiment");
+      }
 
-      // Handle new image uploads
       const newImages: LaboratoryImage[] = [];
       if (newImageFiles && newImageFiles.length > 0) {
-        const { urls } = await uploadExperimentImages(user.id, data.id, newImageFiles);
+        const { urls } = await uploadExperimentImages(userId, data.id, newImageFiles);
 
-        for (const url of urls) {
-          const { data: imgData, error: imgError } = await supabase
-            .from("laboratory_images")
-            .insert({
-              experiment_id: data.id,
-              image_url: url,
-            })
-            .select()
-            .single();
+        if (urls.length > 0) {
+          const imgResult = await addExperimentImagesAction(
+            data.id,
+            urls.map((url) => ({ imageUrl: url }))
+          );
 
-          if (!imgError && imgData) {
-            newImages.push({
-              id: imgData.id,
-              experimentId: imgData.experiment_id,
-              imageUrl: imgData.image_url,
-              description: imgData.description,
-              uploadedAt: imgData.uploaded_at,
-            });
+          if (imgResult.success && imgResult.images) {
+            newImages.push(
+              ...imgResult.images.map((img) => ({
+                ...img,
+                description: img.description ?? undefined,
+              }))
+            );
           }
         }
       }
 
-      // Update local state
       set({
         experiments: get().experiments.map((exp) => {
           if (exp.id === data.id) {
@@ -476,10 +456,11 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // Delete experiment (cascade will handle images table)
-      const { error } = await supabase.from("laboratory_experiments").delete().eq("id", id);
+      const result = await deleteExperimentAction(id);
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete experiment");
+      }
 
       set({
         experiments: get().experiments.filter((exp) => exp.id !== id),
@@ -497,11 +478,6 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
       const experiment = get().experiments.find((e) => e.id === experimentId);
       if (!experiment) throw new Error("Experiment not found");
 
@@ -509,13 +485,15 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
         throw new Error("Only validated experiments can be promoted to Playbook");
       }
 
-      // Create playbook entry
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
+
       const ruleGroups = experiment.category
         ? [{ id: "category", name: experiment.category, rules: [] }]
         : [];
 
       const { error: playbookError } = await supabase.from("playbooks").insert({
-        user_id: user.id,
+        user_id: userId,
         account_id: null,
         name: experiment.title,
         description: experiment.description || `Promoted from Laboratory experiment`,
@@ -526,16 +504,14 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
 
       if (playbookError) throw playbookError;
 
-      // Mark experiment as promoted
-      const { error: updateError } = await supabase
-        .from("laboratory_experiments")
-        .update({
-          promoted_to_playbook: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", experimentId);
+      const result = await updateExperimentAction(experimentId, {
+        title: experiment.title,
+        promotedToPlaybook: true,
+      });
 
-      if (updateError) throw updateError;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to mark experiment as promoted");
+      }
 
       set({
         experiments: get().experiments.map((exp) =>
@@ -553,112 +529,12 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     }
   },
 
-  // ====================================
-  // RECAPS
-  // ====================================
-
   loadRecaps: async () => {
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      // Load recaps with linked trades (for legacy and trade links)
-      const { data: recapsData, error: recapsError } = await supabase
-        .from("laboratory_recaps")
-        .select(
-          `
-                    *,
-                    trades:trade_id (
-                        id,
-                        symbol,
-                        type,
-                        entry_date,
-                        entry_time,
-                        exit_date,
-                        exit_time,
-                        pnl,
-                        outcome,
-                        entry_price,
-                        exit_price,
-                        stop_loss,
-                        take_profit,
-                        lot
-                    )
-                `
-        )
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (recapsError) throw recapsError;
-
-      // Collect journal IDs that need to be fetched
-      const journalIds = (recapsData || [])
-        .filter((row) => row.linked_type === "journal" && row.linked_id)
-        .map((row) => row.linked_id as string);
-
-      // Fetch journal entries if there are any linked
-      let journalMap: Record<string, JournalEntryLite> = {};
-      if (journalIds.length > 0) {
-        const { data: journalData } = await supabase
-          .from("journal_entries")
-          .select("id, date, title, asset")
-          .in("id", journalIds);
-
-        if (journalData) {
-          journalMap = journalData.reduce(
-            (acc, j) => {
-              acc[j.id] = {
-                id: j.id,
-                date: j.date,
-                title: j.title,
-                asset: j.asset,
-              };
-              return acc;
-            },
-            {} as Record<string, JournalEntryLite>
-          );
-        }
-      }
-
-      const recaps = (recapsData || []).map((row) => {
-        const tradeData = row.trades as Record<string, unknown> | null;
-        let trade: TradeLite | undefined;
-        let journal: JournalEntryLite | undefined;
-
-        // Map trade data if present (legacy or linked_type = 'trade')
-        if (tradeData) {
-          trade = {
-            id: tradeData.id as string,
-            symbol: tradeData.symbol as string,
-            type: tradeData.type as "Long" | "Short",
-            entryDate: tradeData.entry_date as string,
-            entryTime: tradeData.entry_time as string | undefined,
-            exitDate: tradeData.exit_date as string | undefined,
-            exitTime: tradeData.exit_time as string | undefined,
-            pnl: tradeData.pnl as number | undefined,
-            outcome: tradeData.outcome as "win" | "loss" | "breakeven" | "pending" | undefined,
-            entryPrice: tradeData.entry_price as number,
-            exitPrice: tradeData.exit_price as number | undefined,
-            stopLoss: tradeData.stop_loss as number,
-            takeProfit: tradeData.take_profit as number,
-            lot: tradeData.lot as number,
-            accountId: "", // Not needed for display
-          };
-        }
-
-        // Map journal data if linked_type is 'journal'
-        if (row.linked_type === "journal" && row.linked_id) {
-          journal = journalMap[row.linked_id as string];
-        }
-
-        return mapRecapFromDB(row, trade, journal);
-      });
-
-      set({ recaps, isLoading: false });
+      const repoRecaps = await getRecapsAction();
+      set({ recaps: repoRecaps.map(mapRecap), isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error loading recaps:", error);
@@ -670,112 +546,37 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
 
-      // Generate temporary ID for image upload path
       const tempId = crypto.randomUUID();
 
-      // Upload images if provided
       let imageUrls: string[] = data.images || [];
       if (imageFiles && imageFiles.length > 0) {
-        const uploadedUrls = await uploadRecapImages(user.id, tempId, imageFiles);
+        const uploadedUrls = await uploadRecapImages(userId, tempId, imageFiles);
         imageUrls = [...imageUrls, ...uploadedUrls];
       }
 
-      // Insert recap
-      const { data: insertedData, error: insertError } = await supabase
-        .from("laboratory_recaps")
-        .insert({
-          user_id: user.id,
-          // Legacy trade_id for backward compatibility (only for trade links)
-          trade_id: data.linkedType === "trade" ? data.linkedId || data.tradeId || null : null,
-          // New generic linking fields
-          linked_type: data.linkedType || (data.tradeId ? "trade" : null),
-          linked_id: data.linkedId || (data.tradeId ? data.tradeId : null),
-          title: data.title,
-          what_worked: data.whatWorked,
-          what_failed: data.whatFailed,
-          emotional_state: data.emotionalState,
-          lessons_learned: data.lessonsLearned,
-          images: imageUrls,
-          review_type: data.reviewType || "daily",
-          week_start_date: data.weekStartDate || null,
-          week_end_date: data.weekEndDate || null,
-        })
-        .select()
-        .single();
+      const result = await createRecapAction({
+        title: data.title,
+        linkedType: data.linkedType || (data.tradeId ? "trade" : undefined),
+        linkedId: data.linkedId || data.tradeId,
+        tradeIds: data.tradeIds,
+        reviewType: data.reviewType || "daily",
+        weekStartDate: data.weekStartDate,
+        weekEndDate: data.weekEndDate,
+        whatWorked: data.whatWorked,
+        whatFailed: data.whatFailed,
+        emotionalState: data.emotionalState,
+        lessonsLearned: data.lessonsLearned,
+        images: imageUrls,
+      });
 
-      if (insertError) throw insertError;
-
-      // If weekly review, insert trade relationships
-      if (data.reviewType === "weekly" && data.tradeIds && data.tradeIds.length > 0) {
-        const relationships = data.tradeIds.map((tradeId) => ({
-          recap_id: insertedData.id,
-          trade_id: tradeId,
-        }));
-
-        const { error: relError } = await supabase
-          .from("laboratory_recap_trades")
-          .insert(relationships);
-
-        if (relError) {
-          console.warn("Error inserting recap trade relationships:", relError);
-        }
+      if (!result.success || !result.recap) {
+        throw new Error(result.error || "Failed to create recap");
       }
 
-      // Fetch linked record data if needed
-      let linkedJournal: JournalEntryLite | undefined;
-      let linkedTrade: TradeLite | undefined;
-
-      if (data.linkedType === "journal" && data.linkedId) {
-        const { data: journalData } = await supabase
-          .from("journal_entries")
-          .select("id, date, title, asset")
-          .eq("id", data.linkedId)
-          .single();
-
-        if (journalData) {
-          linkedJournal = {
-            id: journalData.id,
-            date: journalData.date,
-            title: journalData.title,
-            asset: journalData.asset,
-          };
-        }
-      } else if (data.linkedType === "trade" && data.linkedId) {
-        const { data: tradeData } = await supabase
-          .from("trades")
-          .select(
-            "id, symbol, type, entry_date, entry_time, exit_date, exit_time, pnl, outcome, entry_price, exit_price, stop_loss, take_profit, lot"
-          )
-          .eq("id", data.linkedId)
-          .single();
-
-        if (tradeData) {
-          linkedTrade = {
-            id: tradeData.id,
-            symbol: tradeData.symbol,
-            type: tradeData.type as "Long" | "Short",
-            entryDate: tradeData.entry_date,
-            entryTime: tradeData.entry_time,
-            exitDate: tradeData.exit_date,
-            exitTime: tradeData.exit_time,
-            pnl: tradeData.pnl,
-            outcome: tradeData.outcome,
-            entryPrice: tradeData.entry_price,
-            exitPrice: tradeData.exit_price,
-            stopLoss: tradeData.stop_loss,
-            takeProfit: tradeData.take_profit,
-            lot: tradeData.lot,
-            accountId: "",
-          };
-        }
-      }
-
-      const newRecap = mapRecapFromDB(insertedData, linkedTrade, linkedJournal);
+      const newRecap = mapRecap(result.recap);
       set({
         recaps: [newRecap, ...get().recaps],
         isLoading: false,
@@ -794,111 +595,32 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const userId = await getCurrentUserId();
+      if (!userId) throw new Error("User not authenticated");
 
-      // Handle new image uploads
       let finalImages: string[] = data.images || [];
       if (newImageFiles && newImageFiles.length > 0) {
-        // Determine recap ID for storage path
-        const recapId = data.id;
-        const uploadedUrls = await uploadRecapImages(user.id, recapId, newImageFiles);
+        const uploadedUrls = await uploadRecapImages(userId, data.id, newImageFiles);
         finalImages = [...finalImages, ...uploadedUrls];
       }
 
-      const { error: updateError } = await supabase
-        .from("laboratory_recaps")
-        .update({
-          // Legacy trade_id for backward compatibility
-          trade_id: data.linkedType === "trade" ? data.linkedId || data.tradeId || null : null,
-          // New generic linking fields
-          linked_type: data.linkedType || (data.tradeId ? "trade" : null),
-          linked_id: data.linkedId || (data.tradeId ? data.tradeId : null),
-          title: data.title,
-          what_worked: data.whatWorked,
-          what_failed: data.whatFailed,
-          emotional_state: data.emotionalState,
-          lessons_learned: data.lessonsLearned,
-          images: finalImages,
-        })
-        .eq("id", data.id);
+      const result = await updateRecapAction(data.id, {
+        title: data.title,
+        whatWorked: data.whatWorked,
+        whatFailed: data.whatFailed,
+        emotionalState: data.emotionalState,
+        lessonsLearned: data.lessonsLearned,
+        images: finalImages,
+        tradeIds: data.tradeIds,
+      });
 
-      if (updateError) throw updateError;
-
-      // Fetch linked record data if needed
-      let linkedJournal: JournalEntryLite | undefined;
-      let linkedTrade: TradeLite | undefined;
-
-      if (data.linkedType === "journal" && data.linkedId) {
-        const { data: journalData } = await supabase
-          .from("journal_entries")
-          .select("id, date, title, asset")
-          .eq("id", data.linkedId)
-          .single();
-
-        if (journalData) {
-          linkedJournal = {
-            id: journalData.id,
-            date: journalData.date,
-            title: journalData.title,
-            asset: journalData.asset,
-          };
-        }
-      } else if (data.linkedType === "trade" && data.linkedId) {
-        const { data: tradeData } = await supabase
-          .from("trades")
-          .select(
-            "id, symbol, type, entry_date, entry_time, exit_date, exit_time, pnl, outcome, entry_price, exit_price, stop_loss, take_profit, lot"
-          )
-          .eq("id", data.linkedId)
-          .single();
-
-        if (tradeData) {
-          linkedTrade = {
-            id: tradeData.id,
-            symbol: tradeData.symbol,
-            type: tradeData.type as "Long" | "Short",
-            entryDate: tradeData.entry_date,
-            entryTime: tradeData.entry_time,
-            exitDate: tradeData.exit_date,
-            exitTime: tradeData.exit_time,
-            pnl: tradeData.pnl,
-            outcome: tradeData.outcome,
-            entryPrice: tradeData.entry_price,
-            exitPrice: tradeData.exit_price,
-            stopLoss: tradeData.stop_loss,
-            takeProfit: tradeData.take_profit,
-            lot: tradeData.lot,
-            accountId: "",
-          };
-        }
+      if (!result.success) {
+        throw new Error(result.error || "Failed to update recap");
       }
 
-      set({
-        recaps: get().recaps.map((recap) => {
-          if (recap.id === data.id) {
-            return {
-              ...recap,
-              tradeId: data.linkedType === "trade" ? data.linkedId : undefined,
-              linkedType: data.linkedType,
-              linkedId: data.linkedId,
-              title: data.title,
-              whatWorked: data.whatWorked,
-              whatFailed: data.whatFailed,
-              emotionalState: data.emotionalState,
-              lessonsLearned: data.lessonsLearned,
-              images: finalImages,
-              // Update with fetched linked record data
-              trade: linkedTrade,
-              journal: linkedJournal,
-            };
-          }
-          return recap;
-        }),
-        isLoading: false,
-      });
+      // Reload recaps to get updated linked data
+      const repoRecaps = await getRecapsAction();
+      set({ recaps: repoRecaps.map(mapRecap), isLoading: false });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error updating recap:", error);
@@ -911,9 +633,11 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const { error } = await supabase.from("laboratory_recaps").delete().eq("id", id);
+      const result = await deleteRecapAction(id);
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete recap");
+      }
 
       set({
         recaps: get().recaps.filter((recap) => recap.id !== id),

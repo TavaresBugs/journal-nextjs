@@ -5,11 +5,11 @@
  * Handles daily routine entries.
  *
  * @example
- * import { prismaRoutineRepo } from '@/lib/repositories/prisma';
+ * import { prismaRoutineRepo } from '@/lib/database/repositories';
  * const routines = await prismaRoutineRepo.getByAccountId('account-uuid');
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import { daily_routines as PrismaDailyRoutine } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";

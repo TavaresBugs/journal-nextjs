@@ -9,7 +9,7 @@ export * from "./TradeRepository";
 export * from "./JournalRepository";
 export * from "./PlaybookRepository";
 export * from "./AccountRepository";
-export * from "./types";
+export * from "@/lib/database/types";
 
 // Factory functions for creating repositories
 export const createTradeRepository = (client: SupabaseClient) => new TradeRepository(client);

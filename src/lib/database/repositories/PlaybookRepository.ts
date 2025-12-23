@@ -5,11 +5,11 @@
  * Handles trading strategies/playbooks with rule groups.
  *
  * @example
- * import { prismaPlaybookRepo } from '@/lib/repositories/prisma';
+ * import { prismaPlaybookRepo } from '@/lib/database/repositories';
  * const playbooks = await prismaPlaybookRepo.getByUserId('user-uuid');
  */
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import { playbooks as PrismaPlaybook } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";

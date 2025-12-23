@@ -2,13 +2,13 @@
 
 > **Objetivo:** Documentar a arquitetura completa com diagramas e explicações didáticas.
 > **Público-alvo:** Desenvolvedores iniciantes a avançados
-> **Última atualização:** 19 de Dezembro de 2025
+> **Última atualização:** 23 de Dezembro de 2025
 
 ---
 
 ## 🎯 Resumo Executivo (TL;DR)
 
-O Trading Journal Pro usa arquitetura **Frontend-First com BaaS**, onde Next.js (App Router) é o centro de tudo e Supabase fornece backend completo (DB, Auth, Storage). A segurança é garantida por RLS (Row Level Security) no banco de dados.
+O Trading Journal Pro usa arquitetura **Frontend-First com BaaS**, onde Next.js (App Router) é o centro de tudo e Supabase fornece backend completo (DB, Auth, Storage). Accesso a dados é centralizado via Prisma ORM.
 
 ### Métricas Atuais
 
@@ -34,7 +34,7 @@ src/
 │   ├── mentor/             # Sistema de mentoria
 │   ├── share/[token]/      # Compartilhamento público
 │   ├── api/                # API Routes
-│   └── auth/               # Callbacks de autenticação
+│   └── actions/            # Server Actions
 │
 ├── components/             # 🧩 COMPONENTES REACT
 │   ├── ui/                 # Design System (28 componentes)
@@ -61,8 +61,11 @@ src/
 │   └── ...
 │
 ├── lib/                    # 🔧 UTILITÁRIOS
-│   ├── repositories/       # Repository Pattern (acesso a dados)
-│   ├── supabase/           # Cliente Supabase
+│   ├── database/           # 📦 ACESSO A DADOS (Prisma)
+│   │   ├── client.ts       # Prisma Client Singleton
+│   │   ├── auth.ts         # Autenticação
+│   │   └── repositories/   # Repositories Pattern Implementations
+│   ├── supabase/           # Cliente Supabase (Legacy/Storage)
 │   ├── utils/              # Helpers e funções utilitárias
 │   ├── validation/         # Validação de dados
 │   └── logging/            # Sistema de logs
@@ -73,20 +76,36 @@ src/
 ├── providers/              # 🔌 REACT PROVIDERS
 ├── constants/              # 📋 CONSTANTES
 └── __tests__/              # 🧪 TESTES
-    ├── components/
-    ├── services/
-    ├── hooks/
-    └── lib/
 ```
 
 ### Regra de Camadas
 
 ```
-Pages → Components → Hooks → Services → Repositories → Supabase
+Pages → Components → Hooks → Services → Repositories → DB (Prisma/Supabase)
         (UI)        (State)  (Logic)    (Data)         (Infra)
 ```
 
 > **Regra:** Cada camada só pode importar da camada abaixo.
+
+### 🔍 Detalhes da Camada de Dados (`src/lib/database`)
+
+Esta é a camada crítica para persistência e isolamento do ORM.
+
+| Arquivo/Pasta   | Responsabilidade                                                               |
+| :-------------- | :----------------------------------------------------------------------------- |
+| `client.ts`     | Singleton do PrismaClient. Ponto de entrada para `prisma`.                     |
+| `auth.ts`       | Utilitários de autenticação e integração Supabase <-> Prisma.                  |
+| `repositories/` | Implementações do padrão Repository. Toda query ao banco deve passar por aqui. |
+| `types.ts`      | Tipos genéricos compartilhados pela camada de dados (ex: `Result<T>`).         |
+
+### ⚡ Actions (`src/app/actions`)
+
+As Server Actions são a ponte entre o frontend e a camada de dados:
+
+1. Validam input do usuário (Zod).
+2. Verificam autenticação (`getCurrentUserId`).
+3. Chamam os Repositórios em `lib/database`.
+4. Retornam dados serializáveis para os componentes.
 
 ---
 
@@ -166,7 +185,7 @@ C4Container
     }
 
     Rel(user, nextApp, "Acessa", "HTTPS")
-    Rel(nextApp, postgres, "Queries", "Supabase Client")
+    Rel(nextApp, postgres, "Queries", "Prisma/Supabase Client")
     Rel(nextApp, auth, "Login/Logout", "JWT")
     Rel(nextApp, storage, "Upload/Download", "HTTPS")
     Rel(nextApp, realtime, "Subscribe", "WSS")
@@ -200,21 +219,22 @@ flowchart TB
     subgraph Logic ["⚙️ Logic Layer"]
         hooks["Custom Hooks"]
         stores["Zustand Stores"]
-        services["Services"]
+        actions["Server Actions"]
         repos["Repositories"]
     end
 
     subgraph External ["🌐 External"]
+        prisma["Prisma Client"]
         supabase["Supabase Client"]
         query["React Query"]
     end
 
     Pages --> Components
     Components --> Logic
-    hooks --> repos
-    hooks --> query
-    repos --> supabase
-    stores --> services
+    Logic --> repos
+    repos --> prisma
+    prisma --> supabase
+    stores --> actions
 ```
 
 ---
@@ -225,31 +245,20 @@ flowchart TB
 sequenceDiagram
     participant U as 👤 Usuário
     participant F as 📄 TradeForm
-    participant H as 🪝 useCreateTrade
+    participant H as 🪝 Server Action
     participant R as 📦 tradeRepository
-    participant S as 🗄️ Supabase
+    participant S as 🗄️ Database
 
     U->>F: Preenche formulário
     F->>F: Valida com Zod
-    F->>H: mutate(tradeData)
+    F->>H: createTrade(data)
     H->>R: create(trade)
-    R->>S: INSERT INTO trades
-    S-->>R: { data, error }
+    R->>S: prisma.trades.create()
+    S-->>R: Trade record
     R-->>H: Result<Trade>
-    H->>H: Invalida cache React Query
-    H-->>F: onSuccess()
+    H-->>F: { success: true, data }
     F-->>U: Toast "Trade criado!"
 ```
-
-### Passo a Passo
-
-1. **Usuário** preenche o formulário de trade
-2. **TradeForm** valida dados com schema Zod
-3. **useCreateTrade** (hook) é chamado com os dados
-4. **tradeRepository** executa INSERT no Supabase
-5. **Supabase** salva e retorna o trade criado
-6. **React Query** invalida cache para atualizar UI
-7. **Usuário** vê feedback de sucesso
 
 ---
 
@@ -262,31 +271,26 @@ sequenceDiagram
 **Analogia:** O Repository é como um bibliotecário. Você pede um livro, ele busca e entrega. Você não precisa saber em qual estante está.
 
 ```typescript
-// src/lib/repositories/tradeRepository.ts
-export const tradeRepository = {
-  async findByUser(userId: string): Promise<Trade[]> {
-    const { data, error } = await supabase
-      .from("trades")
-      .select("*")
-      .eq("user_id", userId)
-      .order("entry_date", { ascending: false });
+// src/lib/database/repositories/TradeRepository.ts
+export class TradeRepository {
+  async getByUserId(userId: string): Promise<Result<Trade[], AppError>> {
+    try {
+      const trades = await prisma.trades.findMany({
+        where: { user_id: userId },
+        orderBy: { entry_date: 'desc' }
+      });
 
-    if (error) throw error;
-    return data;
-  },
-
-  async create(trade: CreateTradeDTO): Promise<Trade> {
-    const { data, error } = await supabase.from("trades").insert(trade).select().single();
-
-    if (error) throw error;
-    return data;
-  },
-};
+      return { data: trades.map(mapToDomain), error: null };
+    } catch (error) {
+      return { data: null, error: new AppError(...) };
+    }
+  }
+}
 ```
 
 **Benefícios:**
 
-- ✅ Fácil trocar Supabase por outro banco
+- ✅ Fácil trocar ORM ou banco
 - ✅ Testes mais simples (mock do repository)
 - ✅ Queries centralizadas
 
@@ -332,19 +336,8 @@ export function calculateDayTradeTax(trades: Trade[]): TaxResult {
 export function useTrades(accountId: string) {
   return useQuery({
     queryKey: ["trades", accountId],
-    queryFn: () => tradeRepository.findByAccount(accountId),
+    queryFn: () => fetchTradesAction(accountId),
     staleTime: 1000 * 60 * 5, // 5 minutos
-  });
-}
-
-export function useCreateTrade() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: tradeRepository.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["trades"] });
-    },
   });
 }
 ```
@@ -374,11 +367,11 @@ export function useCreateTrade() {
     └────┬────┘
          ↓ pode importar
     ┌──────────────┐
-    │ Repositories │ ← Acesso a dados
+    │ Repositories │ ← Acesso a dados (lib/database)
     └──────┬───────┘
            ↓ pode importar
     ┌──────────┐
-    │ Supabase │ ← Infraestrutura
+    │  Prisma  │ ← Infraestrutura
     └──────────┘
 ```
 
@@ -400,17 +393,17 @@ export function useCreateTrade() {
 
 ---
 
-### ADR-002: Supabase como Backend
+### ADR-002: Supabase + Prisma
 
-**Contexto:** Backend customizado (Nest/Express) vs BaaS.
+**Contexto:** Backend customizado vs BaaS com ORM.
 
-**Decisão:** Supabase (BaaS).
+**Decisão:** Supabase (BaaS) com Prisma ORM.
 
 **Justificativa:**
 
-- Velocidade de desenvolvimento (1 dev vs equipe)
-- Auth, Storage, Realtime prontos
-- RLS é mais seguro que middleware manual
+- **Supabase**: Auth, Storage, Realtime prontos.
+- **Prisma**: Type-safety, migrations, melhores queries que o cliente Supabase JS puro.
+- **Combinação**: Melhor dos dois mundos.
 
 ---
 
@@ -448,7 +441,7 @@ export function useCreateTrade() {
 R: Zustand + React Query oferece o mesmo com menos boilerplate. Redux é overkill para este projeto.
 
 **P: Por que Repositories se Supabase já tem client?**
-R: Abstração. Se mudarmos para Prisma ou outro banco, só alteramos os repositories.
+R: Abstração e Type Safety. O Prisma oferece tipos gerados automaticamente e validação em tempo de compilação. Os repositórios centralizam lógica de query.
 
 **P: Onde colocar validação?**
 R: Em 3 níveis: (1) Frontend com Zod, (2) Tipos TypeScript, (3) Constraints no banco.
@@ -465,6 +458,7 @@ R: Testes automatizados que tentam acessar dados de outro usuário devem falhar.
 - [design-system.md](./design-system.md) - Componentes UI
 - [Next.js App Router](https://nextjs.org/docs/app)
 - [Supabase Docs](https://supabase.com/docs)
+- [Prisma Docs](https://www.prisma.io/docs)
 
 ---
 

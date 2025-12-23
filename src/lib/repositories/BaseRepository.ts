@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import { Result } from "./types";
+import { Result } from "@/lib/database/types";
 import { AppError, ErrorCode, toAppError } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
 

@@ -89,38 +89,29 @@ journal-nextjs/
 │   ├── app/                    # Next.js App Router
 │   │   ├── (auth)/             # Rotas autenticadas
 │   │   ├── dashboard/          # Dashboard principal
-│   │   ├── trades/             # Gestão de trades
-│   │   ├── journal/            # Journal entries
-│   │   ├── playbook/           # Playbooks
-│   │   ├── laboratory/         # Recaps experimentais
-│   │   ├── calendario/         # Calendário heat map
-│   │   ├── comunidade/         # Features sociais
-│   │   ├── mentor/             # Sistema de mentoria
-│   │   └── share/[token]/      # Compartilhamento público
+│   │   ├── actions/            # Server Actions
+│   │   └── ...                 # Features (trades, journal, etc)
 │   │
-│   ├── components/             # 📖 Ver README
+│   ├── components/             # 📖 Ver README (UI Library)
 │   │   ├── ui/                 # Design System (28 componentes)
-│   │   ├── trades/             # Componentes de trade (24)
-│   │   ├── journal/            # Componentes de journal (17)
-│   │   ├── playbook/           # Componentes de playbook (10)
-│   │   └── ...                 # 23 pastas de componentes
+│   │   ├── trades/             # Componentes de trade
+│   │   └── ...                 # Outros domínios
 │   │
-│   ├── services/               # 📖 Ver README
-│   │   ├── admin/              # Serviços administrativos
+│   ├── services/               # 📖 Ver README (Domain Logic)
 │   │   ├── analytics/          # Cálculos e análises
-│   │   ├── journal/            # Journal services
-│   │   ├── trades/             # Trade services
-│   │   └── ...                 # 7 domínios
+│   │   └── ...                 # Services por domínio
 │   │
 │   ├── lib/
-│   │   ├── repositories/       # 📖 Ver README (Repository Pattern)
+│   │   ├── database/           # 🆕 Camada de Dados
+│   │   │   ├── client.ts       # Prisma Client
+│   │   │   └── repositories/   # Repositories Pattern
+│   │   ├── supabase/           # Cliente Supabase Legacy
 │   │   ├── utils/              # Helpers gerais
-│   │   ├── logger/             # Sistema de logging
-│   │   └── supabase/           # Cliente Supabase
+│   │   └── logging/            # Sistema de logging
 │   │
-│   ├── hooks/                  # 📖 Ver README (15 hooks)
+│   ├── hooks/                  # 📖 Ver README (Custom Hooks)
 │   ├── store/                  # Zustand stores
-│   ├── types/                  # 📖 Ver README (TypeScript types)
+│   ├── types/                  # 📖 Ver README (Types definitions)
 │   └── constants/              # Constantes globais
 │
 ├── docs/                       # Documentação completa
@@ -133,13 +124,13 @@ journal-nextjs/
 
 ### 📖 Documentação por Pasta
 
-| Pasta                   | README                                      | Descrição                         |
-| ----------------------- | ------------------------------------------- | --------------------------------- |
-| `src/components/`       | [📖 README](src/components/README.md)       | Componentes React e Design System |
-| `src/services/`         | [📖 README](src/services/README.md)         | Lógica de negócio                 |
-| `src/lib/repositories/` | [📖 README](src/lib/repositories/README.md) | Repository Pattern (Supabase)     |
-| `src/hooks/`            | [📖 README](src/hooks/README.md)            | Custom hooks React                |
-| `src/types/`            | [📖 README](src/types/README.md)            | Tipos TypeScript                  |
+| Pasta               | Documentação                                                                    | Descrição                         |
+| ------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `src/components/`   | [📖 README](src/components/README.md)                                           | Componentes React e Design System |
+| `src/services/`     | [📖 README](src/services/README.md)                                             | Lógica de negócio                 |
+| `src/lib/database/` | [📖 STRUCTURE](docs/architecture.md#detalhes-da-camada-de-dados-srclibdatabase) | Acesso a dados (Prisma + Repos)   |
+| `src/hooks/`        | [📖 README](src/hooks/README.md)                                                | Custom hooks React                |
+| `src/types/`        | [📖 README](src/types/README.md)                                                | Tipos TypeScript                  |
 
 ---
 
@@ -291,6 +282,7 @@ A configuração está em `lighthouserc.json` e roda automaticamente no GitHub A
 | [🏗️ Arquitetura](docs/architecture.md)    | Diagramas C4, padrões, decisões |
 | [🗄️ Database](docs/database.md)           | Schema, RLS policies, queries   |
 | [🎨 Design System](docs/design-system.md) | Componentes UI, variantes       |
+| [📂 Estrutura](docs/FOLDER_STRUCTURE.md)  | Guia de pastas (Issue #65)      |
 
 ### 🔧 Desenvolvimento
 
@@ -369,15 +361,6 @@ Projeto privado © 2025 @TavaresBugs
 
 - GitHub: [@TavaresBugs](https://github.com/TavaresBugs)
 - Email: [seu-email@example.com]
-
----
-
-## 🙏 Agradecimentos
-
-- [Next.js](https://nextjs.org/)
-- [Supabase](https://supabase.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
 
 ---
 
