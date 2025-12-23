@@ -16,6 +16,7 @@
 import { prismaCommunityRepo, LeaderboardOptIn, SharedPlaybook } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { prisma } from "@/lib/database";
+import { LeaderboardEntry } from "@/types";
 
 // ========================================
 // LEADERBOARD
@@ -178,20 +179,54 @@ export async function getCurrentUserDisplayNameAction(): Promise<string | null> 
 
 /**
  * Get leaderboard entries.
- * Note: Uses raw query to access the view if needed, or falls back to opt-ins.
+ * Fetches from leaderboard_view and maps fields to LeaderboardEntry interface.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function getLeaderboardAction(): Promise<any[]> {
+export async function getLeaderboardAction(): Promise<LeaderboardEntry[]> {
   try {
-    // For now, let's use a raw query to the view to maintain parity with legacy
-    const leaderboard = await prisma.$queryRaw`SELECT * FROM public.leaderboard_view LIMIT 100`;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (leaderboard as any[]) || [];
+    // Query the leaderboard view
+    const leaderboard = await prisma.$queryRaw<
+      Array<{
+        user_id: string;
+        display_name: string;
+        show_win_rate: boolean | null;
+        show_profit_factor: boolean | null;
+        show_total_trades: boolean | null;
+        show_pnl: boolean | null;
+        total_trades: number | null;
+        win_rate: number | null;
+        total_pnl: number | null;
+        avg_rr: number | null;
+        streak: number | null;
+      }>
+    >`SELECT * FROM public.leaderboard_view LIMIT 100`;
+
+    // Map SQL snake_case fields to camelCase LeaderboardEntry
+    return leaderboard.map((entry) => ({
+      userId: entry.user_id,
+      displayName: entry.display_name || "Trader",
+      showWinRate: entry.show_win_rate ?? true,
+      showProfitFactor: entry.show_profit_factor ?? false,
+      showTotalTrades: entry.show_total_trades ?? true,
+      showPnl: entry.show_pnl ?? true,
+      totalTrades: entry.total_trades ?? undefined,
+      winRate: entry.win_rate ?? undefined,
+      totalPnl: entry.total_pnl ? Number(entry.total_pnl) : undefined,
+      avgRR: entry.avg_rr ? Number(entry.avg_rr) : undefined,
+      streak: entry.streak ?? 0,
+    }));
   } catch (error) {
     console.error("[getLeaderboardAction] Error:", error);
     // Fallback to simple opt-ins if view fails
     const result = await prismaCommunityRepo.getLeaderboardOptIns();
-    return result.data || [];
+    return (result.data || []).map((opt) => ({
+      userId: opt.userId,
+      displayName: opt.displayName,
+      showWinRate: opt.showWinRate,
+      showProfitFactor: opt.showProfitFactor,
+      showTotalTrades: opt.showTotalTrades,
+      showPnl: opt.showPnl,
+      streak: 0,
+    }));
   }
 }
 

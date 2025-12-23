@@ -313,7 +313,7 @@ class PrismaCommunityRepository {
   }
 
   /**
-   * Get public playbooks with related data.
+   * Get public playbooks with related data and stats.
    */
   async getPublicPlaybooks(limit = 20, offset = 0): Promise<Result<SharedPlaybook[], AppError>> {
     this.logger.info("Fetching public playbooks", { limit, offset });
@@ -334,24 +334,72 @@ class PrismaCommunityRepository {
         },
       });
 
-      // Map with related data
-      const mapped = playbooks.map((sp) => {
-        const profile = sp.users?.profiles;
-        return {
-          ...mapSharedPlaybookFromPrisma(sp),
-          playbook: sp.playbooks
-            ? {
-                id: sp.playbooks.id,
-                name: sp.playbooks.name,
-                icon: sp.playbooks.icon,
-                color: sp.playbooks.color,
-                description: sp.playbooks.description,
+      // Map with related data and calculate stats
+      const mapped = await Promise.all(
+        playbooks.map(async (sp) => {
+          const profile = sp.users?.profiles;
+          const playbookName = sp.playbooks?.name;
+
+          // Calculate author stats from trades with this strategy
+          let authorStats = undefined;
+          if (playbookName && sp.user_id) {
+            const trades = await prisma.trades.findMany({
+              where: {
+                user_id: sp.user_id,
+                strategy: playbookName,
+              },
+              select: {
+                pnl: true,
+                outcome: true,
+                r_multiple: true,
+              },
+            });
+
+            if (trades.length > 0) {
+              const wins = trades.filter((t) => t.outcome === "win").length;
+              const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+              const avgRR =
+                trades.reduce((sum, t) => sum + (Number(t.r_multiple) || 0), 0) / trades.length;
+
+              // Calculate max win streak
+              let maxStreak = 0;
+              let currentStreak = 0;
+              for (const t of trades) {
+                if (t.outcome === "win") {
+                  currentStreak++;
+                  maxStreak = Math.max(maxStreak, currentStreak);
+                } else {
+                  currentStreak = 0;
+                }
               }
-            : undefined,
-          userName: profile?.display_name || "Trader Anônimo",
-          userAvatar: profile?.avatar_url || undefined,
-        };
-      });
+
+              authorStats = {
+                totalTrades: trades.length,
+                winRate: Math.round((wins / trades.length) * 100 * 10) / 10,
+                avgRR: Math.round(avgRR * 100) / 100,
+                netPnl: Math.round(totalPnl * 100) / 100,
+                maxWinStreak: maxStreak,
+              };
+            }
+          }
+
+          return {
+            ...mapSharedPlaybookFromPrisma(sp),
+            playbook: sp.playbooks
+              ? {
+                  id: sp.playbooks.id,
+                  name: sp.playbooks.name,
+                  icon: sp.playbooks.icon,
+                  color: sp.playbooks.color,
+                  description: sp.playbooks.description,
+                }
+              : undefined,
+            userName: profile?.display_name || "Trader Anônimo",
+            userAvatar: profile?.avatar_url || undefined,
+            authorStats,
+          };
+        })
+      );
 
       return { data: mapped as SharedPlaybook[], error: null };
     } catch (error) {
