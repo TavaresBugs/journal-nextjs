@@ -39,3 +39,14 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     },
   },
 });
+
+/**
+ * Get current user ID for client-side components.
+ * Uses browser Supabase client - only call from "use client" components.
+ */
+export async function getCurrentUserIdClient(): Promise<string | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  return user?.id || null;
+}

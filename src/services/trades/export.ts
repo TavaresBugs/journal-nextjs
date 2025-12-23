@@ -1,7 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, getCurrentUserIdClient } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, Playbook, DailyRoutine, UserSettings, Asset } from "@/types";
 import { DBAccount, DBTrade, DBJournalEntry, DBDailyRoutine, DBSettings } from "@/types/database";
-import { getCurrentUserId } from "@/lib/database/auth";
 
 export interface ExportData {
   exportedAt: string;
@@ -58,7 +57,7 @@ async function fetchAll<T>(tableName: string, userId: string): Promise<T[]> {
  * @returns {Promise<ExportData>} The exported data.
  */
 export async function exportAllData(): Promise<ExportData> {
-  const userId = await getCurrentUserId();
+  const userId = await getCurrentUserIdClient();
 
   if (!userId) {
     throw new Error("User not authenticated");

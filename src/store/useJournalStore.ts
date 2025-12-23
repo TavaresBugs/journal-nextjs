@@ -7,7 +7,7 @@ import {
 } from "@/app/actions/journal";
 import { getDailyRoutinesAction, saveDailyRoutineAction } from "@/app/actions/routines";
 import { uploadJournalImages, isRawImageMap } from "@/services/journal/imageUpload";
-import { getCurrentUserId } from "@/lib/database/auth";
+import { getCurrentUserIdClient } from "@/lib/supabase";
 
 interface JournalStore {
   entries: JournalEntry[];
@@ -57,7 +57,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
       const entryId = crypto.randomUUID();
 
       // Get current user ID for image upload
-      const userId = await getCurrentUserId();
+      const userId = await getCurrentUserIdClient();
       if (!userId) {
         throw new Error("User not authenticated");
       }
@@ -121,7 +121,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       // Get current user ID for image upload
-      const userId = await getCurrentUserId();
+      const userId = await getCurrentUserIdClient();
       if (!userId) {
         throw new Error("User not authenticated");
       }

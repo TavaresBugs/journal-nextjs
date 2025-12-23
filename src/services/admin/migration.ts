@@ -1,7 +1,6 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, getCurrentUserIdClient } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from "@/types";
 import { base64ToBlob } from "@/lib/utils/general";
-import { getCurrentUserId } from "@/lib/database/auth";
 import { saveAccountAction, saveSettingsAction } from "@/app/actions/accounts";
 import { saveTradeAction } from "@/app/actions/trades";
 import { saveJournalEntryAction } from "@/app/actions/journal";
@@ -16,7 +15,7 @@ import { saveDailyRoutineAction } from "@/app/actions/routines";
  */
 export async function migrateLocalStorageToSupabase(): Promise<boolean> {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserIdClient();
     if (!userId) {
       console.error("❌ User not authenticated. Cannot migrate.");
       return false;

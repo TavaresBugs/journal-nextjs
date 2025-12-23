@@ -5,7 +5,7 @@
  * Safe to use in both Client Components and Server Actions.
  */
 
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { AppError, ErrorCode } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
 
@@ -16,6 +16,7 @@ const logger = new Logger("Auth");
  * Throws if not authenticated.
  */
 export async function getAuthenticatedUser() {
+  const supabase = await createClient();
   const {
     data: { user },
     error,
@@ -33,6 +34,7 @@ export async function getAuthenticatedUser() {
  * Gets the current user ID or null if not authenticated.
  */
 export async function getCurrentUserId(): Promise<string | null> {
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -44,6 +46,7 @@ export async function getCurrentUserId(): Promise<string | null> {
  */
 export async function getOptionalUserId(): Promise<string | null> {
   try {
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
