@@ -11,7 +11,7 @@
  * const trades = await fetchTrades(accountId, 1, 10);
  */
 
-import { prismaTradeRepo } from "@/lib/repositories/prisma";
+import { prismaTradeRepo } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
 import type { Trade, TradeLite } from "@/types";
 

@@ -15,7 +15,7 @@ import {
 import type {
   LaboratoryExperiment as RepoExperiment,
   LaboratoryRecap as RepoRecap,
-} from "@/lib/repositories/prisma";
+} from "@/lib/database/repositories";
 import type { ExperimentStatus, EmotionalState, RecapLinkedType } from "@/types";
 
 /**

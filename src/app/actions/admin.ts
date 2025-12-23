@@ -13,8 +13,8 @@
  * const success = await updateUserStatusAction(userId, "approved");
  */
 
-import { prismaAdminRepo, UserExtended, AuditLog, AdminStats } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaAdminRepo, UserExtended, AuditLog, AdminStats } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 // ========================================
 // USER PROFILE

@@ -12,8 +12,8 @@
  * console.log(result.shareUrl);
  */
 
-import { prismaShareRepo, SharedJournal } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaShareRepo, SharedJournal } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 /**
  * Create a share link for a journal entry.

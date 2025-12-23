@@ -14,8 +14,8 @@
  * const success = await saveRoutineAction(routineData);
  */
 
-import { prismaRoutineRepo } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaRoutineRepo } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { DailyRoutine } from "@/types";
 import { revalidatePath } from "next/cache";
 

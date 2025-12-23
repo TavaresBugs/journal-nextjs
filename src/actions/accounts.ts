@@ -1,6 +1,6 @@
 "use server";
 
-import { prismaAccountRepo, prismaTradeRepo } from "@/lib/repositories/prisma";
+import { prismaAccountRepo, prismaTradeRepo } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
 import { Account } from "@/types";
 

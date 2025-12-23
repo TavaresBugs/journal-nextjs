@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { BaseRepository } from "./BaseRepository";
-import { Result, QueryOptions } from "./types";
+import { Result, QueryOptions } from "@/lib/database/types";
 import { AppError, ErrorCode } from "@/lib/errors";
 import type { DBJournalEntry, DBJournalImage } from "@/types/database";
 import type { JournalEntry } from "@/types";

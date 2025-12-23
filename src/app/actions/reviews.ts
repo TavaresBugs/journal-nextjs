@@ -14,8 +14,8 @@
  * const review = await createReviewAction(reviewData);
  */
 
-import { prismaReviewRepo, MentorReview } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaReviewRepo, MentorReview } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { revalidatePath } from "next/cache";
 
 /**

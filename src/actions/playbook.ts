@@ -1,6 +1,6 @@
 "use server";
 
-import { prismaPlaybookRepo } from "@/lib/repositories/prisma";
+import { prismaPlaybookRepo } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
 import { Playbook } from "@/types";
 

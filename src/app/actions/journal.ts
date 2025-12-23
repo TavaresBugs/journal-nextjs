@@ -16,8 +16,8 @@
  * const success = await saveJournalEntryAction(entryData);
  */
 
-import { prismaJournalRepo } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaJournalRepo } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { JournalEntry, JournalImage } from "@/types";
 import { revalidatePath } from "next/cache";
 

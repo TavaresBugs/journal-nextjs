@@ -21,8 +21,8 @@ import {
   LaboratoryExperiment,
   LaboratoryRecap,
   LaboratoryImage,
-} from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+} from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 // ========================================
 // EXPERIMENTS

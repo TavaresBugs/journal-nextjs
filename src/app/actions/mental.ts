@@ -13,8 +13,13 @@
  * const success = await saveMentalEntryAction(entryData);
  */
 
-import { prismaMentalRepo, MentalProfile, MentalEntry, MentalLog } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import {
+  prismaMentalRepo,
+  MentalProfile,
+  MentalEntry,
+  MentalLog,
+} from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { getSeedsByCategory, type MentalSeedProfile } from "@/constants/mental";
 
 // ========================================

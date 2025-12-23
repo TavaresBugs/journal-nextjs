@@ -1,7 +1,7 @@
 # 🤖 Contexto do Projeto para Agentes de IA
 
-> **Versão:** 1.0
-> **Data:** 19 de Dezembro de 2025
+> **Versão:** 1.1
+> **Data:** 23 de Dezembro de 2025
 > **Objetivo:** Fornecer contexto completo para agentes de IA ou novos desenvolvedores
 
 ---
@@ -124,8 +124,11 @@ journal-nextjs/
 │   │   └── ... (15 hooks)
 │   │
 │   ├── lib/
-│   │   ├── repositories/        # Repository Pattern (📖 README.md)
-│   │   ├── supabase/            # Cliente Supabase
+│   │   ├── database/            # 🆕 Camada de Dados (Issue #65)
+│   │   │   ├── client.ts        # Prisma Client
+│   │   │   ├── repositories/    # Repository Pattern Implementations
+│   │   │   └── types.ts         # Generic Repository types
+│   │   ├── supabase/            # Cliente Supabase Legacy
 │   │   └── utils/               # Utilitários
 │   │
 │   ├── types/                   # TypeScript types (📖 README.md)
@@ -140,7 +143,7 @@ journal-nextjs/
 ### 3.1 Fluxo de Camadas
 
 ```
-Pages → Components → Hooks → Services → Repositories → Supabase
+Pages → Components → Hooks → Services → Repositories → DB (Prisma/Supabase)
 ```
 
 **Regra:** Cada camada só importa da camada abaixo.
@@ -151,12 +154,12 @@ Pages → Components → Hooks → Services → Repositories → Supabase
 
 ### 4.1 Padrões Implementados
 
-| Padrão            | Localização             | Descrição                     |
-| ----------------- | ----------------------- | ----------------------------- |
-| **Repository**    | `src/lib/repositories/` | Abstração de acesso a dados   |
-| **Service Layer** | `src/services/`         | Lógica de negócio             |
-| **Custom Hooks**  | `src/hooks/`            | Lógica React reutilizável     |
-| **Design System** | `src/components/ui/`    | Componentes base padronizados |
+| Padrão            | Localização                 | Descrição                     |
+| ----------------- | --------------------------- | ----------------------------- |
+| **Repository**    | `src/lib/database/repos...` | Abstração de acesso a dados   |
+| **Service Layer** | `src/services/`             | Lógica de negócio             |
+| **Custom Hooks**  | `src/hooks/`                | Lógica React reutilizável     |
+| **Design System** | `src/components/ui/`        | Componentes base padronizados |
 
 ### 4.2 Segurança
 
@@ -287,8 +290,7 @@ import { createMockTrade } from "@/lib/tests/utils/factories";
 | [architecture.md](docs/architecture.md)       | Arquitetura detalhada |
 | [testing.md](docs/testing.md)                 | Estratégia de testes  |
 | [security.md](docs/security.md)               | Práticas de segurança |
-| [design-system.md](docs/design-system.md)     | Componentes UI        |
-| [database.md](docs/database.md)               | Schema e RLS          |
+| [STRUCTURE.md](docs/FOLDER_STRUCTURE.md)      | Estrutura de Pastas   |
 | [contributing.md](docs/contributing.md)       | Como contribuir       |
 
 ### READMEs de Pastas
@@ -297,7 +299,7 @@ import { createMockTrade } from "@/lib/tests/utils/factories";
 - `src/services/README.md`
 - `src/hooks/README.md`
 - `src/types/README.md`
-- `src/lib/repositories/README.md`
+- `src/lib/database/README.md` (Em breve)
 
 ---
 
@@ -321,7 +323,7 @@ import { createMockTrade } from "@/lib/tests/utils/factories";
 ### 9.3 Não Mexer Sem Entender
 
 - `src/middleware.ts` - Auth e rate limiting
-- `src/lib/repositories/` - Acesso a dados
+- `src/lib/database/` - Camada crítica de dados
 - Tabelas com RLS no Supabase
 
 ---
@@ -348,4 +350,4 @@ Para ver o trabalho pendente, consulte:
 ---
 
 **Mantido por:** [@TavaresBugs](https://github.com/TavaresBugs)
-**Última atualização:** 19 de Dezembro de 2025
+**Última atualização:** 23 de Dezembro de 2025

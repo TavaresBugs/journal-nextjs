@@ -25,7 +25,7 @@ const { mockAccountRepo, mockTradeRepo, mockSupabase } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/lib/repositories/prisma", () => ({
+vi.mock("@/lib/database/repositories", () => ({
   prismaAccountRepo: mockAccountRepo,
   prismaTradeRepo: mockTradeRepo,
 }));

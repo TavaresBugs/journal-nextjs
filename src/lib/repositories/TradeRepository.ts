@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { BaseRepository } from "./BaseRepository";
-import { Result, QueryOptions } from "./types";
+import { Result, QueryOptions } from "@/lib/database/types";
 import { TRADE_FRAGMENTS } from "@/lib/supabase/fragments";
 import { DBTrade } from "@/types/database";
 import { Trade } from "@/types";

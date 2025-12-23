@@ -13,8 +13,8 @@
  * const success = await saveTradeAction(tradeData);
  */
 
-import { prismaTradeRepo } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaTradeRepo } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade } from "@/types";
 import { revalidatePath } from "next/cache";
 

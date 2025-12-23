@@ -13,8 +13,8 @@
  * const playbooks = await getPublicPlaybooksAction();
  */
 
-import { prismaCommunityRepo, LeaderboardOptIn, SharedPlaybook } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaCommunityRepo, LeaderboardOptIn, SharedPlaybook } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 
 // ========================================
 // LEADERBOARD

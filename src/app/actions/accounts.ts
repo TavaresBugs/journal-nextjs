@@ -14,8 +14,8 @@
  * const success = await saveAccountAction(accountData);
  */
 
-import { prismaAccountRepo } from "@/lib/repositories/prisma";
-import { getCurrentUserId } from "@/lib/prisma/auth";
+import { prismaAccountRepo } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
 import { Account } from "@/types";
 import { revalidatePath } from "next/cache";
 

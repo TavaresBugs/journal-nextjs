@@ -1,6 +1,6 @@
 "use server";
 
-import { prismaJournalRepo, prismaRoutineRepo } from "@/lib/repositories/prisma";
+import { prismaJournalRepo, prismaRoutineRepo } from "@/lib/database/repositories";
 import { createClient } from "@/lib/supabase/server";
 import { JournalEntry, DailyRoutine } from "@/types";
 
