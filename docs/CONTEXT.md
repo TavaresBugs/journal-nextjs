@@ -290,7 +290,7 @@ import { createMockTrade } from "@/lib/tests/utils/factories";
 | [architecture.md](docs/architecture.md)       | Arquitetura detalhada |
 | [testing.md](docs/testing.md)                 | Estratégia de testes  |
 | [security.md](docs/security.md)               | Práticas de segurança |
-| [STRUCTURE.md](docs/FOLDER_STRUCTURE.md)      | Estrutura de Pastas   |
+| [STRUCTURE.md](docs/architecture.md)          | Estrutura de Pastas   |
 | [contributing.md](docs/contributing.md)       | Como contribuir       |
 
 ### READMEs de Pastas

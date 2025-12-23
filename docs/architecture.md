@@ -87,6 +87,26 @@ Pages → Components → Hooks → Services → Repositories → DB (Prisma/Supa
 
 > **Regra:** Cada camada só pode importar da camada abaixo.
 
+### 🔍 Detalhes da Camada de Dados (`src/lib/database`)
+
+Esta é a camada crítica para persistência e isolamento do ORM.
+
+| Arquivo/Pasta   | Responsabilidade                                                               |
+| :-------------- | :----------------------------------------------------------------------------- |
+| `client.ts`     | Singleton do PrismaClient. Ponto de entrada para `prisma`.                     |
+| `auth.ts`       | Utilitários de autenticação e integração Supabase <-> Prisma.                  |
+| `repositories/` | Implementações do padrão Repository. Toda query ao banco deve passar por aqui. |
+| `types.ts`      | Tipos genéricos compartilhados pela camada de dados (ex: `Result<T>`).         |
+
+### ⚡ Actions (`src/app/actions`)
+
+As Server Actions são a ponte entre o frontend e a camada de dados:
+
+1. Validam input do usuário (Zod).
+2. Verificam autenticação (`getCurrentUserId`).
+3. Chamam os Repositórios em `lib/database`.
+4. Retornam dados serializáveis para os componentes.
+
 ---
 
 ## 📚 Conceitos Fundamentais

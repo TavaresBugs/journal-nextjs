@@ -124,13 +124,13 @@ journal-nextjs/
 
 ### 📖 Documentação por Pasta
 
-| Pasta               | Documentação                             | Descrição                         |
-| ------------------- | ---------------------------------------- | --------------------------------- |
-| `src/components/`   | [📖 README](src/components/README.md)    | Componentes React e Design System |
-| `src/services/`     | [📖 README](src/services/README.md)      | Lógica de negócio                 |
-| `src/lib/database/` | [📖 STRUCTURE](docs/FOLDER_STRUCTURE.md) | Acesso a dados (Prisma + Repos)   |
-| `src/hooks/`        | [📖 README](src/hooks/README.md)         | Custom hooks React                |
-| `src/types/`        | [📖 README](src/types/README.md)         | Tipos TypeScript                  |
+| Pasta               | Documentação                                                                    | Descrição                         |
+| ------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
+| `src/components/`   | [📖 README](src/components/README.md)                                           | Componentes React e Design System |
+| `src/services/`     | [📖 README](src/services/README.md)                                             | Lógica de negócio                 |
+| `src/lib/database/` | [📖 STRUCTURE](docs/architecture.md#detalhes-da-camada-de-dados-srclibdatabase) | Acesso a dados (Prisma + Repos)   |
+| `src/hooks/`        | [📖 README](src/hooks/README.md)                                                | Custom hooks React                |
+| `src/types/`        | [📖 README](src/types/README.md)                                                | Tipos TypeScript                  |
 
 ---
 
