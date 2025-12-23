@@ -14,7 +14,8 @@
     "test:watch": "vitest watch",
     "sync-calendar": "tsx scripts/sync-calendar.ts",
     "sync-monthly": "tsx scripts/sync-monthly.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
