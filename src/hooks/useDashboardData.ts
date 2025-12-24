@@ -49,6 +49,8 @@ export interface DashboardData {
 
   // State
   isLoading: boolean;
+  isTradesLoading: boolean;
+  isAccountReady: boolean;
   isValidAccount: boolean;
 }
 
@@ -92,7 +94,12 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
 
   return {
     // Account
-    currentAccount: initData.currentAccount,
+    currentAccount: initData.currentAccount
+      ? {
+          ...initData.currentAccount,
+          currentBalance: metricsData.pnlMetrics.currentBalance,
+        }
+      : null,
 
     // Data
     trades: initData.trades,
@@ -116,6 +123,8 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
 
     // State
     isLoading: initData.isLoading,
+    isTradesLoading: initData.isTradesLoading,
+    isAccountReady: initData.isAccountReady,
     isValidAccount,
 
     // Actions

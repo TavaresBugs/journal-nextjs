@@ -357,6 +357,7 @@ export interface MentorInvite {
   menteeId?: string;
   menteeEmail: string;
   menteeName?: string;
+  menteeAvatar?: string;
   // Configurações
   permission: MentorPermission;
   status: InviteStatus;
@@ -387,6 +388,10 @@ export interface MenteeOverview {
   winRate: number;
   recentTradesCount: number; // trades nos últimos 7 dias
   lastTradeDate?: string;
+  status?: "pending" | "accepted"; // Default is accepted if undefined
+  inviteId?: string; // For pending invites revocation
+  createdAt?: string; // Invite sent date
+  acceptedAt?: string; // Access start date
 }
 
 /**

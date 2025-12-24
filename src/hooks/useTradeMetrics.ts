@@ -26,6 +26,7 @@ export interface PnLMetrics {
   pnl: number;
   pnlPercent: number;
   isProfit: boolean;
+  currentBalance: number;
 }
 
 export interface TradeMetricsData {
@@ -39,7 +40,7 @@ interface UseTradeMetricsParams {
   trades: Trade[];
   entries: JournalEntry[];
   initialBalance: number;
-  currentBalance: number;
+  currentBalance?: number; // kept for compatibility but not strictly used for PnL
 }
 
 /**
@@ -54,7 +55,6 @@ export function useTradeMetrics({
   trades,
   entries,
   initialBalance,
-  currentBalance,
 }: UseTradeMetricsParams): TradeMetricsData {
   // Basic trade metrics
   const metrics = useMemo(() => calculateTradeMetrics(trades), [trades]);
@@ -108,12 +108,24 @@ export function useTradeMetrics({
 
   // PnL calculations
   const pnlMetrics = useMemo(() => {
-    const pnl = currentBalance - initialBalance;
+    // Calculate PnL dynamically from trades to ensure instant updates
+    // This avoids reliance on potentially stale DB/currentBalance state
+    const totalPnlFromTrades = trades.reduce((sum, trade) => sum + (trade.pnl || 0), 0);
+
+    // We can still use currentBalance as a fallback or sanity check if needed,
+    // but for the dashboard consistency, trades sum is more reliable after client-side adds.
+    // Actually, let's strictly use the trades sum + initial to be consistent with the table.
+    const calculatedCurrentBalance = initialBalance + totalPnlFromTrades;
+
+    // Check if we have a discrepancy greater than 1 cent (floating point errors)
+    // and log it if debug mode (optional)
+
+    const pnl = totalPnlFromTrades;
     const pnlPercent = initialBalance > 0 ? (pnl / initialBalance) * 100 : 0;
     const isProfit = pnl >= 0;
 
-    return { pnl, pnlPercent, isProfit };
-  }, [currentBalance, initialBalance]);
+    return { pnl, pnlPercent, isProfit, currentBalance: calculatedCurrentBalance };
+  }, [trades, initialBalance]);
 
   return {
     metrics,

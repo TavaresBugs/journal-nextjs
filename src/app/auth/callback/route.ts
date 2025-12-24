@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const type = searchParams.get("type"); // Check for recovery type
   // if "next" is in param, use it as the redirect URL
   const next = searchParams.get("next") ?? "/";
 
@@ -29,7 +30,14 @@ export async function GET(request: Request) {
     );
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      console.log("Auth Callback: Session exchanged successfully");
+      console.log("Auth Callback: Session exchanged successfully, type:", type);
+
+      // If this is a password recovery, redirect to reset-password page
+      if (type === "recovery") {
+        console.log("Auth Callback: Redirecting to reset-password");
+        return NextResponse.redirect(`${origin}/auth/reset-password`);
+      }
+
       return NextResponse.redirect(`${origin}${next}`);
     } else {
       console.error("Auth Callback: Error exchanging code:", error);

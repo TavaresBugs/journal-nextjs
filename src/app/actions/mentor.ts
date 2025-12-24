@@ -254,6 +254,28 @@ export async function revokeInviteAction(
   }
 }
 
+/**
+ * Update invite permissions.
+ */
+export async function updateInvitePermissionsAction(
+  inviteId: string,
+  permission: "view" | "comment"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const result = await prismaMentorRepo.updateInvite(inviteId, { permission });
+
+    if (result.error) {
+      console.error("[updateInvitePermissionsAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[updateInvitePermissionsAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
 // ========================================
 // ACCOUNT PERMISSIONS
 // ========================================

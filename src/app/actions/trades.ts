@@ -13,7 +13,7 @@
  * const success = await saveTradeAction(tradeData);
  */
 
-import { prismaTradeRepo } from "@/lib/database/repositories";
+import { prismaTradeRepo, prismaAccountRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade, TradeLite } from "@/types";
 import { revalidatePath } from "next/cache";
@@ -161,6 +161,8 @@ export async function saveTradeAction(
 
     // Revalidate dashboard
     if (trade.accountId) {
+      // Sync balance automatically
+      await syncAccountBalance(trade.accountId, userId);
       revalidatePath(`/dashboard/${trade.accountId}`, "page");
     }
 
@@ -183,11 +185,21 @@ export async function deleteTradeAction(
       return { success: false, error: "Not authenticated" };
     }
 
+    // Get trade info first to know the accountId for sync
+    const tradeCheck = await prismaTradeRepo.getById(tradeId, userId);
+    const accountId = tradeCheck.data?.accountId;
+
     const result = await prismaTradeRepo.delete(tradeId, userId);
 
     if (result.error) {
       console.error("[deleteTradeAction] Error:", result.error);
       return { success: false, error: result.error.message };
+    }
+
+    if (accountId) {
+      await syncAccountBalance(accountId, userId);
+      // Revalidate to reflect changes
+      revalidatePath(`/dashboard/${accountId}`, "page");
     }
 
     return { success: true };
@@ -228,6 +240,10 @@ export async function deleteTradesByAccountAction(
       }
     }
 
+    // Reset balance to initial since all trades are gone
+    // Or just let sync handle it (it will calculate PnL as 0)
+    await syncAccountBalance(accountId, userId);
+
     // Revalidate dashboard
     revalidatePath(`/dashboard/${accountId}`, "page");
 
@@ -235,6 +251,26 @@ export async function deleteTradesByAccountAction(
   } catch (error) {
     console.error("[deleteTradesByAccountAction] Unexpected error:", error);
     return { success: false, deletedCount: 0, error: "Unexpected error occurred" };
+  }
+}
+
+// Helper to sync account balance
+async function syncAccountBalance(accountId: string, userId: string) {
+  try {
+    const [accountRes, metricsRes] = await Promise.all([
+      prismaAccountRepo.getById(accountId, userId),
+      prismaTradeRepo.getDashboardMetrics(accountId, userId),
+    ]);
+
+    if (!accountRes.data) return;
+
+    const initialBalance = Number(accountRes.data.initialBalance);
+    const totalPnl = metricsRes.data?.totalPnl || 0;
+    const newBalance = initialBalance + totalPnl;
+
+    await prismaAccountRepo.updateBalance(accountId, newBalance);
+  } catch (error) {
+    console.error("[syncAccountBalance] Error syncing balance:", error);
   }
 }
 

@@ -181,10 +181,58 @@ export async function getCurrentUserDisplayNameAction(): Promise<string | null> 
  * Get leaderboard entries.
  * Fetches from leaderboard_view and maps fields to LeaderboardEntry interface.
  */
+// Helper to ensure the view definition is correct (self-healing)
+async function ensureLeaderboardView() {
+  // Define view to aggregate ALL trades per user (All-Time) with simple stats
+  try {
+    await prisma.$executeRaw`
+      CREATE OR REPLACE VIEW public.leaderboard_view AS
+      WITH user_stats AS (
+        SELECT
+          t.user_id,
+          COUNT(t.id) as total_trades,
+          SUM(CASE WHEN t.outcome = 'win' THEN 1 ELSE 0 END) as win_count,
+          SUM(CASE WHEN t.outcome = 'loss' THEN 1 ELSE 0 END) as loss_count,
+          SUM(COALESCE(t.pnl, 0)) as total_pnl,
+          AVG(COALESCE(t.r_multiple, 0)) as avg_rr,
+          0 as streak
+        FROM
+          public.trades t
+        GROUP BY
+          t.user_id
+      )
+      SELECT
+        lo.user_id,
+        lo.display_name,
+        lo.show_win_rate,
+        lo.show_profit_factor,
+        lo.show_total_trades,
+        lo.show_pnl,
+        COALESCE(us.total_trades, 0) as total_trades,
+        CASE 
+          WHEN COALESCE(us.total_trades, 0) > 0 THEN (us.win_count::decimal / us.total_trades::decimal) * 100 
+          ELSE 0 
+        END as win_rate,
+        COALESCE(us.total_pnl, 0) as total_pnl,
+        COALESCE(us.avg_rr, 0) as avg_rr,
+        0 as streak
+      FROM
+        public.leaderboard_opt_in lo
+      LEFT JOIN
+        user_stats us ON lo.user_id = us.user_id;
+    `;
+  } catch (e) {
+    console.error("Failed to ensure leaderboard view", e);
+  }
+}
+
 export async function getLeaderboardAction(): Promise<LeaderboardEntry[]> {
   try {
-    // Query the leaderboard view
-    const leaderboard = await prisma.$queryRaw<
+    // Ensure the view is correct before querying
+    await ensureLeaderboardView();
+
+    // 1. Query the leaderboard view for stats
+    const leaderboardStats = await prisma.$queryRaw<
       Array<{
         user_id: string;
         display_name: string;
@@ -200,35 +248,67 @@ export async function getLeaderboardAction(): Promise<LeaderboardEntry[]> {
       }>
     >`SELECT * FROM public.leaderboard_view LIMIT 100`;
 
-    // Map SQL snake_case fields to camelCase LeaderboardEntry
-    // IMPORTANT: PostgreSQL numeric/decimal types can come as strings or Decimal objects
-    // We must explicitly convert to JavaScript numbers for .toFixed() to work
-    return leaderboard.map((entry) => ({
-      userId: entry.user_id,
-      displayName: entry.display_name || "Trader",
-      showWinRate: entry.show_win_rate ?? true,
-      showProfitFactor: entry.show_profit_factor ?? false,
-      showTotalTrades: entry.show_total_trades ?? true,
-      showPnl: entry.show_pnl ?? true,
-      totalTrades: entry.total_trades != null ? Number(entry.total_trades) : undefined,
-      winRate: entry.win_rate != null ? Number(entry.win_rate) : undefined,
-      totalPnl: entry.total_pnl != null ? Number(entry.total_pnl) : undefined,
-      avgRR: entry.avg_rr != null ? Number(entry.avg_rr) : undefined,
-      streak: entry.streak != null ? Number(entry.streak) : 0,
-    }));
+    // 2. Fetch profile data for these users to ensure we have latest avatar and name
+    const userIds = leaderboardStats.map((entry) => entry.user_id);
+    const profiles = await prisma.profiles.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, display_name: true, avatar_url: true },
+    });
+
+    const profilesMap = new Map(profiles.map((p) => [p.id, p]));
+
+    // 3. Map and merge
+    return leaderboardStats.map((entry) => {
+      const profile = profilesMap.get(entry.user_id);
+
+      return {
+        userId: entry.user_id,
+        displayName: entry.display_name || profile?.display_name || "Trader",
+        avatarUrl: profile?.avatar_url || undefined,
+        showWinRate: entry.show_win_rate ?? true,
+        showProfitFactor: entry.show_profit_factor ?? false,
+        showTotalTrades: entry.show_total_trades ?? true,
+        showPnl: entry.show_pnl ?? true,
+        totalTrades: entry.total_trades != null ? Number(entry.total_trades) : undefined,
+        winRate: entry.win_rate != null ? Number(entry.win_rate) : undefined,
+        totalPnl: entry.total_pnl != null ? Number(entry.total_pnl) : undefined,
+        avgRR: entry.avg_rr != null ? Number(entry.avg_rr) : undefined,
+        streak: entry.streak != null ? Number(entry.streak) : 0,
+      };
+    });
   } catch (error) {
     console.error("[getLeaderboardAction] Error:", error);
-    // Fallback to simple opt-ins if view fails
+    // Fallback if view fails completely
     const result = await prismaCommunityRepo.getLeaderboardOptIns();
-    return (result.data || []).map((opt) => ({
-      userId: opt.userId,
-      displayName: opt.displayName,
-      showWinRate: opt.showWinRate,
-      showProfitFactor: opt.showProfitFactor,
-      showTotalTrades: opt.showTotalTrades,
-      showPnl: opt.showPnl,
-      streak: 0,
-    }));
+
+    // Also fetch profiles for fallback
+    const userIds = result.data?.map((opt) => opt.userId) || [];
+    let profilesMap = new Map();
+    if (userIds.length > 0) {
+      try {
+        const profiles = await prisma.profiles.findMany({
+          where: { id: { in: userIds } },
+          select: { id: true, display_name: true, avatar_url: true },
+        });
+        profilesMap = new Map(profiles.map((p) => [p.id, p]));
+      } catch (e) {
+        console.error("Failed to fetch profiles for fallback", e);
+      }
+    }
+
+    return (result.data || []).map((opt) => {
+      const profile = profilesMap.get(opt.userId);
+      return {
+        userId: opt.userId,
+        displayName: opt.displayName || profile?.display_name || "Trader",
+        avatarUrl: profile?.avatar_url || undefined,
+        showWinRate: opt.showWinRate,
+        showProfitFactor: opt.showProfitFactor,
+        showTotalTrades: opt.showTotalTrades,
+        showPnl: opt.showPnl,
+        streak: 0,
+      };
+    });
   }
 }
 

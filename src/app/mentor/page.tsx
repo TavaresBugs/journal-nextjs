@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Button, SegmentedToggle } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useMenteeDataStore } from "@/store/useMenteeDataStore";
 import {
   MentorStatsCards,
   MentoradosTable,
-  ConvitesTable,
   StudentCalendarModal,
   InviteMenteeModal,
 } from "@/components/mentor";
@@ -16,6 +15,7 @@ import {
   getMenteesOverviewAction as getMentees,
   getSentInvitesAction as getSentInvites,
   revokeInviteAction as revokeInvite,
+  updateInvitePermissionsAction as updateInvitePermissions,
 } from "@/app/actions/mentor";
 import { MentorInvite, MenteeOverview } from "@/types";
 
@@ -23,7 +23,6 @@ export default function MentoriaPage() {
   const router = useRouter();
   const { currentAccountId } = useAccountStore();
   const { loadAllMenteesData } = useMenteeDataStore();
-  const [activeTab, setActiveTab] = useState<"mentorados" | "convites">("mentorados");
   const [mentees, setMentees] = useState<MenteeOverview[]>([]);
   const [sentInvites, setSentInvites] = useState<MentorInvite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,6 +86,38 @@ export default function MentoriaPage() {
     const success = await revokeInvite(inviteId);
     if (success) loadData();
   };
+
+  const handleUpdatePermission = async (inviteId: string, permission: "view" | "comment") => {
+    // Optimistic update could happen here, but for now strict reload is safer
+    const result = await updateInvitePermissions(inviteId, permission);
+    if (result.success) {
+      loadData();
+    } else {
+      alert("Falha ao atualizar permissão");
+    }
+  };
+
+  // Merge active and pending for unified view
+  const unifiedMenteesList: MenteeOverview[] = [
+    // Active mentees (accepted)
+    ...mentees.map((m) => ({ ...m, status: "accepted" as const })),
+    // Pending invites
+    ...sentInvites
+      .filter((i) => i.status === "pending")
+      .map((invite) => ({
+        menteeId: invite.menteeId || `pending-${invite.id}`, // Placeholder ID if invite has no menteeId yet
+        menteeName: invite.menteeName || invite.menteeEmail || "Convidado",
+        menteeEmail: invite.menteeEmail || "",
+        menteeAvatar: invite.menteeAvatar,
+        permission: invite.permission,
+        totalTrades: 0,
+        winRate: 0,
+        recentTradesCount: 0,
+        status: "pending" as const,
+        inviteId: invite.id,
+        createdAt: invite.createdAt,
+      })),
+  ];
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -160,29 +191,15 @@ export default function MentoriaPage() {
         {/* Stats */}
         <MentorStatsCards stats={stats} />
 
-        {/* Tabs */}
-        <SegmentedToggle
-          options={[
-            { value: "mentorados", label: "🎓 Meus Mentorados" },
-            { value: "convites", label: "📤 Convites Enviados" },
-          ]}
-          value={activeTab}
-          onChange={(val) => setActiveTab(val as "mentorados" | "convites")}
-          className="mb-6 w-full"
-        />
-
         {/* Content */}
         <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm">
-          {activeTab === "mentorados" && (
-            <MentoradosTable mentees={mentees} onViewTrades={handleViewTrades} loading={loading} />
-          )}
-          {activeTab === "convites" && (
-            <ConvitesTable
-              invites={sentInvites.filter((i) => i.status !== "revoked")}
-              onRevoke={handleRevokeAccess}
-              loading={loading}
-            />
-          )}
+          <MentoradosTable
+            mentees={unifiedMenteesList}
+            onViewTrades={handleViewTrades}
+            onRevoke={handleRevokeAccess}
+            onUpdatePermission={handleUpdatePermission}
+            loading={loading}
+          />
         </div>
 
         {/* Invite Modal */}

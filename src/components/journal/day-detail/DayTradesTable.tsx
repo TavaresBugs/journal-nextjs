@@ -346,7 +346,7 @@ const DayTradesTableComponent = ({
 
       {/* Fade indicator - mobile only, suggests more content to the right */}
       <div
-        className="from-zorin-bg/80 pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l to-transparent transition-opacity md:hidden"
+        className="from-zorin-bg/80 pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-linear-to-l to-transparent transition-opacity md:hidden"
         aria-hidden="true"
       />
 

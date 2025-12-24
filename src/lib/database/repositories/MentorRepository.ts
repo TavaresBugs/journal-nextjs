@@ -26,6 +26,8 @@ export interface MentorInvite {
   menteeId: string | null;
   mentorEmail: string;
   menteeEmail: string | null;
+  menteeName?: string;
+  menteeAvatar?: string;
   permission: "view" | "comment" | "full";
   status: "pending" | "accepted" | "rejected" | "revoked" | "expired";
   inviteToken: string;
@@ -46,17 +48,7 @@ export interface MentorAccountPermission {
   updatedAt: string;
 }
 
-export interface MenteeOverview {
-  menteeId: string;
-  menteeName: string;
-  menteeEmail: string;
-  menteeAvatar?: string;
-  permission: MentorInvite["permission"];
-  totalTrades: number;
-  winRate: number;
-  recentTradesCount: number;
-  lastTradeDate?: string;
-}
+import { MenteeOverview } from "@/types";
 
 export interface TradeComment {
   id: string;
@@ -70,13 +62,33 @@ export interface TradeComment {
 }
 
 // Mappers
-function mapInviteFromPrisma(inv: PrismaMentorInvite): MentorInvite {
+function mapInviteFromPrisma(
+  inv: PrismaMentorInvite & {
+    users_mentor_invites_mentee_idTousers?: {
+      profiles?: { display_name: string | null; avatar_url: string | null } | null;
+      users_extended_users_extended_idTousers?: {
+        name: string | null;
+        avatar_url: string | null;
+      } | null;
+    } | null;
+  }
+): MentorInvite {
+  const user = inv.users_mentor_invites_mentee_idTousers;
+  const profile = user?.profiles;
+  const extended = user?.users_extended_users_extended_idTousers;
+
+  const displayName =
+    profile?.display_name || extended?.name || inv.mentee_email?.split("@")[0] || null;
+  const avatarUrl = profile?.avatar_url || extended?.avatar_url || null;
+
   return {
     id: inv.id,
     mentorId: inv.mentor_id,
     menteeId: inv.mentee_id,
     mentorEmail: inv.mentor_email,
     menteeEmail: inv.mentee_email,
+    menteeName: displayName || undefined,
+    menteeAvatar: avatarUrl || undefined,
     permission: (inv.permission as MentorInvite["permission"]) || "view",
     status: (inv.status as MentorInvite["status"]) || "pending",
     inviteToken: inv.invite_token,
@@ -132,6 +144,14 @@ class PrismaMentorRepository {
     try {
       const invites = await prisma.mentor_invites.findMany({
         where: { mentor_id: mentorId },
+        include: {
+          users_mentor_invites_mentee_idTousers: {
+            include: {
+              profiles: true,
+              users_extended_users_extended_idTousers: true,
+            },
+          },
+        },
         orderBy: { created_at: "desc" },
       });
 
@@ -240,6 +260,13 @@ class PrismaMentorRepository {
               can_view_trades: true,
             },
           },
+          // Include mentee user data to get profile info
+          users_mentor_invites_mentee_idTousers: {
+            include: {
+              profiles: true,
+              users_extended_users_extended_idTousers: true,
+            },
+          },
         },
         orderBy: { accepted_at: "desc" },
       });
@@ -312,15 +339,33 @@ class PrismaMentorRepository {
             : String(sortedTrades[0].entry_date)
           : undefined;
 
+        // Determine name and avatar
+        // Priority: Profile -> UserExtended -> Email
+        const user = invite.users_mentor_invites_mentee_idTousers;
+        const profile = user?.profiles;
+        const extended = user?.users_extended_users_extended_idTousers;
+
+        const displayName =
+          profile?.display_name ||
+          extended?.name ||
+          invite.mentee_email?.split("@")[0] ||
+          "Mentorado";
+        const avatarUrl = profile?.avatar_url || extended?.avatar_url || undefined;
+
         overviews.push({
           menteeId: invite.mentee_id,
-          menteeName: invite.mentee_email?.split("@")[0] || "Mentorado",
+          menteeName: displayName,
           menteeEmail: invite.mentee_email || "",
+          menteeAvatar: avatarUrl,
           permission: (invite.permission as MenteeOverview["permission"]) || "view",
           totalTrades,
           winRate,
           recentTradesCount,
           lastTradeDate,
+          status: "accepted",
+          inviteId: invite.id,
+          createdAt: invite.created_at?.toISOString(),
+          acceptedAt: invite.accepted_at?.toISOString(),
         });
       }
 
@@ -447,6 +492,33 @@ class PrismaMentorRepository {
       return {
         data: null,
         error: new AppError("Failed to revoke invite", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Update an invite (e.g. permission).
+   */
+  async updateInvite(
+    inviteId: string,
+    data: Partial<Pick<MentorInvite, "permission">>
+  ): Promise<Result<boolean, AppError>> {
+    this.logger.info("Updating invite", { inviteId, data });
+
+    try {
+      await prisma.mentor_invites.update({
+        where: { id: inviteId },
+        data: {
+          permission: data.permission,
+        },
+      });
+
+      return { data: true, error: null };
+    } catch (error) {
+      this.logger.error("Failed to update invite", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to update invite", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   acceptInviteAction as acceptInvite,
   rejectInviteAction as rejectInvite,
@@ -32,7 +32,6 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showFullModal, setShowFullModal] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Use cached hooks
@@ -45,7 +44,21 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
 
   const loading = loadingInvites || loadingReviews;
 
-  const getNotifications = useCallback(() => {
+  // Load read announcements from local storage on mount
+  const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setReadAnnouncementIds(stored);
+    } catch (e) {
+      console.error("Error loading read announcements", e);
+    }
+  }, []);
+
+  // Compute notifications derived from data + local state
+  const notifications = useMemo<Notification[]>(() => {
     // 1. Process Invites
     const inviteNotifs: Notification[] = invites.map((inv) => ({
       id: inv.id,
@@ -80,36 +93,20 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
       })) as Notification[];
 
     // 3. Process Announcements
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
     const announcementNotifs: Notification[] = PROJECT_ANNOUNCEMENTS.map((ann) => ({
       id: ann.id,
       type: "announcement",
       title: ann.title,
       message: ann.message,
       timestamp: ann.date,
-      read: readAnnouncements.includes(ann.id),
+      read: readAnnouncementIds.includes(ann.id),
     }));
 
     // Merge and Sort
     return [...inviteNotifs, ...reviewNotifs, ...announcementNotifs].sort(
       (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
     );
-  }, [invites, reviews]);
-
-  useEffect(() => {
-    setNotifications(getNotifications());
-  }, [getNotifications]);
-
-  // Fechar dropdown ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [invites, reviews, readAnnouncementIds]);
 
   // Calculate unread count
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -129,23 +126,20 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
   };
 
   const markAnnouncementRead = (id: string) => {
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
-    if (!readAnnouncements.includes(id)) {
-      readAnnouncements.push(id);
-      localStorage.setItem("readAnnouncements", JSON.stringify(readAnnouncements));
-    }
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    const newReadIds = [...readAnnouncementIds, id];
+    setReadAnnouncementIds(newReadIds);
+    localStorage.setItem("readAnnouncements", JSON.stringify(newReadIds));
   };
 
   const markAllAnnouncementsRead = () => {
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
+    const newReadIds = [...readAnnouncementIds];
     notifications.forEach((n) => {
-      if (n.type === "announcement" && !readAnnouncements.includes(n.id)) {
-        readAnnouncements.push(n.id);
+      if (n.type === "announcement" && !newReadIds.includes(n.id)) {
+        newReadIds.push(n.id);
       }
     });
-    localStorage.setItem("readAnnouncements", JSON.stringify(readAnnouncements));
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setReadAnnouncementIds(newReadIds);
+    localStorage.setItem("readAnnouncements", JSON.stringify(newReadIds));
   };
 
   const handleViewFeedback = (notification: Notification) => {

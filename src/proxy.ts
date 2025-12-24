@@ -161,6 +161,7 @@ export default async function proxy(req: NextRequest) {
   const publicRoutes = [
     "/login",
     "/auth/callback",
+    "/auth/reset-password",
     "/share",
     "/pending",
     "/termos",
