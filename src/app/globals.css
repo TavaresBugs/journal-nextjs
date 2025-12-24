@@ -140,10 +140,10 @@ body::before {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   z-index: -1;
   /* Pre-blurred WebP - no runtime filters needed */
-  background: url("/background-landscape-blurred.webp") no-repeat center center fixed;
+  background: url("/background-landscape-blurred.webp") no-repeat center center;
   background-size: cover;
   /* NO FILTERS - blur and darkness baked into image */
   pointer-events: none;
