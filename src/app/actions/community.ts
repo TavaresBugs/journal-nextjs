@@ -201,6 +201,8 @@ export async function getLeaderboardAction(): Promise<LeaderboardEntry[]> {
     >`SELECT * FROM public.leaderboard_view LIMIT 100`;
 
     // Map SQL snake_case fields to camelCase LeaderboardEntry
+    // IMPORTANT: PostgreSQL numeric/decimal types can come as strings or Decimal objects
+    // We must explicitly convert to JavaScript numbers for .toFixed() to work
     return leaderboard.map((entry) => ({
       userId: entry.user_id,
       displayName: entry.display_name || "Trader",
@@ -208,11 +210,11 @@ export async function getLeaderboardAction(): Promise<LeaderboardEntry[]> {
       showProfitFactor: entry.show_profit_factor ?? false,
       showTotalTrades: entry.show_total_trades ?? true,
       showPnl: entry.show_pnl ?? true,
-      totalTrades: entry.total_trades ?? undefined,
-      winRate: entry.win_rate ?? undefined,
-      totalPnl: entry.total_pnl ? Number(entry.total_pnl) : undefined,
-      avgRR: entry.avg_rr ? Number(entry.avg_rr) : undefined,
-      streak: entry.streak ?? 0,
+      totalTrades: entry.total_trades != null ? Number(entry.total_trades) : undefined,
+      winRate: entry.win_rate != null ? Number(entry.win_rate) : undefined,
+      totalPnl: entry.total_pnl != null ? Number(entry.total_pnl) : undefined,
+      avgRR: entry.avg_rr != null ? Number(entry.avg_rr) : undefined,
+      streak: entry.streak != null ? Number(entry.streak) : 0,
     }));
   } catch (error) {
     console.error("[getLeaderboardAction] Error:", error);

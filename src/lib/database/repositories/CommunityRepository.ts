@@ -17,6 +17,7 @@ import {
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
+import { formatTimeMinutes } from "@/lib/calculations";
 
 // Domain types
 export interface LeaderboardOptIn {
@@ -334,74 +335,182 @@ class PrismaCommunityRepository {
         },
       });
 
+      // Optimization: Fetch all trades for these playbooks in a single query
+      const globalStrategiesToFetch: { userId: string; strategy: string }[] = [];
+      playbooks.forEach((sp) => {
+        if (sp.user_id && sp.playbooks?.name) {
+          globalStrategiesToFetch.push({
+            userId: sp.user_id,
+            strategy: sp.playbooks.name,
+          });
+        }
+      });
+
+      let allTrades: Array<{
+        user_id: string | null;
+        strategy: string | null;
+        pnl: import("@/generated/prisma").Prisma.Decimal | null;
+        outcome: string | null;
+        r_multiple: import("@/generated/prisma").Prisma.Decimal | null;
+        symbol: string;
+        session: string | null;
+        entry_date: Date;
+        entry_time: string | null;
+        exit_date: Date | null;
+        exit_time: string | null;
+      }> = [];
+      if (globalStrategiesToFetch.length > 0) {
+        allTrades = await prisma.trades.findMany({
+          where: {
+            OR: globalStrategiesToFetch.map((item) => ({
+              user_id: item.userId,
+              strategy: item.strategy,
+            })),
+          },
+          select: {
+            user_id: true,
+            strategy: true,
+            pnl: true,
+            outcome: true,
+            r_multiple: true,
+            symbol: true,
+            session: true,
+            entry_date: true,
+            entry_time: true,
+            exit_date: true,
+            exit_time: true,
+          },
+          orderBy: { entry_date: "asc" },
+        });
+      }
+
+      // Group trades by "userId|strategy"
+      const tradesMap = new Map<string, typeof allTrades>();
+      allTrades.forEach((t) => {
+        if (t.user_id && t.strategy) {
+          const key = `${t.user_id}|${t.strategy}`;
+          if (!tradesMap.has(key)) {
+            tradesMap.set(key, []);
+          }
+          tradesMap.get(key)?.push(t);
+        }
+      });
+
       // Map with related data and calculate stats
-      const mapped = await Promise.all(
-        playbooks.map(async (sp) => {
-          const profile = sp.users?.profiles;
-          const playbookName = sp.playbooks?.name;
+      const mapped = playbooks.map((sp) => {
+        const profile = sp.users?.profiles;
+        const playbookName = sp.playbooks?.name;
 
-          // Calculate author stats from trades with this strategy in this account
-          let authorStats = undefined;
-          if (playbookName && sp.user_id) {
-            const accountId = sp.playbooks?.account_id;
-            const trades = await prisma.trades.findMany({
-              where: {
-                user_id: sp.user_id,
-                strategy: playbookName,
-                ...(accountId && { account_id: accountId }),
-              },
-              select: {
-                pnl: true,
-                outcome: true,
-                r_multiple: true,
-              },
-            });
+        // Calculate author stats using pre-fetched trades
+        let authorStats = undefined;
+        if (playbookName && sp.user_id) {
+          const key = `${sp.user_id}|${playbookName}`;
+          const trades = tradesMap.get(key) || [];
 
-            if (trades.length > 0) {
-              const wins = trades.filter((t) => t.outcome === "win").length;
-              const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-              const avgRR =
-                trades.reduce((sum, t) => sum + (Number(t.r_multiple) || 0), 0) / trades.length;
+          if (trades.length > 0) {
+            const wins = trades.filter((t) => t.outcome === "win").length;
+            const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+            const avgRR =
+              trades.reduce((sum, t) => sum + (Number(t.r_multiple) || 0), 0) / trades.length;
 
-              // Calculate max win streak
-              let maxStreak = 0;
-              let currentStreak = 0;
-              for (const t of trades) {
-                if (t.outcome === "win") {
-                  currentStreak++;
-                  maxStreak = Math.max(maxStreak, currentStreak);
-                } else {
-                  currentStreak = 0;
+            // Calculate max win streak
+            let maxStreak = 0;
+            let currentStreak = 0;
+            for (const t of trades) {
+              if (t.outcome === "win") {
+                currentStreak++;
+                maxStreak = Math.max(maxStreak, currentStreak);
+              } else {
+                currentStreak = 0;
+              }
+            }
+
+            // Calculate Average Duration
+            let totalDurationMinutes = 0;
+            let validDurationCount = 0;
+
+            for (const t of trades) {
+              if (t.exit_date && t.exit_time && t.entry_date) {
+                try {
+                  const combineDateTime = (date: Date, timeStr: string) => {
+                    const dateStr = date.toISOString().split("T")[0];
+                    return new Date(`${dateStr}T${timeStr}:00`);
+                  };
+
+                  const entryTimeStr = t.entry_time || "00:00";
+                  const start = combineDateTime(t.entry_date, entryTimeStr);
+                  const end = combineDateTime(t.exit_date, t.exit_time);
+
+                  const diffMs = end.getTime() - start.getTime();
+                  const minutes = diffMs / 1000 / 60;
+
+                  if (minutes > 0 && minutes < 43200) {
+                    totalDurationMinutes += minutes;
+                    validDurationCount++;
+                  }
+                } catch {
+                  // Ignore
                 }
               }
-
-              authorStats = {
-                totalTrades: trades.length,
-                winRate: Math.round((wins / trades.length) * 100 * 10) / 10,
-                avgRR: Math.round(avgRR * 100) / 100,
-                netPnl: Math.round(totalPnl * 100) / 100,
-                maxWinStreak: maxStreak,
-              };
             }
-          }
 
-          return {
-            ...mapSharedPlaybookFromPrisma(sp),
-            playbook: sp.playbooks
-              ? {
-                  id: sp.playbooks.id,
-                  name: sp.playbooks.name,
-                  icon: sp.playbooks.icon,
-                  color: sp.playbooks.color,
-                  description: sp.playbooks.description,
-                }
-              : undefined,
-            userName: profile?.display_name || "Trader Anônimo",
-            userAvatar: profile?.avatar_url || undefined,
-            authorStats,
-          };
-        })
-      );
+            // Calculate preferred symbol (most frequent)
+            const symbolCounts: Record<string, number> = {};
+            for (const t of trades) {
+              if (t.symbol) {
+                symbolCounts[t.symbol] = (symbolCounts[t.symbol] || 0) + 1;
+              }
+            }
+            const preferredSymbol = Object.entries(symbolCounts).sort(
+              (a, b) => b[1] - a[1]
+            )[0]?.[0];
+
+            // Calculate preferred session (most frequent)
+            const sessionCounts: Record<string, number> = {};
+            for (const t of trades) {
+              if (t.session) {
+                sessionCounts[t.session] = (sessionCounts[t.session] || 0) + 1;
+              }
+            }
+            const preferredSession = Object.entries(sessionCounts).sort(
+              (a, b) => b[1] - a[1]
+            )[0]?.[0];
+
+            authorStats = {
+              totalTrades: trades.length,
+              winRate: Math.round((wins / trades.length) * 100 * 10) / 10,
+              avgRR: Math.round(avgRR * 100) / 100,
+              netPnl: Math.round(totalPnl * 100) / 100,
+              maxWinStreak: maxStreak,
+              preferredSymbol,
+              preferredSession,
+              avgDuration:
+                validDurationCount > 0
+                  ? formatTimeMinutes(totalDurationMinutes / validDurationCount)
+                  : undefined,
+            };
+          }
+        }
+
+        return {
+          ...mapSharedPlaybookFromPrisma(sp),
+          playbook: sp.playbooks
+            ? {
+                id: sp.playbooks.id,
+                name: sp.playbooks.name,
+                icon: sp.playbooks.icon,
+                color: sp.playbooks.color,
+                description: sp.playbooks.description,
+                ruleGroups: sp.playbooks.rule_groups as
+                  | { id: string; name: string; rules: string[] }[]
+                  | undefined,
+              }
+            : undefined,
+          userName: profile?.display_name || "Trader Anônimo",
+          userAvatar: profile?.avatar_url || undefined,
+          authorStats,
+        };
+      });
 
       return { data: mapped as SharedPlaybook[], error: null };
     } catch (error) {

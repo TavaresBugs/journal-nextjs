@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getMenteesOverviewAction,
   getSentInvitesAction,
+  getReceivedInvitesAction,
   inviteMenteeAction,
   revokeInviteAction,
 } from "@/app/actions/mentor";
@@ -23,7 +24,7 @@ export function useMentorMentees() {
   return useQuery({
     queryKey: mentorKeys.mentees(),
     queryFn: getMenteesOverviewAction,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes - mentor data rarely changes
   });
 }
 
@@ -34,7 +35,18 @@ export function useMentorInvites() {
   return useQuery({
     queryKey: mentorKeys.invites(),
     queryFn: getSentInvitesAction,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes - invites rarely change
+  });
+}
+
+/**
+ * Hook to fetch received invites with caching
+ */
+export function useReceivedInvites() {
+  return useQuery({
+    queryKey: [...mentorKeys.all, "received-invites"],
+    queryFn: getReceivedInvitesAction,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
@@ -89,12 +101,12 @@ export function usePrefetchMentorData() {
     queryClient.prefetchQuery({
       queryKey: mentorKeys.mentees(),
       queryFn: getMenteesOverviewAction,
-      staleTime: 2 * 60 * 1000,
+      staleTime: 5 * 60 * 1000,
     });
     queryClient.prefetchQuery({
       queryKey: mentorKeys.invites(),
       queryFn: getSentInvitesAction,
-      staleTime: 2 * 60 * 1000,
+      staleTime: 5 * 60 * 1000,
     });
   };
 }

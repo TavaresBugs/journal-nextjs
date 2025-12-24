@@ -50,7 +50,7 @@ export function useDashboardInit(
   const { showToast } = useToast();
 
   // Store State
-  const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
+  const { currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
   const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage } = useTradeStore();
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
@@ -71,10 +71,14 @@ export function useDashboardInit(
     }
 
     const init = async () => {
+      // Check if already initialized for this account
       if (isInitRef.current === accountId) {
         setIsLoading(false);
         return;
       }
+
+      // Optimistic lock: prevent race conditions (e.g. StrictMode)
+      isInitRef.current = accountId;
 
       try {
         let currentAccounts = useAccountStore.getState().accounts;
@@ -100,29 +104,19 @@ export function useDashboardInit(
           loadPlaybooks(),
           loadSettings(),
         ]);
-
-        isInitRef.current = accountId;
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");
+        // Reset lock on failure so we can try again
+        isInitRef.current = null;
       } finally {
         setIsLoading(false);
       }
     };
 
     init();
-  }, [
-    accountId,
-    accounts.length,
-    isValidAccount,
-    setCurrentAccount,
-    loadTrades,
-    loadEntries,
-    loadPlaybooks,
-    loadSettings,
-    router,
-    showToast,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, showToast]);
 
   // Balance Update Effect
   useEffect(() => {

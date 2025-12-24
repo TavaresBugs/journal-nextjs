@@ -1,5 +1,5 @@
 import { SharedPlaybook } from "@/types";
-import { Modal, ModalFooterActions, IconActionButton } from "@/components/ui";
+import { Modal, IconActionButton } from "@/components/ui";
 import { formatCurrency } from "@/lib/calculations";
 import { useToast } from "@/providers/ToastProvider";
 import { clonePlaybookAction } from "@/app/actions/playbooks";
@@ -90,47 +90,82 @@ export function ViewSharedPlaybookModal({ playbook, onClose }: ViewSharedPlayboo
         {playbook.playbook?.ruleGroups && playbook.playbook.ruleGroups.length > 0 && (
           <div>
             <h3 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-cyan-400"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-                <polyline points="10 9 9 9 8 9"></polyline>
-              </svg>
+              <span className="text-xl">📜</span>
               REGRAS DO PLAYBOOK
             </h3>
             <div className="grid gap-4">
-              {playbook.playbook.ruleGroups.map((group, idx) => (
-                <div
-                  key={idx}
-                  className="overflow-hidden rounded-xl border border-gray-700 bg-gray-800/50"
-                >
-                  <div className="border-b border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-gray-200">
-                    {group.name}
+              {playbook.playbook.ruleGroups.map((group, idx) => {
+                // Map common rule group names to emojis
+                const getGroupEmoji = (name: string): string => {
+                  const normalized = name.toLowerCase().trim();
+                  if (
+                    normalized.includes("condições") ||
+                    normalized.includes("mercado") ||
+                    normalized.includes("contexto")
+                  )
+                    return "📊";
+                  if (
+                    normalized.includes("entrada") ||
+                    normalized.includes("trigger") ||
+                    normalized.includes("gatilho")
+                  )
+                    return "🎯";
+                  if (
+                    normalized.includes("saída") ||
+                    normalized.includes("exit") ||
+                    normalized.includes("alvo")
+                  )
+                    return "🏁";
+                  if (
+                    normalized.includes("gestão") ||
+                    normalized.includes("risco") ||
+                    normalized.includes("risk")
+                  )
+                    return "🛡️";
+                  if (
+                    normalized.includes("psico") ||
+                    normalized.includes("mental") ||
+                    normalized.includes("emocional")
+                  )
+                    return "🧠";
+                  return "📋";
+                };
+
+                return (
+                  <div
+                    key={idx}
+                    className="overflow-hidden rounded-xl border border-gray-700 bg-gray-800/50"
+                  >
+                    <div className="flex items-center gap-2 border-b border-gray-700 bg-gray-800 px-4 py-2 font-semibold text-gray-200">
+                      <span className="text-lg">{getGroupEmoji(group.name)}</span>
+                      {group.name}
+                    </div>
+                    <div className="p-4">
+                      <ul className="space-y-2">
+                        {group.rules.map((rule, ruleIdx) => (
+                          <li key={ruleIdx} className="flex items-start gap-3 text-gray-300">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mt-0.5 shrink-0 text-emerald-400"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>{rule}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <div className="p-4">
-                    <ul className="space-y-2">
-                      {group.rules.map((rule, ruleIdx) => (
-                        <li key={ruleIdx} className="flex items-start gap-3 text-gray-300">
-                          <span className="mt-1 text-cyan-500">•</span>
-                          <span>{rule}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -221,8 +256,6 @@ export function ViewSharedPlaybookModal({ playbook, onClose }: ViewSharedPlayboo
           </div>
         )}
       </div>
-
-      <ModalFooterActions mode="close-only" onPrimary={onClose} className="mt-8" />
     </Modal>
   );
 }

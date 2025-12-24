@@ -227,38 +227,100 @@ class PrismaMentorRepository {
     this.logger.info("Fetching mentees overview", { mentorId });
 
     try {
+      // OPTIMIZED: Single query with includes instead of N+1
       const invites = await prisma.mentor_invites.findMany({
         where: {
           mentor_id: mentorId,
           status: "accepted",
         },
+        include: {
+          mentor_account_permissions: {
+            select: {
+              account_id: true,
+              can_view_trades: true,
+            },
+          },
+        },
         orderBy: { accepted_at: "desc" },
       });
 
+      // Collect all mentee IDs and their permitted account IDs for batch query
+      const menteePermittedAccounts = new Map<string, string[]>();
+      for (const invite of invites) {
+        if (!invite.mentee_id) continue;
+        const permittedIds = invite.mentor_account_permissions
+          .filter((p) => p.can_view_trades)
+          .map((p) => p.account_id);
+        menteePermittedAccounts.set(invite.mentee_id, permittedIds);
+      }
+
+      // OPTIMIZED: Batch fetch all trades for all mentees in a single query
+      const menteeIds = Array.from(menteePermittedAccounts.keys());
+      const allAccountIds = Array.from(menteePermittedAccounts.values()).flat();
+
+      const trades =
+        menteeIds.length > 0
+          ? await prisma.trades.findMany({
+              where: {
+                user_id: { in: menteeIds },
+                ...(allAccountIds.length > 0 ? { account_id: { in: allAccountIds } } : {}),
+              },
+              select: {
+                id: true,
+                user_id: true,
+                account_id: true,
+                outcome: true,
+                entry_date: true,
+              },
+            })
+          : [];
+
+      // Calculate stats per mentee from batch results
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       const overviews: MenteeOverview[] = [];
-      const { prismaTradeRepo } = await import("./TradeRepository");
 
       for (const invite of invites) {
         if (!invite.mentee_id) continue;
 
-        const statsResult = await prismaTradeRepo.getMenteeStats(invite.mentee_id);
-        const stats = statsResult.data || {
-          totalTrades: 0,
-          wins: 0,
-          winRate: 0,
-          recentTradesCount: 0,
-          lastTradeDate: undefined,
-        };
+        const permittedIds = menteePermittedAccounts.get(invite.mentee_id) || [];
+
+        // Filter trades for this mentee and their permitted accounts
+        const menteeTrades = trades.filter((t) => {
+          if (t.user_id !== invite.mentee_id) return false;
+          if (permittedIds.length === 0) return true; // No filter if no specific permissions
+          return permittedIds.includes(t.account_id);
+        });
+
+        const totalTrades = menteeTrades.length;
+        const wins = menteeTrades.filter((t) => t.outcome === "win").length;
+        const winRate = totalTrades > 0 ? Math.round((wins / totalTrades) * 100) : 0;
+        const recentTradesCount = menteeTrades.filter(
+          (t) => t.entry_date && new Date(t.entry_date) >= sevenDaysAgo
+        ).length;
+
+        // Sort by date desc to get last trade
+        const sortedTrades = [...menteeTrades].sort((a, b) => {
+          const dateA = a.entry_date ? new Date(a.entry_date).getTime() : 0;
+          const dateB = b.entry_date ? new Date(b.entry_date).getTime() : 0;
+          return dateB - dateA;
+        });
+        const lastTradeDate = sortedTrades[0]?.entry_date
+          ? sortedTrades[0].entry_date instanceof Date
+            ? sortedTrades[0].entry_date.toISOString().split("T")[0]
+            : String(sortedTrades[0].entry_date)
+          : undefined;
 
         overviews.push({
           menteeId: invite.mentee_id,
           menteeName: invite.mentee_email?.split("@")[0] || "Mentorado",
           menteeEmail: invite.mentee_email || "",
           permission: (invite.permission as MenteeOverview["permission"]) || "view",
-          totalTrades: stats.totalTrades,
-          winRate: stats.winRate,
-          recentTradesCount: stats.recentTradesCount,
-          lastTradeDate: stats.lastTradeDate,
+          totalTrades,
+          winRate,
+          recentTradesCount,
+          lastTradeDate,
         });
       }
 

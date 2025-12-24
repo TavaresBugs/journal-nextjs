@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Modal, Button } from "@/components/ui";
+import { Modal } from "@/components/ui";
 import type { Trade, DailyRoutine, JournalEntry } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
 import { useToast } from "@/providers/ToastProvider";
@@ -246,15 +246,6 @@ export function DayDetailModal({
             hasMentor={hasMentor}
             reviewsMap={reviewsMap}
           />
-
-          {/* Footer Button */}
-          <Button
-            variant="gradient-danger"
-            onClick={onClose}
-            className="w-full py-3 font-extrabold"
-          >
-            Fechar
-          </Button>
         </div>
       </Modal>
 

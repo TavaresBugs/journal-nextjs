@@ -39,16 +39,18 @@ function useImagePreloader(entries: JournalEntry[]) {
 interface DayTradesTableProps {
   trades: Trade[];
   standaloneEntries: JournalEntry[];
-  onDeleteTrade: (tradeId: string) => void;
+  onDeleteTrade?: (tradeId: string) => void;
   onEditTrade?: (trade: Trade) => void;
-  onJournalClick: (trade: Trade, startEditing?: boolean) => void;
-  onEditEntry: (entry: JournalEntry) => void;
+  onJournalClick?: (trade: Trade, startEditing?: boolean) => void;
+  onEditEntry?: (entry: JournalEntry) => void;
   onPreviewEntry?: (entry: JournalEntry) => void;
-  onDeleteEntry: (entryId: string) => void;
-  getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
-  onNewEntry: () => void;
+  onDeleteEntry?: (entryId: string) => void;
+  getEntryByTradeId?: (tradeId: string) => JournalEntry | undefined;
+  onNewEntry?: () => void;
   hasMentor?: boolean;
   reviewsMap?: Record<string, { hasUnread: boolean; count: number }>;
+  /** Read-only mode - hides action buttons (for mentor view) */
+  readOnly?: boolean;
 }
 
 /**
@@ -57,6 +59,7 @@ interface DayTradesTableProps {
  * Memoized to prevent unnecessary re-renders
  *
  * Mobile UX: Horizontal scroll enabled with visual indicators
+ * @param readOnly - If true, hides action buttons (for mentor view)
  */
 const DayTradesTableComponent = ({
   trades,
@@ -71,6 +74,7 @@ const DayTradesTableComponent = ({
   onNewEntry,
   hasMentor = false,
   reviewsMap = {},
+  readOnly = false,
 }: DayTradesTableProps) => {
   // Scroll hint disappears after 3 seconds
   const [showScrollHint, setShowScrollHint] = useState(true);
@@ -78,7 +82,7 @@ const DayTradesTableComponent = ({
   // Collect all journal entries (standalone + trade-linked) for image preloading
   const allEntries = [
     ...standaloneEntries,
-    ...trades.map((t) => getEntryByTradeId(t.id)).filter((e): e is JournalEntry => !!e),
+    ...trades.map((t) => getEntryByTradeId?.(t.id)).filter((e): e is JournalEntry => !!e),
   ];
 
   // Preload images in background (same effect as Recap's visible thumbnails)
@@ -108,31 +112,33 @@ const DayTradesTableComponent = ({
               <th className="w-24 px-4 py-3 text-center">
                 <div className="flex items-center justify-center gap-2">
                   <span>DIÁRIO</span>
-                  <Button
-                    variant="gradient-success"
-                    size="icon"
-                    onClick={onNewEntry}
-                    className="bg-zorin-accent hover:bg-zorin-accent-hover flex h-5 w-5 items-center justify-center rounded border-0 text-white shadow-[0_0_10px_rgba(0,200,83,0.3)]"
-                    title="Novo Diário"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
+                  {!readOnly && onNewEntry && (
+                    <Button
+                      variant="gradient-success"
+                      size="icon"
+                      onClick={onNewEntry}
+                      className="bg-zorin-accent hover:bg-zorin-accent-hover flex h-5 w-5 items-center justify-center rounded border-0 text-white shadow-[0_0_10px_rgba(0,200,83,0.3)]"
+                      title="Novo Diário"
                     >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                  </Button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    </Button>
+                  )}
                 </div>
               </th>
-              <th className="px-4 py-3 text-center whitespace-nowrap">AÇÕES</th>
+              {!readOnly && <th className="px-4 py-3 text-center whitespace-nowrap">AÇÕES</th>}
               <th className="px-4 py-3 text-center whitespace-nowrap">TIPO</th>
               <th className="px-4 py-3 text-center whitespace-nowrap">P/L</th>
               <th className="px-4 py-3 text-center whitespace-nowrap">SÍMBOLO</th>
@@ -151,9 +157,7 @@ const DayTradesTableComponent = ({
                       <IconActionButton
                         variant="journal"
                         size="md"
-                        onClick={() =>
-                          onPreviewEntry ? onPreviewEntry(entry) : onEditEntry(entry)
-                        }
+                        onClick={() => onPreviewEntry?.(entry)}
                         title="Ver Diário"
                       />
                       {hasMentor && reviewStatus?.hasUnread && (
@@ -161,22 +165,24 @@ const DayTradesTableComponent = ({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-2">
-                      <IconActionButton
-                        variant="edit"
-                        size="md"
-                        onClick={() => onEditEntry(entry)}
-                        title="Editar"
-                      />
-                      <IconActionButton
-                        variant="delete"
-                        size="md"
-                        onClick={() => onDeleteEntry(entry.id)}
-                        title="Excluir"
-                      />
-                    </div>
-                  </td>
+                  {!readOnly && (
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <IconActionButton
+                          variant="edit"
+                          size="md"
+                          onClick={() => onEditEntry?.(entry)}
+                          title="Editar"
+                        />
+                        <IconActionButton
+                          variant="delete"
+                          size="md"
+                          onClick={() => onDeleteEntry?.(entry.id)}
+                          title="Excluir"
+                        />
+                      </div>
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <div className="flex flex-col items-center">
                       <span className="text-[10px] text-gray-500">#{entry.id.slice(0, 13)}</span>
@@ -222,7 +228,7 @@ const DayTradesTableComponent = ({
                   .padStart(2, "0")}:00`;
               }
 
-              const journalEntry = getEntryByTradeId(trade.id);
+              const journalEntry = getEntryByTradeId?.(trade.id);
               const reviewStatus =
                 reviewsMap[trade.id] || (journalEntry ? reviewsMap[journalEntry.id] : undefined);
 
@@ -233,32 +239,43 @@ const DayTradesTableComponent = ({
                       <IconActionButton
                         variant={journalEntry ? "journal" : "add"}
                         size="md"
-                        onClick={() => onJournalClick(trade, !journalEntry)}
-                        title={journalEntry ? "Ver Diário" : "Criar Diário"}
-                        className={!journalEntry ? "opacity-40 hover:opacity-70" : ""}
+                        onClick={() => onJournalClick?.(trade, !journalEntry)}
+                        title={
+                          journalEntry ? "Ver Diário" : readOnly ? "Sem diário" : "Criar Diário"
+                        }
+                        className={
+                          readOnly && !journalEntry
+                            ? "cursor-not-allowed opacity-20 grayscale"
+                            : !journalEntry
+                              ? "opacity-40 hover:opacity-70"
+                              : ""
+                        }
+                        disabled={readOnly && !journalEntry}
                       />
                       {hasMentor && reviewStatus?.hasUnread && (
                         <span className="pointer-events-none absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-gray-900 bg-red-500" />
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center whitespace-nowrap">
-                    <div className="flex items-center justify-center gap-2">
-                      <IconActionButton
-                        variant="edit"
-                        size="md"
-                        onClick={() => onEditTrade?.(trade)}
-                        title="Editar Trade"
-                        disabled={!onEditTrade}
-                      />
-                      <IconActionButton
-                        variant="delete"
-                        size="md"
-                        onClick={() => onDeleteTrade(trade.id)}
-                        title="Excluir Trade"
-                      />
-                    </div>
-                  </td>
+                  {!readOnly && (
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-2">
+                        <IconActionButton
+                          variant="edit"
+                          size="md"
+                          onClick={() => onEditTrade?.(trade)}
+                          title="Editar Trade"
+                          disabled={!onEditTrade}
+                        />
+                        <IconActionButton
+                          variant="delete"
+                          size="md"
+                          onClick={() => onDeleteTrade?.(trade.id)}
+                          title="Excluir Trade"
+                        />
+                      </div>
+                    </td>
+                  )}
                   <td className="px-4 py-3 text-center whitespace-nowrap">
                     <div className="flex flex-col items-center">
                       <span className="text-[10px] text-gray-500">#{trade.id.slice(0, 13)}</span>

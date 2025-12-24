@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 interface TradeCalendarProps {
   trades: Trade[];
   entries?: JournalEntry[];
+  journalAvailability?: Record<string, number>; // OPTIMIZED: date -> count map for instant badges
   onDayClick?: (date: string, dayTrades: Trade[]) => void;
 }
 
@@ -25,7 +26,12 @@ interface DayStatsResult {
   bgClass: string;
 }
 
-export function TradeCalendar({ trades, entries: propEntries, onDayClick }: TradeCalendarProps) {
+export function TradeCalendar({
+  trades,
+  entries: propEntries,
+  journalAvailability,
+  onDayClick,
+}: TradeCalendarProps) {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const { entries: storeEntries } = useJournalStore();
   const entries = propEntries || storeEntries;
@@ -146,6 +152,16 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
     return statsMap;
   }, [tradesByDay, entries]);
 
+  // Get journal count for a date (from lightweight availability map or full entries)
+  const getJournalCountForDate = (dateStr: string): number => {
+    // Prioritize lightweight availability map if provided (has counts)
+    if (journalAvailability && Object.keys(journalAvailability).length > 0) {
+      return journalAvailability[dateStr] || 0;
+    }
+    // Fallback to full entries if available
+    return entries.filter((e) => e.date === dateStr).length;
+  };
+
   // Get stats for a specific day
   const getDayStats = (date: dayjs.Dayjs) => {
     const dateStr = date.format("YYYY-MM-DD");
@@ -233,7 +249,10 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
           const isToday = date.isSame(dayjs(), "day");
           const stats = getDayStats(date);
           const hasTrades = stats.tradeCount > 0;
-          const hasJournal = stats.journalCount > 0;
+          // Get journal count from availability map OR stats
+          const dateStr = date.format("YYYY-MM-DD");
+          const journalCount = getJournalCountForDate(dateStr) || stats.journalCount;
+          const hasJournal = journalCount > 0;
 
           // Use styling from stats hook, with fallback for journal-only days
           let bgClass = stats.bgClass;
@@ -286,19 +305,19 @@ export function TradeCalendar({ trades, entries: propEntries, onDayClick }: Trad
                     {stats.tradeCount} {stats.tradeCount === 1 ? "Trade" : "Trades"}
                   </div>
 
-                  {/* Journal Indicator */}
+                  {/* Journal Indicator - use journalCount from availability map */}
                   {hasJournal && (
                     <div className="mt-1 text-[10px] font-medium text-cyan-400">
-                      Diário ({stats.journalCount})
+                      Diário ({journalCount})
                     </div>
                   )}
                 </div>
               ) : hasJournal ? (
-                /* Only Journal Entries */
+                /* Only Journal Entries - use journalCount from availability map */
                 <div className="my-auto flex w-full flex-col items-center justify-center gap-1">
                   <div className="text-sm font-bold text-cyan-400">Diário</div>
                   <div className="text-[10px] text-gray-400">
-                    {stats.journalCount} {stats.journalCount === 1 ? "Entrada" : "Entradas"}
+                    {journalCount} {journalCount === 1 ? "Entrada" : "Entradas"}
                   </div>
                 </div>
               ) : (

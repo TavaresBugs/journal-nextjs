@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { isAdminAction } from "@/app/actions/admin";
 import { isMentorAction } from "@/app/actions/mentor";
 
@@ -17,38 +17,19 @@ export interface UserPermissions {
  * @returns User permission states
  */
 export function useUserPermissions(): UserPermissions {
-  const [isAdminUser, setIsAdminUser] = useState(false);
-  const [isMentorUser, setIsMentorUser] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const hasLoadedRef = useRef(false);
-
-  useEffect(() => {
-    const loadPermissions = async () => {
-      if (hasLoadedRef.current) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const [adminStatus, mentorStatus] = await Promise.all([isAdminAction(), isMentorAction()]);
-
-        setIsAdminUser(adminStatus);
-        setIsMentorUser(mentorStatus);
-        hasLoadedRef.current = true;
-      } catch (error) {
-        console.error("Error loading user permissions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPermissions();
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["user-permissions"],
+    queryFn: async () => {
+      const [adminStatus, mentorStatus] = await Promise.all([isAdminAction(), isMentorAction()]);
+      return { isAdminUser: adminStatus, isMentorUser: mentorStatus };
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    refetchOnWindowFocus: false,
+  });
 
   return {
-    isAdminUser,
-    isMentorUser,
-    isLoading,
+    isAdminUser: data?.isAdminUser ?? false,
+    isMentorUser: data?.isMentorUser ?? false,
+    isLoading: isLoading,
   };
 }

@@ -7,8 +7,14 @@
  * Covers invites, account permissions, and trade comments.
  */
 
-import { prismaMentorRepo, prismaAdminRepo, prismaTradeRepo } from "@/lib/database/repositories";
+import {
+  prismaMentorRepo,
+  prismaAdminRepo,
+  prismaTradeRepo,
+  prismaJournalRepo,
+} from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
+import { prisma } from "@/lib/database";
 import { createClient } from "@/lib/supabase/server";
 import {
   MentorInvite,
@@ -19,6 +25,11 @@ import {
   JournalEntry,
   DailyRoutine,
 } from "@/types";
+import {
+  getCachedPermissions,
+  setCachedPermissions,
+  // invalidatePermissionCache - will be used when permission changes are implemented
+} from "@/lib/cache/mentorPermissionCache";
 
 // ========================================
 // INVITES
@@ -319,6 +330,7 @@ export async function removeAccountPermissionAction(
 
 /**
  * Get permitted accounts for a mentee.
+ * OPTIMIZED: Uses server-side cache to avoid redundant queries.
  */
 export async function getMenteePermittedAccountsAction(
   menteeId: string
@@ -327,6 +339,13 @@ export async function getMenteePermittedAccountsAction(
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
+    // Check cache first
+    const cachedAccounts = getCachedPermissions(userId, menteeId);
+    if (cachedAccounts) {
+      return cachedAccounts; // 0ms - from cache!
+    }
+
+    // Cache miss - fetch from database
     const invitesResult = await prismaMentorRepo.getMentees(userId);
     const invite = invitesResult.data?.find((i) => i.menteeId === menteeId);
 
@@ -336,13 +355,18 @@ export async function getMenteePermittedAccountsAction(
 
     if (permsResult.error) return [];
 
-    return (permsResult.data || [])
+    const accounts = (permsResult.data || [])
       .filter((p) => p.canViewTrades)
       .map((p) => ({
         id: p.accountId,
         name: p.accountName || "Account",
-        currency: "USD", // We might need to fetch account details if currency is needed
+        currency: "USD",
       }));
+
+    // Store in cache for next calls
+    setCachedPermissions(userId, menteeId, accounts);
+
+    return accounts;
   } catch (error) {
     console.error("[getMenteePermittedAccountsAction] Unexpected error:", error);
     return [];
@@ -356,16 +380,72 @@ export async function getMenteePermittedAccountsAction(
 /**
  * Fetch trades for a mentee.
  */
+/**
+ * Fetch trades for a mentee.
+ */
 export async function getMenteeTradesAction(
   menteeId: string,
   accountId?: string
 ): Promise<Trade[]> {
   try {
-    const result = await prismaTradeRepo.getByUserId(menteeId, { accountId });
+    const permittedAccounts = await getMenteePermittedAccountsAction(menteeId);
+    const permittedIds = permittedAccounts.map((a) => a.id);
+
+    // If no accounts are permitted, return empty
+    if (permittedIds.length === 0) return [];
+
+    // If accountId is provided, verify it is permitted
+    if (accountId && !permittedIds.includes(accountId)) {
+      console.warn("[getMenteeTradesAction] Unauthorized account access attempt");
+      return [];
+    }
+
+    // If accountId is NOT provided, filter by all permitted accounts
+    const accountIdsToFetch = accountId ? undefined : permittedIds; // API structure: if accountId provided, repo uses it. If not, we need pass list.
+
+    const result = await prismaTradeRepo.getByUserId(menteeId, {
+      accountId,
+      accountIds: accountIdsToFetch,
+    });
     return (result.data || []) as unknown as Trade[];
   } catch (error) {
     console.error("[getMenteeTradesAction] Unexpected error:", error);
     return [];
+  }
+}
+
+/**
+ * OPTIMIZED: Get journal availability for a month (lightweight query).
+ * Returns a map of dates with journal entry counts: { "2025-12-19": 3, "2025-12-21": 1 }
+ */
+export async function getMenteeJournalAvailabilityAction(
+  menteeId: string,
+  month: number, // 0-indexed (0 = January)
+  year: number,
+  accountId?: string
+): Promise<Record<string, number>> {
+  try {
+    const permittedAccounts = await getMenteePermittedAccountsAction(menteeId);
+    const permittedIds = permittedAccounts
+      .filter((a) => !accountId || a.id === accountId)
+      .map((a) => a.id);
+
+    if (permittedIds.length === 0) return {};
+
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0); // Last day of month
+
+    const result = await prismaJournalRepo.getAvailabilityMap(
+      menteeId,
+      permittedIds,
+      startDate,
+      endDate
+    );
+
+    return result.data || {};
+  } catch (error) {
+    console.error("[getMenteeJournalAvailabilityAction] Error:", error);
+    return {};
   }
 }
 
@@ -378,39 +458,52 @@ export async function getMenteeJournalEntriesAction(
   accountId?: string
 ): Promise<JournalEntry[]> {
   try {
-    const supabase = await createClient();
-    let query = supabase
-      .from("journal_entries")
-      .select("*")
-      .eq("user_id", menteeId)
-      .eq("date", date)
-      .order("created_at", { ascending: false });
+    const permittedAccounts = await getMenteePermittedAccountsAction(menteeId);
+    const permittedIds = permittedAccounts.map((a) => a.id);
 
-    if (accountId) {
-      query = query.eq("account_id", accountId);
-    }
+    if (permittedIds.length === 0) return [];
 
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("[getMenteeJournalEntriesAction] Error:", error);
+    if (accountId && !permittedIds.includes(accountId)) {
       return [];
     }
 
-    return (data || []).map((db) => ({
+    // Use Prisma to include relations
+    const entries = await prisma.journal_entries.findMany({
+      where: {
+        user_id: menteeId,
+        date: new Date(date),
+        account_id: accountId ? accountId : { in: permittedIds },
+      },
+      include: {
+        journal_images: true,
+        mentor_reviews: true,
+      },
+      orderBy: { created_at: "desc" },
+    });
+
+    return entries.map((db) => ({
       id: db.id,
-      userId: db.user_id,
+      userId: db.user_id || "",
       accountId: db.account_id,
-      date: db.date,
+      date: db.date.toISOString().split("T")[0],
       title: db.title,
-      asset: db.asset,
+      asset: db.asset || undefined,
       tradeIds: db.trade_id ? [db.trade_id] : [],
-      images: db.images || [],
-      emotion: db.emotion,
-      analysis: db.analysis,
-      notes: db.notes,
-      createdAt: db.created_at,
-      updatedAt: db.updated_at,
+      images: db.journal_images.map((img) => ({
+        id: img.id,
+        userId: img.user_id || "",
+        journalEntryId: img.journal_entry_id,
+        url: img.url,
+        path: img.path || "",
+        timeframe: img.timeframe,
+        displayOrder: img.display_order ?? 0,
+        createdAt: img.created_at?.toISOString() || new Date().toISOString(),
+      })),
+      emotion: db.emotion || undefined,
+      analysis: db.analysis || undefined,
+      notes: db.notes || undefined,
+      createdAt: db.created_at?.toISOString() || new Date().toISOString(),
+      updatedAt: db.updated_at?.toISOString() || new Date().toISOString(),
     })) as unknown as JournalEntry[];
   } catch (error) {
     console.error("[getMenteeJournalEntriesAction] Unexpected error:", error);
@@ -427,43 +520,139 @@ export async function getMenteeRoutineAction(
   accountId?: string
 ): Promise<DailyRoutine | null> {
   try {
-    const supabase = await createClient();
-    let query = supabase
-      .from("daily_routines")
-      .select("*")
-      .eq("user_id", menteeId)
-      .eq("date", date);
+    const permittedAccounts = await getMenteePermittedAccountsAction(menteeId);
+    const permittedIds = permittedAccounts.map((a) => a.id);
 
-    if (accountId) {
-      query = query.eq("account_id", accountId);
-    }
+    if (permittedIds.length === 0) return null;
 
-    const { data, error } = await query.maybeSingle();
-
-    if (error) {
-      console.error("[getMenteeRoutineAction] Error:", error);
+    if (accountId && !permittedIds.includes(accountId)) {
       return null;
     }
 
-    if (!data) return null;
+    const routine = await prisma.daily_routines.findFirst({
+      where: {
+        user_id: menteeId,
+        date: new Date(date),
+        account_id: accountId ? accountId : { in: permittedIds },
+      },
+    });
+
+    if (!routine) return null;
 
     return {
-      id: data.id,
-      userId: data.user_id,
-      accountId: data.account_id,
-      date: data.date,
-      aerobic: data.aerobic,
-      diet: data.diet,
-      reading: data.reading,
-      meditation: data.meditation,
-      preMarket: data.pre_market,
-      prayer: data.prayer,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
+      id: routine.id,
+      userId: routine.user_id || "",
+      accountId: routine.account_id,
+      date: routine.date.toISOString().split("T")[0],
+      aerobic: routine.aerobic || false,
+      diet: routine.diet || false,
+      reading: routine.reading || false,
+      meditation: routine.meditation || false,
+      preMarket: routine.pre_market || false,
+      prayer: routine.prayer || false,
+      createdAt: routine.created_at?.toISOString() || new Date().toISOString(),
+      updatedAt: routine.updated_at?.toISOString() || new Date().toISOString(),
     } as unknown as DailyRoutine;
   } catch (error) {
     console.error("[getMenteeRoutineAction] Unexpected error:", error);
     return null;
+  }
+}
+
+/**
+ * OPTIMIZED: Batch fetch journal entries and routine for a mentee's day.
+ * Reduces API calls from 2 to 1 by sharing the permission check.
+ */
+export async function getMenteeDayDataBatchAction(
+  menteeId: string,
+  date: string,
+  accountId?: string
+): Promise<{ journalEntries: JournalEntry[]; routine: DailyRoutine | null }> {
+  try {
+    // Single permission check for both queries
+    const permittedAccounts = await getMenteePermittedAccountsAction(menteeId);
+    const permittedIds = permittedAccounts.map((a) => a.id);
+
+    if (permittedIds.length === 0) {
+      return { journalEntries: [], routine: null };
+    }
+
+    if (accountId && !permittedIds.includes(accountId)) {
+      return { journalEntries: [], routine: null };
+    }
+
+    const accountFilter = accountId ? accountId : { in: permittedIds };
+    const dateObj = new Date(date);
+
+    // Run both queries in parallel
+    const [entries, routineData] = await Promise.all([
+      prisma.journal_entries.findMany({
+        where: {
+          user_id: menteeId,
+          date: dateObj,
+          account_id: accountFilter,
+        },
+        include: {
+          journal_images: true,
+          mentor_reviews: true,
+        },
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.daily_routines.findFirst({
+        where: {
+          user_id: menteeId,
+          date: dateObj,
+          account_id: accountFilter,
+        },
+      }),
+    ]);
+
+    const journalEntries = entries.map((db) => ({
+      id: db.id,
+      userId: db.user_id || "",
+      accountId: db.account_id,
+      date: db.date.toISOString().split("T")[0],
+      title: db.title,
+      asset: db.asset || undefined,
+      tradeIds: db.trade_id ? [db.trade_id] : [],
+      images: db.journal_images.map((img) => ({
+        id: img.id,
+        userId: img.user_id || "",
+        journalEntryId: img.journal_entry_id,
+        url: img.url,
+        path: img.path || "",
+        timeframe: img.timeframe,
+        displayOrder: img.display_order ?? 0,
+        createdAt: img.created_at?.toISOString() || new Date().toISOString(),
+      })),
+      emotion: db.emotion || undefined,
+      analysis: db.analysis || undefined,
+      notes: db.notes || undefined,
+      createdAt: db.created_at?.toISOString() || new Date().toISOString(),
+      updatedAt: db.updated_at?.toISOString() || new Date().toISOString(),
+    })) as unknown as JournalEntry[];
+
+    const routine = routineData
+      ? ({
+          id: routineData.id,
+          userId: routineData.user_id || "",
+          accountId: routineData.account_id,
+          date: routineData.date.toISOString().split("T")[0],
+          aerobic: routineData.aerobic || false,
+          diet: routineData.diet || false,
+          reading: routineData.reading || false,
+          meditation: routineData.meditation || false,
+          preMarket: routineData.pre_market || false,
+          prayer: routineData.prayer || false,
+          createdAt: routineData.created_at?.toISOString() || new Date().toISOString(),
+          updatedAt: routineData.updated_at?.toISOString() || new Date().toISOString(),
+        } as unknown as DailyRoutine)
+      : null;
+
+    return { journalEntries, routine };
+  } catch (error) {
+    console.error("[getMenteeDayDataBatchAction] Unexpected error:", error);
+    return { journalEntries: [], routine: null };
   }
 }
 

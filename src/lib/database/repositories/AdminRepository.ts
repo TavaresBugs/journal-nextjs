@@ -316,33 +316,41 @@ class PrismaAdminRepository {
     today.setHours(0, 0, 0, 0);
 
     try {
-      const [
-        totalUsers,
-        pendingUsers,
-        approvedUsers,
-        suspendedUsers,
-        rejectedUsers,
-        bannedUsers,
-        adminUsers,
-        mentorUsers,
-        todayLogins,
-        todaySignups,
-      ] = await Promise.all([
-        prisma.users_extended.count(),
-        prisma.users_extended.count({ where: { status: "pending" } }),
-        prisma.users_extended.count({ where: { status: "approved" } }),
-        prisma.users_extended.count({ where: { status: "suspended" } }),
-        prisma.users_extended.count({ where: { status: "rejected" } }),
-        prisma.users_extended.count({ where: { status: "banned" } }),
-        prisma.users_extended.count({ where: { role: "admin" } }),
-        prisma.users_extended.count({ where: { role: "mentor" } }),
+      const [userStats, roleStats] = await Promise.all([
+        // Group by status
+        prisma.users_extended.groupBy({
+          by: ["status"],
+          _count: { _all: true },
+        }),
+        // Group by role
+        prisma.users_extended.groupBy({
+          by: ["role"],
+          _count: { _all: true },
+        }),
+      ]);
+
+      // Process Status Counts
+      const totalUsers = userStats.reduce((acc, curr) => acc + curr._count._all, 0); // Total from buckets
+      const pendingUsers = userStats.find((s) => s.status === "pending")?._count._all || 0;
+      const approvedUsers = userStats.find((s) => s.status === "approved")?._count._all || 0;
+      const suspendedUsers = userStats.find((s) => s.status === "suspended")?._count._all || 0;
+      const rejectedUsers = userStats.find((s) => s.status === "rejected")?._count._all || 0;
+      const bannedUsers = userStats.find((s) => s.status === "banned")?._count._all || 0;
+
+      // Process Role Counts
+      const adminUsers = roleStats.find((r) => r.role === "admin")?._count._all || 0;
+      const mentorUsers = roleStats.find((r) => r.role === "mentor")?._count._all || 0;
+
+      // Re-fetch time-based individually if aggregate is tricky or just use separate counts for clean logic
+      // Actually, for "Today's logins" and "Today's signups", strict separation is better for accuracy without complex case logic in prisma
+      const [todayLogins, todaySignups] = await Promise.all([
         prisma.users_extended.count({ where: { last_login_at: { gte: today } } }),
         prisma.users_extended.count({ where: { created_at: { gte: today } } }),
       ]);
 
       return {
         data: {
-          totalUsers,
+          totalUsers, // Or use total from aggregation if preferred, but adding buckets is safe
           pendingUsers,
           approvedUsers,
           suspendedUsers,

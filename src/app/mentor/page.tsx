@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, SegmentedToggle } from "@/components/ui";
 import { useAccountStore } from "@/store/useAccountStore";
+import { useMenteeDataStore } from "@/store/useMenteeDataStore";
 import {
   MentorStatsCards,
   MentoradosTable,
@@ -21,6 +22,7 @@ import { MentorInvite, MenteeOverview } from "@/types";
 export default function MentoriaPage() {
   const router = useRouter();
   const { currentAccountId } = useAccountStore();
+  const { loadAllMenteesData } = useMenteeDataStore();
   const [activeTab, setActiveTab] = useState<"mentorados" | "convites">("mentorados");
   const [mentees, setMentees] = useState<MenteeOverview[]>([]);
   const [sentInvites, setSentInvites] = useState<MentorInvite[]>([]);
@@ -46,12 +48,19 @@ export default function MentoriaPage() {
       const [menteesData, sentData] = await Promise.all([getMentees(), getSentInvites()]);
       setMentees(menteesData);
       setSentInvites(sentData);
+
+      // EAGER LOADING: Pre-load calendar data for all mentees
+      const menteeIds = menteesData.map((m) => m.menteeId);
+      if (menteeIds.length > 0) {
+        console.log("[MentorPage] Pre-loading calendar data for", menteeIds.length, "mentees");
+        loadAllMenteesData(menteeIds);
+      }
     } catch (error) {
       console.error("Error loading mentor data:", error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadAllMenteesData]);
 
   useEffect(() => {
     loadData();

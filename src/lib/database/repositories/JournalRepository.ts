@@ -531,6 +531,51 @@ class PrismaJournalRepository {
       };
     }
   }
+
+  /**
+   * OPTIMIZED: Gets journal availability map for a date range.
+   * Returns date -> count map (very lightweight query) to enable instant preview with counts.
+   */
+  async getAvailabilityMap(
+    userId: string,
+    accountIds: string[],
+    startDate: Date,
+    endDate: Date
+  ): Promise<Result<Record<string, number>, AppError>> {
+    this.logger.info("Fetching journal availability map", { userId, startDate, endDate });
+
+    try {
+      const entries = await prisma.journal_entries.findMany({
+        where: {
+          user_id: userId,
+          account_id: { in: accountIds },
+          date: {
+            gte: startDate,
+            lte: endDate,
+          },
+        },
+        select: {
+          date: true, // Only fetch the date - super lightweight!
+        },
+      });
+
+      // Build availability map with counts: "2025-12-19" => 3
+      const availabilityMap: Record<string, number> = {};
+      for (const entry of entries) {
+        const dateKey =
+          entry.date instanceof Date ? entry.date.toISOString().split("T")[0] : String(entry.date);
+        availabilityMap[dateKey] = (availabilityMap[dateKey] || 0) + 1;
+      }
+
+      return { data: availabilityMap, error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch availability map", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch availability", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
 }
 
 // Export singleton instance

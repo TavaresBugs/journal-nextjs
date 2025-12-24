@@ -650,15 +650,18 @@ class PrismaTradeRepository {
    */
   async getByUserId(
     userId: string,
-    options?: { limit?: number; offset?: number; accountId?: string }
+    options?: { limit?: number; offset?: number; accountId?: string; accountIds?: string[] }
   ): Promise<Result<Trade[], AppError>> {
     const startTime = performance.now();
     this.logger.info("Fetching trades by user ID", { userId });
 
     try {
       const where: Prisma.tradesWhereInput = { user_id: userId };
+
       if (options?.accountId) {
         where.account_id = options.accountId;
+      } else if (options?.accountIds && options.accountIds.length > 0) {
+        where.account_id = { in: options.accountIds };
       }
 
       const trades = await prisma.trades.findMany({
@@ -684,7 +687,10 @@ class PrismaTradeRepository {
   /**
    * Gets stats for a mentee (user).
    */
-  async getMenteeStats(userId: string): Promise<
+  async getMenteeStats(
+    userId: string,
+    accountIds?: string[]
+  ): Promise<
     Result<
       {
         totalTrades: number;
@@ -700,8 +706,13 @@ class PrismaTradeRepository {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+      const where: Prisma.tradesWhereInput = { user_id: userId };
+      if (accountIds && accountIds.length > 0) {
+        where.account_id = { in: accountIds };
+      }
+
       const trades = await prisma.trades.findMany({
-        where: { user_id: userId },
+        where,
         select: {
           id: true,
           outcome: true,
