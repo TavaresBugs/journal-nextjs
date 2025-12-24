@@ -259,6 +259,7 @@ export default function DashboardPage({
                     <CardContent>
                       <TradeCalendar
                         trades={data.allHistory as unknown as Trade[]}
+                        accountId={accountId}
                         onDayClick={handleViewDay}
                       />
                     </CardContent>

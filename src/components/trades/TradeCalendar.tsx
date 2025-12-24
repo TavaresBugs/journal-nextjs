@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import type { Trade, JournalEntry } from "@/types";
 import { groupTradesByDay, formatCurrency } from "@/lib/calculations";
 import { useJournalStore } from "@/store/useJournalStore";
+import { usePrefetchCalendarData } from "@/hooks/usePrefetchCalendarData";
 import { GlassCard } from "@/components/ui";
 import dayjs from "dayjs";
 
@@ -11,6 +12,7 @@ interface TradeCalendarProps {
   trades: Trade[];
   entries?: JournalEntry[];
   journalAvailability?: Record<string, number>; // OPTIMIZED: date -> count map for instant badges
+  accountId?: string; // For prefetching
   onDayClick?: (date: string, dayTrades: Trade[]) => void;
 }
 
@@ -30,11 +32,27 @@ export function TradeCalendar({
   trades,
   entries: propEntries,
   journalAvailability,
+  accountId,
   onDayClick,
 }: TradeCalendarProps) {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const { entries: storeEntries } = useJournalStore();
   const entries = propEntries || storeEntries;
+
+  // Prefetch hook for lazy loading
+  const { prefetchDayData, prefetchNearbyDays } = usePrefetchCalendarData(accountId || "");
+  const hoverCancelRef = useRef<(() => void) | null>(null);
+  const hasPrefetchedNearby = useRef(false);
+
+  // Prefetch nearby days on mount (background loading)
+  useEffect(() => {
+    if (accountId && !hasPrefetchedNearby.current) {
+      hasPrefetchedNearby.current = true;
+      const today = dayjs().format("YYYY-MM-DD");
+      // Delay to not block initial render
+      setTimeout(() => prefetchNearbyDays(today), 500);
+    }
+  }, [accountId, prefetchNearbyDays]);
 
   const currentMonth = currentDate.month();
   const currentYear = currentDate.year();
@@ -272,6 +290,19 @@ export function TradeCalendar({
                 onDayClick &&
                 onDayClick(date.format("YYYY-MM-DD"), stats.dayTrades)
               }
+              onMouseEnter={() => {
+                // Cancel any previous hover
+                hoverCancelRef.current?.();
+                // Start prefetch with 150ms delay
+                const { start, cancel } = prefetchDayData(dateStr, 150);
+                hoverCancelRef.current = cancel;
+                start();
+              }}
+              onMouseLeave={() => {
+                // Cancel prefetch if mouse leaves before delay
+                hoverCancelRef.current?.();
+                hoverCancelRef.current = null;
+              }}
               className={`relative flex h-[150px] min-w-[100px] touch-manipulation flex-col items-center justify-between rounded-xl border p-3 transition-all ${bgClass} ${isToday ? "border-cyan-500/50 shadow-[0_0_10px_rgba(6,182,212,0.15)]" : ""} ${hasTrades || hasJournal || isCurrentMonth ? "cursor-pointer hover:border-cyan-500" : ""} ${!isCurrentMonth ? "opacity-30" : ""} `}
             >
               {/* Day number */}
