@@ -117,19 +117,30 @@ describe("PrismaAdminRepository Unit Tests", () => {
 
   describe("getAdminStats", () => {
     it("should return admin statistics", async () => {
-      mockPrisma.users_extended.count.mockImplementation((args: any) => {
-        if (!args?.where) return Promise.resolve(100);
-        if (args.where.status === "pending") return Promise.resolve(5);
-        if (args.where.status === "approved") return Promise.resolve(90);
-        if (args.where.status === "suspended") return Promise.resolve(3);
-        if (args.where.status === "banned") return Promise.resolve(2);
-        if (args.where.role === "admin") return Promise.resolve(2);
-        return Promise.resolve(0);
+      // Mock groupBy for status
+      mockPrisma.users_extended.groupBy.mockImplementation((args: any) => {
+        if (args.by[0] === "status") {
+          return Promise.resolve([
+            { status: "approved", _count: { _all: 90 } },
+            { status: "pending", _count: { _all: 5 } },
+            { status: "suspended", _count: { _all: 3 } },
+            { status: "banned", _count: { _all: 2 } },
+          ]);
+        }
+        if (args.by[0] === "role") {
+          return Promise.resolve([
+            { role: "user", _count: { _all: 98 } },
+            { role: "admin", _count: { _all: 2 } },
+          ]);
+        }
+        return Promise.resolve([]);
       });
+      // Mock count for today's logins/signups
+      mockPrisma.users_extended.count.mockResolvedValue(0);
 
       const result = await prismaAdminRepo.getAdminStats();
 
-      expect(result.data?.totalUsers).toBe(100);
+      expect(result.data?.totalUsers).toBe(100); // 90 + 5 + 3 + 2
       expect(result.data?.pendingUsers).toBe(5);
       expect(result.data?.approvedUsers).toBe(90);
       expect(result.error).toBeNull();

@@ -38,9 +38,9 @@ describe("PrismaReviewRepository Unit Tests", () => {
       expect(mockPrisma.mentor_reviews.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            users_mentor_reviews_mentor_idTousers: { connect: { id: "mentor-123" } },
-            users_mentor_reviews_mentee_idTousers: { connect: { id: "mentee-123" } },
-            trades: { connect: { id: "trade-123" } },
+            mentor_id: "mentor-123",
+            mentee_id: "mentee-123",
+            trade_id: "trade-123",
             rating: 5,
           }),
         })

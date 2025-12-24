@@ -59,12 +59,13 @@ describe("useTradeMetrics", () => {
   });
 
   it("should calculate PnL metrics correctly", () => {
+    const trades = [createMockTrade({ pnl: 1500 }), createMockTrade({ id: "trade-2", pnl: 1000 })];
+
     const { result } = renderHook(() =>
       useTradeMetrics({
-        trades: [],
+        trades,
         entries: [],
         initialBalance: 10000,
-        currentBalance: 12500,
       })
     );
 
@@ -74,12 +75,13 @@ describe("useTradeMetrics", () => {
   });
 
   it("should calculate negative PnL correctly", () => {
+    const trades = [createMockTrade({ pnl: -1200 }), createMockTrade({ id: "trade-2", pnl: -800 })];
+
     const { result } = renderHook(() =>
       useTradeMetrics({
-        trades: [],
+        trades,
         entries: [],
         initialBalance: 10000,
-        currentBalance: 8000,
       })
     );
 
@@ -170,12 +172,13 @@ describe("useTradeMetrics", () => {
   });
 
   it("should handle zero initial balance gracefully", () => {
+    const trades = [createMockTrade({ pnl: 1000 })];
+
     const { result } = renderHook(() =>
       useTradeMetrics({
-        trades: [],
+        trades,
         entries: [],
         initialBalance: 0,
-        currentBalance: 1000,
       })
     );
 

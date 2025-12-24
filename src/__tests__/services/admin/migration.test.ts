@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { migrateLocalStorageToSupabase } from "@/services/admin/migration";
-import { supabase } from "@/lib/supabase";
-import { getCurrentUserId } from "@/lib/database/auth";
+import { supabase, getCurrentUserIdClient } from "@/lib/supabase";
 import { saveAccountAction } from "@/app/actions/accounts";
 import { saveTradeAction } from "@/app/actions/trades";
 import { saveJournalEntryAction } from "@/app/actions/journal";
@@ -14,10 +13,7 @@ vi.mock("@/lib/supabase", () => ({
       from: vi.fn(),
     },
   },
-}));
-
-vi.mock("@/lib/database/auth", () => ({
-  getCurrentUserId: vi.fn(),
+  getCurrentUserIdClient: vi.fn(),
 }));
 
 vi.mock("@/app/actions/accounts", () => ({
@@ -47,13 +43,13 @@ describe("Migration Service", () => {
   });
 
   it("should fail gracefully if user is not authenticated", async () => {
-    (getCurrentUserId as any).mockResolvedValue(null);
+    (getCurrentUserIdClient as any).mockResolvedValue(null);
     const result = await migrateLocalStorageToSupabase();
     expect(result).toBe(false);
   });
 
   it("should migrate accounts correctly", async () => {
-    (getCurrentUserId as any).mockResolvedValue(mockUser);
+    (getCurrentUserIdClient as any).mockResolvedValue(mockUser);
 
     const accounts = [{ id: "acc-1", name: "Test" }];
     vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
@@ -68,7 +64,7 @@ describe("Migration Service", () => {
   });
 
   it("should migrate trades correctly", async () => {
-    (getCurrentUserId as any).mockResolvedValue(mockUser);
+    (getCurrentUserIdClient as any).mockResolvedValue(mockUser);
 
     const trades = [{ id: "trade-1", symbol: "EURUSD" }];
     vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
@@ -83,7 +79,7 @@ describe("Migration Service", () => {
   });
 
   it("should migrate journal entries with images", async () => {
-    (getCurrentUserId as any).mockResolvedValue(mockUser);
+    (getCurrentUserIdClient as any).mockResolvedValue(mockUser);
 
     const entries = [
       {
@@ -127,7 +123,7 @@ describe("Migration Service", () => {
   });
 
   it("should handle error during migration", async () => {
-    (getCurrentUserId as any).mockRejectedValue(new Error("Fatal error"));
+    (getCurrentUserIdClient as any).mockRejectedValue(new Error("Fatal error"));
     const result = await migrateLocalStorageToSupabase();
     expect(result).toBe(false);
   });
