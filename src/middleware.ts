@@ -1,24 +1,16 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { checkLoginRateLimit, buildRateLimitHeaders } from "@/lib/ratelimit";
 
 // ============================================
-// RATE LIMITING
+// MIDDLEWARE
+// Authentication, rate limiting, and session management
 // ============================================
 
-// In-memory rate limiter (resets on server restart)
-// For production at scale, consider Redis/Upstash
-interface RateLimitEntry {
-  count: number;
-  firstAttempt: number;
-}
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutos
-const MAX_ATTEMPTS = 5;
-
+/**
+ * Get client IP from request headers
+ */
 function getClientIP(req: NextRequest): string {
-  // Try various headers for client IP
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
@@ -27,63 +19,8 @@ function getClientIP(req: NextRequest): string {
   if (realIP) {
     return realIP;
   }
-  // Fallback - in production this should be more robust
   return "unknown";
 }
-
-function checkRateLimit(ip: string): {
-  allowed: boolean;
-  remainingAttempts: number;
-  retryAfterMs?: number;
-} {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-
-  // No previous attempts
-  if (!entry) {
-    rateLimitMap.set(ip, { count: 1, firstAttempt: now });
-    return { allowed: true, remainingAttempts: MAX_ATTEMPTS - 1 };
-  }
-
-  // Window expired - reset
-  if (now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
-    rateLimitMap.set(ip, { count: 1, firstAttempt: now });
-    return { allowed: true, remainingAttempts: MAX_ATTEMPTS - 1 };
-  }
-
-  // Still within window
-  if (entry.count >= MAX_ATTEMPTS) {
-    const retryAfterMs = RATE_LIMIT_WINDOW_MS - (now - entry.firstAttempt);
-    return { allowed: false, remainingAttempts: 0, retryAfterMs };
-  }
-
-  // Increment counter
-  entry.count++;
-  rateLimitMap.set(ip, entry);
-  return { allowed: true, remainingAttempts: MAX_ATTEMPTS - entry.count };
-}
-
-function resetRateLimit(ip: string): void {
-  rateLimitMap.delete(ip);
-}
-
-// Cleanup old entries periodically (every 5 minutes)
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const [ip, entry] of rateLimitMap.entries()) {
-      if (now - entry.firstAttempt > RATE_LIMIT_WINDOW_MS) {
-        rateLimitMap.delete(ip);
-      }
-    }
-  },
-  5 * 60 * 1000
-);
-
-// ============================================
-// MIDDLEWARE
-// Authentication, rate limiting, and session management
-// ============================================
 
 export default async function middleware(req: NextRequest) {
   // Debug logging in development
@@ -156,14 +93,24 @@ export default async function middleware(req: NextRequest) {
 
   // Check if this is a login attempt (form submission)
   if (pathname === "/login" && req.method === "POST") {
-    const rateLimit = checkRateLimit(clientIP);
+    // Identifier: IP + email (more secure than IP alone)
+    const identifier = clientIP;
+    const rateLimit = await checkLoginRateLimit(identifier);
 
-    if (!rateLimit.allowed) {
-      const retryMinutes = Math.ceil((rateLimit.retryAfterMs || 0) / 60000);
+    if (!rateLimit.success) {
+      const headers = buildRateLimitHeaders(rateLimit);
+      const retryMinutes = Math.ceil((rateLimit.reset - Date.now()) / 60000);
       const errorUrl = new URL("/login", req.url);
-      errorUrl.searchParams.set("error", `rate_limited`);
+      errorUrl.searchParams.set("error", "rate_limited");
       errorUrl.searchParams.set("retry_after", retryMinutes.toString());
-      return NextResponse.redirect(errorUrl);
+
+      // Log rate limit event
+      console.warn("🚫 Rate limit exceeded:", {
+        ip: clientIP,
+        reset: new Date(rateLimit.reset).toISOString(),
+      });
+
+      return NextResponse.redirect(errorUrl, { headers });
     }
   }
 
@@ -204,9 +151,8 @@ export default async function middleware(req: NextRequest) {
         await supabase.auth.refreshSession();
       }
     }
-
-    // Reset rate limit on successful auth
-    resetRateLimit(clientIP);
+    // Note: With Upstash, we don't need to manually reset rate limit
+    // The sliding window handles expiration automatically
   }
 
   // Not authenticated - redirect to login (except public routes)

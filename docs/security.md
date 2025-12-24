@@ -166,24 +166,46 @@ const securityHeaders = [
 
 ### Configuração
 
-**Localização:** `src/middleware.ts`
+**Backend:** Upstash Redis com `@upstash/ratelimit`
+
+**Localização:** `src/lib/ratelimit.ts` + `src/middleware.ts`
 
 ```typescript
-const RATE_LIMIT = {
-  MAX_REQUESTS: 5, // Máximo de tentativas
-  WINDOW_MS: 15 * 60 * 1000, // Janela de 15 minutos
-};
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
-const rateLimitMap = new Map<string, RateLimitEntry>();
+export const loginRateLimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, "15 m"),
+  analytics: true,
+  prefix: "journal:login",
+});
 ```
 
 ### Comportamento
 
 1. **Login:** 5 tentativas por IP a cada 15 minutos
-2. **Após limite:** Retorna 429 (Too Many Requests)
-3. **Reset:** Automático após a janela de tempo
+2. **Após limite:** Retorna redirect com headers `X-RateLimit-*` e `Retry-After`
+3. **Reset:** Automático via sliding window (Upstash)
+4. **Persistência:** ✅ Mantém estado entre deploys e cold starts
 
-> **⚠️ Nota:** O rate limit usa memória in-memory, o que é adequado para a escala atual. Para produção em grande escala, considere Redis/Upstash.
+### Headers HTTP
+
+```
+X-RateLimit-Limit: 5
+X-RateLimit-Remaining: 3
+X-RateLimit-Reset: 2024-01-01T12:15:00.000Z
+Retry-After: 300
+```
+
+### Variáveis de Ambiente
+
+```env
+UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
+UPSTASH_REDIS_REST_TOKEN=AXxxxx...
+```
+
+> **✅ Nota:** O rate limit usa Upstash Redis, garantindo persistência em ambientes serverless/edge. Analytics disponível no dashboard Upstash.
 
 ---
 

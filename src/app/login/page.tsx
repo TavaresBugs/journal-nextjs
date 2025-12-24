@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { resetPassword } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/utils/general";
@@ -9,6 +10,7 @@ import { validatePassword, getStrengthColor, getStrengthLabel } from "@/lib/pass
 export default function LoginPage() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithGithub, loading } =
     useAuth();
+  const searchParams = useSearchParams();
 
   const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [email, setEmail] = useState("");
@@ -18,6 +20,21 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Check for rate limit error from middleware redirect
+  useEffect(() => {
+    const errorParam = searchParams.get("error");
+    const retryAfter = searchParams.get("retry_after");
+
+    if (errorParam === "rate_limited") {
+      const minutes = retryAfter ? parseInt(retryAfter) : 15;
+      setError(
+        `Muitas tentativas de login. Tente novamente em ${minutes} minuto${minutes > 1 ? "s" : ""}.`
+      );
+    } else if (errorParam === "account_suspended") {
+      setError("Sua conta foi suspensa. Entre em contato com o suporte.");
+    }
+  }, [searchParams]);
 
   // Validação de senha em tempo real (apenas para signup)
   const passwordValidation = useMemo(() => {
