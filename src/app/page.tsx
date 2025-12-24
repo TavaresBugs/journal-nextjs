@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
@@ -12,6 +12,7 @@ import {
   SettingsModal,
 } from "@/components/modals/DynamicModals";
 import { AccountSelectionSkeleton } from "@/components/accounts/AccountSelectionSkeleton";
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import {
   Card,
   CardHeader,
@@ -37,8 +38,6 @@ export default function HomePage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
-  const [isPending, startTransition] = useTransition();
   const { prefetchWithDelay } = usePrefetchAccountData();
 
   useEffect(() => {
@@ -129,14 +128,8 @@ export default function HomePage() {
   };
 
   const handleSelectAccount = (accountId: string) => {
-    // Immediate visual feedback
-    setNavigatingTo(accountId);
     setCurrentAccount(accountId);
-
-    // Use transition for non-blocking navigation
-    startTransition(() => {
-      router.push(`/dashboard/${accountId}`);
-    });
+    router.push(`/dashboard/${accountId}`);
   };
 
   const handleDeleteAccount = async (
@@ -311,17 +304,8 @@ export default function HomePage() {
                   const { start } = prefetchWithDelay(account.id, 150);
                   start();
                 }}
-                className={`group relative ${navigatingTo === account.id || (isPending && navigatingTo === account.id) ? "pointer-events-none" : ""}`}
+                className="group relative"
               >
-                {/* Loading overlay */}
-                {navigatingTo === account.id && (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl bg-gray-900/80 backdrop-blur-sm">
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
-                      <span className="text-sm text-cyan-400">Carregando...</span>
-                    </div>
-                  </div>
-                )}
                 <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                   {/* Edit Button */}
                   <IconActionButton variant="edit" onClick={(e) => handleEditAccount(e, account)} />
@@ -422,6 +406,11 @@ export default function HomePage() {
       />
 
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+
+      {/* Preload DashboardSkeleton so it's cached and appears instantly on navigation */}
+      <div className="hidden" aria-hidden="true">
+        <DashboardSkeleton />
+      </div>
     </div>
   );
 }
