@@ -22,6 +22,7 @@ import {
 } from "@/components/ui";
 import type { Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
+import { usePrefetchAccountData } from "@/hooks/usePrefetchAccountData";
 
 export default function HomePage() {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function HomePage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
+  const { prefetchWithDelay } = usePrefetchAccountData();
 
   useEffect(() => {
     const init = async () => {
@@ -296,6 +298,11 @@ export default function HomePage() {
                 key={account.id}
                 hover
                 onClick={() => handleSelectAccount(account.id)}
+                onMouseEnter={() => {
+                  // Prefetch dashboard data when hovering (150ms delay)
+                  const { start } = prefetchWithDelay(account.id, 150);
+                  start();
+                }}
                 className="group relative"
               >
                 <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">

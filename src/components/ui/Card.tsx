@@ -5,10 +5,19 @@ interface CardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
   hover?: boolean;
 }
 
-export function Card({ children, className = "", onClick, hover = false }: CardProps) {
+export function Card({
+  children,
+  className = "",
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+  hover = false,
+}: CardProps) {
   return (
     <div
       className={cn(
@@ -18,6 +27,8 @@ export function Card({ children, className = "", onClick, hover = false }: CardP
         className
       )}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {children}
     </div>

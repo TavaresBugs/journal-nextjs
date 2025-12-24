@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, use, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
 import { useToast } from "@/providers/ToastProvider";
 import { isValidUUID } from "@/lib/validation/uuid";
@@ -31,20 +32,41 @@ import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 import { DashboardOverview } from "@/components/dashboard/tabs/DashboardOverview";
 import { DashboardJournal } from "@/components/dashboard/tabs/DashboardJournal";
 import { DashboardPlaybooks } from "@/components/dashboard/tabs/DashboardPlaybooks";
-import { DashboardLaboratory } from "@/components/dashboard/tabs/DashboardLaboratory";
 import { DashboardModals } from "@/components/dashboard/DashboardModals";
-import { DashboardNews } from "@/components/news";
-// Imports updated
+
+// Skeletons (imported before dynamic components that use them)
 import {
   DashboardSkeleton,
   DashboardMetricsSkeleton,
   DashboardTabsSkeleton,
   DashboardContentSkeleton,
-  CalendarSkeleton, // New import
-  ReportsSkeleton, // New import
+  CalendarSkeleton,
+  ReportsSkeleton,
 } from "@/components/dashboard/DashboardSkeleton";
+
 // Types
 import type { Trade, Playbook } from "@/types";
+
+// Heavy components loaded dynamically to reduce initial bundle size
+const DashboardLaboratory = dynamic(
+  () =>
+    import("@/components/dashboard/tabs/DashboardLaboratory").then(
+      (mod) => mod.DashboardLaboratory
+    ),
+  {
+    loading: () => <DashboardContentSkeleton />,
+    ssr: false,
+  }
+);
+
+const DashboardNews = dynamic(() => import("@/components/news").then((mod) => mod.DashboardNews), {
+  loading: () => (
+    <div className="flex h-96 items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+    </div>
+  ),
+  ssr: false,
+});
 
 // Tab definitions
 const tabsOptions = [
