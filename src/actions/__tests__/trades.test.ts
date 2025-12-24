@@ -10,6 +10,7 @@ import {
 const { mockTradeRepo, mockSupabase } = vi.hoisted(() => ({
   mockTradeRepo: {
     getByAccountId: vi.fn(),
+    countByAccountId: vi.fn(),
     getCount: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
@@ -40,7 +41,7 @@ describe("Trade Actions", () => {
     it("should return paginated trades", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
       mockTradeRepo.getByAccountId.mockResolvedValue({ data: [{ id: "t-1" }], error: null });
-      mockTradeRepo.getCount.mockResolvedValue({ data: 50, error: null });
+      mockTradeRepo.countByAccountId.mockResolvedValue({ data: 50, error: null });
 
       const result = await fetchTrades("acc-123", 1, 10);
 
