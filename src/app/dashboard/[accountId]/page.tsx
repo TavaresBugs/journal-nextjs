@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, use, useCallback } from "react";
+import { notFound } from "next/navigation";
 import { useToast } from "@/providers/ToastProvider";
+import { isValidUUID } from "@/lib/validation/uuid";
 import { usePrefetchCommunityData } from "@/hooks/useCommunityData";
 import { usePrefetchAdminData } from "@/hooks/useAdminData";
 import { usePrefetchMentorData } from "@/hooks/useMentorData";
@@ -64,6 +66,11 @@ export default function DashboardPage({
 
   // Next.js 15+: params and searchParams are Promises
   const { accountId } = use(params);
+
+  if (!isValidUUID(accountId)) {
+    notFound();
+  }
+
   const { date: queryDate } = use(searchParams);
 
   // Custom hooks for data and actions
