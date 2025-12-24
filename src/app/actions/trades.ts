@@ -174,6 +174,50 @@ export async function saveTradeAction(
 }
 
 /**
+ * Save multiple trades in batch.
+ * Optimized for imports to reduce overhead.
+ */
+export async function saveTradesBatchAction(
+  trades: Partial<Trade>[]
+): Promise<{ success: boolean; count: number; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, count: 0, error: "Not authenticated" };
+    }
+
+    if (trades.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    // Attach userId to all trades
+    const tradesWithUser = trades.map((t) => ({ ...t, userId }));
+
+    // Assume all trades belong to the same account for optimization
+    const accountId = trades[0].accountId;
+
+    // Use createMany for bulk insertion (much faster)
+    const result = await prismaTradeRepo.createMany(tradesWithUser);
+
+    if (result.error) {
+      console.error("[saveTradesBatchAction] Error:", result.error);
+      return { success: false, count: 0, error: result.error.message };
+    }
+
+    // Sync balance and revalidate only ONCE per batch
+    if (accountId) {
+      await syncAccountBalance(accountId, userId);
+      revalidatePath(`/dashboard/${accountId}`, "page");
+    }
+
+    return { success: true, count: result.data?.count || 0 };
+  } catch (error) {
+    console.error("[saveTradesBatchAction] Unexpected error:", error);
+    return { success: false, count: 0, error: "Unexpected error occurred" };
+  }
+}
+
+/**
  * Delete a trade.
  */
 export async function deleteTradeAction(

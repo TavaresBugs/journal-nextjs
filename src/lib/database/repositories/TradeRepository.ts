@@ -108,6 +108,47 @@ function mapTradeToPrisma(trade: Partial<Trade>): Prisma.tradesCreateInput {
   };
 }
 
+/**
+ * Maps domain Trade to Prisma create many input (for batch inserts)
+ */
+function mapTradeToPrismaMany(trade: Partial<Trade>): Prisma.tradesCreateManyInput {
+  return {
+    id: trade.id,
+    account_id: trade.accountId!,
+    user_id: trade.userId,
+    symbol: trade.symbol!,
+    type: trade.type!,
+    entry_price: trade.entryPrice!,
+    exit_price: trade.exitPrice,
+    stop_loss: trade.stopLoss,
+    take_profit: trade.takeProfit,
+    lot: trade.lot || 1,
+    pnl: trade.pnl,
+    commission: trade.commission,
+    swap: trade.swap,
+    entry_date: new Date(trade.entryDate!),
+    entry_time: trade.entryTime,
+    exit_date: trade.exitDate ? new Date(trade.exitDate) : undefined,
+    exit_time: trade.exitTime,
+    tf_analise: trade.tfAnalise,
+    tf_entrada: trade.tfEntrada,
+    strategy: trade.strategy,
+    strategy_icon: trade.strategyIcon,
+    setup: trade.setup,
+    pd_array: trade.pdArray,
+    tags: trade.tags,
+    notes: trade.notes,
+    outcome: trade.outcome,
+    session: trade.session,
+    htf_aligned: trade.htfAligned,
+    r_multiple: trade.rMultiple,
+    market_condition_v2: trade.market_condition_v2,
+    plan_adherence: trade.planAdherence,
+    plan_adherence_rating: trade.planAdherenceRating,
+    entry_quality: trade.entry_quality,
+  };
+}
+
 class PrismaTradeRepository {
   private logger = new Logger("PrismaTradeRepository");
   private readonly SLOW_QUERY_THRESHOLD_MS = 1000;
@@ -325,6 +366,43 @@ class PrismaTradeRepository {
         data: null,
         error: new AppError(
           `Failed to create trade: ${(error as Error).message}`,
+          ErrorCode.DB_QUERY_FAILED,
+          500
+        ),
+      };
+    }
+  }
+
+  /**
+   * Creates multiple trades in a batch.
+   * NOTE: createMany is not supported by all databases for returning created records.
+   * PostgreSQL supports skipDuplicates.
+   */
+  async createMany(trades: Partial<Trade>[]): Promise<Result<{ count: number }, AppError>> {
+    const startTime = performance.now();
+    this.logger.info("Creating multiple trades", { count: trades.length });
+
+    try {
+      if (trades.length === 0) {
+        return { data: { count: 0 }, error: null };
+      }
+
+      const created = await prisma.trades.createMany({
+        data: trades.map(mapTradeToPrismaMany),
+        skipDuplicates: true, // Optional: skip if ID conflicts, though we usually generate IDs or rely on DB
+      });
+
+      const durationMs = performance.now() - startTime;
+      this.logSlowQuery("createMany", durationMs, { count: trades.length });
+
+      this.logger.info("Trades batch created successfully", { count: created.count });
+      return { data: { count: created.count }, error: null };
+    } catch (error) {
+      this.logger.error("Failed to create trades batch", { error });
+      return {
+        data: null,
+        error: new AppError(
+          `Failed to create trades: ${(error as Error).message}`,
           ErrorCode.DB_QUERY_FAILED,
           500
         ),
