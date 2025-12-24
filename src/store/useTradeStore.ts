@@ -83,6 +83,15 @@ export const useTradeStore = create<TradeStore>()(
           return;
         }
 
+        // If switching accounts, clear old data immediately
+        if (currentAccountId !== null && currentAccountId !== accountId) {
+          set({
+            allHistory: [],
+            trades: [],
+            historyPromise: null,
+          });
+        }
+
         // If a load is already in progress for this account, wait for it
         if (historyPromise && currentAccountId === accountId) {
           await historyPromise;
@@ -305,6 +314,14 @@ export const useTradeStore = create<TradeStore>()(
         sortDirection: state.sortDirection,
         filterAsset: state.filterAsset,
       }),
+      // Clear stale data on store rehydration if needed
+      onRehydrateStorage: () => (state) => {
+        // If rehydrated with stale account, state will be corrected
+        // when loadAllHistory is called with the new accountId
+        if (state) {
+          console.log(`[TradeStore] Rehydrated with accountId: ${state.currentAccountId}`);
+        }
+      },
     }
   )
 );
