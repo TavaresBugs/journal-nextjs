@@ -61,26 +61,25 @@ class PrismaAccountRepository {
 
   /**
    * Fetches a single account by ID with ownership verification.
+   * @param accountId - The account ID to fetch
+   * @param userId - The user ID for ownership verification (REQUIRED for security)
    */
-  async getById(accountId: string, userId?: string): Promise<Result<Account, AppError>> {
+  async getById(accountId: string, userId: string): Promise<Result<Account, AppError>> {
     this.logger.info("Fetching account by ID", { accountId, userId });
 
     try {
-      const account = await prisma.accounts.findUnique({
-        where: { id: accountId },
+      // Use compound where clause for security (prevents IDOR)
+      const account = await prisma.accounts.findFirst({
+        where: {
+          id: accountId,
+          user_id: userId,
+        },
       });
 
       if (!account) {
         return {
           data: null,
           error: new AppError("Account not found", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      if (userId && account.user_id !== userId) {
-        return {
-          data: null,
-          error: new AppError("Unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
         };
       }
 
@@ -199,12 +198,32 @@ class PrismaAccountRepository {
   }
 
   /**
-   * Updates account balance.
+   * Updates account balance with ownership verification.
+   * @param accountId - The account ID to update
+   * @param userId - The user ID for ownership verification (REQUIRED for security)
+   * @param newBalance - The new balance value
    */
-  async updateBalance(accountId: string, newBalance: number): Promise<Result<Account, AppError>> {
-    this.logger.info("Updating account balance", { accountId, newBalance });
+  async updateBalance(
+    accountId: string,
+    userId: string,
+    newBalance: number
+  ): Promise<Result<Account, AppError>> {
+    this.logger.info("Updating account balance", { accountId, userId, newBalance });
 
     try {
+      // Verify ownership first
+      const existing = await prisma.accounts.findFirst({
+        where: { id: accountId, user_id: userId },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        return {
+          data: null,
+          error: new AppError("Account not found or unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
+        };
+      }
+
       const updated = await prisma.accounts.update({
         where: { id: accountId },
         data: {

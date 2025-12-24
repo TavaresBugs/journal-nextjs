@@ -38,9 +38,20 @@ export interface UserExtended {
 export interface AuditLog {
   id: string;
   userId: string | null;
+  actorEmail: string | null;
   action: string;
   resourceType: string | null;
   resourceId: string | null;
+  // Target user context (preserved even after deletion)
+  targetUserId: string | null;
+  targetUserEmail: string | null;
+  targetUserName: string | null;
+  // Before/After values
+  oldValues: Record<string, unknown> | null;
+  newValues: Record<string, unknown> | null;
+  // Context
+  reason: string | null;
+  sessionId: string | null;
   ipAddress: string | null;
   userAgent: string | null;
   metadata: Record<string, unknown> | null;
@@ -82,9 +93,20 @@ function mapAuditLogFromPrisma(log: PrismaAuditLog): AuditLog {
   return {
     id: log.id,
     userId: log.user_id,
+    actorEmail: log.actor_email || null,
     action: log.action,
     resourceType: log.resource_type,
     resourceId: log.resource_id,
+    // Target user context
+    targetUserId: log.target_user_id || null,
+    targetUserEmail: log.target_user_email || null,
+    targetUserName: log.target_user_name || null,
+    // Before/After values
+    oldValues: log.old_values as Record<string, unknown> | null,
+    newValues: log.new_values as Record<string, unknown> | null,
+    // Context
+    reason: log.reason || null,
+    sessionId: log.session_id || null,
     ipAddress: log.ip_address,
     userAgent: log.user_agent,
     metadata: log.metadata as Record<string, unknown> | null,
@@ -411,6 +433,7 @@ class PrismaAdminRepository {
 
   /**
    * Get audit logs with filtering.
+   * Includes JOIN to get admin email and target user email for readability.
    */
   async getAuditLogs(options?: {
     userId?: string;
@@ -428,12 +451,57 @@ class PrismaAdminRepository {
           action: options?.action,
           resource_type: options?.resourceType,
         },
+        include: {
+          // JOIN to get admin (actor) email
+          users: {
+            select: {
+              email: true,
+            },
+          },
+        },
         orderBy: { created_at: "desc" },
         take: options?.limit || 50,
         skip: options?.offset || 0,
       });
 
-      return { data: logs.map(mapAuditLogFromPrisma), error: null };
+      // Map logs and enrich with emails
+      const enrichedLogs = await Promise.all(
+        logs.map(async (log) => {
+          const baseLog = mapAuditLogFromPrisma(log);
+
+          // Get admin email from joined users table
+          const adminEmail = log.actor_email || log.users?.email || null;
+
+          // For target user, try to get email from the new column first,
+          // otherwise look up from users_extended if we have resource_id
+          let targetEmail = log.target_user_email;
+          let targetName = log.target_user_name;
+
+          if (!targetEmail && log.resource_type === "user" && log.resource_id) {
+            try {
+              const targetUser = await prisma.users_extended.findUnique({
+                where: { id: log.resource_id },
+                select: { email: true, name: true },
+              });
+              if (targetUser) {
+                targetEmail = targetUser.email;
+                targetName = targetUser.name;
+              }
+            } catch {
+              // User may have been deleted, that's ok
+            }
+          }
+
+          return {
+            ...baseLog,
+            actorEmail: adminEmail,
+            targetUserEmail: targetEmail,
+            targetUserName: targetName,
+          };
+        })
+      );
+
+      return { data: enrichedLogs, error: null };
     } catch (error) {
       this.logger.error("Failed to fetch audit logs", { error });
       return {

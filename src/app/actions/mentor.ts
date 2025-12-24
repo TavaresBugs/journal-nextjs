@@ -762,15 +762,19 @@ export async function canCommentOnTradeAction(tradeId: string): Promise<boolean>
     const userId = await getCurrentUserId();
     if (!userId) return false;
 
-    const tradeResult = await prismaTradeRepo.getById(tradeId);
-    const trade = tradeResult.data;
+    // Get only the trade owner ID for permission check
+    const ownerResult = await prismaTradeRepo.getTradeOwnerId(tradeId);
+    const tradeOwnerId = ownerResult.data;
 
-    if (!trade) return false;
-    if (trade.userId === userId) return true;
+    if (!tradeOwnerId) return false;
 
+    // If user owns the trade, they can comment
+    if (tradeOwnerId === userId) return true;
+
+    // Check if user is a mentor with "comment" permission for this mentee
     const invitesResult = await prismaMentorRepo.getMentees(userId);
     const invite = invitesResult.data?.find(
-      (i) => i.menteeId === trade.userId && i.permission === "comment"
+      (i) => i.menteeId === tradeOwnerId && i.permission === "comment"
     );
 
     return !!invite;

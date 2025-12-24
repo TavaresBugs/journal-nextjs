@@ -82,27 +82,26 @@ class PrismaPlaybookRepository {
   }
 
   /**
-   * Fetches a single playbook by ID.
+   * Fetches a single playbook by ID with ownership verification.
+   * @param id - The playbook ID to fetch
+   * @param userId - The user ID for ownership verification (REQUIRED for security)
    */
-  async getById(id: string, userId?: string): Promise<Result<Playbook, AppError>> {
+  async getById(id: string, userId: string): Promise<Result<Playbook, AppError>> {
     this.logger.info("Fetching playbook by ID", { id, userId });
 
     try {
-      const playbook = await prisma.playbooks.findUnique({
-        where: { id },
+      // Use compound where clause for security (prevents IDOR)
+      const playbook = await prisma.playbooks.findFirst({
+        where: {
+          id,
+          user_id: userId,
+        },
       });
 
       if (!playbook) {
         return {
           data: null,
           error: new AppError("Playbook not found", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      if (userId && playbook.user_id !== userId) {
-        return {
-          data: null,
-          error: new AppError("Unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
         };
       }
 

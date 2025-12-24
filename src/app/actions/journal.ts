@@ -53,17 +53,12 @@ export async function getJournalEntryAction(entryId: string): Promise<JournalEnt
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const result = await prismaJournalRepo.getById(entryId);
+    const result = await prismaJournalRepo.getById(entryId, userId);
 
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getJournalEntryAction] Error:", result.error);
       }
-      return null;
-    }
-
-    // Verify ownership
-    if (result.data && result.data.userId !== userId) {
       return null;
     }
 
@@ -178,13 +173,8 @@ export async function deleteJournalEntryAction(
     }
 
     // 1. Fetch entry to get image paths for cleanup
-    const entryResult = await prismaJournalRepo.getById(entryId);
+    const entryResult = await prismaJournalRepo.getById(entryId, userId);
     if (entryResult.data) {
-      // Always verify ownership if we had to refetch
-      if (entryResult.data.userId !== userId) {
-        return { success: false, error: "Unauthorized" };
-      }
-
       // 2. Identify images to delete from Storage
       const paths = entryResult.data.images
         .map((img) => img.path)
@@ -231,8 +221,8 @@ export async function linkTradeToJournalAction(
     }
 
     // Verify journal ownership first
-    const journalResult = await prismaJournalRepo.getById(journalId);
-    if (journalResult.error || !journalResult.data || journalResult.data.userId !== userId) {
+    const journalResult = await prismaJournalRepo.getById(journalId, userId);
+    if (journalResult.error || !journalResult.data) {
       return { success: false, error: "Journal not found or unauthorized" };
     }
 
@@ -264,8 +254,8 @@ export async function unlinkTradeFromJournalAction(
     }
 
     // Verify journal ownership first
-    const journalResult = await prismaJournalRepo.getById(journalId);
-    if (journalResult.error || !journalResult.data || journalResult.data.userId !== userId) {
+    const journalResult = await prismaJournalRepo.getById(journalId, userId);
+    if (journalResult.error || !journalResult.data) {
       return { success: false, error: "Journal not found or unauthorized" };
     }
 
@@ -297,8 +287,8 @@ export async function addJournalImageAction(
     }
 
     // Verify journal ownership first
-    const journalResult = await prismaJournalRepo.getById(journalId);
-    if (journalResult.error || !journalResult.data || journalResult.data.userId !== userId) {
+    const journalResult = await prismaJournalRepo.getById(journalId, userId);
+    if (journalResult.error || !journalResult.data) {
       return { success: false, error: "Journal not found or unauthorized" };
     }
 

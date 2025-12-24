@@ -105,14 +105,20 @@ class PrismaJournalRepository {
   }
 
   /**
-   * Fetches a single journal entry by ID.
+   * Fetches a single journal entry by ID with ownership verification.
+   * @param id - The journal entry ID to fetch
+   * @param userId - The user ID for ownership verification (REQUIRED for security)
    */
-  async getById(id: string): Promise<Result<JournalEntry, AppError>> {
-    this.logger.info("Fetching journal entry by ID", { id });
+  async getById(id: string, userId: string): Promise<Result<JournalEntry, AppError>> {
+    this.logger.info("Fetching journal entry by ID", { id, userId });
 
     try {
-      const entry = await prisma.journal_entries.findUnique({
-        where: { id },
+      // Use compound where clause for security (prevents IDOR)
+      const entry = await prisma.journal_entries.findFirst({
+        where: {
+          id,
+          user_id: userId,
+        },
         include: {
           journal_images: true,
           journal_entry_trades: true,

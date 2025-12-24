@@ -18,7 +18,7 @@ export default function AdminPage() {
   const { data: users, isLoading: loadingUsers } = useAdminUsers();
   const { data: logs, isLoading: loadingLogs } = useAuditLogs({ limit: 50 });
 
-  const { handleApprove, handleSuspend, handleToggleMentor } = useAdminActions();
+  const { handleApprove, handleSuspend, handleToggleMentor, handleDelete } = useAdminActions();
 
   // If we wanted to prefetch logs when tab changes
   // useEffect(() => {
@@ -71,9 +71,11 @@ export default function AdminPage() {
               users={users || []}
               onApprove={handleApprove}
               onSuspend={handleSuspend}
+              onDelete={handleDelete}
               loading={loadingUsers}
             />
           )}
+
           {activeTab === "logs" && <AdminAuditLogTable logs={logs || []} loading={loadingLogs} />}
           {activeTab === "mentors" && (
             <AdminMentorTable

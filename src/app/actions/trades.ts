@@ -144,7 +144,7 @@ export async function saveTradeAction(
     let result;
     if (trade.id) {
       // Check if exists for update vs create
-      const existing = await prismaTradeRepo.getById(trade.id);
+      const existing = await prismaTradeRepo.getById(trade.id, userId);
       if (existing.data) {
         result = await prismaTradeRepo.update(trade.id, userId, tradeWithUser);
       } else {
@@ -268,7 +268,7 @@ async function syncAccountBalance(accountId: string, userId: string) {
     const totalPnl = metricsRes.data?.totalPnl || 0;
     const newBalance = initialBalance + totalPnl;
 
-    await prismaAccountRepo.updateBalance(accountId, newBalance);
+    await prismaAccountRepo.updateBalance(accountId, userId, newBalance);
   } catch (error) {
     console.error("[syncAccountBalance] Error syncing balance:", error);
   }

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import type { UserExtended } from "@/types";
+import { IconActionButton } from "@/components/ui/IconActionButton";
 
 interface AdminMentorTableProps {
   users: UserExtended[];
@@ -71,12 +72,12 @@ export function AdminMentorTable({ users, onToggleMentor, loading }: AdminMentor
                     <div className="text-xs text-gray-500">{user.email}</div>
                   </div>
                 </div>
-                <button
+                <IconActionButton
+                  variant="demote"
+                  size="lg"
                   onClick={() => onToggleMentor(user.id, false)}
-                  className="rounded-lg border border-red-500/30 bg-red-500/20 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/30"
-                >
-                  Remover
-                </button>
+                  title="Remover mentor"
+                />
               </div>
             ))}
           </div>
@@ -98,7 +99,7 @@ export function AdminMentorTable({ users, onToggleMentor, loading }: AdminMentor
               <thead>
                 <tr className="border-b border-gray-700 bg-gray-900/50">
                   <th className="px-4 py-3 text-left font-medium text-gray-400">Usuário</th>
-                  <th className="w-32 px-4 py-3 text-center font-medium text-gray-400">Ação</th>
+                  <th className="w-24 px-4 py-3 text-center font-medium text-gray-400">Ação</th>
                 </tr>
               </thead>
               <tbody>
@@ -135,12 +136,12 @@ export function AdminMentorTable({ users, onToggleMentor, loading }: AdminMentor
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <button
+                      <IconActionButton
+                        variant="promote"
+                        size="lg"
                         onClick={() => onToggleMentor(user.id, true)}
-                        className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-3 py-1.5 text-xs font-medium text-cyan-400 transition-colors hover:bg-cyan-500/30"
-                      >
-                        + Tornar Mentor
-                      </button>
+                        title="Tornar mentor"
+                      />
                     </td>
                   </tr>
                 ))}

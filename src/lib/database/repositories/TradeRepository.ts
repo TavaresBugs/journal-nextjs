@@ -200,14 +200,20 @@ class PrismaTradeRepository {
 
   /**
    * Fetches a single trade by ID with ownership verification.
+   * @param tradeId - The trade ID to fetch
+   * @param userId - The user ID for ownership verification (REQUIRED for security)
    */
-  async getById(tradeId: string, userId?: string): Promise<Result<Trade, AppError>> {
+  async getById(tradeId: string, userId: string): Promise<Result<Trade, AppError>> {
     const startTime = performance.now();
     this.logger.info("Fetching trade by ID", { tradeId, userId });
 
     try {
-      const trade = await prisma.trades.findUnique({
-        where: { id: tradeId },
+      // Use compound where clause for security (prevents IDOR)
+      const trade = await prisma.trades.findFirst({
+        where: {
+          id: tradeId,
+          user_id: userId,
+        },
       });
 
       const durationMs = performance.now() - startTime;
@@ -220,21 +226,43 @@ class PrismaTradeRepository {
         };
       }
 
-      // Ownership check
-      if (userId && trade.user_id !== userId) {
-        this.logger.warn("Unauthorized trade access attempt", { tradeId, userId });
-        return {
-          data: null,
-          error: new AppError("Unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
-        };
-      }
-
       return { data: mapPrismaToTrade(trade), error: null };
     } catch (error) {
       this.logger.error("Failed to fetch trade", { error, tradeId });
       return {
         data: null,
         error: new AppError("Failed to fetch trade", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Gets trade owner ID for permission checks (used by mentors).
+   * Returns only the userId without exposing trade data.
+   * @param tradeId - The trade ID to check
+   */
+  async getTradeOwnerId(tradeId: string): Promise<Result<string, AppError>> {
+    this.logger.info("Getting trade owner ID", { tradeId });
+
+    try {
+      const trade = await prisma.trades.findUnique({
+        where: { id: tradeId },
+        select: { user_id: true },
+      });
+
+      if (!trade || !trade.user_id) {
+        return {
+          data: null,
+          error: new AppError("Trade not found", ErrorCode.DB_NOT_FOUND, 404),
+        };
+      }
+
+      return { data: trade.user_id, error: null };
+    } catch (error) {
+      this.logger.error("Failed to get trade owner", { error, tradeId });
+      return {
+        data: null,
+        error: new AppError("Failed to get trade owner", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }

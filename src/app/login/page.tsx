@@ -73,11 +73,32 @@ export default function LoginPage() {
     try {
       if (mode === "login") {
         await signInWithEmail(email, password);
+        // Force navigation to trigger middleware checks (pending/approved status)
+        window.location.href = "/";
       } else {
-        await signUpWithEmail(email, password);
+        // signUpWithEmail from useAuth hook returns User directly (not { user, error })
+        const newUser = await signUpWithEmail(email, password);
+
+        if (newUser) {
+          // Create users_extended profile via Server Action (bypasses RLS)
+          const { createUserProfileAction } = await import("@/app/actions/admin");
+          const profileResult = await createUserProfileAction(newUser.id, newUser.email);
+
+          if (!profileResult.success) {
+            console.warn("[handleSubmit] Failed to create profile:", profileResult.error);
+          }
+        }
+
+        // Signup requires email confirmation in Supabase
+        // Show success message instead of redirecting
+        setSuccess(
+          "✅ Conta criada com sucesso! Verifique seu email para confirmar e depois faça login."
+        );
+        setMode("login"); // Switch to login mode
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
-      // Force navigation to trigger middleware checks (pending/approved status)
-      window.location.href = "/";
     } catch (err: unknown) {
       setError(getErrorMessage(err));
     } finally {

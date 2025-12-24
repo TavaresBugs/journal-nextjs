@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
+import { IconActionButton } from "@/components/ui/IconActionButton";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import type { UserExtended, UserStatus, UserRole } from "@/types";
 
@@ -9,19 +9,22 @@ interface AdminUserTableProps {
   users: UserExtended[];
   onApprove: (id: string) => void;
   onSuspend: (id: string) => void;
+  onDelete?: (id: string) => void;
   loading: boolean;
 }
 
 const getStatusBadge = (status: UserStatus) => {
   const styles: Record<UserStatus, string> = {
-    pending: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-    approved: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-    suspended: "bg-red-500/20 text-red-400 border border-red-500/30",
-    banned: "bg-red-700/20 text-red-500 border border-red-700/30",
-    rejected: "bg-gray-700/20 text-gray-500 border border-gray-700/30",
+    pending: "border border-amber-500/30 bg-amber-500/10 text-amber-400",
+    approved: "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400",
+    suspended: "border border-red-500/30 bg-red-500/20 text-red-400",
+    banned: "border border-red-700/30 bg-red-700/20 text-red-500",
+    rejected: "border border-gray-600/30 bg-gray-600/20 text-gray-400",
   };
   return (
-    <span className={`rounded px-2 py-1 text-xs font-medium ${styles[status]}`}>
+    <span
+      className={`inline-block w-24 rounded px-2 py-1 text-center text-xs font-medium ${styles[status]}`}
+    >
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
   );
@@ -29,13 +32,15 @@ const getStatusBadge = (status: UserStatus) => {
 
 const getRoleBadge = (role: UserRole) => {
   const styles: Record<UserRole, string> = {
-    admin: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
-    mentor: "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30",
-    user: "bg-gray-500/20 text-gray-400 border border-gray-500/30",
-    guest: "bg-gray-600/20 text-gray-500 border border-gray-600/30",
+    admin: "border border-purple-500/30 bg-purple-500/20 text-purple-400",
+    mentor: "border border-cyan-500/30 bg-cyan-500/20 text-cyan-400",
+    user: "border border-gray-500/30 bg-gray-500/20 text-gray-400",
+    guest: "border border-gray-600/30 bg-gray-600/20 text-gray-400",
   };
   return (
-    <span className={`rounded px-2 py-1 text-xs font-medium ${styles[role]}`}>
+    <span
+      className={`inline-block w-24 rounded px-2 py-1 text-center text-xs font-medium ${styles[role]}`}
+    >
       {role.charAt(0).toUpperCase() + role.slice(1)}
     </span>
   );
@@ -44,7 +49,13 @@ const getRoleBadge = (role: UserRole) => {
 /**
  * Admin user table with status badges and action buttons.
  */
-export function AdminUserTable({ users, onApprove, onSuspend, loading }: AdminUserTableProps) {
+export function AdminUserTable({
+  users,
+  onApprove,
+  onSuspend,
+  onDelete,
+  loading,
+}: AdminUserTableProps) {
   if (loading) {
     return <PageSkeleton />;
   }
@@ -111,21 +122,38 @@ export function AdminUserTable({ users, onApprove, onSuspend, loading }: AdminUs
                 {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString("pt-BR") : "—"}
               </td>
               <td className="px-4 py-4 text-center">
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-1">
                   {user.status === "pending" && (
-                    <Button size="sm" variant="success" onClick={() => onApprove(user.id)}>
-                      Aprovar
-                    </Button>
+                    <IconActionButton
+                      variant="approve"
+                      size="sm"
+                      onClick={() => onApprove(user.id)}
+                      title="Aprovar usuário"
+                    />
                   )}
                   {user.status === "approved" && user.role !== "admin" && (
-                    <Button size="sm" variant="danger" onClick={() => onSuspend(user.id)}>
-                      Suspender
-                    </Button>
+                    <IconActionButton
+                      variant="suspend"
+                      size="sm"
+                      onClick={() => onSuspend(user.id)}
+                      title="Suspender usuário"
+                    />
                   )}
                   {user.status === "suspended" && (
-                    <Button size="sm" variant="success" onClick={() => onApprove(user.id)}>
-                      Reativar
-                    </Button>
+                    <IconActionButton
+                      variant="reactivate"
+                      size="sm"
+                      onClick={() => onApprove(user.id)}
+                      title="Reativar usuário"
+                    />
+                  )}
+                  {user.role !== "admin" && onDelete && (
+                    <IconActionButton
+                      variant="delete"
+                      size="sm"
+                      onClick={() => onDelete(user.id)}
+                      title="Deletar usuário"
+                    />
                   )}
                   {user.role === "admin" && <span className="text-xs text-gray-500">—</span>}
                 </div>

@@ -107,7 +107,7 @@ export async function saveTrade(trade: Trade): Promise<Trade | null> {
   const userId = await getCurrentUserId();
 
   // Check if trade exists
-  const existing = await prismaTradeRepo.getById(trade.id);
+  const existing = await prismaTradeRepo.getById(trade.id, userId);
 
   if (existing.data) {
     // Update
@@ -149,6 +149,7 @@ export async function getJournalEntries(accountId: string): Promise<JournalEntry
  * Get journal entry by ID using Prisma.
  */
 export async function getJournalEntry(id: string): Promise<JournalEntry | null> {
-  const result = await prismaJournalRepo.getById(id);
+  const userId = await getCurrentUserId();
+  const result = await prismaJournalRepo.getById(id, userId);
   return result.data;
 }

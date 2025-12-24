@@ -17,7 +17,12 @@ type IconActionVariant =
   | "star"
   | "refresh"
   | "database"
-  | "copy";
+  | "copy"
+  | "approve"
+  | "suspend"
+  | "reactivate"
+  | "promote"
+  | "demote";
 type IconActionSize = "sm" | "md" | "lg";
 
 interface IconActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -275,6 +280,104 @@ const VARIANT_CONFIG: Record<
       >
         <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </svg>
+    ),
+  },
+  approve: {
+    hoverText: "hover:text-emerald-400",
+    hoverBg: "hover:bg-emerald-500/10",
+    defaultTitle: "Aprovar",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+    ),
+  },
+  suspend: {
+    hoverText: "hover:text-red-400",
+    hoverBg: "hover:bg-red-500/10",
+    defaultTitle: "Suspender",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="6" y="4" width="4" height="16" rx="1" />
+        <rect x="14" y="4" width="4" height="16" rx="1" />
+      </svg>
+    ),
+  },
+  reactivate: {
+    hoverText: "hover:text-emerald-400",
+    hoverBg: "hover:bg-emerald-500/10",
+    defaultTitle: "Reativar",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <polygon points="5 3 19 12 5 21 5 3" />
+      </svg>
+    ),
+  },
+  promote: {
+    hoverText: "hover:text-cyan-400",
+    hoverBg: "hover:bg-cyan-500/10",
+    defaultTitle: "Tornar Mentor",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* User with plus icon */}
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="19" y1="8" x2="19" y2="14" />
+        <line x1="22" y1="11" x2="16" y2="11" />
+      </svg>
+    ),
+  },
+  demote: {
+    hoverText: "hover:text-red-400",
+    hoverBg: "hover:bg-red-500/10",
+    defaultTitle: "Remover Mentor",
+    icon: (
+      <svg
+        className="h-5 w-5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* User with minus icon */}
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <line x1="22" y1="11" x2="16" y2="11" />
       </svg>
     ),
   },

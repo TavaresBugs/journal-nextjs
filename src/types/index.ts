@@ -317,10 +317,24 @@ export interface UserExtended {
 export interface AuditLog {
   id: string;
   userId?: string | null;
-  userEmail?: string | null; // Para display
+  userEmail?: string | null; // Para display (legacy)
+  actorEmail?: string | null; // Email do admin que fez a ação
   action: string;
   resourceType?: string | null;
   resourceId?: string | null;
+
+  // Target user (quem foi afetado) - preservado mesmo após deleção
+  targetUserId?: string | null;
+  targetUserEmail?: string | null;
+  targetUserName?: string | null;
+
+  // Before/After values
+  oldValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
+
+  // Context
+  reason?: string | null;
+  sessionId?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
   metadata?: Record<string, unknown> | null;

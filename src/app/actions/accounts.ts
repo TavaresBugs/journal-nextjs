@@ -92,7 +92,7 @@ export async function saveAccountAction(
     // Check if account exists to decide between create and update
     let result;
     if (account.id) {
-      const existing = await prismaAccountRepo.getById(account.id);
+      const existing = await prismaAccountRepo.getById(account.id, userId);
       if (existing.data) {
         result = await prismaAccountRepo.update(account.id, userId, accountWithUser);
       } else {
@@ -170,7 +170,7 @@ export async function updateAccountBalanceAction(
       return { success: false, error: "Account not found or unauthorized" };
     }
 
-    const result = await prismaAccountRepo.updateBalance(accountId, newBalance);
+    const result = await prismaAccountRepo.updateBalance(accountId, userId, newBalance);
 
     if (result.error) {
       console.error("[updateAccountBalanceAction] Error:", result.error);
@@ -312,5 +312,49 @@ export async function checkAccountHasTradesAction(accountId: string): Promise<bo
   } catch (error) {
     console.error("[checkAccountHasTradesAction] Unexpected error:", error);
     return false;
+  }
+}
+
+/**
+ * Sync balances for all user accounts.
+ * Recalculates currentBalance from initialBalance + totalPnl.
+ * @returns Object with success status and count of synced accounts.
+ */
+export async function syncAllAccountsBalancesAction(): Promise<{
+  success: boolean;
+  syncedCount: number;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return { success: false, syncedCount: 0 };
+
+    const accountsResult = await prismaAccountRepo.getByUserId(userId);
+    if (accountsResult.error || !accountsResult.data) {
+      return { success: false, syncedCount: 0 };
+    }
+
+    let syncedCount = 0;
+    for (const account of accountsResult.data) {
+      try {
+        const metricsResult = await prismaTradeRepo.getDashboardMetrics(account.id, userId);
+        const totalPnl = metricsResult.data?.totalPnl || 0;
+        const newBalance = account.initialBalance + totalPnl;
+
+        if (Math.abs(newBalance - account.currentBalance) > 0.01) {
+          await prismaAccountRepo.updateBalance(account.id, userId, newBalance);
+          syncedCount++;
+        }
+      } catch (error) {
+        console.error(
+          `[syncAllAccountsBalancesAction] Error syncing account ${account.id}:`,
+          error
+        );
+      }
+    }
+
+    return { success: true, syncedCount };
+  } catch (error) {
+    console.error("[syncAllAccountsBalancesAction] Unexpected error:", error);
+    return { success: false, syncedCount: 0 };
   }
 }

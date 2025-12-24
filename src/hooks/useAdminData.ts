@@ -6,6 +6,7 @@ import {
   getAdminStatsAction,
   updateUserStatusAction,
   updateUserRoleAction,
+  deleteUserAction,
   getAuditLogsAction,
 } from "@/app/actions/admin";
 
@@ -72,10 +73,21 @@ export function useAdminActions() {
     queryClient.invalidateQueries({ queryKey: adminKeys.all });
   };
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza que deseja deletar este usuário?")) return;
+    const result = await deleteUserAction(id);
+    if (result.success) {
+      queryClient.invalidateQueries({ queryKey: adminKeys.all });
+    } else {
+      alert(result.error || "Erro ao deletar usuário");
+    }
+  };
+
   return {
     handleApprove,
     handleSuspend,
     handleToggleMentor,
+    handleDelete,
   };
 }
 

@@ -1,7 +1,6 @@
 generator client {
-  provider        = "prisma-client-js"
-  output          = "../src/generated/prisma"
-
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -463,21 +462,31 @@ model accounts {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model audit_logs {
-  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  user_id       String?   @db.Uuid
-  action        String
-  resource_type String?
-  resource_id   String?
-  ip_address    String?   @db.Inet
-  user_agent    String?
-  metadata      Json?     @default("{}")
-  created_at    DateTime? @default(now()) @db.Timestamptz(6)
-  users         users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String?   @db.Uuid
+  action            String
+  resource_type     String?
+  resource_id       String?
+  ip_address        String?   @db.Inet
+  user_agent        String?
+  metadata          Json?     @default("{}")
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  actor_email       String?   @db.VarChar(255)
+  target_user_id    String?   @db.Uuid
+  target_user_email String?   @db.VarChar(255)
+  target_user_name  String?   @db.VarChar(255)
+  old_values        Json?     @default("{}")
+  new_values        Json?     @default("{}")
+  reason            String?
+  session_id        String?   @db.VarChar(255)
+  users             users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
 
   @@index([action], map: "idx_audit_logs_action")
   @@index([created_at(sort: Desc)], map: "idx_audit_logs_created")
   @@index([resource_type, resource_id], map: "idx_audit_logs_resource")
   @@index([user_id], map: "idx_audit_logs_user")
+  @@index([target_user_email], map: "idx_audit_logs_target_email")
+  @@index([target_user_id], map: "idx_audit_logs_target_user")
   @@schema("public")
 }
 

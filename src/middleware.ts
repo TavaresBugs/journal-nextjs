@@ -1,49 +1,41 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { checkLoginRateLimit, buildRateLimitHeaders } from "@/lib/ratelimit";
+import {
+  getClientIP,
+  handleLoginRateLimit,
+  checkUserStatus,
+  resolveRedirect,
+  logAccessEvent,
+} from "@/lib/auth/middleware-utils";
 
 // ============================================
 // MIDDLEWARE
 // Authentication, rate limiting, and session management
 // ============================================
 
-/**
- * Get client IP from request headers
- * Returns null if IP cannot be determined (fail-open pattern)
- */
-function getClientIP(req: NextRequest): string | null {
-  // Cloudflare
-  const cfIP = req.headers.get("cf-connecting-ip");
-  if (cfIP) return cfIP;
-
-  // Vercel / AWS / Standard proxy
-  const forwarded = req.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-
-  // Nginx / Generic proxy
-  const realIP = req.headers.get("x-real-ip");
-  if (realIP) return realIP;
-
-  // Akamai
-  const trueClientIP = req.headers.get("true-client-ip");
-  if (trueClientIP) return trueClientIP;
-
-  // No IP detected - return null (fail-open)
-  return null;
-}
-
 export default async function middleware(req: NextRequest) {
-  // Debug logging in development
-  if (process.env.NODE_ENV === "development") {
-    console.log("🔒 Middleware carregado:", {
-      path: req.nextUrl.pathname,
-      method: req.method,
-      timestamp: new Date().toISOString(),
-    });
+  const pathname = req.nextUrl.pathname;
+  const ip = getClientIP(req);
+
+  // 1. Rate Limiting (Login only)
+  if (pathname === "/login" && req.method === "POST") {
+    const rateLimit = await handleLoginRateLimit(req, ip);
+    if (!rateLimit.success && rateLimit.redirectUrl) {
+      logAccessEvent({
+        path: pathname,
+        method: req.method,
+        ip,
+        action: "blocked",
+        reason: "rate_limit_exceeded",
+        redirectTo: rateLimit.redirectUrl.toString(),
+      });
+      return NextResponse.redirect(rateLimit.redirectUrl, {
+        headers: rateLimit.headers,
+      });
+    }
   }
 
+  // 2. Setup Supabase Client
   let response = NextResponse.next({
     request: {
       headers: req.headers,
@@ -59,177 +51,69 @@ export default async function middleware(req: NextRequest) {
           return req.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          req.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+          req.cookies.set({ name, value, ...options });
           response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
+            request: { headers: req.headers },
           });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
+          response.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: CookieOptions) {
-          req.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
+          req.cookies.set({ name, value: "", ...options });
           response = NextResponse.next({
-            request: {
-              headers: req.headers,
-            },
+            request: { headers: req.headers },
           });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
+          response.cookies.set({ name, value: "", ...options });
         },
       },
     }
   );
 
-  const pathname = req.nextUrl.pathname;
-  const clientIP = getClientIP(req);
-
-  // ============================================
-  // RATE LIMITING (apenas para login POST)
-  // ============================================
-
-  // Check if this is a login attempt (form submission)
-  if (pathname === "/login" && req.method === "POST") {
-    // Fail-open: skip rate limiting if IP cannot be determined
-    if (!clientIP) {
-      console.warn("⚠️ [Rate Limit] No IP detected, skipping rate limit", {
-        path: pathname,
-        userAgent: req.headers.get("user-agent")?.slice(0, 50),
-      });
-      // Continue without rate limiting
-    } else {
-      const rateLimit = await checkLoginRateLimit(clientIP);
-
-      if (!rateLimit.success) {
-        const headers = buildRateLimitHeaders(rateLimit);
-        const retryMinutes = Math.ceil((rateLimit.reset - Date.now()) / 60000);
-        const errorUrl = new URL("/login", req.url);
-        errorUrl.searchParams.set("error", "rate_limited");
-        errorUrl.searchParams.set("retry_after", retryMinutes.toString());
-
-        // Log rate limit event (IP hashed for privacy in production)
-        console.warn("🚫 Rate limit exceeded:", {
-          ip: process.env.NODE_ENV === "production" ? `${clientIP.slice(0, 3)}***` : clientIP,
-          reset: new Date(rateLimit.reset).toISOString(),
-        });
-
-        return NextResponse.redirect(errorUrl, { headers });
-      }
-    }
-  }
-
-  // Public routes - no auth required
-  const publicRoutes = [
-    "/login",
-    "/auth/callback",
-    "/auth/reset-password",
-    "/share",
-    "/pending",
-    "/termos",
-    "/privacidade",
-    "/comunidade",
-  ];
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
-
-  // Admin routes - require admin role
-  const isAdminRoute = pathname.startsWith("/admin");
-
-  // Check auth status
+  // 3. Auth & Session Refresh
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // ============================================
-  // SESSION MANAGEMENT
-  // ============================================
-
-  if (session) {
-    // Check if session is close to expiring (within 10 minutes)
-    const expiresAt = session.expires_at;
-    if (expiresAt) {
-      const expiresInMs = expiresAt * 1000 - Date.now();
-      const TEN_MINUTES = 10 * 60 * 1000;
-
-      // Refresh session if it expires in less than 10 minutes
-      if (expiresInMs < TEN_MINUTES && expiresInMs > 0) {
-        await supabase.auth.refreshSession();
-      }
-    }
-    // Note: With Upstash, we don't need to manually reset rate limit
-    // The sliding window handles expiration automatically
-  }
-
-  // Not authenticated - redirect to login (except public routes)
-  if (!session && !isPublicRoute) {
-    const redirectUrl = new URL("/login", req.url);
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Authenticated - check user status and role
-  if (session) {
-    // Redirect from login to home
-    if (pathname === "/login") {
-      const redirectUrl = new URL("/", req.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-
-    // Check user extended profile for status/role
-    const { data: userProfile } = await supabase
-      .from("users_extended")
-      .select("status, role")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    // If profile doesn't exist yet (race condition), allow through
-    if (userProfile) {
-      const { status, role } = userProfile;
-
-      // Pending users can only access /pending page
-      if (status === "pending" && !pathname.startsWith("/pending") && !isPublicRoute) {
-        const redirectUrl = new URL("/pending", req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
-
-      // Approved users shouldn't see /pending
-      if (status === "approved" && pathname.startsWith("/pending")) {
-        const redirectUrl = new URL("/", req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
-
-      // Suspended/banned users - logout and show message
-      if (status === "suspended" || status === "banned") {
-        // Clear session and redirect to login with error
-        const redirectUrl = new URL("/login?error=account_suspended", req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
-
-      // Admin routes - require admin role
-      if (isAdminRoute && role !== "admin") {
-        const redirectUrl = new URL("/", req.url);
-        return NextResponse.redirect(redirectUrl);
-      }
+  if (session?.expires_at) {
+    // Refresh session if expiring in < 10 mins
+    const expiresIn = session.expires_at * 1000 - Date.now();
+    if (expiresIn < 10 * 60 * 1000 && expiresIn > 0) {
+      await supabase.auth.refreshSession();
     }
   }
 
+  // 4. User Status & Role
+  let userContext = null;
+  if (session?.user) {
+    userContext = await checkUserStatus(supabase, session.user.id);
+  }
+
+  // 5. Access Decision
+  const redirectPath = resolveRedirect(pathname, userContext);
+
+  if (redirectPath) {
+    const absoluteRedirectUrl = new URL(redirectPath, req.url);
+
+    // Log meaningful redirects (exclude standard login redirects for unauth users to avoid noise)
+    if (userContext || !redirectPath.includes("/login")) {
+      logAccessEvent({
+        path: pathname,
+        method: req.method,
+        ip,
+        userId: session?.user?.id,
+        role: userContext?.role,
+        action: "redirected",
+        reason: "access_policy",
+        redirectTo: redirectPath,
+      });
+    }
+
+    return NextResponse.redirect(absoluteRedirectUrl);
+  }
+
+  // 6. Allowed - Proceed
   return response;
 }
 
-// Configure which routes use this middleware
 export const config = {
   matcher: [
     /*

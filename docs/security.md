@@ -93,6 +93,51 @@ if (adminRoutes.some((route) => pathname.startsWith(route))) {
 
 ---
 
+## 🔐 Prisma Ownership Policy
+
+### Princípio
+
+Todas as queries Prisma sensíveis **DEVEM** filtrar por `userId` para garantir que usuários só acessem seus próprios dados. Esta política complementa o RLS do Supabase.
+
+### Padrão Seguro
+
+```typescript
+// ✅ SEGURO: userId obrigatório no compound where
+async getById(id: string, userId: string) {
+  const item = await prisma.items.findFirst({
+    where: {
+      id,
+      user_id: userId,  // Filtro na query
+    },
+  });
+
+  if (!item) {
+    return { error: "Not found" };
+  }
+  return item;
+}
+```
+
+### Repositórios Protegidos
+
+| Repositório          | Métodos Protegidos                              |
+| -------------------- | ----------------------------------------------- |
+| `AccountRepository`  | `getById`, `update`, `delete`, `updateBalance`  |
+| `TradeRepository`    | `getById`, `getByAccountId`, `update`, `delete` |
+| `JournalRepository`  | `getById`, `delete`, `save`                     |
+| `PlaybookRepository` | `getById`, `update`, `delete`                   |
+
+### Checklist para Novas Features
+
+- [ ] `findUnique` substituído por `findFirst` com compound where?
+- [ ] `userId` é **obrigatório** (não opcional)?
+- [ ] Server Actions passam `userId` para os repositórios?
+- [ ] Operações de `update` e `delete` verificam ownership?
+
+> **Referência:** Issue #80 - Garantir ownership em queries Prisma
+
+---
+
 ## 🛡️ Autorização (RLS)
 
 ### O que é RLS?

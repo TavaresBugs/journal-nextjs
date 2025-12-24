@@ -57,7 +57,7 @@ export async function updateAccountBalance(id: string, balance: number): Promise
   const accountResult = await prismaAccountRepo.getById(id, userId);
   if (!accountResult.data) throw new Error("Account not found");
 
-  const result = await prismaAccountRepo.updateBalance(id, balance);
+  const result = await prismaAccountRepo.updateBalance(id, userId, balance);
   if (result.error) throw new Error(result.error.message);
 }
 

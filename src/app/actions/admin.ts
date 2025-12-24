@@ -15,6 +15,58 @@
 
 import { prismaAdminRepo, UserExtended, AuditLog, AdminStats } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
+import { prisma } from "@/lib/database";
+import {
+  logUserStatusChange,
+  logUserRoleChange,
+  logUserDeletion,
+} from "@/lib/services/auditService";
+
+// ========================================
+// SIGNUP: USER PROFILE CREATION
+// ========================================
+
+/**
+ * Create user extended profile after signup.
+ * Uses Prisma to bypass Supabase RLS policies.
+ * This should be called from the client after successful auth signup.
+ */
+export async function createUserProfileAction(
+  userId: string,
+  email: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Check if profile already exists
+    const existing = await prisma.users_extended.findUnique({
+      where: { id: userId },
+    });
+
+    if (existing) {
+      console.log("[createUserProfileAction] Profile already exists for:", userId);
+      return { success: true };
+    }
+
+    // Create the profile with pending status
+    await prisma.users_extended.create({
+      data: {
+        id: userId,
+        email: email,
+        status: "pending",
+        role: "user",
+        created_at: new Date(),
+      },
+    });
+
+    console.log("[createUserProfileAction] Profile created for:", userId);
+    return { success: true };
+  } catch (error) {
+    console.error("[createUserProfileAction] Error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create profile",
+    };
+  }
+}
 
 // ========================================
 // USER PROFILE
@@ -191,6 +243,11 @@ export async function updateUserStatusAction(
       return { success: false, error: "Not authorized" };
     }
 
+    // Get current user for audit context (before update)
+    const currentActor = await prismaAdminRepo.getUserExtended(userId);
+    const targetUserBefore = await prismaAdminRepo.getUserExtended(targetUserId);
+    const oldStatus = targetUserBefore.data?.status || "unknown";
+
     const result = await prismaAdminRepo.updateUserStatus(targetUserId, status, userId, notes);
 
     if (result.error) {
@@ -198,11 +255,19 @@ export async function updateUserStatusAction(
       return { success: false, error: result.error.message };
     }
 
-    // Log the action
-    await prismaAdminRepo.logAction(userId, "update_user_status", "user", targetUserId, {
+    // Log with full context
+    await logUserStatusChange(
+      userId,
+      currentActor.data?.email || null,
+      {
+        id: targetUserId,
+        email: targetUserBefore.data?.email,
+        name: targetUserBefore.data?.email?.split("@")[0] || null,
+      },
+      oldStatus,
       status,
-      notes,
-    });
+      notes
+    );
 
     return { success: true };
   } catch (error) {
@@ -230,6 +295,11 @@ export async function updateUserRoleAction(
       return { success: false, error: "Not authorized" };
     }
 
+    // Get current user for audit context (before update)
+    const currentActor = await prismaAdminRepo.getUserExtended(userId);
+    const targetUserBefore = await prismaAdminRepo.getUserExtended(targetUserId);
+    const oldRole = targetUserBefore.data?.role || "user";
+
     const result = await prismaAdminRepo.updateUserRole(targetUserId, role);
 
     if (result.error) {
@@ -237,12 +307,83 @@ export async function updateUserRoleAction(
       return { success: false, error: result.error.message };
     }
 
-    // Log the action
-    await prismaAdminRepo.logAction(userId, "update_user_role", "user", targetUserId, { role });
+    // Log with full context
+    await logUserRoleChange(
+      userId,
+      currentActor.data?.email || null,
+      {
+        id: targetUserId,
+        email: targetUserBefore.data?.email,
+        name: targetUserBefore.data?.email?.split("@")[0] || null,
+      },
+      oldRole,
+      role
+    );
 
     return { success: true };
   } catch (error) {
     console.error("[updateUserRoleAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Delete user completely (admin only).
+ * WARNING: This will delete the user from users_extended only.
+ * The auth user needs to be deleted separately from Supabase Dashboard.
+ */
+export async function deleteUserAction(
+  targetUserId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify admin status
+    const isAdmin = await prismaAdminRepo.isAdmin(userId);
+    if (!isAdmin.data) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    // Prevent admin from deleting themselves
+    if (targetUserId === userId) {
+      return { success: false, error: "Cannot delete yourself" };
+    }
+
+    // Get target user for audit context BEFORE deletion
+    const currentActor = await prismaAdminRepo.getUserExtended(userId);
+    const targetUser = await prismaAdminRepo.getUserExtended(targetUserId);
+
+    if (targetUser.data?.role === "admin") {
+      return { success: false, error: "Cannot delete another admin" };
+    }
+
+    // Capture data for audit BEFORE deletion
+    const targetUserEmail = targetUser.data?.email || null;
+    const targetUserStatus = targetUser.data?.status || "unknown";
+
+    // Delete from users_extended
+    await prisma.users_extended.delete({
+      where: { id: targetUserId },
+    });
+
+    // Log with PRESERVED context (survives deletion)
+    await logUserDeletion(
+      userId,
+      currentActor.data?.email || null,
+      {
+        id: targetUserId,
+        email: targetUserEmail,
+        name: targetUserEmail?.split("@")[0] || null,
+      },
+      targetUserStatus
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("[deleteUserAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
   }
 }

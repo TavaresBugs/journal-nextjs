@@ -68,6 +68,14 @@ export default function HomePage() {
 
         await Promise.race([Promise.all([loadAccounts(), loadSettings()]), timeoutPromise]);
 
+        // Sync all account balances to ensure they're up to date
+        const { syncAllAccountsBalancesAction } = await import("@/app/actions/accounts");
+        const syncResult = await syncAllAccountsBalancesAction();
+        if (syncResult.syncedCount > 0) {
+          // Reload accounts to reflect updated balances
+          await loadAccounts();
+        }
+
         // Check if user has no accounts after loading
         const currentAccounts = useAccountStore.getState().accounts;
         if (currentAccounts.length === 0) {
