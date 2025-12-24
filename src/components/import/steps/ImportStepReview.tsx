@@ -10,11 +10,20 @@ interface ImportStats {
 interface ImportStepReviewProps {
   status: "importing" | "complete";
   stats: ImportStats;
+  progress?: { current: number; total: number };
   onClose: () => void;
 }
 
-export const ImportStepReview: React.FC<ImportStepReviewProps> = ({ status, stats, onClose }) => {
+export const ImportStepReview: React.FC<ImportStepReviewProps> = ({
+  status,
+  stats,
+  progress,
+  onClose,
+}) => {
   if (status === "importing") {
+    const percentage =
+      progress && progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="relative mb-4 h-16 w-16">
@@ -22,7 +31,25 @@ export const ImportStepReview: React.FC<ImportStepReviewProps> = ({ status, stat
           <div className="absolute inset-0 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent"></div>
         </div>
         <p className="font-medium text-gray-300">Importando trades...</p>
-        <p className="mt-2 text-sm text-gray-500">Isso pode levar alguns segundos</p>
+
+        {progress && (
+          <div className="mt-4 w-64">
+            <div className="mb-2 flex justify-between text-xs text-gray-400">
+              <span>
+                {progress.current} de {progress.total}
+              </span>
+              <span>{percentage}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-700">
+              <div
+                className="h-full bg-cyan-500 transition-all duration-300 ease-out"
+                style={{ width: `${percentage}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        <p className="mt-4 text-sm text-gray-500">Isso pode levar alguns segundos</p>
       </div>
     );
   }

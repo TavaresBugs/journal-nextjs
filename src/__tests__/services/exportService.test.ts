@@ -1,21 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { exportAllData } from "@/services/trades/export";
-import { supabase } from "@/lib/supabase";
+import { supabase, getCurrentUserIdClient } from "@/lib/supabase";
 
 // Mock supabase
 vi.mock("@/lib/supabase", () => ({
   supabase: {
     from: vi.fn(),
   },
+  getCurrentUserIdClient: vi.fn(),
 }));
-
-// Mock getCurrentUserId
-vi.mock("@/services/core/account", () => ({
-  getCurrentUserId: vi.fn(),
-}));
-
-import { getCurrentUserId } from "@/services/core/account";
 
 describe("exportService", () => {
   beforeEach(() => {
@@ -24,14 +18,14 @@ describe("exportService", () => {
 
   describe("exportAllData", () => {
     it("should throw error if user is not authenticated", async () => {
-      (getCurrentUserId as any).mockResolvedValue(null);
+      (getCurrentUserIdClient as any).mockResolvedValue(null);
 
       await expect(exportAllData()).rejects.toThrow("User not authenticated");
     });
 
     it("should export all data correctly", async () => {
       const userId = "user-123";
-      (getCurrentUserId as any).mockResolvedValue(userId);
+      (getCurrentUserIdClient as any).mockResolvedValue(userId);
 
       // Mock responses for each table
       const mockAccounts = [
@@ -127,7 +121,7 @@ describe("exportService", () => {
 
     it("should handle pagination in fetchAll", async () => {
       const userId = "user-123";
-      (getCurrentUserId as any).mockResolvedValue(userId);
+      (getCurrentUserIdClient as any).mockResolvedValue(userId);
 
       // Generate 1500 accounts to test pagination (pageSize is 1000)
       const manyAccounts = Array.from({ length: 1500 }, (_, i) => ({

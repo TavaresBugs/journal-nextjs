@@ -1,71 +1,31 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import {
-  getAllUsers,
-  getAdminStats,
-  updateUserStatus,
-  updateUserRole,
-  getAuditLogs,
-} from "@/services/admin/admin";
+import { useState } from "react";
+import { useAdminStats, useAdminUsers, useAuditLogs, useAdminActions } from "@/hooks/useAdminData";
 import {
   AdminStatsCards,
   AdminUserTable,
   AdminAuditLogTable,
   AdminMentorTable,
 } from "@/components/admin";
-import { UserExtended, AuditLog, AdminStats } from "@/types";
 import { BackButton } from "@/components/shared/BackButton";
 import { SegmentedToggle } from "@/components/ui";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"users" | "logs" | "mentors">("users");
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [users, setUsers] = useState<UserExtended[]>([]);
-  const [logs, setLogs] = useState<AuditLog[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
-  const [loadingLogs, setLoadingLogs] = useState(false);
 
-  const loadData = useCallback(async () => {
-    const [statsData, usersData] = await Promise.all([getAdminStats(), getAllUsers()]);
-    setStats(statsData);
-    setUsers(usersData);
-    setLoadingUsers(false);
-  }, []);
+  const { data: stats } = useAdminStats();
+  const { data: users, isLoading: loadingUsers } = useAdminUsers();
+  const { data: logs, isLoading: loadingLogs } = useAuditLogs({ limit: 50 });
 
-  const loadLogs = useCallback(async () => {
-    setLoadingLogs(true);
-    const logsData = await getAuditLogs({ limit: 50 });
-    setLogs(logsData);
-    setLoadingLogs(false);
-  }, []);
+  const { handleApprove, handleSuspend, handleToggleMentor, handleDelete } = useAdminActions();
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData();
-  }, [loadData]);
-
-  useEffect(() => {
-    if (activeTab === "logs" && logs.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      loadLogs();
-    }
-  }, [activeTab, logs.length, loadLogs]);
-
-  const handleApprove = async (id: string) => {
-    await updateUserStatus(id, "approved");
-    loadData();
-  };
-
-  const handleSuspend = async (id: string) => {
-    await updateUserStatus(id, "suspended");
-    loadData();
-  };
-
-  const handleToggleMentor = async (id: string, makeMentor: boolean) => {
-    await updateUserRole(id, makeMentor ? "mentor" : "user");
-    loadData();
-  };
+  // If we wanted to prefetch logs when tab changes
+  // useEffect(() => {
+  //   if (activeTab === "logs") {
+  //     loadLogs();
+  //   }
+  // }, [activeTab]);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -90,7 +50,7 @@ export default function AdminPage() {
         </div>
 
         {/* Stats */}
-        <AdminStatsCards stats={stats} />
+        <AdminStatsCards stats={stats || null} />
 
         {/* Tabs */}
         <SegmentedToggle
@@ -108,16 +68,18 @@ export default function AdminPage() {
         <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/50 backdrop-blur-sm">
           {activeTab === "users" && (
             <AdminUserTable
-              users={users}
+              users={users || []}
               onApprove={handleApprove}
               onSuspend={handleSuspend}
+              onDelete={handleDelete}
               loading={loadingUsers}
             />
           )}
-          {activeTab === "logs" && <AdminAuditLogTable logs={logs} loading={loadingLogs} />}
+
+          {activeTab === "logs" && <AdminAuditLogTable logs={logs || []} loading={loadingLogs} />}
           {activeTab === "mentors" && (
             <AdminMentorTable
-              users={users}
+              users={users || []}
               onToggleMentor={handleToggleMentor}
               loading={loadingUsers}
             />

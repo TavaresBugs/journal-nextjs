@@ -31,6 +31,7 @@ interface AssetComboboxProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  showAllOption?: boolean;
 }
 
 // ============================================
@@ -43,8 +44,12 @@ export function AssetCombobox({
   placeholder = "Selecione um ativo...",
   className,
   disabled = false,
+  showAllOption = false,
 }: AssetComboboxProps) {
   const [open, setOpen] = useState(false);
+  // Handle "All Assets" special case
+  const isAllSelected = showAllOption && value === "TODOS OS ATIVOS";
+
   const selectedAsset = value ? findAssetBySymbol(value) : undefined;
   const groupedAssets = groupAssetsByType(ASSET_OPTIONS);
 
@@ -68,7 +73,14 @@ export function AssetCombobox({
             className
           )}
         >
-          {selectedAsset ? (
+          {isAllSelected ? (
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-sm bg-cyan-500/20 text-xs font-bold text-cyan-500">
+                ALL
+              </span>
+              <span className="font-medium text-white">Todos os Ativos</span>
+            </div>
+          ) : selectedAsset ? (
             <div className="flex items-center gap-2.5">
               <AssetIcon symbol={selectedAsset.value} size="sm" />
               <span className="font-medium">{selectedAsset.label}</span>
@@ -91,6 +103,38 @@ export function AssetCombobox({
           </CommandEmpty>
 
           <CommandList className="max-h-[400px] overflow-y-auto">
+            {showAllOption && (
+              <CommandGroup
+                heading="Geral"
+                className="px-2 py-2 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-gray-400 [&_[cmdk-group-heading]]:uppercase"
+              >
+                <CommandItem
+                  value="TODOS OS ATIVOS ALL"
+                  onSelect={() => {
+                    onChange("TODOS OS ATIVOS");
+                    setOpen(false);
+                  }}
+                  className={cn(
+                    "cursor-pointer rounded-md px-2 py-2.5",
+                    "hover:bg-gray-700",
+                    "data-[selected=true]:bg-gray-700"
+                  )}
+                >
+                  <div className="flex w-full items-center gap-3">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-cyan-500/20 text-[10px] font-bold text-cyan-500">
+                      ALL
+                    </span>
+                    <span className="flex-1 text-sm font-semibold text-white">Todos os Ativos</span>
+                    <Check
+                      className={cn(
+                        "h-4 w-4 text-cyan-500",
+                        value === "TODOS OS ATIVOS" ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </div>
+                </CommandItem>
+              </CommandGroup>
+            )}
             {groupOrder.map((type) => {
               const assets = groupedAssets[type];
               if (!assets || assets.length === 0) return null;

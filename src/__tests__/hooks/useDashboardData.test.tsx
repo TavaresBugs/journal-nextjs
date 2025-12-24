@@ -7,10 +7,12 @@ import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { isAdmin } from "@/services/admin/admin";
-import { isMentor } from "@/services/mentor/invites";
+import { isAdminAction } from "@/app/actions/admin";
+import { isMentorAction } from "@/app/actions/mentor";
 import { useToast } from "@/providers/ToastProvider";
 import { useRouter } from "next/navigation";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
 // Mocks
 vi.mock("@/store/useAccountStore");
@@ -18,10 +20,24 @@ vi.mock("@/store/useTradeStore");
 vi.mock("@/store/useJournalStore");
 vi.mock("@/store/usePlaybookStore");
 vi.mock("@/store/useSettingsStore");
-vi.mock("@/services/admin/admin");
-vi.mock("@/services/mentor/invites");
+vi.mock("@/app/actions/admin");
+vi.mock("@/app/actions/mentor");
 vi.mock("@/providers/ToastProvider");
 vi.mock("next/navigation"); // Already mocked in setup, but fine to override or rely on global
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+  return Wrapper;
+};
 
 describe("useDashboardData", () => {
   // Setup generic spies
@@ -106,12 +122,12 @@ describe("useDashboardData", () => {
     } as any);
 
     // Services Default
-    vi.mocked(isAdmin).mockResolvedValue(false);
-    vi.mocked(isMentor).mockResolvedValue(false);
+    vi.mocked(isAdminAction).mockResolvedValue(false);
+    vi.mocked(isMentorAction).mockResolvedValue(false);
   });
 
   it("should redirect if accountId is invalid format", () => {
-    renderHook(() => useDashboardData("invalid-id"));
+    renderHook(() => useDashboardData("invalid-id"), { wrapper: createWrapper() });
     expect(mockRouter.push).toHaveBeenCalledWith("/");
   });
 
@@ -126,7 +142,7 @@ describe("useDashboardData", () => {
     // Use a valid UUID but one that doesn't match our mockAccount
     const validUnmatchedId = "987e4567-e89b-12d3-a456-426614174999";
 
-    renderHook(() => useDashboardData(validUnmatchedId));
+    renderHook(() => useDashboardData(validUnmatchedId), { wrapper: createWrapper() });
 
     await waitFor(() => {
       expect(mockRouter.push).toHaveBeenCalledWith("/");
@@ -136,7 +152,9 @@ describe("useDashboardData", () => {
   });
 
   it("should load data successfully for valid account", async () => {
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     expect(result.current.isLoading).toBe(true);
     expect(mockLoadTrades).toHaveBeenCalledWith(mockAccount.id);
@@ -172,7 +190,9 @@ describe("useDashboardData", () => {
     // PnL is +100. Expected balance 10100.
     // Difference is present, so updateAccountBalance should be called.
 
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -192,7 +212,9 @@ describe("useDashboardData", () => {
       loadEntries: mockLoadEntries,
     } as any);
 
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -203,10 +225,12 @@ describe("useDashboardData", () => {
   });
 
   it("should load admin and mentor permissions", async () => {
-    vi.mocked(isAdmin).mockResolvedValue(true);
-    vi.mocked(isMentor).mockResolvedValue(true);
+    vi.mocked(isAdminAction).mockResolvedValue(true);
+    vi.mocked(isMentorAction).mockResolvedValue(true);
 
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -220,7 +244,9 @@ describe("useDashboardData", () => {
     mockLoadTrades.mockRejectedValue(new Error("Network Error"));
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -245,7 +271,7 @@ describe("useDashboardData", () => {
       });
     });
 
-    renderHook(() => useDashboardData(mockAccount.id));
+    renderHook(() => useDashboardData(mockAccount.id), { wrapper: createWrapper() });
 
     await waitFor(() => {
       expect(mockLoadAccounts).toHaveBeenCalled();
@@ -264,7 +290,9 @@ describe("useDashboardData", () => {
       loadEntries: mockLoadEntries,
     } as any);
 
-    const { result } = renderHook(() => useDashboardData(mockAccount.id));
+    const { result } = renderHook(() => useDashboardData(mockAccount.id), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);

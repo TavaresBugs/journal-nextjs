@@ -1,6 +1,4 @@
 /**
  * Journal Domain Services
  */
-export * from "./journal";
-export * from "./review";
-export * from "./routine";
+// Empty index will be cleaned up in final phase

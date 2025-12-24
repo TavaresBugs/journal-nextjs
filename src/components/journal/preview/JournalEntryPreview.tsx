@@ -15,19 +15,13 @@ interface JournalEntryPreviewProps {
   hasMentor?: boolean;
   hasUnreadComments?: boolean;
   noBackdrop?: boolean;
+  onDelete?: () => void;
 }
 
 /**
  * Preview mode component for viewing journal entries.
  * Displays all entry information in a read-only format with edit and share options.
  * Memoized to prevent unnecessary re-renders.
- *
- * @param entry - The journal entry to display
- * @param trade - The linked trade (optional)
- * @param onClose - Callback to close the preview
- * @param onEdit - Callback to switch to edit mode
- * @param onShare - Callback to share the entry
- * @param isSharingLoading - Loading state for share action
  */
 const JournalEntryPreviewComponent = ({
   entry,
@@ -39,6 +33,7 @@ const JournalEntryPreviewComponent = ({
 
   hasUnreadComments = false,
   noBackdrop = true,
+  onDelete,
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);
 
@@ -66,6 +61,20 @@ const JournalEntryPreviewComponent = ({
           <span className="pointer-events-none absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-gray-900 bg-red-500" />
         )}
       </div>
+
+      {onDelete && (
+        <IconActionButton
+          variant="delete"
+          size="md"
+          onClick={() => {
+            if (confirm("Tem certeza que deseja excluir esta entrada? Ação irreversível.")) {
+              onDelete();
+            }
+          }}
+          className="[&_svg]:h-6 [&_svg]:w-6"
+        />
+      )}
+
       <IconActionButton
         variant="share"
         size="md"

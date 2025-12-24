@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 import type { MentorInvite } from "@/types";
 
 interface ConvitesTableProps {
@@ -71,10 +72,29 @@ export function ConvitesTable({ invites, onRevoke, loading }: ConvitesTableProps
             >
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 bg-gray-800 font-bold text-gray-400">
-                    {invite.menteeEmail?.charAt(0).toUpperCase() || "M"}
+                  <div className="relative h-10 w-10 shrink-0">
+                    {invite.menteeAvatar ? (
+                      <Image
+                        src={invite.menteeAvatar}
+                        alt={invite.menteeName || invite.menteeEmail || ""}
+                        width={40}
+                        height={40}
+                        className="h-full w-full rounded-full border border-gray-700 object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-full border border-gray-700 bg-gray-800 font-bold text-gray-400">
+                        {(invite.menteeName || invite.menteeEmail || "M").charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                  <span className="text-white">{invite.menteeEmail || "Email não disponível"}</span>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-white">
+                      {invite.menteeName || invite.menteeEmail || "Usuário desconhecido"}
+                    </span>
+                    {invite.menteeName && (
+                      <span className="text-xs text-gray-500">{invite.menteeEmail}</span>
+                    )}
+                  </div>
                 </div>
               </td>
               <td className="px-4 py-4 text-center">

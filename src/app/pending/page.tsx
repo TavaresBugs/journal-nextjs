@@ -111,18 +111,18 @@ export default function PendingPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
+            <Button onClick={handleLogout} variant="gradient-danger" className="flex-1 font-bold">
+              Sair
+            </Button>
+
             <Button
               onClick={handleCheckStatus}
               disabled={checking}
               variant="gradient-success"
-              className="w-full"
+              className="flex-1 font-bold"
             >
               {checking ? "Verificando..." : "Verificar Status"}
-            </Button>
-
-            <Button onClick={handleLogout} variant="gradient-danger" className="w-full">
-              Sair
             </Button>
           </div>
         </div>

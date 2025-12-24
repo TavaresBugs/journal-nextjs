@@ -7,9 +7,10 @@ import { CustomCheckbox } from "@/components/checklist/CustomCheckbox";
 
 interface DailyHabitsRowProps {
   currentRoutine: DailyRoutine | null;
-  onToggleHabit: (
+  onToggleHabit?: (
     habit: keyof Omit<DailyRoutine, "id" | "accountId" | "date" | "createdAt" | "updatedAt">
   ) => void;
+  readOnly?: boolean;
 }
 
 const habits = [
@@ -25,8 +26,13 @@ const habits = [
  * Component for daily habits checklist
  * Displays checkable habit buttons with visual feedback
  * Memoized to prevent unnecessary re-renders
+ * @param readOnly - If true, habits cannot be toggled (for mentor view)
  */
-const DailyHabitsRowComponent = ({ currentRoutine, onToggleHabit }: DailyHabitsRowProps) => {
+const DailyHabitsRowComponent = ({
+  currentRoutine,
+  onToggleHabit,
+  readOnly = false,
+}: DailyHabitsRowProps) => {
   // Optimistic UI state
   const [optimisticRoutine, setOptimisticRoutine] = useState<DailyRoutine | null>(currentRoutine);
 
@@ -38,9 +44,11 @@ const DailyHabitsRowComponent = ({ currentRoutine, onToggleHabit }: DailyHabitsR
   const handleToggle = (
     key: keyof Omit<DailyRoutine, "id" | "accountId" | "date" | "createdAt" | "updatedAt">
   ) => {
+    if (readOnly || !onToggleHabit) return;
+
     // Optimistic update
     setOptimisticRoutine((prev) => {
-      if (!prev) return null; // Should ideally handle 'new' routine creation optimistically too, but tricky without ID
+      if (!prev) return null;
       return { ...prev, [key]: !prev[key] };
     });
 
@@ -51,22 +59,17 @@ const DailyHabitsRowComponent = ({ currentRoutine, onToggleHabit }: DailyHabitsR
   return (
     <div className="grid grid-cols-2 gap-2 md:grid-cols-6">
       {habits.map((habit) => {
-        // Use optimistic state if available, fallback to props
         const isChecked = optimisticRoutine
           ? optimisticRoutine[habit.key]
           : currentRoutine?.[habit.key] || false;
-
-        // Handle case where optimistic state might be null initially if creating new routine
-        // If currentRoutine is null, we can't fully support optimistic UI for the *first* click easily
-        // without mimicking the object structure.
-        // fallback: if no routine exists yet, rely on props (slower first click, but subsequent are fast)
-        // or: create a fake empty routine object
 
         return (
           <GlassCard
             key={habit.key}
             onClick={() => handleToggle(habit.key)}
-            className={`group flex cursor-pointer items-center justify-center gap-2 px-2 py-2 transition-all duration-200 ${
+            className={`group flex items-center justify-center gap-2 px-2 py-2 transition-all duration-200 ${
+              readOnly ? "cursor-default" : "cursor-pointer"
+            } ${
               isChecked
                 ? "bg-zorin-accent/10 border-zorin-accent/50 shadow-[0_0_10px_rgba(0,200,83,0.1)]"
                 : "bg-zorin-bg/30 hover:border-zorin-accent/30 hover:bg-zorin-bg/40 border-white/5"
@@ -76,6 +79,7 @@ const DailyHabitsRowComponent = ({ currentRoutine, onToggleHabit }: DailyHabitsR
               checked={isChecked}
               onChange={() => handleToggle(habit.key)}
               id={`habit-${habit.key}`}
+              disabled={readOnly}
             />
             <div className="flex items-center gap-2">
               <span className="text-lg">{habit.icon}</span>

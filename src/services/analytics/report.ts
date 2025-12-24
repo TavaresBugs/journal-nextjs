@@ -1,6 +1,6 @@
 import * as ExcelJS from "exceljs";
 import { Trade } from "@/types";
-import { getTrades } from "@/services/trades/trade";
+import { getTradesAction } from "@/app/actions/trades";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 
@@ -36,7 +36,7 @@ export async function generateReport(
   startDate: Date,
   endDate: Date
 ): Promise<Blob> {
-  const allTrades = await getTrades(accountId);
+  const allTrades = await getTradesAction(accountId);
 
   // Filter trades by date range
   const trades = allTrades.filter((t) => {

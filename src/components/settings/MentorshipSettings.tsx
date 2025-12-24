@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { Button, Modal } from "@/components/ui";
 import {
-  getMyMentors,
-  getAccountPermissions,
-  setAccountPermission,
-  removeAccountPermission,
-} from "@/services/mentor/invites";
-import { getAccounts } from "@/services/core/account";
+  getMyMentorsAction as getMyMentors,
+  getAccountPermissionsAction as getAccountPermissions,
+  setAccountPermissionAction as setAccountPermission,
+  removeAccountPermissionAction as removeAccountPermission,
+} from "@/app/actions/mentor";
+import { getAccountsAction } from "@/app/actions/accounts";
 import { Account, MentorInvite, MentorAccountPermission } from "@/types";
 
 export function MentorshipSettings() {
@@ -26,7 +26,7 @@ export function MentorshipSettings() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [mentorsData, accountsData] = await Promise.all([getMyMentors(), getAccounts()]);
+      const [mentorsData, accountsData] = await Promise.all([getMyMentors(), getAccountsAction()]);
       setMentors(mentorsData);
       setAccounts(accountsData);
     } catch (error) {

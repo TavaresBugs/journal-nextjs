@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, Input } from "@/components/ui";
 import { Playbook } from "@/types";
-import { supabase } from "@/lib/supabase";
-import { sharePlaybook } from "@/services/community/playbook";
+import { sharePlaybookAction, getCurrentUserDisplayNameAction } from "@/app/actions/community";
+import { updateUserNameAction } from "@/app/actions/admin";
 
 interface SharePlaybookModalProps {
   playbook: Playbook;
@@ -33,30 +33,10 @@ export function SharePlaybookModal({
       setStep("loading");
       setError(null);
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        setError("Usuário não autenticado");
-        return;
-      }
+      const displayName = await getCurrentUserDisplayNameAction();
 
-      // Check users_extended for name
-      const { data, error: fetchError } = await supabase
-        .from("users_extended")
-        .select("name")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error("Erro ao buscar nome:", fetchError);
-        // If table doesn't exist or other error, ask for nickname
-        setStep("nickname");
-        return;
-      }
-
-      if (data?.name) {
-        setExistingName(data.name);
+      if (displayName) {
+        setExistingName(displayName);
         setStep("confirm");
       } else {
         setStep("nickname");
@@ -75,36 +55,15 @@ export function SharePlaybookModal({
     setIsSubmitting(true);
     setError(null);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setError("Usuário não autenticado");
-      setIsSubmitting(false);
-      return;
+    const result = await updateUserNameAction(nickname.trim());
+
+    if (result.success) {
+      setExistingName(nickname.trim());
+      setStep("confirm");
+    } else {
+      setError(result.error || "Erro ao salvar. Tente novamente.");
     }
 
-    // Save nickname to users_extended
-    const { error: saveError } = await supabase.from("users_extended").upsert(
-      {
-        id: user.id,
-        name: nickname.trim(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        onConflict: "id",
-      }
-    );
-
-    if (saveError) {
-      console.error("Erro ao salvar nickname:", saveError);
-      setError("Erro ao salvar. Tente novamente.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    setExistingName(nickname.trim());
-    setStep("confirm");
     setIsSubmitting(false);
   };
 
@@ -112,13 +71,13 @@ export function SharePlaybookModal({
     setIsSubmitting(true);
     setError(null);
 
-    const result = await sharePlaybook(playbook.id);
+    const result = await sharePlaybookAction(playbook.id);
 
-    if (result) {
+    if (result.success) {
       onSuccess();
       onClose();
     } else {
-      setError("Erro ao compartilhar. Tente novamente.");
+      setError(result.error || "Erro ao compartilhar. Tente novamente.");
     }
 
     setIsSubmitting(false);

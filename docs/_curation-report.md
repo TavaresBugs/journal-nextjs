@@ -287,3 +287,31 @@ Usar para comparações, métricas, e listagens estruturadas.
 
 **Status:** ✅ Curadoria concluída em 19/12/2025
 **Commit:** `bfaea8f`
+
+---
+
+## 📊 8. Atualização - 22/12/2025
+
+### Novos Documentos
+
+| Arquivo             | Descrição                                        |
+| ------------------- | ------------------------------------------------ |
+| `docs/CHANGELOG.md` | Timeline de progresso com features implementadas |
+
+### Issues Criadas para Melhorias
+
+| Issue | Título                                        | Prioridade | Status       |
+| ----- | --------------------------------------------- | ---------- | ------------ |
+| #62   | Prisma Migration Phase 2 - Secondary Features | Alta       | ✅ Concluída |
+| #63   | Remove Legacy Supabase Repositories           | Média      | ✅ Concluída |
+| #64   | Improve Performance Report Calculations       | Baixa      | Aberta       |
+| #65   | Update Architecture Documentation             | Média      | ✅ Concluída |
+
+### Issues Fechadas
+
+| Issue | Título                              | Status       | Data       |
+| ----- | ----------------------------------- | ------------ | ---------- |
+| #61   | Prisma ORM - Integração Completa    | ✅ Concluída | 22/12/2025 |
+| #62   | Prisma Migration Phase 2            | ✅ Concluída | 23/12/2025 |
+| #63   | Remove Legacy Supabase Repositories | ✅ Concluída | 23/12/2025 |
+| #65   | Update Architecture Documentation   | ✅ Concluída | 23/12/2025 |

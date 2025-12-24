@@ -1,5 +1,7 @@
 import React from "react";
-import { Card, CardHeader, CardContent, Button } from "@/components/ui";
+import { Card, CardHeader, CardContent } from "@/components/ui";
+import { IconActionButton } from "@/components/ui/IconActionButton";
+import { AssetCombobox } from "@/components/shared/AssetCombobox";
 import { TradeList } from "@/components/trades/TradeList";
 import { Trade } from "@/types";
 import { useToast } from "@/providers/ToastProvider";
@@ -10,6 +12,7 @@ interface DashboardJournalProps {
   totalCount: number;
   currentPage: number;
   accountId: string;
+  isLoading?: boolean;
 
   // Actions
   onLoadPage: (accountId: string, page: number) => Promise<void>;
@@ -19,6 +22,12 @@ interface DashboardJournalProps {
   onDeleteTrade: (tradeId: string) => Promise<void>;
   onViewDay: (date: string) => void;
   onJournalClick?: (trade: Trade, startEditing?: boolean) => void;
+  // Sort
+  sortDirection: "asc" | "desc";
+  onSortChange: (accountId: string, direction: "asc" | "desc") => Promise<void>;
+  // Filter
+  filterAsset: string;
+  onFilterChange: (accountId: string, asset: string) => Promise<void>;
 }
 
 export function DashboardJournal({
@@ -27,6 +36,7 @@ export function DashboardJournal({
   totalCount,
   currentPage,
   accountId,
+  isLoading,
   onLoadPage,
   onImportClick,
   onDeleteAllTrades,
@@ -34,6 +44,10 @@ export function DashboardJournal({
   onDeleteTrade,
   onViewDay,
   onJournalClick,
+  sortDirection,
+  onSortChange,
+  filterAsset,
+  onFilterChange,
 }: DashboardJournalProps) {
   const { showToast } = useToast();
 
@@ -49,103 +63,24 @@ export function DashboardJournal({
     }
   };
 
-  const [filterAsset, setFilterAsset] = React.useState<string>("TODOS OS ATIVOS");
-
-  // Get unique assets for filter
-  const uniqueAssets = React.useMemo(() => {
-    return Array.from(new Set(trades.map((t) => t.symbol))).sort();
-  }, [trades]);
-
   return (
     <Card>
       <CardHeader className="flex flex-col items-start justify-between gap-4 py-4 md:flex-row md:items-center">
         {/* Filtro à esquerda (onde estava o título) */}
         <div className="w-full md:w-64">
-          <div className="relative">
-            <input
-              list="assets-filter-list-header"
-              value={filterAsset}
-              onChange={(e) => setFilterAsset(e.target.value)}
-              placeholder="Todos os Ativos"
-              className="h-9 w-full rounded border border-gray-700 bg-gray-900/50 px-3 py-1 text-sm text-gray-200 uppercase transition-colors placeholder:text-gray-500 focus:border-gray-500 focus:outline-none"
-            />
-            {/* Chevron icon para indicar dropdown */}
-            <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-gray-500">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </div>
-          </div>
-          <datalist id="assets-filter-list-header">
-            <option value="TODOS OS ATIVOS" />
-            {uniqueAssets.map((asset) => (
-              <option key={asset} value={asset} />
-            ))}
-          </datalist>
+          <AssetCombobox
+            value={filterAsset}
+            onChange={(asset) => onFilterChange(accountId, asset)}
+            placeholder="Filtrar por ativo..."
+            showAllOption={true}
+            className="h-10 border-gray-700 bg-gray-900/50 hover:bg-gray-800"
+          />
         </div>
 
         {/* Ações à direita */}
-        <div className="flex w-full gap-2 md:w-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onImportClick}
-            className="flex-1 justify-center text-gray-400 hover:text-white md:flex-none"
-            leftIcon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
-            }
-          >
-            Importar
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDeleteAll}
-            className="flex-1 justify-center text-red-400 hover:bg-red-500/10 hover:text-red-300 md:flex-none"
-            leftIcon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 6h18" />
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-              </svg>
-            }
-          >
-            Limpar Histórico
-          </Button>
+        <div className="flex w-full justify-end gap-2 md:w-auto">
+          <IconActionButton variant="import" onClick={onImportClick} title="Importar Trades" />
+          <IconActionButton variant="delete" onClick={handleDeleteAll} title="Limpar Histórico" />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -162,6 +97,9 @@ export function DashboardJournal({
           // Props novas para controle externo
           filterAsset={filterAsset}
           hideHeader={true}
+          sortDirection={sortDirection}
+          onSortChange={(dir) => onSortChange(accountId, dir)}
+          isLoading={isLoading}
         />
       </CardContent>
     </Card>

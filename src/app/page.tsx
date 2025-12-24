@@ -6,9 +6,17 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useToast } from "@/providers/ToastProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { EditAccountModal } from "@/components/accounts/EditAccountModal";
 import { CreateAccountModal } from "@/components/accounts/CreateAccountModal";
 import { AccountSelectionSkeleton } from "@/components/accounts/AccountSelectionSkeleton";
-import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  IconActionButton,
+} from "@/components/ui";
 import type { Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 
@@ -16,12 +24,14 @@ import { SettingsModal } from "@/components/settings/SettingsModal";
 
 export default function HomePage() {
   const router = useRouter();
-  const { accounts, loadAccounts, addAccount, setCurrentAccount, removeAccount } =
+  const { accounts, loadAccounts, addAccount, updateAccount, setCurrentAccount, removeAccount } =
     useAccountStore();
   const { loadSettings } = useSettingsStore();
   const { showToast } = useToast();
   const { signOut, user, loading: authLoading } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
@@ -57,6 +67,20 @@ export default function HomePage() {
         );
 
         await Promise.race([Promise.all([loadAccounts(), loadSettings()]), timeoutPromise]);
+
+        // Sync all account balances to ensure they're up to date
+        const { syncAllAccountsBalancesAction } = await import("@/app/actions/accounts");
+        const syncResult = await syncAllAccountsBalancesAction();
+        if (syncResult.syncedCount > 0) {
+          // Reload accounts to reflect updated balances
+          await loadAccounts();
+        }
+
+        // Check if user has no accounts after loading
+        const currentAccounts = useAccountStore.getState().accounts;
+        if (currentAccounts.length === 0) {
+          setIsCreateModalOpen(true);
+        }
       } catch (error) {
         console.error("Error initializing home page:", error);
         setDataError("Erro ao carregar dados. Tente recarregar a página.");
@@ -79,6 +103,16 @@ export default function HomePage() {
     };
 
     await addAccount(newAccount);
+  };
+
+  const handleEditAccount = (e: React.MouseEvent, account: Account) => {
+    e.stopPropagation();
+    setEditingAccount(account);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateAccount = async (updatedAccount: Account) => {
+    await updateAccount(updatedAccount);
   };
 
   const handleSelectAccount = (accountId: string) => {
@@ -255,31 +289,15 @@ export default function HomePage() {
                 onClick={() => handleSelectAccount(account.id)}
                 className="group relative"
               >
-                <div className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={(e: React.MouseEvent) =>
-                      handleDeleteAccount(e, account.id, account.name)
-                    }
-                    className="h-8 w-8 rounded-full text-gray-500 hover:bg-red-500/10 hover:text-red-400"
-                    title="Excluir Carteira"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </Button>
+                <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  {/* Edit Button */}
+                  <IconActionButton variant="edit" onClick={(e) => handleEditAccount(e, account)} />
+
+                  {/* Delete Button */}
+                  <IconActionButton
+                    variant="delete"
+                    onClick={(e) => handleDeleteAccount(e, account.id, account.name)}
+                  />
                 </div>
                 <CardHeader>
                   <CardTitle>{account.name}</CardTitle>
@@ -361,6 +379,13 @@ export default function HomePage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateAccount={handleCreateAccount}
+      />
+
+      <EditAccountModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleUpdateAccount}
+        account={editingAccount}
       />
 
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />

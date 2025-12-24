@@ -1,15 +1,15 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getPublicPlaybooks, togglePlaybookStar } from "@/services/community/playbook";
 import {
-  getLeaderboard,
-  getMyLeaderboardStatus,
-  joinLeaderboard,
-  leaveLeaderboard,
-  getCurrentUserDisplayName,
-} from "@/services/community/leaderboard";
-// Types are inferred from service return types
+  getPublicPlaybooksAction,
+  togglePlaybookStarAction,
+  getLeaderboardAction,
+  getMyLeaderboardStatusAction,
+  joinLeaderboardAction,
+  leaveLeaderboardAction,
+  getCurrentUserDisplayNameAction,
+} from "@/app/actions/community";
 
 // Query Keys for cache management
 export const communityKeys = {
@@ -25,7 +25,7 @@ export const communityKeys = {
 export function useCommunityPlaybooks() {
   return useQuery({
     queryKey: communityKeys.playbooks(),
-    queryFn: () => getPublicPlaybooks(),
+    queryFn: () => getPublicPlaybooksAction(),
     staleTime: 2 * 60 * 1000, // 2 minutes for community data
   });
 }
@@ -36,7 +36,7 @@ export function useCommunityPlaybooks() {
 export function useCommunityLeaderboard() {
   return useQuery({
     queryKey: communityKeys.leaderboard(),
-    queryFn: getLeaderboard,
+    queryFn: getLeaderboardAction,
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -47,7 +47,7 @@ export function useCommunityLeaderboard() {
 export function useLeaderboardOptIn() {
   return useQuery({
     queryKey: communityKeys.optInStatus(),
-    queryFn: getMyLeaderboardStatus,
+    queryFn: getMyLeaderboardStatusAction,
     staleTime: 5 * 60 * 1000,
   });
 }
@@ -59,15 +59,15 @@ export function useCommunityActions() {
   const queryClient = useQueryClient();
 
   const handleStar = async (playbookId: string) => {
-    const success = await togglePlaybookStar(playbookId);
-    if (success) {
+    const result = await togglePlaybookStarAction(playbookId);
+    if (result.success) {
       queryClient.invalidateQueries({ queryKey: communityKeys.playbooks() });
     }
-    return success;
+    return result.success;
   };
 
   const handleJoinLeaderboard = async () => {
-    let displayName = await getCurrentUserDisplayName();
+    let displayName = await getCurrentUserDisplayNameAction();
 
     if (!displayName) {
       displayName = prompt("Escolha um nome de exibição:");
@@ -75,26 +75,26 @@ export function useCommunityActions() {
 
     if (!displayName) return false;
 
-    const result = await joinLeaderboard(displayName, {
+    const result = await joinLeaderboardAction(displayName, {
       showWinRate: true,
       showProfitFactor: true,
       showTotalTrades: true,
       showPnl: true,
     });
 
-    if (result) {
+    if (result.success) {
       queryClient.invalidateQueries({ queryKey: communityKeys.all });
     }
-    return !!result;
+    return result.success;
   };
 
   const handleLeaveLeaderboard = async () => {
     if (!confirm("Tem certeza que deseja sair do leaderboard?")) return false;
-    const success = await leaveLeaderboard();
-    if (success) {
+    const result = await leaveLeaderboardAction();
+    if (result.success) {
       queryClient.invalidateQueries({ queryKey: communityKeys.all });
     }
-    return success;
+    return result.success;
   };
 
   return {
@@ -113,12 +113,12 @@ export function usePrefetchCommunityData() {
   return () => {
     queryClient.prefetchQuery({
       queryKey: communityKeys.playbooks(),
-      queryFn: () => getPublicPlaybooks(),
+      queryFn: () => getPublicPlaybooksAction(),
       staleTime: 2 * 60 * 1000,
     });
     queryClient.prefetchQuery({
       queryKey: communityKeys.leaderboard(),
-      queryFn: getLeaderboard,
+      queryFn: getLeaderboardAction,
       staleTime: 2 * 60 * 1000,
     });
   };

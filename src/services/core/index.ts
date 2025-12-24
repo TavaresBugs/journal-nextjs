@@ -1,5 +1,4 @@
 /**
  * Core Domain Services
  */
-export * from "./account";
-export * from "./mental";
+// Empty indices will be cleaned up in Sprint 5

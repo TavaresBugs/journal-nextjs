@@ -1,17 +1,24 @@
 /**
  * useMentalHub Hook
  *
- * Centralizes all Mental Hub logic:
- * - Loading profiles and entries from Supabase
+ * Centralizes all Mental Hub logic using Server Actions:
+ * - Loading profiles and entries from Prisma via Server Actions
  * - Saving new entries
  * - Seeding user profiles during onboarding
+ *
+ * @migrated Phase 6a - Migrated from direct Supabase calls to Server Actions
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabase";
-import { getSeedsByCategory, type MentalSeedProfile } from "@/constants/mental";
+import {
+  getMentalProfilesAction,
+  getMentalEntriesAction,
+  saveMentalEntryAction,
+  deleteMentalEntryAction,
+  seedMentalProfilesAction,
+} from "@/app/actions";
 
-// Types
+// Types (re-exported from repository for convenience)
 export interface MentalProfile {
   id: string;
   userId: string | null;
@@ -65,6 +72,7 @@ interface UseMentalHubReturn {
 
 /**
  * Hook for managing Mental Hub data
+ * Uses Server Actions for all database operations
  */
 export function useMentalHub(): UseMentalHubReturn {
   const [profiles, setProfiles] = useState<MentalProfile[]>([]);
@@ -78,26 +86,8 @@ export function useMentalHub(): UseMentalHubReturn {
   const loadProfiles = useCallback(async () => {
     try {
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from("mental_profiles")
-        .select("*")
-        .order("category", { ascending: true })
-        .order("severity", { ascending: false });
-
-      if (fetchError) throw fetchError;
-
-      const mapped: MentalProfile[] = (data || []).map((p) => ({
-        id: p.id,
-        userId: p.user_id,
-        category: p.category,
-        severity: p.severity,
-        description: p.description,
-        zone: p.zone,
-        isSystem: p.is_system,
-        createdAt: p.created_at,
-      }));
-
-      setProfiles(mapped);
+      const data = await getMentalProfilesAction();
+      setProfiles(data);
     } catch (err) {
       console.error("Error loading mental profiles:", err);
       setError("Erro ao carregar perfis mentais");
@@ -110,28 +100,8 @@ export function useMentalHub(): UseMentalHubReturn {
   const loadEntries = useCallback(async (limit = 50) => {
     try {
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from("mental_entries")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(limit);
-
-      if (fetchError) throw fetchError;
-
-      const mapped: MentalEntry[] = (data || []).map((e) => ({
-        id: e.id,
-        userId: e.user_id,
-        createdAt: e.created_at,
-        triggerEvent: e.trigger_event,
-        emotion: e.emotion,
-        behavior: e.behavior,
-        mistake: e.mistake,
-        correction: e.correction,
-        zoneDetected: e.zone_detected,
-        source: e.source || "grid",
-      }));
-
-      setEntries(mapped);
+      const data = await getMentalEntriesAction(limit);
+      setEntries(data);
     } catch (err) {
       console.error("Error loading mental entries:", err);
       setError("Erro ao carregar histórico mental");
@@ -145,23 +115,19 @@ export function useMentalHub(): UseMentalHubReturn {
     async (data: MentalEntryInput): Promise<boolean> => {
       try {
         setError(null);
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not authenticated");
-
-        const { error: insertError } = await supabase.from("mental_entries").insert({
-          user_id: user.id,
-          trigger_event: data.triggerEvent || null,
-          emotion: data.emotion || null,
-          behavior: data.behavior || null,
-          mistake: data.mistake || null,
-          correction: data.correction || null,
-          zone_detected: data.zoneDetected || null,
+        const result = await saveMentalEntryAction({
+          triggerEvent: data.triggerEvent,
+          emotion: data.emotion,
+          behavior: data.behavior,
+          mistake: data.mistake,
+          correction: data.correction,
+          zoneDetected: data.zoneDetected,
           source: data.source || "grid",
         });
 
-        if (insertError) throw insertError;
+        if (!result.success) {
+          throw new Error(result.error || "Failed to save entry");
+        }
 
         // Reload entries after insert
         await loadEntries();
@@ -185,30 +151,11 @@ export function useMentalHub(): UseMentalHubReturn {
         setIsLoading(true);
         setError(null);
 
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) throw new Error("User not authenticated");
+        const result = await seedMentalProfilesAction(category);
 
-        const seeds = getSeedsByCategory(category);
-
-        if (seeds.length === 0) {
-          throw new Error("No seeds found for category");
+        if (!result.success) {
+          throw new Error(result.error || "Failed to seed profiles");
         }
-
-        // Prepare batch insert data
-        const insertData = seeds.map((seed: MentalSeedProfile) => ({
-          user_id: user.id,
-          category: seed.category,
-          description: seed.description,
-          zone: seed.zone,
-          severity: seed.severity,
-          is_system: false, // User's copy, not system default
-        }));
-
-        const { error: insertError } = await supabase.from("mental_profiles").insert(insertData);
-
-        if (insertError) throw insertError;
 
         // Reload profiles after seeding
         await loadProfiles();
@@ -230,9 +177,11 @@ export function useMentalHub(): UseMentalHubReturn {
   const deleteEntry = useCallback(async (id: string): Promise<boolean> => {
     try {
       setError(null);
-      const { error: deleteError } = await supabase.from("mental_entries").delete().eq("id", id);
+      const result = await deleteMentalEntryAction(id);
 
-      if (deleteError) throw deleteError;
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete entry");
+      }
 
       // Remove from local state
       setEntries((prev) => prev.filter((e) => e.id !== id));

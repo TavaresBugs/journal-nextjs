@@ -1,316 +1,315 @@
-# 🔒 Segurança
+# Arquitetura de Segurança
 
-> **Score de Auditoria:** 8.0/10 ✅
-> **Última Revisão:** Dezembro 2025
-> **Padrão:** OWASP Top 10
+## Índice
 
-Este documento descreve as práticas de segurança implementadas no Trading Journal Pro.
+1. [Autenticação e Autorização](#auth)
+2. [Segurança do Middleware](#middleware)
+3. [Rate Limiting](#rate-limiting)
+4. [Headers de Segurança](#headers)
+5. [Validação de Entrada](#validation)
+6. [Logs de Auditoria](#audit)
+7. [Resposta a Incidentes](#incidents)
+8. [Testes de Segurança](#security-testing)
+9. [Modelo de Ameaças](#threat-model)
+10. [Checklist de Segurança](#checklist)
+
+## Autenticação e Autorização {#auth}
+
+### Gerenciamento de Sessão
+
+- **Provedor**: Supabase Auth
+- **Tipo de Token**: JWT (cookies httpOnly)
+- **Estratégia de Refresh**: Automática (Supabase SDK)
+- **Duração da Sessão**: 7 dias (configurável)
+
+### Controle de Acesso Baseado em Papel (RBAC)
+
+| Papel         | Permissões                            | Rotas Permitidas              |
+| ------------- | ------------------------------------- | ----------------------------- |
+| `user`        | Funcionalidades básicas de trading    | `/dashboard`, `/trades`       |
+| `mentor`      | Funcionalidades de usuário + mentoria | `/mentor/*`, rotas de usuário |
+| `admin`       | Acesso total ao sistema               | `/admin/*`, todas as rotas    |
+| `super_admin` | Admin + operações sensíveis           | `/admin/audit-logs`           |
+
+**Implementação:** Veja `src/config/route-config.ts`
 
 ---
 
-## 📋 Índice
+## Segurança do Middleware {#middleware}
 
-- [Visão Geral](#-visão-geral)
-- [Autenticação](#-autenticação)
-- [Autorização (RLS)](#-autorização-rls)
-- [Headers de Segurança](#-headers-de-segurança)
-- [Rate Limiting](#-rate-limiting)
-- [Logging Seguro](#-logging-seguro)
-- [Checklist OWASP](#-checklist-owasp)
-- [Boas Práticas](#-boas-práticas)
+### Visão Geral da Arquitetura
 
----
+Request → Detecção de IP → Rate Limit → Checagem de Rota Pública →
+Checagem de Auth → Verificação de Papel/Status → Lógica de Redirecionamento → Resposta
 
-## 🎯 Visão Geral
+### Diagrama de Fluxo do Middleware
 
-### Arquitetura de Segurança
-
+```mermaid
+graph TD
+    A[Request] --> B[Detecção de IP]
+    B -->|X-Forwarded-For| C[Rate Limiting]
+    C -->|Upstash Redis| D{Rota Pública?}
+    D --Sim--> E[Permitir]
+    D --Não--> F[Checagem de Auth]
+    F -->|Sessão Supabase| G[Papel/Status]
+    G -->|Consulta DB| H[Lógica de Redirecionamento]
+    H --> I[Resposta]
 ```
-┌────────────────────────────────────────────────┐
-│                   CLIENTE                       │
-│  (Browser com HTTPS)                           │
-└──────────────────────┬─────────────────────────┘
-                       │
-                       ▼
-┌────────────────────────────────────────────────┐
-│              MIDDLEWARE (Next.js)              │
-│  ✓ Rate Limiting (5 tentativas/15min)          │
-│  ✓ Validação de UUID                           │
-│  ✓ Proteção de rotas admin                     │
-│  ✓ Refresh automático de sessão               │
-└──────────────────────┬─────────────────────────┘
-                       │
-                       ▼
-┌────────────────────────────────────────────────┐
-│              SUPABASE (Backend)                 │
-│  ✓ Auth com JWT                                │
-│  ✓ RLS (Row Level Security)                    │
-│  ✓ Queries parametrizadas                      │
-│  ✓ Storage com ACL                             │
-└────────────────────────────────────────────────┘
-```
+
+### Estrutura de Arquivos
+
+- `src/middleware.ts` - Orquestração principal
+- `src/config/route-config.ts` - Permissões de rotas
+- `src/lib/auth/middleware-utils.ts` - Funções auxiliares
+- `src/lib/ratelimit.ts` - Rate limiting com Redis
+
+### Níveis de Proteção de Rotas
+
+**Rotas Públicas (Sem Auth Necessária):**
+
+- `/login`
+- `/termos`
+- `/api/public/*`
+- `/_next/*` (assets estáticos)
+
+**Rotas Protegidas (Auth Necessária):**
+
+- `/dashboard`
+- `/trades/*`
+- `/accounts/*`
+
+**Rotas de Admin (Papel de Admin Necessário):**
+
+- `/admin/*`
+- `/admin/usuarios`
+- `/admin/mentores`
+
+**Rotas de Super Admin:**
+
+- `/admin/audit-logs`
+
+**Implementação:** Veja `ROUTE_PERMISSIONS` em `src/config/route-config.ts`
 
 ---
 
-## 🔐 Autenticação
+## Rate Limiting {#rate-limiting}
 
-### Sistema
+### Estratégia
 
-Usamos **Supabase Auth** com JWT:
+- **Provedor:** Upstash Redis
+- **Algoritmo:** Janela Fixa (Fixed Window Counter)
+- **Detecção de IP:** X-Forwarded-For → X-Real-IP → req.ip
 
-- Login por email/senha
-- Sessões com refresh automático
-- Tokens JWT validados no servidor
+### Limites Atuais
 
-### Middleware de Auth
+| Rota              | Janela | Máx Requisições | Duração do Bloqueio |
+| ----------------- | ------ | --------------- | ------------------- |
+| `/login`          | 15 min | 5               | 15 min              |
+| `/api/trades`     | 1 min  | 100             | 1 min               |
+| `/api/*` (padrão) | 1 min  | 200             | 1 min               |
 
-**Localização:** `src/middleware.ts`
+**Configuração:** Veja `src/lib/ratelimit.ts`
+
+### Exceções (Bypasses)
+
+- Requisições autenticadas de IPs conhecidos
+- Chamadas de serviço interno (com header secreto)
+
+---
+
+## Headers de Segurança {#headers}
+
+### Headers Configurados (next.config.mjs)
+
+| Header                      | Valor                                 | Propósito                  |
+| --------------------------- | ------------------------------------- | -------------------------- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Forçar HTTPS               |
+| `X-Content-Type-Options`    | `nosniff`                             | Prevenir MIME sniffing     |
+| `X-Frame-Options`           | `DENY`                                | Prevenir clickjacking      |
+| `X-XSS-Protection`          | `1; mode=block`                       | Proteção XSS legado        |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`     | Controlar info de referrer |
+
+### Content Security Policy (CSP)
+
+**Gerenciado por:** Sentry SDK (reporte automático de CSP)
+
+```text
+default-src 'self';
+script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.sentry.io;
+style-src 'self' 'unsafe-inline';
+img-src 'self' data: https:;
+connect-src 'self' https://api.supabase.co https://sentry.io;
+```
+
+**Nota:** Ajuste a CSP no `next.config.mjs` ou no dashboard do Sentry.
+
+---
+
+## Validação de Entrada {#validation}
+
+### Validação de UUID (Rotas Dinâmicas)
+
+**Todas as rotas que esperam parâmetros UUID validam o formato antes de consultas ao banco:**
 
 ```typescript
-// Rotas que requerem autenticação
-const protectedRoutes = ["/dashboard", "/trades", "/journal", "/playbook"];
-
-// Rotas que requerem role admin
-const adminRoutes = ["/admin"];
+// Exemplo: /dashboard/accounts/[id]
+if (!isValidUUID(params.id)) notFound();
 ```
 
-### Proteção de Rotas Admin
+**Regex:** Compatível com RFC 4122 (validação de versão + variante)
 
-```typescript
-// Middleware verifica role do usuário
-if (adminRoutes.some((route) => pathname.startsWith(route))) {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+**Implementação:** Veja `src/lib/validation/uuid.ts`
 
-  if (profile?.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+### Prevenção de SQL Injection
+
+- **ORM:** Prisma ORM com queries parametrizadas
+- **Sem SQL bruto** no código da aplicação (exceto migrações controladas)
+
+### Prevenção de XSS
+
+- Escaping automático do React
+- DOMPurify para HTML gerado por usuário (se aplicável)
+- Headers CSP
+
+---
+
+## Logs de Auditoria {#audit}
+
+### Eventos Logados
+
+- Autenticação de usuário (login, logout, falhas)
+- Ações de admin (criação de usuário, deleção, mudança de papel)
+- Negações de acesso a recursos
+- Violações de rate limit
+- Violações de cabeçalhos de segurança (via relatórios CSP)
+
+### Estrutura do Log
+
+```json
+{
+  "timestamp": "ISO8601",
+  "actorId": "string",
+  "actorEmail": "string",
+  "actorIp": "string",
+  "action": "string",
+  "resourceType": "string",
+  "resourceId": "string",
+  "targetUserId": "string",
+  "changes": { "field": "", "oldValue": "", "newValue": "" },
+  "result": "success | denied | error"
 }
 ```
 
 ---
 
-## 🛡️ Autorização (RLS)
+## Resposta a Incidentes {#incidents}
 
-### O que é RLS?
+### Reporte de Problemas de Segurança
 
-**Row Level Security** é como um "filtro automático" no banco de dados. Cada usuário só vê seus próprios dados, mesmo que a query tente buscar tudo.
+**Email:** security@tradelog.com (monitorado 24/7)
 
-> **💡 Analogia:** É como um prédio de apartamentos onde cada morador tem uma chave que só abre seu apartamento.
+**Tempo de Resposta:**
 
-### Policies Implementadas
+- Crítico: 2 horas
+- Alto: 24 horas
+- Médio: 7 dias
 
-**Trades:**
+### Política de Divulgação de Vulnerabilidades
 
-```sql
--- Usuário só vê seus próprios trades
-CREATE POLICY "Users can only see their trades"
-ON trades FOR SELECT
-USING (auth.uid() = user_id);
-
--- Usuário só pode criar trades para si
-CREATE POLICY "Users can only insert their trades"
-ON trades FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-```
-
-**Tabelas com RLS:**
-
-| Tabela            | SELECT     | INSERT     | UPDATE     | DELETE     |
-| ----------------- | ---------- | ---------- | ---------- | ---------- |
-| `trades`          | ✅ user_id | ✅ user_id | ✅ user_id | ✅ user_id |
-| `journal_entries` | ✅ user_id | ✅ user_id | ✅ user_id | ✅ user_id |
-| `playbooks`       | ✅ user_id | ✅ user_id | ✅ user_id | ✅ user_id |
-| `accounts`        | ✅ user_id | ✅ user_id | ✅ user_id | ✅ user_id |
+Veja `SECURITY_POLICY.md` para diretrizes de divulgação responsável.
 
 ---
 
-## 🛡️ Headers de Segurança
+## Testes de Segurança {#security-testing}
 
-**Configurados em:** `next.config.mjs`
+### Testes Automatizados
 
-```javascript
-const securityHeaders = [
-  // Previne clickjacking
-  { key: "X-Frame-Options", value: "DENY" },
+**Localização:** `src/__tests__/security/` (ou integrado em testes de middleware/services)
 
-  // Previne MIME sniffing
-  { key: "X-Content-Type-Options", value: "nosniff" },
+- `middleware-logic.test.ts` - Fluxos de autenticação e redirecionamento
+- `uuid.test.ts` - Validação de entrada
+- `integration.test.ts` - Controle de acesso e ownership
 
-  // Ativa proteção XSS
-  { key: "X-XSS-Protection", value: "1; mode=block" },
+**Executar:** `npm run test`
 
-  // Controla referrer
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+### Checklist de Teste Manual
 
-  // HSTS - força HTTPS
-  {
-    key: "Strict-Transport-Security",
-    value: "max-age=63072000; includeSubDomains; preload",
-  },
+**Autenticação:**
 
-  // CSP - controla recursos carregados
-  { key: "Content-Security-Policy", value: "..." },
+- [ ] Não é possível acessar `/dashboard` sem sessão
+- [ ] Sessão expira após logout
+- [ ] Rotação de refresh token funciona
 
-  // Permissions Policy
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-];
-```
+**Autorização:**
 
----
+- [ ] Usuário comum não pode acessar rotas `/admin`
+- [ ] Admin não pode acessar `/admin/audit-logs` (apenas super_admin)
+- [ ] Usuário suspenso é redirecionado para login
 
-## ⏱️ Rate Limiting
+**Rate Limiting:**
 
-### Configuração
+- [ ] Login bloqueado após 5 tentativas falhas
+- [ ] API retorna 429 após exceder limite
+- [ ] Rate limit reseta após janela expirar
 
-**Localização:** `src/middleware.ts`
+**Validação de Entrada:**
 
-```typescript
-const RATE_LIMIT = {
-  MAX_REQUESTS: 5, // Máximo de tentativas
-  WINDOW_MS: 15 * 60 * 1000, // Janela de 15 minutos
-};
-
-const rateLimitMap = new Map<string, RateLimitEntry>();
-```
-
-### Comportamento
-
-1. **Login:** 5 tentativas por IP a cada 15 minutos
-2. **Após limite:** Retorna 429 (Too Many Requests)
-3. **Reset:** Automático após a janela de tempo
-
-> **⚠️ Nota:** O rate limit usa memória in-memory, o que é adequado para a escala atual. Para produção em grande escala, considere Redis/Upstash.
+- [ ] UUID inválido retorna 404
+- [ ] Tentativas de SQL injection bloqueadas
+- [ ] Payloads XSS escapados
 
 ---
 
-## 📝 Logging Seguro
+## Modelo de Ameaças {#threat-model}
 
-### Problema
+### Ameaças Identificadas & Mitigações
 
-Logs podem expor dados sensíveis (PII - Personally Identifiable Information):
+| Ameaça                                   | Nível de Risco | Mitigação                                       | Status          |
+| ---------------------------------------- | -------------- | ----------------------------------------------- | --------------- |
+| Quebra de Controle de Acesso (OWASP A01) | Alto           | Validação de UUID + Checagem de Ownership + RLS | ✅ Implementado |
+| SQL Injection                            | Alto           | Queries parametrizadas com Prisma ORM           | ✅ Implementado |
+| XSS                                      | Médio          | Escaping do React + Headers CSP                 | ✅ Implementado |
+| CSRF                                     | Médio          | Cookies SameSite + Tokens Supabase              | ✅ Implementado |
+| Força Bruta                              | Médio          | Rate limiting (5 tentativas/15min)              | ✅ Implementado |
+| Sequestro de Sessão                      | Baixo          | Cookies httpOnly + Apenas HTTPS                 | ✅ Implementado |
+| Clickjacking                             | Baixo          | X-Frame-Options: DENY                           | ✅ Implementado |
 
-```typescript
-// ❌ PERIGOSO - pode expor dados sensíveis
-console.error("Error:", error);
-console.log("User data:", userData);
-```
+### Fora do Escopo (Riscos Aceitos)
 
-### Solução
-
-Use os helpers de logging seguro:
-
-```typescript
-import { safeError, sanitizeMeta, Logger } from "@/lib/logging";
-
-// ✅ SEGURO - extrai apenas message e code
-console.error("Error:", safeError(error));
-
-// ✅ SEGURO - remove chaves sensíveis
-console.log("Meta:", sanitizeMeta(userData));
-
-// ✅ MELHOR - usa Logger seguro
-const logger = new Logger("MyComponent");
-logger.errorSafe("Failed to load", error, { context: "profile" });
-```
-
-### Chaves Bloqueadas
-
-O sanitizador remove automaticamente:
-
-| Categoria       | Chaves                                                        |
-| --------------- | ------------------------------------------------------------- |
-| **Auth**        | `password`, `token`, `session`, `accessToken`, `refreshToken` |
-| **Credentials** | `apiKey`, `secret`, `credential`, `cookie`, `auth`            |
-| **PII**         | `email`, `phone`, `cpf`, `ip`, `user_id`                      |
-
-### Checklist de Auditoria
-
-Antes de cada commit, verifique:
-
-- [ ] Nenhum `console.error(error)` sem sanitização
-- [ ] Dados de usuário nunca logados diretamente
-- [ ] Tokens e sessões nunca expostos em logs
+- Ataques DDoS (mitigados por Vercel/Cloudflare)
+- Segurança física (responsabilidade do provedor de infraestrutura)
 
 ---
 
-## ✅ Checklist OWASP Top 10
+## Checklist de Segurança {#checklist}
 
-| #   | Vulnerabilidade           | Status | Implementação             |
-| --- | ------------------------- | ------ | ------------------------- |
-| A01 | Broken Access Control     | ✅     | RLS + Middleware          |
-| A02 | Cryptographic Failures    | ✅     | Supabase gerencia         |
-| A03 | Injection                 | ✅     | Queries parametrizadas    |
-| A04 | Insecure Design           | ✅     | Arquitetura sólida        |
-| A05 | Security Misconfiguration | ✅     | Headers configurados      |
-| A06 | Vulnerable Components     | 🟡     | Auditar deps regularmente |
-| A07 | Auth Failures             | ✅     | Rate limit + JWT          |
-| A08 | Data Integrity            | ✅     | RLS                       |
-| A09 | Logging Failures          | ✅     | Sentry + safe logging     |
-| A10 | SSRF                      | ✅     | N/A para arquitetura      |
+**Antes de Cada Release:**
 
----
+- [ ] Executar `npm audit` e resolver vulnerabilidades críticas/altas
+- [ ] Revisar logs de auditoria por padrões suspeitos
+- [ ] Testar tentativas de bypass de autenticação
+- [ ] Verificar se rate limits estão sendo aplicados
+- [ ] Checar violações de CSP no Sentry
+- [ ] Confirmar HTTPS-only em produção
+- [ ] Revisar permissões de IAM (Supabase, Upstash)
+- [ ] Rotacionar segredos com mais de 90 dias
 
-## 🚀 Boas Práticas
+**Mensalmente:**
 
-### Para Desenvolvedores
-
-✅ **FAÇA:**
-
-- Valide UUIDs em rotas dinâmicas
-- Use RLS para todas as tabelas
-- Sanitize logs antes de enviar
-- Use `NEXT_PUBLIC_` apenas para dados públicos
-
-❌ **NÃO FAÇA:**
-
-- Expor `SERVICE_ROLE_KEY` no cliente
-- Logar objetos de erro inteiros
-- Confiar apenas em validação frontend
-- Usar chaves sequenciais para IDs públicos
-
-### Validação de UUID
-
-```typescript
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-if (!UUID_REGEX.test(accountId)) {
-  redirect("/dashboard");
-}
-```
-
-### Variáveis de Ambiente
-
-```typescript
-// ✅ Seguro - Pode ser exposta no cliente
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-
-// ❌ NUNCA expor no cliente
-SUPABASE_SERVICE_ROLE_KEY=...  // Apenas server-side
-```
+- [ ] Revisar e atualizar `docs/security.md`
+- [ ] Conduzir auditoria de controle de acesso
+- [ ] Testar restauração de backup
+- [ ] Revisar dependências de terceiros
 
 ---
 
-## 📊 Métricas de Segurança
+## Referências
 
-| Métrica              | Valor                 |
-| -------------------- | --------------------- |
-| Headers de segurança | 7/7 configurados      |
-| Tabelas com RLS      | 100%                  |
-| Rate limiting        | 5 req/15min           |
-| UUID validation      | Todas rotas dinâmicas |
-| PII em logs          | 0 exposições          |
+- [OWASP Top 10 2021](https://owasp.org/Top10/)
+- [Next.js Security Best Practices](https://nextjs.org/docs/app/building-your-application/configuring/security-headers)
+- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
+- [Upstash Rate Limiting](https://upstash.com/docs/redis/features/ratelimiting)
 
----
-
-## 🔗 Referências
-
-- [OWASP Top 10](https://owasp.org/Top10/)
-- [Supabase RLS](https://supabase.com/docs/guides/auth/row-level-security)
-- [Next.js Security](https://nextjs.org/docs/advanced-features/security-headers)
-- [architecture.md](./architecture.md) - Arquitetura do projeto
-- [database.md](./database.md) - Schema e RLS policies
+**Última Atualização:** 24/12/2025
+**Revisado Por:** Time de Segurança
+**Próxima Revisão:** 24/01/2026

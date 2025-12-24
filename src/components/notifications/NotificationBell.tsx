@@ -1,9 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { getReceivedInvites, acceptInvite, rejectInvite } from "@/services/mentor/invites";
-import { getMyReviews } from "@/services/journal/review";
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  acceptInviteAction as acceptInvite,
+  rejectInviteAction as rejectInvite,
+} from "@/app/actions/mentor";
 import { MentorInvite, Notification } from "@/types";
 import { NotificationsModal } from "./NotificationsModal";
 
@@ -23,132 +25,121 @@ const PROJECT_ANNOUNCEMENTS = [
   },
 ];
 
+import { useReceivedInvites } from "@/hooks/useMentorData";
+import { useMyReviews } from "@/hooks/useReviewData";
+
 export function NotificationBell({ accountId }: { accountId?: string }) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showFullModal, setShowFullModal] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // Use cached hooks
+  const {
+    data: invites = [],
+    isLoading: loadingInvites,
+    refetch: refetchInvites,
+  } = useReceivedInvites();
+  const { data: reviews = [], isLoading: loadingReviews } = useMyReviews();
 
-  const loadNotifications = useCallback(async () => {
-    setLoading(true);
+  const loading = loadingInvites || loadingReviews;
+
+  // Load read announcements from local storage on mount
+  const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
+
+  useEffect(() => {
     try {
-      // 1. Carregar convites
-      const invites = await getReceivedInvites();
-      const inviteNotifs: Notification[] = invites.map((inv) => ({
-        id: inv.id,
-        type: "invite",
-        title: "Convite de Mentoria",
-        message: `${inv.mentorName || inv.mentorEmail} convidou você.`,
-        timestamp: new Date(inv.createdAt),
+      const stored = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setReadAnnouncementIds(stored);
+    } catch (e) {
+      console.error("Error loading read announcements", e);
+    }
+  }, []);
+
+  // Compute notifications derived from data + local state
+  const notifications = useMemo<Notification[]>(() => {
+    // 1. Process Invites
+    const inviteNotifs: Notification[] = invites.map((inv) => ({
+      id: inv.id,
+      type: "invite",
+      title: "Convite de Mentoria",
+      message: `${inv.mentorName || inv.mentorEmail} convidou você.`,
+      timestamp: new Date(inv.createdAt),
+      read: false,
+      data: inv,
+    }));
+
+    // 2. Process Reviews
+    const reviewNotifs: Notification[] = reviews
+      .filter((r) => !r.isRead)
+      .map((r) => ({
+        id: r.id,
+        type: "feedback",
+        title: "Novo Feedback",
+        message:
+          r.reviewType === "correction"
+            ? "Nova correção recebida."
+            : r.reviewType === "suggestion"
+              ? "Nova sugestão recebida."
+              : "Novo comentário recebido.",
+        timestamp: new Date(r.createdAt),
         read: false,
-        data: inv,
-      }));
+        data: {
+          journalEntryId: r.journalEntryId,
+          date: r.entryDate,
+          accountId: r.entryAccountId,
+        },
+      })) as Notification[];
 
-      // 2. Carregar Feedback (Reviews)
-      const reviews = await getMyReviews();
-      const reviewNotifs: Notification[] = reviews
-        .filter((r) => !r.isRead)
-        .map((r) => ({
-          id: r.id,
-          type: "feedback", // Cast as generic or 'feedback' if type updated
-          title: "Novo Feedback",
-          message:
-            r.reviewType === "correction"
-              ? "Nova correção recebida."
-              : r.reviewType === "suggestion"
-                ? "Nova sugestão recebida."
-                : "Novo comentário recebido.",
-          timestamp: new Date(r.createdAt),
-          read: false,
-          data: {
-            journalEntryId: r.journalEntryId,
-            date: r.entryDate,
-            accountId: r.entryAccountId,
-          },
-        })) as Notification[];
+    // 3. Process Announcements
+    const announcementNotifs: Notification[] = PROJECT_ANNOUNCEMENTS.map((ann) => ({
+      id: ann.id,
+      type: "announcement",
+      title: ann.title,
+      message: ann.message,
+      timestamp: ann.date,
+      read: readAnnouncementIds.includes(ann.id),
+    }));
 
-      // 3. Carregar Anúncios
-      const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
-      const announcementNotifs: Notification[] = PROJECT_ANNOUNCEMENTS.map((ann) => ({
-        id: ann.id,
-        type: "announcement",
-        title: ann.title,
-        message: ann.message,
-        timestamp: ann.date,
-        read: readAnnouncements.includes(ann.id),
-      }));
+    // Merge and Sort
+    return [...inviteNotifs, ...reviewNotifs, ...announcementNotifs].sort(
+      (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+    );
+  }, [invites, reviews, readAnnouncementIds]);
 
-      // Merge and Sort
-      const all = [...inviteNotifs, ...reviewNotifs, ...announcementNotifs].sort(
-        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-      );
-
-      setNotifications(all);
-    } catch (error) {
-      console.error("Error loading notifications:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      if (mounted) await loadNotifications();
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, [loadNotifications]);
-
-  // Fechar dropdown ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  // Calculate unread count
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleAcceptInvite = async (invite: MentorInvite) => {
     const success = await acceptInvite(invite.inviteToken);
     if (success) {
-      loadNotifications();
+      refetchInvites();
     }
   };
 
   const handleRejectInvite = async (invite: MentorInvite) => {
     const success = await rejectInvite(invite.id);
     if (success) {
-      loadNotifications();
+      refetchInvites();
     }
   };
 
   const markAnnouncementRead = (id: string) => {
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
-    if (!readAnnouncements.includes(id)) {
-      readAnnouncements.push(id);
-      localStorage.setItem("readAnnouncements", JSON.stringify(readAnnouncements));
-    }
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    const newReadIds = [...readAnnouncementIds, id];
+    setReadAnnouncementIds(newReadIds);
+    localStorage.setItem("readAnnouncements", JSON.stringify(newReadIds));
   };
 
   const markAllAnnouncementsRead = () => {
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
+    const newReadIds = [...readAnnouncementIds];
     notifications.forEach((n) => {
-      if (n.type === "announcement" && !readAnnouncements.includes(n.id)) {
-        readAnnouncements.push(n.id);
+      if (n.type === "announcement" && !newReadIds.includes(n.id)) {
+        newReadIds.push(n.id);
       }
     });
-    localStorage.setItem("readAnnouncements", JSON.stringify(readAnnouncements));
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setReadAnnouncementIds(newReadIds);
+    localStorage.setItem("readAnnouncements", JSON.stringify(newReadIds));
   };
 
   const handleViewFeedback = (notification: Notification) => {
@@ -339,31 +330,8 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
   );
 }
 
-// Hook para usar em outros lugares
+// Hook para usar em outros lugares (simplificado)
 export function useNotifications() {
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  const refreshCount = useCallback(async () => {
-    const invites = await getReceivedInvites();
-    const readAnnouncements = JSON.parse(localStorage.getItem("readAnnouncements") || "[]");
-    const unreadAnnouncements = PROJECT_ANNOUNCEMENTS.filter(
-      (ann) => !readAnnouncements.includes(ann.id)
-    ).length;
-    setUnreadCount(invites.length + unreadAnnouncements);
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      if (mounted) await refreshCount();
-    };
-    load();
-    const interval = setInterval(refreshCount, 30000);
-    return () => {
-      mounted = false;
-      clearInterval(interval);
-    };
-  }, [refreshCount]);
-
-  return { unreadCount, refreshCount };
+  const { data: invites = [] } = useReceivedInvites();
+  return { unreadCount: invites.length };
 }

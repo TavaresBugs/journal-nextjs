@@ -1,11 +1,10 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, getCurrentUserIdClient } from "@/lib/supabase";
 import { Account, Trade, JournalEntry, DailyRoutine, JournalImage, Settings } from "@/types";
 import { base64ToBlob } from "@/lib/utils/general";
-import { saveAccount, getCurrentUserId } from "@/services/core/account";
-import { saveTrade } from "@/services/trades/trade";
-import { saveJournalEntry } from "@/services/journal/journal";
-import { saveDailyRoutine } from "@/services/journal/routine";
-import { saveSettings } from "@/services/core/account";
+import { saveAccountAction, saveSettingsAction } from "@/app/actions/accounts";
+import { saveTradeAction } from "@/app/actions/trades";
+import { saveJournalEntryAction } from "@/app/actions/journal";
+import { saveDailyRoutineAction } from "@/app/actions/routines";
 
 // ============================================
 // MIGRATION HELPER
@@ -16,7 +15,7 @@ import { saveSettings } from "@/services/core/account";
  */
 export async function migrateLocalStorageToSupabase(): Promise<boolean> {
   try {
-    const userId = await getCurrentUserId();
+    const userId = await getCurrentUserIdClient();
     if (!userId) {
       console.error("❌ User not authenticated. Cannot migrate.");
       return false;
@@ -29,7 +28,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const accounts: Account[] = accountsData ? JSON.parse(accountsData) : [];
     console.log(`Found ${accounts.length} accounts to migrate.`);
     for (const account of accounts) {
-      await saveAccount({ ...account, userId });
+      await saveAccountAction({ ...account, userId });
     }
 
     // Migrar trades
@@ -37,7 +36,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const allTrades: Trade[] = allTradesData ? JSON.parse(allTradesData) : [];
     console.log(`Found ${allTrades.length} trades to migrate.`);
     for (const trade of allTrades) {
-      await saveTrade({ ...trade, userId });
+      await saveTradeAction({ ...trade, userId });
     }
 
     // Migrar journal entries
@@ -125,7 +124,7 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
         images: newImages,
       };
 
-      await saveJournalEntry(entryWithImages);
+      await saveJournalEntryAction(entryWithImages);
     }
 
     // Migrar daily routines
@@ -133,14 +132,14 @@ export async function migrateLocalStorageToSupabase(): Promise<boolean> {
     const allRoutines: DailyRoutine[] = allRoutinesData ? JSON.parse(allRoutinesData) : [];
     console.log(`Found ${allRoutines.length} daily routines to migrate.`);
     for (const routine of allRoutines) {
-      await saveDailyRoutine({ ...routine, userId });
+      await saveDailyRoutineAction({ ...routine, userId });
     }
 
     // Migrar settings
     const settingsData = localStorage.getItem("tj_settings");
     if (settingsData) {
       const settings: Settings = JSON.parse(settingsData);
-      await saveSettings({ ...settings, userId });
+      await saveSettingsAction({ ...settings, userId });
       console.log("Settings migrated.");
     }
 

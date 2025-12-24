@@ -7,20 +7,31 @@ interface CustomCheckboxProps {
   onChange: () => void;
   label?: string;
   id?: string;
+  disabled?: boolean;
 }
 
-export function CustomCheckbox({ checked, onChange, label, id }: CustomCheckboxProps) {
+export function CustomCheckbox({
+  checked,
+  onChange,
+  label,
+  id,
+  disabled = false,
+}: CustomCheckboxProps) {
   const generatedId = useId();
   const checkboxId = id || `checkbox-${generatedId}`;
 
   return (
-    <label htmlFor={checkboxId} className="group flex cursor-pointer items-center gap-3">
+    <label
+      htmlFor={checkboxId}
+      className={`group flex items-center gap-3 ${disabled ? "cursor-default" : "cursor-pointer"}`}
+    >
       {/* Hidden native input for accessibility */}
       <input
         type="checkbox"
         id={checkboxId}
         checked={checked}
-        onChange={onChange}
+        onChange={disabled ? undefined : onChange}
+        disabled={disabled}
         className="peer sr-only"
       />
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
@@ -23,7 +23,12 @@ export interface DashboardInitData {
 
   // State
   isLoading: boolean;
+  isTradesLoading: boolean;
+  isStoreLoading: boolean;
+  isAccountReady: boolean;
   isAccountFound: boolean;
+  sortDirection: "asc" | "desc";
+  filterAsset: string;
 }
 
 export interface DashboardInitActions {
@@ -31,6 +36,8 @@ export interface DashboardInitActions {
   loadTrades: (accountId: string) => Promise<void>;
   loadEntries: (accountId: string) => Promise<void>;
   loadPlaybooks: () => Promise<void>;
+  setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>;
+  setFilterAsset: (accountId: string, asset: string) => Promise<void>;
 }
 
 /**
@@ -50,7 +57,7 @@ export function useDashboardInit(
   const { showToast } = useToast();
 
   // Store State
-  const { accounts, currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
+  const { currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
   const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage } = useTradeStore();
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
@@ -58,6 +65,8 @@ export function useDashboardInit(
 
   // Local State
   const [isLoading, setIsLoading] = useState(true);
+  const [isTradesLoading, setIsTradesLoading] = useState(true);
+  const [isAccountReady, setIsAccountReady] = useState(false);
   const [isAccountFound, setIsAccountFound] = useState(true);
 
   // Refs
@@ -71,10 +80,14 @@ export function useDashboardInit(
     }
 
     const init = async () => {
+      // Check if already initialized for this account
       if (isInitRef.current === accountId) {
         setIsLoading(false);
         return;
       }
+
+      // Optimistic lock: prevent race conditions (e.g. StrictMode)
+      isInitRef.current = accountId;
 
       try {
         let currentAccounts = useAccountStore.getState().accounts;
@@ -93,6 +106,7 @@ export function useDashboardInit(
         }
 
         setCurrentAccount(accountId);
+        setIsAccountReady(true); // Account is ready, can render header
 
         await Promise.all([
           loadTrades(accountId),
@@ -100,43 +114,61 @@ export function useDashboardInit(
           loadPlaybooks(),
           loadSettings(),
         ]);
-
-        isInitRef.current = accountId;
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");
+        // Reset lock on failure so we can try again
+        isInitRef.current = null;
       } finally {
         setIsLoading(false);
+        setIsTradesLoading(false);
       }
     };
 
     init();
-  }, [
-    accountId,
-    accounts.length,
-    isValidAccount,
-    setCurrentAccount,
-    loadTrades,
-    loadEntries,
-    loadPlaybooks,
-    loadSettings,
-    router,
-    showToast,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountId, showToast]);
 
   // Balance Update Effect
+  // Calculate total PnL with memoization to avoid effect dependencies on array
+  const totalPnL = useMemo(() => {
+    return allHistory.reduce((sum, trade) => {
+      return sum + (trade.pnl || 0);
+    }, 0);
+  }, [allHistory]);
+
+  // Balance Update Effect
+  // Check difference with epsilon to avoid floating point loops
+  // Balance Update Effect - Run ONLY ONCE on init to fix potential drifts
+  // We rely on trade actions to keep balance updated in real-time
+  const isSyncedRef = useRef(false);
+
   useEffect(() => {
     if (!currentAccount || isLoading) return;
 
-    const totalPnL = allHistory.reduce((sum, trade) => {
-      return sum + (trade.pnl || 0);
-    }, 0);
+    // Prevent multiple syncs causing infinite loops
+    if (isSyncedRef.current) return;
 
-    const expectedBalance = currentAccount.initialBalance + totalPnL;
-    if (Math.abs(currentAccount.currentBalance - expectedBalance) > 0.001) {
-      updateAccountBalance(accountId, totalPnL);
+    const currentBal = Number(currentAccount.currentBalance);
+    const initBal = Number(currentAccount.initialBalance);
+    const pnl = Number(totalPnL);
+
+    if (isNaN(currentBal) || isNaN(initBal) || isNaN(pnl)) return;
+
+    const expectedBalance = initBal + pnl;
+
+    // Only update if difference is significant (> 0.01)
+    if (Math.abs(currentBal - expectedBalance) > 0.01) {
+      console.log("[DashboardInit] Syncing balance (One-time):", {
+        current: currentBal,
+        expected: expectedBalance,
+      });
+      updateAccountBalance(accountId, pnl);
     }
-  }, [allHistory.length, accountId, currentAccount, isLoading, allHistory, updateAccountBalance]);
+
+    // Mark as synced so we don't try again until full reload
+    isSyncedRef.current = true;
+  }, [totalPnL, currentAccount, isLoading, accountId, updateAccountBalance]);
 
   return {
     // Account
@@ -151,13 +183,20 @@ export function useDashboardInit(
     playbooks,
 
     // State
-    isLoading,
+    isLoading, // Kept for backwards compatibility (isTradesLoading)
+    isTradesLoading,
+    isStoreLoading: useTradeStore((state) => state.isLoading),
+    isAccountReady,
     isAccountFound,
+    sortDirection: useTradeStore((state) => state.sortDirection),
+    filterAsset: useTradeStore((state) => state.filterAsset),
 
     // Actions
-    loadPage,
     loadTrades,
-    loadEntries,
-    loadPlaybooks,
+    loadPage,
+    loadEntries: useJournalStore.getState().loadEntries,
+    loadPlaybooks: usePlaybookStore.getState().loadPlaybooks,
+    setSortDirection: useTradeStore((state) => state.setSortDirection),
+    setFilterAsset: useTradeStore((state) => state.setFilterAsset),
   };
 }

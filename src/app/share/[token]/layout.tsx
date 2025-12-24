@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
+import { isValidUUID } from "@/lib/validation/uuid";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -12,8 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { token } = await params;
 
   // Validate token format
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(token)) {
+  if (!isValidUUID(token)) {
     return {
       title: "Link Inválido | Trading Journal Pro",
       description: "Este link de compartilhamento é inválido.",
@@ -121,6 +122,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function ShareLayout({ children }: Props) {
+export default async function ShareLayout({ children, params }: Props) {
+  const { token } = await params;
+
+  if (!isValidUUID(token)) {
+    notFound();
+  }
+
   return <>{children}</>;
 }

@@ -168,7 +168,7 @@ export interface Playbook {
   userId: string; // User ID from Supabase Auth
   accountId?: string;
   name: string;
-  description?: string;
+  description?: string | null;
   icon: string;
   color: string;
   ruleGroups: RuleGroup[];
@@ -296,34 +296,48 @@ export interface UserSettings {
 // ADMIN TYPES
 // ============================================
 
-export type UserStatus = "pending" | "approved" | "suspended" | "banned";
+export type UserStatus = "pending" | "approved" | "suspended" | "banned" | "rejected";
 export type UserRole = "admin" | "user" | "guest" | "mentor";
 
 export interface UserExtended {
   id: string;
-  email: string;
-  name?: string;
-  avatarUrl?: string;
+  email: string | null;
+  name?: string | null;
+  avatarUrl?: string | null;
   status: UserStatus;
   role: UserRole;
-  approvedAt?: string;
-  approvedBy?: string;
-  notes?: string;
-  lastLoginAt?: string;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  notes?: string | null;
+  lastLoginAt?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface AuditLog {
   id: string;
-  userId?: string;
-  userEmail?: string; // Para display
+  userId?: string | null;
+  userEmail?: string | null; // Para display (legacy)
+  actorEmail?: string | null; // Email do admin que fez a ação
   action: string;
-  resourceType?: string;
-  resourceId?: string;
-  ipAddress?: string;
-  userAgent?: string;
-  metadata?: Record<string, unknown>;
+  resourceType?: string | null;
+  resourceId?: string | null;
+
+  // Target user (quem foi afetado) - preservado mesmo após deleção
+  targetUserId?: string | null;
+  targetUserEmail?: string | null;
+  targetUserName?: string | null;
+
+  // Before/After values
+  oldValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
+
+  // Context
+  reason?: string | null;
+  sessionId?: string | null;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
 }
 
@@ -332,8 +346,10 @@ export interface AdminStats {
   pendingUsers: number;
   approvedUsers: number;
   suspendedUsers: number;
+  rejectedUsers: number;
   bannedUsers: number;
   adminUsers: number;
+  mentorUsers: number;
   todayLogins: number;
   todaySignups: number;
 }
@@ -355,6 +371,7 @@ export interface MentorInvite {
   menteeId?: string;
   menteeEmail: string;
   menteeName?: string;
+  menteeAvatar?: string;
   // Configurações
   permission: MentorPermission;
   status: InviteStatus;
@@ -385,6 +402,10 @@ export interface MenteeOverview {
   winRate: number;
   recentTradesCount: number; // trades nos últimos 7 dias
   lastTradeDate?: string;
+  status?: "pending" | "accepted"; // Default is accepted if undefined
+  inviteId?: string; // For pending invites revocation
+  createdAt?: string; // Invite sent date
+  acceptedAt?: string; // Access start date
 }
 
 /**
@@ -402,6 +423,23 @@ export interface MentorAccountPermission {
   updatedAt?: string;
 }
 
+export interface MentorReview {
+  id: string;
+  mentorId: string;
+  menteeId: string;
+  tradeId?: string;
+  journalEntryId?: string;
+  reviewType: "correction" | "comment" | "suggestion";
+  content: string;
+  rating?: number;
+  isRead: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Context data for notifications
+  entryDate?: string;
+  entryAccountId?: string;
+}
+
 // ============================================
 // COMMUNITY TYPES
 // ============================================
@@ -414,7 +452,7 @@ export interface SharedPlaybook {
   userName?: string;
   userAvatar?: string;
   isPublic: boolean;
-  description?: string;
+  description?: string | null;
   stars: number;
   downloads: number;
   hasUserStarred?: boolean; // Se o usuário atual deu star

@@ -98,9 +98,18 @@ export async function signUpWithEmail(
   password: string
 ): Promise<{ user: User | null; error: string | null }> {
   try {
+    console.log("[signUpWithEmail] Starting signup for:", email);
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+    });
+
+    console.log("[signUpWithEmail] Supabase response:", {
+      hasUser: !!data.user,
+      hasSession: !!data.session,
+      userId: data.user?.id,
+      error: error?.message,
     });
 
     if (error) {
@@ -111,6 +120,9 @@ export async function signUpWithEmail(
       return { user: null, error: "Failed to create account" };
     }
 
+    // Note: users_extended profile will be created via Server Action
+    // from the login page to bypass Supabase RLS policies
+
     const user: User = {
       id: data.user.id,
       email: data.user.email || email,
@@ -120,6 +132,7 @@ export async function signUpWithEmail(
 
     return { user, error: null };
   } catch (error: unknown) {
+    console.error("[signUpWithEmail] Unexpected error:", error);
     return { user: null, error: getErrorMessage(error) };
   }
 }

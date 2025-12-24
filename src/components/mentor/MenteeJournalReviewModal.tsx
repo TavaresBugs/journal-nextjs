@@ -5,10 +5,12 @@ import { Modal, Button } from "@/components/ui";
 import type { Trade, JournalEntry } from "@/types";
 import { JournalEntryContent } from "@/components/journal/preview";
 import {
-  createReview,
-  getReviewsForJournalEntry,
-  type MentorReview,
-} from "@/services/journal/review";
+  createReviewAction,
+  getReviewsForJournalEntryAction,
+  deleteReviewAction,
+  updateReviewAction,
+} from "@/app/actions/reviews";
+import type { MentorReview } from "@/types";
 import { useToast } from "@/providers/ToastProvider";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -45,7 +47,7 @@ export function MenteeJournalReviewModal({
   const loadReviews = useCallback(async () => {
     setIsLoadingReviews(true);
     try {
-      const data = await getReviewsForJournalEntry(entry.id);
+      const data = await getReviewsForJournalEntryAction(entry.id);
       setReviews(data);
     } catch (error) {
       console.error("Error loading reviews:", error);
@@ -65,9 +67,8 @@ export function MenteeJournalReviewModal({
 
     setIsSubmitting(true);
     try {
-      const review = await createReview({
+      const result = await createReviewAction({
         menteeId,
-        mentorId: user?.id || "",
         journalEntryId: entry.id,
         tradeId: trade?.id,
         reviewType: addingType,
@@ -75,7 +76,8 @@ export function MenteeJournalReviewModal({
         rating: undefined,
       });
 
-      if (review) {
+      if (result.success && result.review) {
+        const review = result.review;
         setReviews((prev) => [...prev, review]);
         setReviewContent("");
         setAddingType(null);
@@ -94,12 +96,12 @@ export function MenteeJournalReviewModal({
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este feedback?")) return;
     try {
-      const success = await import("@/services/journal/review").then((m) => m.deleteReview(id));
-      if (success) {
+      const result = await deleteReviewAction(id);
+      if (result.success) {
         setReviews((prev) => prev.filter((r) => r.id !== id));
         showToast("Feedback excluído.", "success");
       } else {
-        showToast("Erro ao excluir.", "error");
+        showToast("Erro ao excluir: " + result.error, "error");
       }
     } catch (error) {
       console.error(error);
@@ -115,10 +117,8 @@ export function MenteeJournalReviewModal({
   const handleUpdate = async () => {
     if (!editingId || !editContent.trim()) return;
     try {
-      const success = await import("@/services/journal/review").then((m) =>
-        m.updateReview(editingId, editContent)
-      );
-      if (success) {
+      const result = await updateReviewAction(editingId, editContent);
+      if (result.success) {
         setReviews((prev) =>
           prev.map((r) => (r.id === editingId ? { ...r, content: editContent } : r))
         );
@@ -126,7 +126,7 @@ export function MenteeJournalReviewModal({
         setEditContent("");
         showToast("Feedback atualizado.", "success");
       } else {
-        showToast("Erro ao atualizar.", "error");
+        showToast("Erro ao atualizar: " + result.error, "error");
       }
     } catch (error) {
       console.error(error);

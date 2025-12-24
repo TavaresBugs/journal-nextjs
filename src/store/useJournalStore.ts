@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import type { JournalEntry, DailyRoutine } from "@/types";
 import {
-  getJournalEntries,
-  saveJournalEntry,
-  deleteJournalEntry,
-  getDailyRoutines,
-  saveDailyRoutine,
-} from "@/lib/storage";
+  getJournalEntriesAction,
+  saveJournalEntryAction,
+  deleteJournalEntryAction,
+} from "@/app/actions/journal";
+import { getDailyRoutinesAction, saveDailyRoutineAction } from "@/app/actions/routines";
+import { uploadJournalImages, isRawImageMap } from "@/services/journal/imageUpload";
+import { getCurrentUserIdClient } from "@/lib/supabase";
 
 interface JournalStore {
   entries: JournalEntry[];
@@ -20,7 +21,7 @@ interface JournalStore {
     entry: Omit<JournalEntry, "id" | "createdAt" | "updatedAt">
   ) => Promise<string | undefined>;
   updateEntry: (entry: JournalEntry) => Promise<void>;
-  removeEntry: (id: string) => Promise<void>;
+  deleteEntry: (id: string) => Promise<void>;
   removeEntryByTradeId: (tradeId: string) => void;
   getEntriesByTradeId: (tradeId: string) => JournalEntry[];
   getEntryByTradeId: (tradeId: string) => JournalEntry | undefined;
@@ -42,7 +43,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   loadEntries: async (accountId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const entries = await getJournalEntries(accountId);
+      const entries = await getJournalEntriesAction(accountId);
       set({ entries, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -52,26 +53,66 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   addEntry: async (entryData) => {
     set({ isLoading: true, error: null });
     try {
+      // Generate entry ID upfront for image paths
+      const entryId = crypto.randomUUID();
+
+      // Get current user ID for image upload
+      const userId = await getCurrentUserIdClient();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      // Process and upload images if they are in raw format (base64 map)
+      let processedImages = entryData.images;
+      if (isRawImageMap(entryData.images)) {
+        console.log("[useJournalStore] Processing images before save...");
+        processedImages = await uploadJournalImages(entryData.images as Record<string, string[]>, {
+          userId,
+          accountId: entryData.accountId,
+          entryId,
+          date: entryData.date,
+          asset: entryData.asset,
+        });
+        console.log(`[useJournalStore] Uploaded ${processedImages.length} images`);
+      }
+
+      // Create entry with processed images
       const newEntry: JournalEntry = {
         ...entryData,
-        id: crypto.randomUUID(),
+        id: entryId,
+        images: processedImages,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      const success = await saveJournalEntry(newEntry);
+      // Optimistic update
+      set((state) => ({
+        entries: [newEntry, ...state.entries],
+        isLoading: false,
+      }));
 
-      if (success) {
-        set((state) => ({
-          entries: [newEntry, ...state.entries],
-          isLoading: false,
-        }));
-        return newEntry.id;
-      } else {
-        throw new Error("Failed to save journal entry");
-      }
+      console.log("[useJournalStore] Calling createJournalEntry Server Action...");
+
+      // Call Server Action with processed data
+      const result = await saveJournalEntryAction({
+        ...entryData,
+        id: entryId,
+        images: processedImages,
+      });
+
+      console.log("[useJournalStore] Server Action result:", result);
+
+      // Reload to ensure consistency and get fresh data with relations
+      console.log("[useJournalStore] Reloading entries for account:", entryData.accountId);
+      const freshEntries = await getJournalEntriesAction(entryData.accountId);
+      console.log("[useJournalStore] Loaded", freshEntries.length, "fresh entries");
+      set({ entries: freshEntries });
+
+      return result.entry?.id || entryId;
     } catch (error) {
+      console.error("[useJournalStore] Error in addEntry:", error);
       set({ error: (error as Error).message, isLoading: false });
+      // Rollback would go here
       return undefined;
     }
   },
@@ -79,40 +120,70 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   updateEntry: async (entry) => {
     set({ isLoading: true, error: null });
     try {
+      // Get current user ID for image upload
+      const userId = await getCurrentUserIdClient();
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      // Process and upload images if they are in raw format (base64 map)
+      let processedImages = entry.images;
+      if (isRawImageMap(entry.images)) {
+        console.log("[useJournalStore] Processing images for update...");
+        processedImages = await uploadJournalImages(
+          entry.images as unknown as Record<string, string[]>,
+          {
+            userId,
+            accountId: entry.accountId,
+            entryId: entry.id,
+            date: entry.date,
+            asset: entry.asset,
+          }
+        );
+        console.log(`[useJournalStore] Uploaded ${processedImages.length} images`);
+      }
+
+      // Create updated entry with processed images
       const updatedEntry = {
         ...entry,
+        images: processedImages,
         updatedAt: new Date().toISOString(),
       };
 
-      const success = await saveJournalEntry(updatedEntry);
+      // Optimistic update
+      set((state) => ({
+        entries: state.entries.map((e) => (e.id === entry.id ? updatedEntry : e)),
+        isLoading: false,
+      }));
 
-      if (success) {
-        // Reload from DB to get fresh data including junction table relations
-        const freshEntries = await getJournalEntries(entry.accountId);
-        set({ entries: freshEntries, isLoading: false });
-      } else {
-        throw new Error("Failed to update journal entry");
-      }
+      // Call Server Action with processed data
+      await saveJournalEntryAction(updatedEntry);
+
+      // Reload to ensure consistency (e.g. relations)
+      const freshEntries = await getJournalEntriesAction(entry.accountId);
+      set({ entries: freshEntries });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  removeEntry: async (id) => {
+  deleteEntry: async (id) => {
     set({ isLoading: true, error: null });
+    const { entries } = get();
     try {
-      const success = await deleteJournalEntry(id);
+      // Optimistic update
+      set((state) => ({
+        entries: state.entries.filter((e) => e.id !== id),
+        isLoading: false,
+      }));
 
-      if (success) {
-        set((state) => ({
-          entries: state.entries.filter((e) => e.id !== id),
-          isLoading: false,
-        }));
-      } else {
-        throw new Error("Failed to delete journal entry");
-      }
+      await deleteJournalEntryAction(id);
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+      set({
+        error: (error as Error).message,
+        isLoading: false,
+        entries, // Rollback
+      });
     }
   },
 
@@ -134,7 +205,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   loadRoutines: async (accountId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const routines = await getDailyRoutines(accountId);
+      const routines = await getDailyRoutinesAction(accountId);
       set({ routines, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
@@ -144,6 +215,7 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
   addRoutine: async (routineData) => {
     set({ isLoading: true, error: null });
     try {
+      // Optimistic update
       const newRoutine: DailyRoutine = {
         ...routineData,
         id: crypto.randomUUID(),
@@ -151,16 +223,12 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         updatedAt: new Date().toISOString(),
       };
 
-      const success = await saveDailyRoutine(newRoutine);
+      set((state) => ({
+        routines: [newRoutine, ...state.routines],
+        isLoading: false,
+      }));
 
-      if (success) {
-        set((state) => ({
-          routines: [newRoutine, ...state.routines],
-          isLoading: false,
-        }));
-      } else {
-        throw new Error("Failed to save daily routine");
-      }
+      await saveDailyRoutineAction(routineData);
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -174,16 +242,12 @@ export const useJournalStore = create<JournalStore>((set, get) => ({
         updatedAt: new Date().toISOString(),
       };
 
-      const success = await saveDailyRoutine(updatedRoutine);
+      set((state) => ({
+        routines: state.routines.map((r) => (r.id === routine.id ? updatedRoutine : r)),
+        isLoading: false,
+      }));
 
-      if (success) {
-        set((state) => ({
-          routines: state.routines.map((r) => (r.id === routine.id ? updatedRoutine : r)),
-          isLoading: false,
-        }));
-      } else {
-        throw new Error("Failed to update daily routine");
-      }
+      await saveDailyRoutineAction(updatedRoutine);
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

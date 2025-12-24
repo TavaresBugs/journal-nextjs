@@ -11,7 +11,8 @@ import {
 } from "@/components/ui";
 import { TradeCalendar } from "@/components/trades/TradeCalendar";
 import { MenteeDayDetailModal } from "@/components/mentor/MenteeDayDetailModal";
-import { getMenteeTrades, getMenteePermittedAccounts } from "@/services/mentor/invites";
+import { getMenteePermittedAccountsAction as getMenteePermittedAccounts } from "@/app/actions/mentor";
+import { useMenteeDataStore } from "@/store/useMenteeDataStore";
 import { Trade } from "@/types";
 
 interface StudentCalendarModalProps {
@@ -33,8 +34,23 @@ export function StudentCalendarModal({
   menteeId,
   menteeName,
 }: StudentCalendarModalProps) {
-  const [trades, setTrades] = useState<Trade[]>([]);
-  const [loading, setLoading] = useState(false);
+  // Get data and functions from store
+  const {
+    getMenteeCalendarData,
+    loadMenteeCalendarData,
+    isLoading: storeLoading,
+  } = useMenteeDataStore();
+
+  // Get cached data (will be populated by eager loading on mentor page)
+  const cachedData = getMenteeCalendarData(menteeId);
+
+  // Derive state from store
+  const trades = cachedData?.trades || [];
+  const journalAvailability = cachedData?.journalAvailability || {};
+
+  // Loading state: loading if no cached data AND store is loading
+  const loading = !cachedData && storeLoading;
+
   const [accounts, setAccounts] = useState<AccountOption[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
 
@@ -43,14 +59,13 @@ export function StudentCalendarModal({
   const [selectedTrades, setSelectedTrades] = useState<Trade[]>([]);
   const [isDayDetailOpen, setIsDayDetailOpen] = useState(false);
 
-  // Fetch permitted accounts on open
+  // Fetch permitted accounts on open (still needed for account selector)
   useEffect(() => {
     if (isOpen && menteeId) {
       const fetchAccounts = async () => {
         try {
           const accs = await getMenteePermittedAccounts(menteeId);
           setAccounts(accs);
-          // Auto-select first account if available and none selected
           if (accs.length > 0 && !selectedAccountId) {
             setSelectedAccountId(accs[0].id);
           }
@@ -60,28 +75,17 @@ export function StudentCalendarModal({
       };
       fetchAccounts();
     }
-  }, [isOpen, menteeId, selectedAccountId]);
+  }, [isOpen, menteeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Fetch trades when account changes or modal opens
+  // If no cached data when modal opens, trigger load via store
   useEffect(() => {
-    if (isOpen && menteeId) {
-      const fetchTrades = async () => {
-        setLoading(true);
-        try {
-          // Pass selectedAccountId to filter trades.
-          // If empty, it might fetch all or none depending on backend logic,
-          // but our service is flexible.
-          const data = await getMenteeTrades(menteeId, selectedAccountId || undefined);
-          setTrades(data);
-        } catch (error) {
-          console.error("Error fetching mentee trades:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchTrades();
+    if (isOpen && menteeId && !cachedData) {
+      console.log("[StudentCalendarModal] No cached data, loading via store...");
+      loadMenteeCalendarData(menteeId);
+    } else if (isOpen && cachedData) {
+      console.log("[StudentCalendarModal] Using cached data - INSTANT!");
     }
-  }, [isOpen, menteeId, selectedAccountId]);
+  }, [isOpen, menteeId, cachedData, loadMenteeCalendarData]);
 
   const handleDayClick = (date: string, dayTrades: Trade[]) => {
     setSelectedDate(date);
@@ -95,6 +99,14 @@ export function StudentCalendarModal({
     setSelectedTrades([]);
   };
 
+  // Account change handler - reload data for specific account
+  const handleAccountChange = async (newAccountId: string) => {
+    setSelectedAccountId(newAccountId);
+    if (newAccountId && newAccountId !== "all") {
+      loadMenteeCalendarData(menteeId, newAccountId);
+    }
+  };
+
   return (
     <>
       <Modal
@@ -103,19 +115,19 @@ export function StudentCalendarModal({
         maxWidth="7xl"
         title={
           <div className="flex w-full flex-col items-center justify-between pr-8 md:flex-row">
-            <span>📊 Calendário de {menteeName}</span>
+            <span className="text-lg font-bold text-gray-100">📊 Calendário de {menteeName}</span>
 
             {/* Account Selector */}
             {accounts.length > 0 && (
               <div className="mt-2 flex items-center gap-2 md:mt-0">
                 <span className="text-sm font-normal text-gray-400">Carteira:</span>
-                <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                <Select value={selectedAccountId} onValueChange={handleAccountChange}>
                   <SelectTrigger className="flex h-9 min-w-[200px] items-center justify-between rounded-lg border border-gray-700 bg-gray-800 px-3 text-sm text-gray-200 focus:border-cyan-500 focus:ring-cyan-500">
                     <SelectValue placeholder="Todas (se permitido)" />
                   </SelectTrigger>
                   <SelectContent className="border-gray-700 bg-gray-800">
                     <SelectItem
-                      value=""
+                      value="all"
                       className="cursor-pointer py-2 text-gray-200 hover:bg-gray-700 focus:bg-gray-700"
                     >
                       Todas (se permitido)
@@ -149,8 +161,13 @@ export function StudentCalendarModal({
                 {selectedAccountId && " desta carteira"}
               </p>
 
-              {/* Calendar */}
-              <TradeCalendar trades={trades} entries={[]} onDayClick={handleDayClick} />
+              {/* Calendar - OPTIMIZED: pass journalAvailability for instant badges */}
+              <TradeCalendar
+                trades={trades}
+                entries={[]}
+                journalAvailability={journalAvailability}
+                onDayClick={handleDayClick}
+              />
             </div>
           )}
         </div>

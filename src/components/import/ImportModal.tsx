@@ -16,8 +16,21 @@ import {
   detectColumnMapping,
   transformTrades,
 } from "@/services/trades/importParsers";
-import { getAccounts } from "@/services/core/account";
-import { saveTrade } from "@/services/trades/trade";
+import { getAccountsAction } from "@/app/actions/accounts";
+import {
+  saveTradesBatchAction,
+  getTradeHistoryLiteAction,
+  deleteTradesByAccountAction,
+} from "@/app/actions/trades";
+
+// Helper for chunking array
+const chunkArray = <T,>(array: T[], size: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+};
 import { ImportStepUpload } from "./steps/ImportStepUpload";
 import { ImportStepMapping } from "./steps/ImportStepMapping";
 import { ImportStepReview } from "./steps/ImportStepReview";
@@ -70,6 +83,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
   // Stats
   const [importStats, setImportStats] = useState({ total: 0, success: 0, failed: 0, skipped: 0 });
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
     if (isOpen) {
@@ -83,7 +97,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     if (defaultAccountId) {
       setSelectedAccountId(defaultAccountId);
     } else {
-      const loadedAccounts = await getAccounts();
+      const loadedAccounts = await getAccountsAction();
       if (loadedAccounts.length > 0) {
         setSelectedAccountId(loadedAccounts[0].id);
       }
@@ -97,6 +111,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     setRawData([]);
     setHeaders([]);
     setImportStats({ total: 0, success: 0, failed: 0, skipped: 0 });
+    setImportProgress({ current: 0, total: 0 });
     setBrokerTimezone("Europe/Helsinki");
     setImportMode("append");
   };
@@ -220,14 +235,11 @@ export const ImportModal: React.FC<ImportModalProps> = ({
     let skippedCount = 0;
 
     try {
-      const { getTradeHistoryLite, deleteTradesByAccount } =
-        await import("@/services/trades/trade");
-
       // Optional: Replace Mode - Delete all existing trades
       if (importMode === "replace") {
-        const deleted = await deleteTradesByAccount(selectedAccountId);
-        if (!deleted) {
-          throw new Error("Failed to clear existing trades.");
+        const result = await deleteTradesByAccountAction(selectedAccountId);
+        if (!result.success) {
+          throw new Error("Failed to clear existing trades: " + result.error);
         }
       }
 
@@ -235,7 +247,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
 
       // Only fetch existing trades for deduplication if we are appending
       if (importMode === "append") {
-        const existingTrades = await getTradeHistoryLite(selectedAccountId);
+        const existingTrades = await getTradeHistoryLiteAction(selectedAccountId);
         existingSignatures = new Set(
           existingTrades.map((t) => {
             const time = t.entryTime ? t.entryTime.substring(0, 5) : "00:00";
@@ -245,7 +257,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       }
 
       // Use Service Parser to transform raw data to Trade objects
-      const tradesToSave = transformTrades(
+      const allTrades = transformTrades(
         rawData,
         mapping,
         dataSource,
@@ -254,28 +266,50 @@ export const ImportModal: React.FC<ImportModalProps> = ({
       );
 
       // Filter valid trades and handle deduplication
-      for (const trade of tradesToSave) {
+      const validTrades = allTrades.filter((trade) => {
         // Deduplication Check
         const entryTime = trade.entryTime || "00:00:00";
         const signature = `${trade.entryDate}|${entryTime.substring(0, 5)}|${trade.symbol}|${trade.type}|${trade.entryPrice}`;
 
         if (importMode === "append" && existingSignatures.has(signature)) {
           skippedCount++;
-          continue;
+          return false;
+        }
+        return true;
+      });
+
+      // Prepare for batch processing
+      const BATCH_SIZE = 50; // Process 50 trades at a time
+      const chunks = chunkArray(validTrades, BATCH_SIZE);
+      const totalToProcess = validTrades.length;
+      let processedCount = 0;
+
+      // Initialize progress
+      setImportProgress({ current: 0, total: totalToProcess });
+
+      for (const chunk of chunks) {
+        // Call server action for this batch
+        const result = await saveTradesBatchAction(chunk);
+
+        if (result.success) {
+          successCount += result.count;
+        } else {
+          // If batch fails, we assume all in batch failed (or we could retry individually)
+          failedCount += chunk.length;
+          console.error("Batch failed:", result.error);
         }
 
-        const saved = await saveTrade(trade);
-        if (saved) {
-          successCount++;
-        } else {
-          failedCount++;
-        }
+        processedCount += chunk.length;
+        setImportProgress({ current: processedCount, total: totalToProcess });
       }
 
-      // Also count rows that failed parsing in transformTrades (implicitly failed as they are not in tradesToSave)
-      // Actually, transformTrades skips errors, so (rawData.length - tradesToSave.length) are parse failures.
-      // We should add them to failedCount.
-      failedCount += rawData.length - tradesToSave.length;
+      // Calculate failed/skipped based on raw data difference
+      // Trades that failed transformTrades are (rawData.length - allTrades.length)
+      // Trades that were duplicates are skippedCount
+      // Trades that failed batch save are in failedCount (from batch response)
+
+      const transformFailures = rawData.length - allTrades.length;
+      failedCount += transformFailures;
     } catch (err) {
       console.error("Failed import process", err);
       setError("Erro na importação. Tente novamente.");
@@ -329,6 +363,7 @@ export const ImportModal: React.FC<ImportModalProps> = ({
           <ImportStepReview
             status={step === "importing" ? "importing" : "complete"}
             stats={importStats}
+            progress={importProgress}
             onClose={onClose}
           />
         );

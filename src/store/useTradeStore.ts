@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import type { Trade, TradeLite } from "@/types";
-import { getTradesPaginated, getTradeHistoryLite, saveTrade, deleteTrade } from "@/lib/storage"; // Update imports to use new service functions
+// Using Prisma Server Actions for type-safe database queries
+import {
+  fetchTrades,
+  fetchTradeHistory,
+  createTrade as createTradeAction,
+  updateTrade as updateTradeAction,
+  deleteTradePrisma,
+} from "@/actions/trades";
 
 interface TradeStore {
   trades: Trade[]; // Current page trades
@@ -8,15 +15,19 @@ interface TradeStore {
   totalCount: number;
   currentPage: number;
   itemsPerPage: number;
+  sortDirection: "asc" | "desc"; // NEW: Sort direction state
+  filterAsset: string; // NEW: Filter asset state
   isLoading: boolean;
   isLoadingHistory: boolean;
 
   // Actions
   loadTrades: (accountId: string) => Promise<void>;
   loadPage: (accountId: string, page: number) => Promise<void>;
+  setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>; // NEW action
+  setFilterAsset: (accountId: string, asset: string) => Promise<void>; // NEW action
   addTrade: (trade: Trade) => Promise<void>;
   updateTrade: (trade: Trade) => Promise<void>;
-  removeTrade: (id: string, accountId: string) => Promise<void>; // Added accountId param
+  removeTrade: (id: string, accountId: string) => Promise<void>;
   clearTrades: () => void;
 }
 
@@ -25,17 +36,19 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
   allHistory: [],
   totalCount: 0,
   currentPage: 1,
-  itemsPerPage: 10, // Match UI
+  itemsPerPage: 10,
+  sortDirection: "desc", // Default to newest first
+  filterAsset: "TODOS OS ATIVOS",
   isLoading: false,
   isLoadingHistory: false,
 
   loadTrades: async (accountId: string) => {
     set({ isLoading: true, isLoadingHistory: true });
     try {
-      // Parallel fetch: Page 1 (Detailed) + All History (Lite)
+      // Parallel fetch: Page 1 (Detailed with filters) + All History (Lite)
       const [pageResponse, historyLite] = await Promise.all([
-        getTradesPaginated(accountId, 1, get().itemsPerPage),
-        getTradeHistoryLite(accountId),
+        fetchTrades(accountId, 1, get().itemsPerPage, get().sortDirection, get().filterAsset),
+        fetchTradeHistory(accountId),
       ]);
 
       set({
@@ -55,10 +68,16 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
   loadPage: async (accountId: string, page: number) => {
     set({ isLoading: true });
     try {
-      const { data, count } = await getTradesPaginated(accountId, page, get().itemsPerPage);
+      const { data, count } = await fetchTrades(
+        accountId,
+        page,
+        get().itemsPerPage,
+        get().sortDirection,
+        get().filterAsset
+      );
       set({
         trades: data,
-        totalCount: count, // Update count just in case
+        totalCount: count,
         currentPage: page,
         isLoading: false,
       });
@@ -68,49 +87,77 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
     }
   },
 
-  addTrade: async (trade: Trade) => {
-    const { trades, allHistory, totalCount } = get();
-    await saveTrade(trade);
+  setSortDirection: async (accountId: string, direction: "asc" | "desc") => {
+    // Only reload if changed
+    if (get().sortDirection === direction && get().trades.length > 0) return;
 
-    // Convert to Lite
+    set({ sortDirection: direction, currentPage: 1 });
+    await get().loadPage(accountId, 1);
+  },
+
+  setFilterAsset: async (accountId: string, asset: string) => {
+    // Only reload if changed
+    if (get().filterAsset === asset) return;
+
+    set({ filterAsset: asset, currentPage: 1 }); // Reset to page 1 on filter change
+    await get().loadPage(accountId, 1);
+  },
+
+  addTrade: async (trade: Trade) => {
+    const { trades, allHistory, totalCount, sortDirection } = get();
+    // Await the server action result - will throw if fails
+    const createdTrade = await createTradeAction(trade);
+
+    // Use the returned trade which has the real ID and timestamps
     const tradeLite: TradeLite = {
-      id: trade.id,
-      entryDate: trade.entryDate,
-      entryTime: trade.entryTime,
-      exitDate: trade.exitDate,
-      exitTime: trade.exitTime,
-      pnl: trade.pnl,
-      outcome: trade.outcome,
-      accountId: trade.accountId,
-      symbol: trade.symbol,
-      type: trade.type,
-      entryPrice: trade.entryPrice,
-      exitPrice: trade.exitPrice,
-      stopLoss: trade.stopLoss,
-      takeProfit: trade.takeProfit,
-      lot: trade.lot,
-      tags: trade.tags,
-      strategy: trade.strategy,
-      setup: trade.setup,
-      tfAnalise: trade.tfAnalise,
-      tfEntrada: trade.tfEntrada,
-      session: trade.session,
-      entry_quality: trade.entry_quality,
-      market_condition_v2: trade.market_condition_v2,
-      commission: trade.commission,
-      swap: trade.swap,
+      id: createdTrade.id,
+      entryDate: createdTrade.entryDate,
+      entryTime: createdTrade.entryTime,
+      exitDate: createdTrade.exitDate,
+      exitTime: createdTrade.exitTime,
+      pnl: createdTrade.pnl,
+      outcome: createdTrade.outcome,
+      accountId: createdTrade.accountId,
+      symbol: createdTrade.symbol,
+      type: createdTrade.type,
+      entryPrice: createdTrade.entryPrice,
+      exitPrice: createdTrade.exitPrice,
+      stopLoss: createdTrade.stopLoss,
+      takeProfit: createdTrade.takeProfit,
+      lot: createdTrade.lot,
+      tags: createdTrade.tags,
+      strategy: createdTrade.strategy,
+      setup: createdTrade.setup,
+      tfAnalise: createdTrade.tfAnalise,
+      tfEntrada: createdTrade.tfEntrada,
+      session: createdTrade.session,
+      entry_quality: createdTrade.entry_quality,
+      market_condition_v2: createdTrade.market_condition_v2,
+      commission: createdTrade.commission,
+      swap: createdTrade.swap,
     };
 
-    // Optimistic update
-    // Add to history (newest first)
+    // Optimistic update (now actually confirmed update)
+    // Add to history (newest first hardcoded for history usually, or matches sort?)
+    // History usually for charts, assumes time order. Keeping desc for history consistency.
     const newHistory = [tradeLite, ...allHistory].sort(
       (a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
     );
 
-    // Add to current page if we are on page 1, else just update count
+    // For the list, IF we are on page 1 AND sort is DESC, we prepend.
+    // If sort is ASC, we might append if page is last? Too complex.
+    // Simplest: Just prepend if DESC and Page 1. If ASC, it goes to end (last page).
+    // If we are strictly server-side sorting, adding to local list is tricky without re-sort.
+    // We will just re-fetch page 1 if we want to be 100% sure, OR just prepend if sort is desc.
+
     let newTrades = trades;
-    if (get().currentPage === 1) {
-      newTrades = [trade, ...trades].slice(0, get().itemsPerPage);
+    if (sortDirection === "desc" && get().currentPage === 1) {
+      newTrades = [createdTrade, ...trades].slice(0, get().itemsPerPage);
+    } else if (sortDirection === "asc") {
+      // If asc, new trade (latest date) likely goes to last page.
+      // We won't see it on current page unless we are on the last page.
+      // For better UX, we might just want to reload the page or accept it won't appear immediately if we are looking at old trades.
+      // Let's leave current page as is for ASC.
     }
 
     set({
@@ -122,38 +169,38 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
 
   updateTrade: async (trade: Trade) => {
     const { trades, allHistory } = get();
-    await saveTrade(trade);
+    const updatedTrade = await updateTradeAction(trade.id, trade);
 
     // Update in current page list if exists
-    const updatedTrades = trades.map((t) => (t.id === trade.id ? trade : t));
+    const updatedTrades = trades.map((t) => (t.id === updatedTrade.id ? updatedTrade : t));
 
     // Update in history lite
     const updatedHistory = allHistory
       .map((t) =>
-        t.id === trade.id
+        t.id === updatedTrade.id
           ? {
               ...t,
-              entryDate: trade.entryDate,
-              pnl: trade.pnl,
-              outcome: trade.outcome,
-              symbol: trade.symbol,
-              type: trade.type,
-              entryPrice: trade.entryPrice,
-              exitPrice: trade.exitPrice,
-              stopLoss: trade.stopLoss,
-              takeProfit: trade.takeProfit,
-              lot: trade.lot,
-              tags: trade.tags,
-              strategy: trade.strategy,
-              setup: trade.setup,
-              tfAnalise: trade.tfAnalise,
-              tfEntrada: trade.tfEntrada,
-              marketCondition: trade.marketCondition,
-              entry_quality: trade.entry_quality,
-              market_condition_v2: trade.market_condition_v2,
-              session: trade.session,
-              commission: trade.commission,
-              swap: trade.swap,
+              entryDate: updatedTrade.entryDate,
+              pnl: updatedTrade.pnl,
+              outcome: updatedTrade.outcome,
+              symbol: updatedTrade.symbol,
+              type: updatedTrade.type,
+              entryPrice: updatedTrade.entryPrice,
+              exitPrice: updatedTrade.exitPrice,
+              stopLoss: updatedTrade.stopLoss,
+              takeProfit: updatedTrade.takeProfit,
+              lot: updatedTrade.lot,
+              tags: updatedTrade.tags,
+              strategy: updatedTrade.strategy,
+              setup: updatedTrade.setup,
+              tfAnalise: updatedTrade.tfAnalise,
+              tfEntrada: updatedTrade.tfEntrada,
+              marketCondition: updatedTrade.marketCondition,
+              entry_quality: updatedTrade.entry_quality,
+              market_condition_v2: updatedTrade.market_condition_v2,
+              session: updatedTrade.session,
+              commission: updatedTrade.commission,
+              swap: updatedTrade.swap,
             }
           : t
       )
@@ -167,7 +214,7 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
 
   removeTrade: async (id: string, accountId: string) => {
     const { trades, allHistory, totalCount } = get();
-    await deleteTrade(id);
+    await deleteTradePrisma(id);
 
     // Also remove from local journal store since backend deletes it via cascade
     // We import here to avoid circular dependency issues if any

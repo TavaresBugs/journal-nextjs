@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { generateReport } from "@/services/analytics/report";
-import * as tradeService from "@/services/trades/trade";
+import * as tradeActions from "@/app/actions/trades";
 
 // Mock getTrades with correct path
-vi.mock("@/services/trades/trade", () => ({
-  getTrades: vi.fn(),
-  mapTradeFromDB: vi.fn(),
+vi.mock("@/app/actions/trades", () => ({
+  getTradesAction: vi.fn(),
 }));
 
 describe("reportService", () => {
@@ -48,7 +47,7 @@ describe("reportService", () => {
     ];
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(tradeService.getTrades).mockResolvedValue(mockTrades as any);
+    vi.mocked(tradeActions.getTradesAction).mockResolvedValue(mockTrades as any);
 
     const startDate = new Date("2024-01-01");
     const endDate = new Date("2024-01-31");

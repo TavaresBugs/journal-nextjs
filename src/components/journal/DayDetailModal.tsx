@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Modal, Button } from "@/components/ui";
+import { Modal } from "@/components/ui";
 import type { Trade, DailyRoutine, JournalEntry } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
 import { useToast } from "@/providers/ToastProvider";
@@ -9,8 +9,8 @@ import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
 import { DailyHabitsRow, DayStatsCards, DayTradesTable } from "@/components/journal/day-detail";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
-import { getMyMentors } from "@/services/mentor/invites";
-import { getReviewsForContext } from "@/services/journal/review";
+import { getMyMentorsAction as getMyMentors } from "@/app/actions/mentor";
+import { getReviewsForContextAction } from "@/app/actions/reviews";
 
 dayjs.locale("pt-br");
 
@@ -45,7 +45,7 @@ export function DayDetailModal({
     loadRoutines,
     loadEntries,
     getEntryByTradeId,
-    removeEntry,
+    deleteEntry,
   } = useJournalStore();
 
   const { showToast } = useToast();
@@ -92,7 +92,7 @@ export function DayDetailModal({
 
       if (tradeIds.length === 0 && entryIds.length === 0) return;
 
-      const reviews = await getReviewsForContext(tradeIds, entryIds);
+      const reviews = await getReviewsForContextAction(tradeIds, entryIds);
 
       // Process reviews into map
       const map: Record<string, { hasUnread: boolean; count: number }> = {};
@@ -183,14 +183,14 @@ export function DayDetailModal({
       }
 
       try {
-        await removeEntry(entryId);
+        await deleteEntry(entryId);
         showToast("Entrada excluída com sucesso!", "success");
       } catch (error) {
         console.error("Error deleting entry:", error);
         showToast("Erro ao excluir entrada", "error");
       }
     },
-    [removeEntry, showToast]
+    [deleteEntry, showToast]
   );
 
   // Calculate Stats with useMemo
@@ -246,15 +246,6 @@ export function DayDetailModal({
             hasMentor={hasMentor}
             reviewsMap={reviewsMap}
           />
-
-          {/* Footer Button */}
-          <Button
-            variant="gradient-danger"
-            onClick={onClose}
-            className="w-full py-3 font-extrabold"
-          >
-            Fechar
-          </Button>
         </div>
       </Modal>
 

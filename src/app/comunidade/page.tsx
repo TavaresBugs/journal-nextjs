@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button, SegmentedToggle } from "@/components/ui";
 import { ViewSharedPlaybookModal } from "@/components/playbook/ViewSharedPlaybookModal";
-import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { PlaybooksGridSkeleton } from "@/components/skeletons/PlaybooksGridSkeleton";
 import { useAccountStore } from "@/store/useAccountStore";
 import {
   useCommunityPlaybooks,
@@ -78,7 +78,7 @@ function PlaybooksGrid({
   loading: boolean;
 }) {
   if (loading) {
-    return <PageSkeleton />;
+    return <PlaybooksGridSkeleton />;
   }
 
   if (playbooks.length === 0) {

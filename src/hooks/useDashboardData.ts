@@ -49,7 +49,12 @@ export interface DashboardData {
 
   // State
   isLoading: boolean;
+  isTradesLoading: boolean;
+  isStoreLoading: boolean;
+  isAccountReady: boolean;
   isValidAccount: boolean;
+  sortDirection: "asc" | "desc";
+  filterAsset: string;
 }
 
 export interface DashboardDataActions {
@@ -57,6 +62,8 @@ export interface DashboardDataActions {
   loadTrades: (accountId: string) => Promise<void>;
   loadEntries: (accountId: string) => Promise<void>;
   loadPlaybooks: () => Promise<void>;
+  setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>;
+  setFilterAsset: (accountId: string, asset: string) => Promise<void>;
 }
 
 /**
@@ -92,7 +99,12 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
 
   return {
     // Account
-    currentAccount: initData.currentAccount,
+    currentAccount: initData.currentAccount
+      ? {
+          ...initData.currentAccount,
+          currentBalance: metricsData.pnlMetrics.currentBalance,
+        }
+      : null,
 
     // Data
     trades: initData.trades,
@@ -116,12 +128,19 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
 
     // State
     isLoading: initData.isLoading,
+    isTradesLoading: initData.isTradesLoading,
+    isStoreLoading: initData.isStoreLoading,
+    isAccountReady: initData.isAccountReady,
     isValidAccount,
+    sortDirection: initData.sortDirection,
+    filterAsset: initData.filterAsset,
 
     // Actions
     loadPage: initData.loadPage,
     loadTrades: initData.loadTrades,
     loadEntries: initData.loadEntries,
     loadPlaybooks: initData.loadPlaybooks,
+    setSortDirection: initData.setSortDirection,
+    setFilterAsset: initData.setFilterAsset,
   };
 }
