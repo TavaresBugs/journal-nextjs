@@ -86,4 +86,19 @@ const sentryWebpackPluginOptions = {
   },
 };
 
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+// Bundle Analyzer - only enable when ANALYZE=true
+// Usage: ANALYZE=true npm run build
+let finalConfig = nextConfig;
+
+// Apply Sentry config
+finalConfig = withSentryConfig(finalConfig, sentryWebpackPluginOptions);
+
+// Apply Bundle Analyzer if ANALYZE=true
+if (process.env.ANALYZE === "true") {
+  const withBundleAnalyzer = (await import("@next/bundle-analyzer")).default({
+    enabled: true,
+  });
+  finalConfig = withBundleAnalyzer(finalConfig);
+}
+
+export default finalConfig;

@@ -1,12 +1,14 @@
 import React from "react";
-import { CreateTradeModal } from "@/components/trades/CreateTradeModal";
-import { EditTradeModal } from "@/components/trades/EditTradeModal";
+import {
+  CreateTradeModal,
+  EditTradeModal,
+  SettingsModal,
+  PlaybookFormModal,
+  ViewPlaybookModal,
+  SharePlaybookModal,
+} from "@/components/modals/DynamicModals";
 import { DayDetailModal } from "@/components/journal/DayDetailModal";
 import { ImportModal } from "@/components/import/ImportModal";
-import { SettingsModal } from "@/components/settings/SettingsModal";
-import { PlaybookFormModal } from "@/components/playbook/PlaybookFormModal";
-import { ViewPlaybookModal } from "@/components/playbook/ViewPlaybookModal";
-import { SharePlaybookModal } from "@/components/playbook/SharePlaybookModal";
 import { Trade, Playbook } from "@/types";
 
 interface DashboardModalsProps {

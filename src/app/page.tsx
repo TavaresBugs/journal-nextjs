@@ -6,8 +6,11 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useToast } from "@/providers/ToastProvider";
 import { useAuth } from "@/hooks/useAuth";
-import { EditAccountModal } from "@/components/accounts/EditAccountModal";
-import { CreateAccountModal } from "@/components/accounts/CreateAccountModal";
+import {
+  CreateAccountModal,
+  EditAccountModal,
+  SettingsModal,
+} from "@/components/modals/DynamicModals";
 import { AccountSelectionSkeleton } from "@/components/accounts/AccountSelectionSkeleton";
 import {
   Card,
@@ -19,8 +22,6 @@ import {
 } from "@/components/ui";
 import type { Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
-
-import { SettingsModal } from "@/components/settings/SettingsModal";
 
 export default function HomePage() {
   const router = useRouter();

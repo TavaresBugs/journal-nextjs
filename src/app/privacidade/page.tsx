@@ -1,4 +1,5 @@
-"use client";
+// ISR: Revalidate every 7 days (static legal content rarely changes)
+export const revalidate = 604800;
 
 export default function PrivacidadePage() {
   return (
