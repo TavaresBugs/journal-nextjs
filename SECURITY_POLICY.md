@@ -1,36 +1,36 @@
-# Security Policy
+# Política de Segurança
 
-## Supported Versions
+## Versões Suportadas
 
-Use this section to tell people about which versions of your project are currently being supported with security updates.
+Utilize esta seção para informar quais versões do seu projeto estão atualmente sendo suportadas com atualizações de segurança.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
+| Versão | Suportado          |
+| ------ | ------------------ |
+| 1.0.x  | :white_check_mark: |
+| < 1.0  | :x:                |
 
-## Reporting a Vulnerability
+## Reportando uma Vulnerabilidade
 
-We take the security of our software seriously. If you believe you have found a security vulnerability in the Trading Journal Pro, please report it to us as described below.
+Levamos a segurança do nosso software a sério. Se você acredita ter encontrado uma vulnerabilidade de segurança no Trading Journal Pro, por favor, reporte-nos conforme descrito abaixo.
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+**Por favor, não reporte vulnerabilidades de segurança através de issues públicas no GitHub.**
 
-### Disclosure Policy
+### Política de Divulgação
 
-1.  **Report**: If you believe you have found a security vulnerability, please report it by emailing us at [security@tradelog.com](mailto:security@tradelog.com).
-2.  **Response**: We will acknowledge receipt of your report within 24 hours and provide you with an estimated timeframe for addressing the issue.
-3.  **Assessment**: We will assess the vulnerability and determine its impact and severity.
-4.  **Fix**: We will work to fix the vulnerability and release a patch as soon as possible.
-5.  **Disclosure**: Once the vulnerability has been fixed, we will publicly disclose the issue and acknowledge your contribution (if you wish).
+1.  **Reporte**: Se você acredita ter encontrado uma vulnerabilidade de segurança, por favor, reporte-a enviando um e-mail para [security@tradelog.com](mailto:security@tradelog.com).
+2.  **Resposta**: Confirmaremos o recebimento do seu relatório dentro de 24 horas e forneceremos uma estimativa de prazo para abordar o problema.
+3.  **Avaliação**: Avaliaremos a vulnerabilidade e determinaremos seu impacto e severidade.
+4.  **Correção**: Trabalharemos para corrigir a vulnerabilidade e lançar um patch o mais rápido possível.
+5.  **Divulgação**: Uma vez que a vulnerabilidade tenha sido corrigida, divulgaremos publicamente o problema e reconheceremos sua contribuição (se desejar).
 
-### Incident Response Process
+### Processo de Resposta a Incidentes
 
-In the event of a security incident, our team follows a defined process:
+No evento de um incidente de segurança, nossa equipe segue um processo definido:
 
-1.  **Identification**: Detect and identify the security incident.
-2.  **Containment**: Contain the incident to prevent further damage.
-3.  **Eradication**: Remove the root cause of the incident.
-4.  **Recovery**: Restore affected systems and data.
-5.  **Post-Incident Analysis**: Analyze the incident to prevent future occurrences.
+1.  **Identificação**: Detectar e identificar o incidente de segurança.
+2.  **Contenção**: Conter o incidente para prevenir maiores danos.
+3.  **Erradicação**: Remover a causa raiz do incidente.
+4.  **Recuperação**: Restaurar sistemas e dados afetados.
+5.  **Análise Pós-Incidente**: Analisar o incidente para prevenir ocorrências futuras.
 
-Thank you for helping keep our project safe!
+Obrigado por ajudar a manter nosso projeto seguro!
