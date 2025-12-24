@@ -81,10 +81,20 @@ setInterval(
 );
 
 // ============================================
-// PROXY (formerly Middleware)
+// MIDDLEWARE
+// Authentication, rate limiting, and session management
 // ============================================
 
-export default async function proxy(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
+  // Debug logging in development
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔒 Middleware carregado:", {
+      path: req.nextUrl.pathname,
+      method: req.method,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   let response = NextResponse.next({
     request: {
       headers: req.headers,
