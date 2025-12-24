@@ -22,10 +22,11 @@ import {
 import { prisma } from "@/lib/database";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Account, Settings, UserSettings } from "@/types";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
  * Get all accounts for the current user.
+ * CACHED: 5 minutes TTL, invalidated when accounts change.
  * @returns List of accounts or empty array if not authenticated.
  */
 export async function getAccountsAction(): Promise<Account[]> {
@@ -42,21 +43,30 @@ export async function getAccountsAction(): Promise<Account[]> {
       return [];
     }
 
-    console.log("[getAccountsAction] Loading accounts for userId:", userId);
+    // Use unstable_cache for time-based caching
+    const getCachedAccounts = unstable_cache(
+      async (uId: string) => {
+        console.log("[getAccountsAction] Loading accounts for userId:", uId);
+        const result = await prismaAccountRepo.getByUserId(uId);
+        if (result.error) {
+          console.error("[getAccountsAction] Error from repo:", {
+            code: result.error.code,
+            message: result.error.message,
+            userId: uId,
+          });
+          return [];
+        }
+        console.log("[getAccountsAction] Successfully loaded accounts:", result.data?.length || 0);
+        return result.data || [];
+      },
+      [`accounts-${userId}`],
+      {
+        revalidate: 300, // 5 minutes TTL
+        tags: [`accounts:${userId}`],
+      }
+    );
 
-    const result = await prismaAccountRepo.getByUserId(userId);
-
-    if (result.error) {
-      console.error("[getAccountsAction] Error from repo:", {
-        code: result.error.code,
-        message: result.error.message,
-        userId,
-      });
-      return [];
-    }
-
-    console.log("[getAccountsAction] Successfully loaded accounts:", result.data?.length || 0);
-    return result.data || [];
+    return await getCachedAccounts(userId);
   } catch (error) {
     console.error("[getAccountsAction] Unexpected error:", {
       error,
@@ -128,7 +138,8 @@ export async function saveAccountAction(
       return { success: false, error: result.error.message };
     }
 
-    // Revalidate dashboard to reflect changes
+    // Invalidate accounts cache and revalidate dashboard
+    revalidateTag(`accounts:${userId}`, "max");
     revalidatePath("/dashboard/[accountId]", "page");
 
     return { success: true, data: result.data as Account };
@@ -159,7 +170,8 @@ export async function deleteAccountAction(
       return { success: false, error: result.error.message };
     }
 
-    // Revalidate to reflect changes
+    // Invalidate accounts cache and revalidate
+    revalidateTag(`accounts:${userId}`, "max");
     revalidatePath("/");
 
     return { success: true };

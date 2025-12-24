@@ -81,17 +81,13 @@ export function useStratifiedLoading(accountId: string) {
         // FIX: The error was accessing .settings which doesn't exist.
         // We will assume we need to load if we haven't confirmed it's loaded.
         // But to fix the specific error:
+
+        // Only load settings if not already loaded (check currencies as indicator)
+        // FIXED: Removed else branch that was always reloading settings unnecessarily
         if (currentSettings.currencies.length === 0) {
           promises.push(loadSettings());
-        } else {
-          // Even if we have defaults, we might want to load.
-          // But the user complaint is about *reloading*.
-          // If we navigated away and back, zustand keeps state.
-          // So if we have state, maybe skip?
-          // Defaults are non-zero length usually.
-          // Let's just fix the type error for now by removing the invalid property access.
-          promises.push(loadSettings());
         }
+        // Settings already loaded, skip reload
 
         if (useJournalStore.getState().entries.length === 0) {
           promises.push(loadEntries(accountId));

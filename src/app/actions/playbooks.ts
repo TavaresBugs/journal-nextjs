@@ -9,26 +9,37 @@
 import { prismaPlaybookRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Playbook, SharedPlaybook, PlaybookStats } from "@/types";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
  * Get all playbooks for the current user or a specific account.
+ * CACHED: 5 minutes TTL, invalidated when playbooks change.
  */
 export async function getPlaybooksAction(accountId?: string): Promise<Playbook[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const result = accountId
-      ? await prismaPlaybookRepo.getByAccountId(accountId)
-      : await prismaPlaybookRepo.getByUserId(userId);
+    // Use unstable_cache for time-based caching
+    const getCachedPlaybooks = unstable_cache(
+      async (uId: string, accId?: string) => {
+        const result = accId
+          ? await prismaPlaybookRepo.getByAccountId(accId)
+          : await prismaPlaybookRepo.getByUserId(uId);
+        if (result.error) {
+          console.error("[getPlaybooksAction] Error:", result.error);
+          return [];
+        }
+        return result.data || [];
+      },
+      [`playbooks-${userId}-${accountId || "all"}`],
+      {
+        revalidate: 300, // 5 minutes TTL
+        tags: [`playbooks:${userId}`],
+      }
+    );
 
-    if (result.error) {
-      console.error("[getPlaybooksAction] Error:", result.error);
-      return [];
-    }
-
-    return result.data || [];
+    return await getCachedPlaybooks(userId, accountId);
   } catch (error) {
     console.error("[getPlaybooksAction] Unexpected error:", error);
     return [];
@@ -37,20 +48,31 @@ export async function getPlaybooksAction(accountId?: string): Promise<Playbook[]
 
 /**
  * Get playbook statistics (aggregated server-side).
+ * CACHED: 60 seconds TTL, invalidated when trades or playbooks change.
  */
 export async function getPlaybookStatsAction(accountId?: string): Promise<PlaybookStats[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const result = await prismaPlaybookRepo.getPlaybookStats(userId, accountId);
+    // Use unstable_cache for time-based caching
+    const getCachedStats = unstable_cache(
+      async (uId: string, accId?: string) => {
+        const result = await prismaPlaybookRepo.getPlaybookStats(uId, accId);
+        if (result.error) {
+          console.error("[getPlaybookStatsAction] Error:", result.error);
+          return [];
+        }
+        return result.data || [];
+      },
+      [`playbook-stats-${userId}-${accountId || "all"}`],
+      {
+        revalidate: 60, // 60 seconds TTL (stats change with trades)
+        tags: [`playbooks:${userId}`, `playbook-stats:${userId}`],
+      }
+    );
 
-    if (result.error) {
-      console.error("[getPlaybookStatsAction] Error:", result.error);
-      return [];
-    }
-
-    return result.data || [];
+    return await getCachedStats(userId, accountId);
   } catch (error) {
     console.error("[getPlaybookStatsAction] Unexpected error:", error);
     return [];
@@ -76,6 +98,7 @@ export async function createPlaybookAction(
       return { success: false, error: result.error.message };
     }
 
+    revalidateTag(`playbooks:${userId}`, "max");
     revalidatePath("/laboratory");
     return { success: true, playbook: result.data || undefined };
   } catch (error) {
@@ -103,6 +126,7 @@ export async function updatePlaybookAction(
       return { success: false, error: result.error.message };
     }
 
+    revalidateTag(`playbooks:${userId}`, "max");
     revalidatePath("/laboratory");
     return { success: true };
   } catch (error) {
@@ -130,6 +154,7 @@ export async function deletePlaybookAction(
       return { success: false, error: result.error.message };
     }
 
+    revalidateTag(`playbooks:${userId}`, "max");
     revalidatePath("/laboratory");
     return { success: true };
   } catch (error) {

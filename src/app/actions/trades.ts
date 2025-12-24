@@ -16,7 +16,7 @@
 import { prismaTradeRepo, prismaAccountRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade, TradeLite } from "@/types";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
  * Get all trades for an account.
@@ -171,10 +171,12 @@ export async function saveTradeAction(
       return { success: false, error: result.error.message };
     }
 
-    // Revalidate dashboard
+    // Revalidate dashboard and cache tags
     if (trade.accountId) {
       // Sync balance automatically
       await syncAccountBalance(trade.accountId, userId);
+      // Invalidate cached metrics and history (Next.js 15 requires profile arg)
+      revalidateTag(`trades:${trade.accountId}`, "max");
       revalidatePath(`/dashboard/${trade.accountId}`, "page");
     }
 
@@ -219,6 +221,7 @@ export async function saveTradesBatchAction(
     // Sync balance and revalidate only ONCE per batch
     if (accountId) {
       await syncAccountBalance(accountId, userId);
+      revalidateTag(`trades:${accountId}`, "max");
       revalidatePath(`/dashboard/${accountId}`, "page");
     }
 
@@ -254,6 +257,8 @@ export async function deleteTradeAction(
 
     if (accountId) {
       await syncAccountBalance(accountId, userId);
+      // Invalidate cached metrics and history
+      revalidateTag(`trades:${accountId}`, "max");
       // Revalidate to reflect changes
       revalidatePath(`/dashboard/${accountId}`, "page");
     }
@@ -290,6 +295,8 @@ export async function deleteTradesByAccountAction(
     // Reset balance to initial since all trades are gone
     await syncAccountBalance(accountId, userId);
 
+    // Invalidate cached metrics and history
+    revalidateTag(`trades:${accountId}`, "max");
     // Revalidate dashboard
     revalidatePath(`/dashboard/${accountId}`, "page");
 
@@ -322,6 +329,7 @@ async function syncAccountBalance(accountId: string, userId: string) {
 
 /**
  * Get dashboard metrics for an account.
+ * CACHED: 60 seconds TTL, invalidated when trades change.
  */
 export async function getTradeDashboardMetricsAction(accountId: string): Promise<{
   totalTrades: number;
@@ -334,14 +342,24 @@ export async function getTradeDashboardMetricsAction(accountId: string): Promise
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const result = await prismaTradeRepo.getDashboardMetrics(accountId, userId);
+    // Use unstable_cache for time-based caching
+    const getCachedMetrics = unstable_cache(
+      async (accId: string, uId: string) => {
+        const result = await prismaTradeRepo.getDashboardMetrics(accId, uId);
+        if (result.error) {
+          console.error("[getTradeDashboardMetricsAction] Error:", result.error);
+          return null;
+        }
+        return result.data || null;
+      },
+      [`dashboard-metrics-${accountId}`],
+      {
+        revalidate: 60, // 60 seconds TTL
+        tags: [`trades:${accountId}`, `metrics:${accountId}`],
+      }
+    );
 
-    if (result.error) {
-      console.error("[getTradeDashboardMetricsAction] Error:", result.error);
-      return null;
-    }
-
-    return result.data || null;
+    return await getCachedMetrics(accountId, userId);
   } catch (error) {
     console.error("[getTradeDashboardMetricsAction] Unexpected error:", error);
     return null;
@@ -350,20 +368,31 @@ export async function getTradeDashboardMetricsAction(accountId: string): Promise
 
 /**
  * Get lightweight trade history for analytics.
+ * CACHED: 60 seconds TTL, invalidated when trades change.
  */
 export async function getTradeHistoryLiteAction(accountId: string): Promise<TradeLite[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const result = await prismaTradeRepo.getHistoryLite(accountId, userId);
+    // Use unstable_cache for time-based caching
+    const getCachedHistory = unstable_cache(
+      async (accId: string, uId: string) => {
+        const result = await prismaTradeRepo.getHistoryLite(accId, uId);
+        if (result.error) {
+          console.error("[getTradeHistoryLiteAction] Error:", result.error);
+          return [];
+        }
+        return result.data || [];
+      },
+      [`trade-history-${accountId}`],
+      {
+        revalidate: 60, // 60 seconds TTL
+        tags: [`trades:${accountId}`, `history:${accountId}`],
+      }
+    );
 
-    if (result.error) {
-      console.error("[getTradeHistoryLiteAction] Error:", result.error);
-      return [];
-    }
-
-    return result.data || [];
+    return await getCachedHistory(accountId, userId);
   } catch (error) {
     console.error("[getTradeHistoryLiteAction] Unexpected error:", error);
     return [];
