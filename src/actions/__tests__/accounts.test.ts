@@ -85,7 +85,7 @@ describe("Account Actions", () => {
       await updateAccountBalance("acc-1", 500);
 
       expect(mockAccountRepo.getById).toHaveBeenCalledWith("acc-1", "user-123");
-      expect(mockAccountRepo.updateBalance).toHaveBeenCalledWith("acc-1", 500);
+      expect(mockAccountRepo.updateBalance).toHaveBeenCalledWith("acc-1", "user-123", 500);
     });
 
     it("should throw if account not found (ownership fail)", async () => {

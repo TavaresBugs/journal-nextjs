@@ -62,7 +62,7 @@ export interface TradeComment {
 }
 
 // Mappers
-function mapInviteFromPrisma(
+export function mapInviteFromPrisma(
   inv: PrismaMentorInvite & {
     users_mentor_invites_mentee_idTousers?: {
       profiles?: { display_name: string | null; avatar_url: string | null } | null;
@@ -98,7 +98,7 @@ function mapInviteFromPrisma(
   };
 }
 
-function mapPermissionFromPrisma(
+export function mapPermissionFromPrisma(
   perm: PrismaAccountPermission & { accounts?: { name: string } | null }
 ): MentorAccountPermission {
   return {
@@ -114,7 +114,7 @@ function mapPermissionFromPrisma(
   };
 }
 
-function mapCommentFromPrisma(
+export function mapCommentFromPrisma(
   com: PrismaTradeComment & { users?: { email: string | null } | null }
 ): TradeComment {
   return {
