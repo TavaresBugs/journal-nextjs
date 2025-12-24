@@ -9,17 +9,29 @@ import { checkLoginRateLimit, buildRateLimitHeaders } from "@/lib/ratelimit";
 
 /**
  * Get client IP from request headers
+ * Returns null if IP cannot be determined (fail-open pattern)
  */
-function getClientIP(req: NextRequest): string {
+function getClientIP(req: NextRequest): string | null {
+  // Cloudflare
+  const cfIP = req.headers.get("cf-connecting-ip");
+  if (cfIP) return cfIP;
+
+  // Vercel / AWS / Standard proxy
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
+
+  // Nginx / Generic proxy
   const realIP = req.headers.get("x-real-ip");
-  if (realIP) {
-    return realIP;
-  }
-  return "unknown";
+  if (realIP) return realIP;
+
+  // Akamai
+  const trueClientIP = req.headers.get("true-client-ip");
+  if (trueClientIP) return trueClientIP;
+
+  // No IP detected - return null (fail-open)
+  return null;
 }
 
 export default async function middleware(req: NextRequest) {
@@ -93,24 +105,31 @@ export default async function middleware(req: NextRequest) {
 
   // Check if this is a login attempt (form submission)
   if (pathname === "/login" && req.method === "POST") {
-    // Identifier: IP + email (more secure than IP alone)
-    const identifier = clientIP;
-    const rateLimit = await checkLoginRateLimit(identifier);
-
-    if (!rateLimit.success) {
-      const headers = buildRateLimitHeaders(rateLimit);
-      const retryMinutes = Math.ceil((rateLimit.reset - Date.now()) / 60000);
-      const errorUrl = new URL("/login", req.url);
-      errorUrl.searchParams.set("error", "rate_limited");
-      errorUrl.searchParams.set("retry_after", retryMinutes.toString());
-
-      // Log rate limit event
-      console.warn("🚫 Rate limit exceeded:", {
-        ip: clientIP,
-        reset: new Date(rateLimit.reset).toISOString(),
+    // Fail-open: skip rate limiting if IP cannot be determined
+    if (!clientIP) {
+      console.warn("⚠️ [Rate Limit] No IP detected, skipping rate limit", {
+        path: pathname,
+        userAgent: req.headers.get("user-agent")?.slice(0, 50),
       });
+      // Continue without rate limiting
+    } else {
+      const rateLimit = await checkLoginRateLimit(clientIP);
 
-      return NextResponse.redirect(errorUrl, { headers });
+      if (!rateLimit.success) {
+        const headers = buildRateLimitHeaders(rateLimit);
+        const retryMinutes = Math.ceil((rateLimit.reset - Date.now()) / 60000);
+        const errorUrl = new URL("/login", req.url);
+        errorUrl.searchParams.set("error", "rate_limited");
+        errorUrl.searchParams.set("retry_after", retryMinutes.toString());
+
+        // Log rate limit event (IP hashed for privacy in production)
+        console.warn("🚫 Rate limit exceeded:", {
+          ip: process.env.NODE_ENV === "production" ? `${clientIP.slice(0, 3)}***` : clientIP,
+          reset: new Date(rateLimit.reset).toISOString(),
+        });
+
+        return NextResponse.redirect(errorUrl, { headers });
+      }
     }
   }
 
