@@ -5,19 +5,10 @@
 import dynamic from "next/dynamic";
 
 // Loading skeleton for modals
+// Returns null to avoid flash of empty modal during lazy load
+// The actual modal components handle their own isOpen logic
 function ModalSkeleton() {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-2xl rounded-2xl border border-gray-800 bg-gray-900 p-8">
-        <div className="mb-6 h-8 w-48 animate-pulse rounded bg-gray-800"></div>
-        <div className="space-y-4">
-          <div className="h-12 w-full animate-pulse rounded bg-gray-800"></div>
-          <div className="h-12 w-full animate-pulse rounded bg-gray-800"></div>
-          <div className="h-32 w-full animate-pulse rounded bg-gray-800"></div>
-        </div>
-      </div>
-    </div>
-  );
+  return null; // Don't show skeleton - modal handles visibility
 }
 
 // Trade Modals
