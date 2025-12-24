@@ -120,7 +120,6 @@ select:disabled,
 [aria-disabled="true"],
 .disabled {
   cursor: not-allowed;
-  pointer-events: auto; /* Allow cursor to show on disabled elements */
 }
 
 /*

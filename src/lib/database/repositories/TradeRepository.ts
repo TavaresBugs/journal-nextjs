@@ -165,6 +165,7 @@ class PrismaTradeRepository {
 
   /**
    * Fetches trades by account ID with type-safe queries.
+   * OPTIMIZED: Selects only essential columns for listing performance.
    */
   async getByAccountId(
     accountId: string,
@@ -193,15 +194,58 @@ class PrismaTradeRepository {
         whereClause.symbol = options.symbol;
       }
 
+      // OPTIMIZED: Select only columns needed for trade list display
       const trades = await prisma.trades.findMany({
         where: whereClause,
         orderBy: options?.orderBy || [{ entry_date: "desc" }, { entry_time: "desc" }],
         take: options?.limit,
         skip: options?.offset,
+        select: {
+          id: true,
+          account_id: true,
+          user_id: true,
+          symbol: true,
+          type: true,
+          entry_price: true,
+          exit_price: true,
+          stop_loss: true,
+          take_profit: true,
+          lot: true,
+          pnl: true,
+          commission: true,
+          swap: true,
+          entry_date: true,
+          entry_time: true,
+          exit_date: true,
+          exit_time: true,
+          outcome: true,
+          strategy: true,
+          strategy_icon: true,
+          setup: true,
+          tags: true,
+          notes: true,
+          tf_analise: true,
+          tf_entrada: true,
+          session: true,
+          htf_aligned: true,
+          r_multiple: true,
+          market_condition: true,
+          market_condition_v2: true,
+          plan_adherence: true,
+          plan_adherence_rating: true,
+          entry_quality: true,
+          pd_array: true,
+          created_at: true,
+          updated_at: true,
+        },
       });
 
       const durationMs = performance.now() - startTime;
       this.logSlowQuery("getByAccountId", durationMs, { accountId, count: trades.length });
+      this.logger.info(`Trades fetched in ${durationMs.toFixed(0)}ms`, {
+        count: trades.length,
+        accountId,
+      });
 
       return { data: trades.map(mapPrismaToTrade), error: null };
     } catch (error) {
@@ -651,6 +695,7 @@ class PrismaTradeRepository {
 
   /**
    * Gets aggregated trade metrics for dashboard.
+   * OPTIMIZED: Uses single raw SQL query instead of 4 separate queries.
    */
   async getDashboardMetrics(
     accountId: string,
@@ -661,36 +706,65 @@ class PrismaTradeRepository {
         totalTrades: number;
         wins: number;
         losses: number;
+        breakeven: number;
         winRate: number;
         totalPnl: number;
       },
       AppError
     >
   > {
+    const startTime = performance.now();
     try {
-      const [total, wins, losses, pnlSum] = await Promise.all([
-        prisma.trades.count({
-          where: { account_id: accountId, user_id: userId },
-        }),
-        prisma.trades.count({
-          where: { account_id: accountId, user_id: userId, outcome: "win" },
-        }),
-        prisma.trades.count({
-          where: { account_id: accountId, user_id: userId, outcome: "loss" },
-        }),
-        prisma.trades.aggregate({
-          where: { account_id: accountId, user_id: userId },
-          _sum: { pnl: true },
-        }),
-      ]);
+      // Single optimized query using PostgreSQL FILTER for conditional counts
+      const result = await prisma.$queryRaw<
+        Array<{
+          total_trades: bigint;
+          wins: bigint;
+          losses: bigint;
+          breakeven: bigint;
+          total_pnl: number | null;
+        }>
+      >`
+        SELECT 
+          COUNT(*) as total_trades,
+          COUNT(*) FILTER (WHERE outcome = 'win') as wins,
+          COUNT(*) FILTER (WHERE outcome = 'loss') as losses,
+          COUNT(*) FILTER (WHERE outcome = 'breakeven') as breakeven,
+          COALESCE(SUM(pnl), 0) as total_pnl
+        FROM trades
+        WHERE account_id = ${accountId}::uuid
+          AND user_id = ${userId}::uuid
+      `;
+
+      const durationMs = performance.now() - startTime;
+      this.logSlowQuery("getDashboardMetrics", durationMs, { accountId });
+
+      const row = result[0];
+      const totalTrades = Number(row?.total_trades || 0);
+      const wins = Number(row?.wins || 0);
+      const losses = Number(row?.losses || 0);
+      const breakeven = Number(row?.breakeven || 0);
+      const totalPnl = Number(row?.total_pnl || 0);
+
+      // Calculate win rate based on decisive trades only (win + loss)
+      const decisiveTrades = wins + losses;
+      const winRate = decisiveTrades > 0 ? (wins / decisiveTrades) * 100 : 0;
+
+      this.logger.info(`Dashboard metrics fetched in ${durationMs.toFixed(0)}ms`, {
+        accountId,
+        totalTrades,
+        wins,
+        losses,
+      });
 
       return {
         data: {
-          totalTrades: total,
+          totalTrades,
           wins,
           losses,
-          winRate: total > 0 ? (wins / total) * 100 : 0,
-          totalPnl: Number(pnlSum._sum.pnl || 0),
+          breakeven,
+          winRate: Math.round(winRate * 100) / 100, // Round to 2 decimal places
+          totalPnl,
         },
         error: null,
       };

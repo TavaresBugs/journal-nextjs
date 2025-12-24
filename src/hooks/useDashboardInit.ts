@@ -6,7 +6,8 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
-import { getTradeDashboardMetricsAction } from "@/app/actions/trades"; // Correct import
+import { getTradeDashboardMetricsAction } from "@/app/actions/trades";
+import { getAccountById } from "@/app/actions/accounts";
 
 import { useToast } from "@/providers/ToastProvider";
 
@@ -81,7 +82,7 @@ export function useDashboardInit(
     useStratifiedLoading(accountId);
 
   // Store State
-  const { currentAccount, setCurrentAccount } = useAccountStore();
+  const { currentAccount } = useAccountStore();
   const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage } = useTradeStore();
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
@@ -105,6 +106,9 @@ export function useDashboardInit(
     }
 
     const init = async () => {
+      const perfStart = performance.now();
+      console.log("🚀 Dashboard init started");
+
       // Check if already initialized for this account
       if (isInitRef.current === accountId) {
         setIsLoading(false);
@@ -115,13 +119,27 @@ export function useDashboardInit(
       isInitRef.current = accountId;
 
       try {
-        let currentAccounts = useAccountStore.getState().accounts;
-        if (currentAccounts.length === 0) {
-          await useAccountStore.getState().loadAccounts();
-          currentAccounts = useAccountStore.getState().accounts;
-        }
+        const t1 = performance.now();
+        // Optimized: Direct fetch instead of full list load
+        let account = useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
 
-        const account = currentAccounts.find((acc) => acc.id === accountId);
+        if (!account) {
+          const fetchedAccount = await getAccountById(accountId);
+          if (fetchedAccount) {
+            account = fetchedAccount;
+            // Inject into store without triggering full reload
+            useAccountStore.setState((state) => ({
+              accounts: state.accounts.some((a) => a.id === accountId)
+                ? state.accounts
+                : [...state.accounts, fetchedAccount],
+              currentAccount: fetchedAccount,
+              currentAccountId: accountId,
+            }));
+          }
+        } else {
+          useAccountStore.getState().setCurrentAccount(accountId);
+        }
+        console.log(`✅ Account loaded: ${(performance.now() - t1).toFixed(0)}ms`);
 
         if (!account) {
           console.error("Account not found after loading:", accountId);
@@ -130,15 +148,17 @@ export function useDashboardInit(
           return;
         }
 
-        setCurrentAccount(accountId);
         setIsAccountReady(true); // Account is ready, can render header
 
         // CRITICAL PHASE: Load Page 1 of trades AND Server Metrics in parallel
         // We use server metrics for the header to avoid loading full history
+        const t2 = performance.now();
         const [metricsResult] = await Promise.all([
           getTradeDashboardMetricsAction(accountId),
           loadTrades(accountId),
         ]);
+        console.log(`✅ Metrics + Trades: ${(performance.now() - t2).toFixed(0)}ms`);
+        console.log(`🏁 Total init time: ${(performance.now() - perfStart).toFixed(0)}ms`);
 
         if (metricsResult) {
           setServerMetrics(metricsResult);

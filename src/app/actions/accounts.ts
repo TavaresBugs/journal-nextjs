@@ -19,6 +19,7 @@ import {
   prismaSettingsRepo,
   prismaTradeRepo,
 } from "@/lib/database/repositories";
+import { prisma } from "@/lib/database";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Account, Settings, UserSettings } from "@/types";
 import { revalidatePath } from "next/cache";
@@ -376,5 +377,58 @@ export async function syncAllAccountsBalancesAction(): Promise<{
   } catch (error) {
     console.error("[syncAllAccountsBalancesAction] Unexpected error:", error);
     return { success: false, syncedCount: 0 };
+  }
+}
+
+/**
+ * Get a single account by ID optimized for dashboard initialization.
+ * Skips the repository layer for maximum performance (no extra checks/transforms).
+ * @param accountId - The account ID.
+ * @returns The account or null.
+ */
+export async function getAccountById(accountId: string): Promise<Account | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    const account = await prisma.accounts.findFirst({
+      where: {
+        id: accountId,
+        user_id: userId,
+      },
+      select: {
+        id: true,
+        user_id: true,
+        name: true,
+        initial_balance: true,
+        current_balance: true,
+        currency: true,
+        leverage: true,
+        max_drawdown: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
+
+    if (!account) return null;
+
+    // Direct mapping to Account interface
+    return {
+      id: account.id,
+      userId: account.user_id,
+      name: account.name,
+      broker: "N/A", // Field not in DB schema, using fallback
+      initialBalance: Number(account.initial_balance),
+      currentBalance: Number(account.current_balance),
+      currency: account.currency,
+      leverage: account.leverage,
+      maxDrawdown: Number(account.max_drawdown),
+      createdAt: account.created_at,
+      updatedAt: account.updated_at,
+      isArchived: false,
+    } as unknown as Account;
+  } catch (error) {
+    console.error("[getAccountById] Error:", error);
+    return null;
   }
 }

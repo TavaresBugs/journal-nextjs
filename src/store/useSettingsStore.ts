@@ -17,6 +17,7 @@ interface SettingsStore {
   strategies: string[];
   setups: string[];
   isLoading: boolean;
+  isLoaded: boolean; // ✅ NEW: Prevents redundant API calls
 
   // Actions
   loadSettings: () => Promise<void>;
@@ -59,15 +60,21 @@ const syncToSupabase = async (
 
 export const useSettingsStore = create<SettingsStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       currencies: DEFAULT_CURRENCIES,
       leverages: DEFAULT_LEVERAGES,
       assets: defaultAssetsArray,
       strategies: DEFAULT_STRATEGIES,
       setups: DEFAULT_SETUPS,
       isLoading: false,
+      isLoaded: false, // ✅ NEW
 
       loadSettings: async () => {
+        // ✅ OPTIMIZED: Skip if already loaded or loading
+        if (get().isLoaded || get().isLoading) {
+          return;
+        }
+
         set({ isLoading: true });
         try {
           const settings = await getUserSettingsAction();
@@ -79,14 +86,15 @@ export const useSettingsStore = create<SettingsStore>()(
               strategies: settings.strategies || [],
               setups: settings.setups || [],
               isLoading: false,
+              isLoaded: true, // ✅ Mark as loaded
             });
           } else {
             // No settings found - use defaults
-            set({ isLoading: false });
+            set({ isLoading: false, isLoaded: true });
           }
         } catch (error) {
           console.error("Error loading settings:", error);
-          set({ isLoading: false });
+          set({ isLoading: false, isLoaded: true }); // Mark as loaded even on error to prevent retries
         }
       },
 
