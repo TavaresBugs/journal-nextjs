@@ -53,6 +53,8 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
   const {
     experiments,
     recaps,
+    experimentsLoaded,
+    recapsLoaded,
     isLoading,
     loadExperiments,
     loadRecaps,
@@ -81,13 +83,15 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
 
   // Load data on mount (with caching check)
   useEffect(() => {
-    if (experiments.length === 0) {
+    // Only load if not already loaded (handled by store flags)
+    // The store actions now check the flags internally too, but doing it here prevents calling the action entirely
+    if (!experimentsLoaded) {
       loadExperiments();
     }
-    if (recaps.length === 0) {
+    if (!recapsLoaded) {
       loadRecaps();
     }
-  }, [loadExperiments, loadRecaps, experiments.length, recaps.length]);
+  }, [loadExperiments, loadRecaps, experimentsLoaded, recapsLoaded]);
 
   // Experiment handlers
   const handleCreateExperiment = async (data: CreateExperimentData, files: File[]) => {

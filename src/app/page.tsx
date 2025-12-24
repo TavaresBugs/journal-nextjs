@@ -153,7 +153,7 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Removed blocking gradient to show global background image */}
-      <div className="fixed inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] bg-[size:20px_20px] opacity-10" />
+      <div className="fixed inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] bg-size-[20px_20px] opacity-10" />
 
       <div className="relative z-10 container mx-auto max-w-6xl px-4 py-6">
         {/* Error Banner */}

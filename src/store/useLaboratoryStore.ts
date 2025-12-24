@@ -163,6 +163,8 @@ export interface UpdateRecapData extends CreateRecapData {
 interface LaboratoryStore {
   experiments: LaboratoryExperiment[];
   recaps: LaboratoryRecap[];
+  experimentsLoaded: boolean; // New flag
+  recapsLoaded: boolean; // New flag
   isLoading: boolean;
   error: string | null;
 
@@ -303,15 +305,24 @@ async function getCurrentUserId(): Promise<string | null> {
 export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
   experiments: [],
   recaps: [],
+  experimentsLoaded: false,
+  recapsLoaded: false,
   isLoading: false,
   error: null,
 
   loadExperiments: async () => {
+    // If already loaded, don't re-fetch unless forced (could add force param later)
+    if (get().experimentsLoaded) return;
+
     set({ isLoading: true, error: null });
 
     try {
       const repoExperiments = await getExperimentsAction();
-      set({ experiments: repoExperiments.map(mapExperiment), isLoading: false });
+      set({
+        experiments: repoExperiments.map(mapExperiment),
+        isLoading: false,
+        experimentsLoaded: true,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error loading experiments:", error);
@@ -530,11 +541,18 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
   },
 
   loadRecaps: async () => {
+    // If already loaded, don't re-fetch
+    if (get().recapsLoaded) return;
+
     set({ isLoading: true, error: null });
 
     try {
       const repoRecaps = await getRecapsAction();
-      set({ recaps: repoRecaps.map(mapRecap), isLoading: false });
+      set({
+        recaps: repoRecaps.map(mapRecap),
+        isLoading: false,
+        recapsLoaded: true,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error loading recaps:", error);
