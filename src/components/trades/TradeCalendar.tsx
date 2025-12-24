@@ -158,8 +158,8 @@ export function TradeCalendar({
     if (journalAvailability && Object.keys(journalAvailability).length > 0) {
       return journalAvailability[dateStr] || 0;
     }
-    // Fallback to full entries if available
-    return entries.filter((e) => e.date === dateStr).length;
+    // Fallback to 0 so we use the deduplicated stats.journalCount
+    return 0;
   };
 
   // Get stats for a specific day
