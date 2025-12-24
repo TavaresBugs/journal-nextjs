@@ -1,6 +1,6 @@
 "use client";
 
-import type { Trade } from "@/types";
+import type { Trade, PlaybookStats } from "@/types";
 import dynamic from "next/dynamic";
 
 // Lightweight Charts (40kb vs 450kb) - Performance optimized, v5 API
@@ -50,9 +50,16 @@ interface ChartsProps {
   currency: string;
   initialBalance: number;
   accountCreatedAt: string;
+  playbookStats?: PlaybookStats[];
 }
 
-export function Charts({ trades, currency, initialBalance, accountCreatedAt }: ChartsProps) {
+export function Charts({
+  trades,
+  currency,
+  initialBalance,
+  accountCreatedAt,
+  playbookStats,
+}: ChartsProps) {
   return (
     <div className="space-y-8">
       {/* Hero Chart - Equity Curve */}
@@ -72,7 +79,7 @@ export function Charts({ trades, currency, initialBalance, accountCreatedAt }: C
           Análise de Distribuição
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <StrategyComparisonChart trades={trades} currency={currency} />
+          <StrategyComparisonChart trades={trades} currency={currency} stats={playbookStats} />
           <WinLossDistributionChart trades={trades} />
         </div>
       </div>

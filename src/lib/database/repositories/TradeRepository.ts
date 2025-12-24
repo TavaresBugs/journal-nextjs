@@ -707,17 +707,30 @@ class PrismaTradeRepository {
    * Fetches lightweight trade history for charts and analytics.
    * Optimized to select only necessary fields.
    */
-  async getHistoryLite(accountId: string, userId: string): Promise<Result<TradeLite[], AppError>> {
+  async getHistoryLite(
+    accountId: string,
+    userId: string,
+    dateRange?: { start: Date; end: Date }
+  ): Promise<Result<TradeLite[], AppError>> {
     const startTime = performance.now();
-    this.logger.info("Fetching trade history lite", { accountId, userId });
+    this.logger.info("Fetching trade history lite", { accountId, userId, dateRange });
 
     try {
+      const where: Prisma.tradesWhereInput = {
+        account_id: accountId,
+        user_id: userId,
+      };
+
+      if (dateRange) {
+        where.entry_date = {
+          gte: dateRange.start,
+          lte: dateRange.end,
+        };
+      }
+
       // Select only the fields used by TradeLite/Analytics
       const trades = await prisma.trades.findMany({
-        where: {
-          account_id: accountId,
-          user_id: userId,
-        },
+        where,
         select: {
           id: true,
           entry_date: true,

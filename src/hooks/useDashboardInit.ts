@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
-import { useSettingsStore } from "@/store/useSettingsStore";
+import { getTradeDashboardMetricsAction } from "@/app/actions/trades"; // Correct import
+
 import { useToast } from "@/providers/ToastProvider";
+
+import { useStratifiedLoading } from "./useStratifiedLoading";
+import { PlaybookStats } from "@/types";
 
 export interface DashboardInitData {
   // Account
@@ -21,6 +25,18 @@ export interface DashboardInitData {
   entries: ReturnType<typeof useJournalStore.getState>["entries"];
   playbooks: ReturnType<typeof usePlaybookStore.getState>["playbooks"];
 
+  // Metrics (Server-Side)
+  serverMetrics: {
+    totalTrades: number;
+    winRate: number;
+    profitFactor: number; // Note: Action might return null properties if no trades
+    totalPnl: number;
+    wins: number;
+    losses: number;
+    breakeven: number;
+  } | null;
+  playbookStats: PlaybookStats[];
+
   // State
   isLoading: boolean;
   isTradesLoading: boolean;
@@ -29,6 +45,7 @@ export interface DashboardInitData {
   isAccountFound: boolean;
   sortDirection: "asc" | "desc";
   filterAsset: string;
+  loadingPhases: ReturnType<typeof useStratifiedLoading>["phases"];
 }
 
 export interface DashboardInitActions {
@@ -38,12 +55,15 @@ export interface DashboardInitActions {
   loadPlaybooks: () => Promise<void>;
   setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>;
   setFilterAsset: (accountId: string, asset: string) => Promise<void>;
+  loadCalendarData: () => Promise<void>;
+  loadReportsData: () => Promise<void>;
+  loadPlaybookStats: () => Promise<void>;
 }
 
 /**
  * Hook for initializing dashboard data.
  * Handles loading accounts, trades, entries, playbooks, and settings.
- * Also manages balance synchronization.
+ * Now uses Server Actions for aggregated metrics to avoid loading full history.
  *
  * @param accountId - The account ID to initialize
  * @param isValidAccount - Whether the account ID format is valid
@@ -56,18 +76,23 @@ export function useDashboardInit(
   const router = useRouter();
   const { showToast } = useToast();
 
+  // Stratified Loading
+  const { phases, loadCalendarData, loadReportsData, playbookStats, loadPlaybookStats } =
+    useStratifiedLoading(accountId);
+
   // Store State
-  const { currentAccount, setCurrentAccount, updateAccountBalance } = useAccountStore();
+  const { currentAccount, setCurrentAccount } = useAccountStore();
   const { trades, allHistory, totalCount, currentPage, loadTrades, loadPage } = useTradeStore();
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
-  const { loadSettings } = useSettingsStore();
 
   // Local State
   const [isLoading, setIsLoading] = useState(true);
   const [isTradesLoading, setIsTradesLoading] = useState(true);
   const [isAccountReady, setIsAccountReady] = useState(false);
   const [isAccountFound, setIsAccountFound] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [serverMetrics, setServerMetrics] = useState<any>(null);
 
   // Refs
   const isInitRef = useRef<string | null>(null);
@@ -86,7 +111,7 @@ export function useDashboardInit(
         return;
       }
 
-      // Optimistic lock: prevent race conditions (e.g. StrictMode)
+      // Optimistic lock: prevent race conditions
       isInitRef.current = accountId;
 
       try {
@@ -108,12 +133,16 @@ export function useDashboardInit(
         setCurrentAccount(accountId);
         setIsAccountReady(true); // Account is ready, can render header
 
-        await Promise.all([
+        // CRITICAL PHASE: Load Page 1 of trades AND Server Metrics in parallel
+        // We use server metrics for the header to avoid loading full history
+        const [metricsResult] = await Promise.all([
+          getTradeDashboardMetricsAction(accountId),
           loadTrades(accountId),
-          loadEntries(accountId),
-          loadPlaybooks(),
-          loadSettings(),
         ]);
+
+        if (metricsResult) {
+          setServerMetrics(metricsResult);
+        }
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");
@@ -129,47 +158,6 @@ export function useDashboardInit(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId, showToast]);
 
-  // Balance Update Effect
-  // Calculate total PnL with memoization to avoid effect dependencies on array
-  const totalPnL = useMemo(() => {
-    return allHistory.reduce((sum, trade) => {
-      return sum + (trade.pnl || 0);
-    }, 0);
-  }, [allHistory]);
-
-  // Balance Update Effect
-  // Check difference with epsilon to avoid floating point loops
-  // Balance Update Effect - Run ONLY ONCE on init to fix potential drifts
-  // We rely on trade actions to keep balance updated in real-time
-  const isSyncedRef = useRef(false);
-
-  useEffect(() => {
-    if (!currentAccount || isLoading) return;
-
-    // Prevent multiple syncs causing infinite loops
-    if (isSyncedRef.current) return;
-
-    const currentBal = Number(currentAccount.currentBalance);
-    const initBal = Number(currentAccount.initialBalance);
-    const pnl = Number(totalPnL);
-
-    if (isNaN(currentBal) || isNaN(initBal) || isNaN(pnl)) return;
-
-    const expectedBalance = initBal + pnl;
-
-    // Only update if difference is significant (> 0.01)
-    if (Math.abs(currentBal - expectedBalance) > 0.01) {
-      console.log("[DashboardInit] Syncing balance (One-time):", {
-        current: currentBal,
-        expected: expectedBalance,
-      });
-      updateAccountBalance(accountId, pnl);
-    }
-
-    // Mark as synced so we don't try again until full reload
-    isSyncedRef.current = true;
-  }, [totalPnL, currentAccount, isLoading, accountId, updateAccountBalance]);
-
   return {
     // Account
     currentAccount,
@@ -181,6 +169,8 @@ export function useDashboardInit(
     currentPage,
     entries,
     playbooks,
+    serverMetrics,
+    playbookStats,
 
     // State
     isLoading, // Kept for backwards compatibility (isTradesLoading)
@@ -190,13 +180,17 @@ export function useDashboardInit(
     isAccountFound,
     sortDirection: useTradeStore((state) => state.sortDirection),
     filterAsset: useTradeStore((state) => state.filterAsset),
+    loadingPhases: phases,
 
     // Actions
     loadTrades,
     loadPage,
-    loadEntries: useJournalStore.getState().loadEntries,
-    loadPlaybooks: usePlaybookStore.getState().loadPlaybooks,
+    loadEntries,
+    loadPlaybooks,
     setSortDirection: useTradeStore((state) => state.setSortDirection),
     setFilterAsset: useTradeStore((state) => state.setFilterAsset),
+    loadCalendarData,
+    loadReportsData,
+    loadPlaybookStats,
   };
 }

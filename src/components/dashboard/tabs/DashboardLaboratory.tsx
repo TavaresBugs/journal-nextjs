@@ -79,11 +79,15 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     [journalEntries]
   );
 
-  // Load data on mount
+  // Load data on mount (with caching check)
   useEffect(() => {
-    loadExperiments();
-    loadRecaps();
-  }, [loadExperiments, loadRecaps]);
+    if (experiments.length === 0) {
+      loadExperiments();
+    }
+    if (recaps.length === 0) {
+      loadRecaps();
+    }
+  }, [loadExperiments, loadRecaps, experiments.length, recaps.length]);
 
   // Experiment handlers
   const handleCreateExperiment = async (data: CreateExperimentData, files: File[]) => {

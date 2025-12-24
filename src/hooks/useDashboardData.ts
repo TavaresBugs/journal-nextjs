@@ -1,10 +1,10 @@
-"use client";
-
+import { useEffect } from "react";
 import { useAccountValidation } from "./useAccountValidation";
 import { useDashboardInit } from "./useDashboardInit";
 import { useTradeMetrics } from "./useTradeMetrics";
 import { useUserPermissions } from "./useUserPermissions";
-import type { Trade } from "@/types";
+import { useAccountStore } from "@/store/useAccountStore";
+import { PlaybookStats, Trade } from "@/types";
 
 // Re-export types for backwards compatibility
 export type { AccountValidation } from "./useAccountValidation";
@@ -34,6 +34,7 @@ export interface DashboardData {
   currentPage: number;
   entries: ReturnType<typeof useDashboardInit>["entries"];
   playbooks: ReturnType<typeof useDashboardInit>["playbooks"];
+  playbookStats: PlaybookStats[];
 
   // Metrics
   metrics: ReturnType<typeof useTradeMetrics>["metrics"];
@@ -55,6 +56,7 @@ export interface DashboardData {
   isValidAccount: boolean;
   sortDirection: "asc" | "desc";
   filterAsset: string;
+  loadingPhases: ReturnType<typeof useDashboardInit>["loadingPhases"]; // New
 }
 
 export interface DashboardDataActions {
@@ -64,6 +66,9 @@ export interface DashboardDataActions {
   loadPlaybooks: () => Promise<void>;
   setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>;
   setFilterAsset: (accountId: string, asset: string) => Promise<void>;
+  loadCalendarData: () => Promise<void>; // New
+  loadReportsData: () => Promise<void>; // New
+  loadPlaybookStats: () => Promise<void>; // New
 }
 
 /**
@@ -86,7 +91,8 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
   // 2. Initialize dashboard data (loads trades, entries, playbooks, etc.)
   const initData = useDashboardInit(accountId, isValidAccount);
 
-  // 3. Calculate trade metrics
+  // 3. Calculate trade metrics (Client-Side for Reports/Charts)
+  // We keep this for detailed charts that might need full history later
   const metricsData = useTradeMetrics({
     trades: initData.allHistory as unknown as Trade[],
     entries: initData.entries,
@@ -97,12 +103,67 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
   // 4. Load user permissions
   const { isAdminUser, isMentorUser } = useUserPermissions();
 
+  const { updateAccountBalance } = useAccountStore();
+
+  // 5. Balance Synchronization Check
+  // Ensure the account balance matches the sum of trade PnL
+  const { pnlMetrics } = metricsData;
+
+  useEffect(() => {
+    if (!initData.currentAccount || !pnlMetrics) return;
+
+    const initialBalance = initData.currentAccount.initialBalance;
+    const currentBalance = initData.currentAccount.currentBalance;
+
+    // Calculate what the balance *should* be based on trades/metrics
+    // We prioritize server metrics PnL if available, otherwise client metrics
+    const totalPnL = initData.serverMetrics?.totalPnl ?? pnlMetrics.pnl;
+    const expectedBalance = initialBalance + totalPnL;
+
+    // Check for discrepancy (allow small tolerance for float errors)
+    const discrepancy = Math.abs(expectedBalance - currentBalance);
+
+    if (discrepancy > 0.5) {
+      // 50 cents tolerance
+      // Only trigger update if we have a meaningful difference
+      // This prevents loops on tiny float differences
+      // Also verify we actually have data loaded to avoid overwriting with 0
+      const hasData =
+        initData.serverMetrics || (initData.allHistory && initData.allHistory.length > 0);
+
+      if (hasData) {
+        updateAccountBalance(initData.currentAccount.id, totalPnL);
+      }
+    }
+  }, [
+    initData.currentAccount,
+    initData.serverMetrics,
+    pnlMetrics, // Stable dependency (memoized)
+    initData.allHistory,
+    updateAccountBalance,
+  ]);
+
+  // PRIORITIZE SERVER METRICS FOR HEADER (FAST & ACCURATE)
+  // fallback to client metrics if server metrics not yet loaded
+  const displayPnl = initData.serverMetrics?.totalPnl ?? metricsData.pnlMetrics.pnl;
+  const displayWinRate = initData.serverMetrics?.winRate ?? metricsData.metrics.winRate;
+  const displayTotalTrades = initData.serverMetrics?.totalTrades ?? metricsData.metrics.totalTrades;
+
+  // Calculate derived values from server metrics
+  const displayPnlPercent = initData.currentAccount?.initialBalance
+    ? (displayPnl / initData.currentAccount.initialBalance) * 100
+    : 0;
+
+  const displayIsProfit = displayPnl >= 0;
+
   return {
     // Account
     currentAccount: initData.currentAccount
       ? {
           ...initData.currentAccount,
-          currentBalance: metricsData.pnlMetrics.currentBalance,
+          // Trust the DB balance, but if we have server PnL, we could verify consistency
+          // For now, simple is better: use DB balance.
+          currentBalance: initData.currentAccount.currentBalance,
         }
       : null,
 
@@ -113,14 +174,24 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
     currentPage: initData.currentPage,
     entries: initData.entries,
     playbooks: initData.playbooks,
+    playbookStats: initData.playbookStats,
 
     // Metrics
-    metrics: metricsData.metrics,
+    metrics: {
+      ...metricsData.metrics,
+      // Override summary metrics with server data
+      winRate: displayWinRate,
+      totalTrades: displayTotalTrades,
+      totalPnL: displayPnl,
+      wins: initData.serverMetrics?.wins ?? metricsData.metrics.wins,
+      losses: initData.serverMetrics?.losses ?? metricsData.metrics.losses,
+      breakeven: initData.serverMetrics?.breakeven ?? metricsData.metrics.breakeven,
+    },
     advancedMetrics: metricsData.advancedMetrics,
     streakMetrics: metricsData.streakMetrics,
-    pnl: metricsData.pnlMetrics.pnl,
-    pnlPercent: metricsData.pnlMetrics.pnlPercent,
-    isProfit: metricsData.pnlMetrics.isProfit,
+    pnl: displayPnl,
+    pnlPercent: displayPnlPercent,
+    isProfit: displayIsProfit,
 
     // Permissions
     isAdminUser,
@@ -134,6 +205,7 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
     isValidAccount,
     sortDirection: initData.sortDirection,
     filterAsset: initData.filterAsset,
+    loadingPhases: initData.loadingPhases,
 
     // Actions
     loadPage: initData.loadPage,
@@ -142,5 +214,8 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
     loadPlaybooks: initData.loadPlaybooks,
     setSortDirection: initData.setSortDirection,
     setFilterAsset: initData.setFilterAsset,
+    loadCalendarData: initData.loadCalendarData,
+    loadReportsData: initData.loadReportsData,
+    loadPlaybookStats: initData.loadPlaybookStats,
   };
 }

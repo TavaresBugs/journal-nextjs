@@ -1,5 +1,7 @@
 "use client";
 
+import React, { useEffect } from "react";
+
 /**
  * DashboardSkeleton - Loading skeleton for the main dashboard page
  * Mirrors the structure of the dashboard with animated placeholders
@@ -98,6 +100,49 @@ export function DashboardContentSkeleton() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function CalendarSkeleton({ onMount }: { onMount?: () => void }) {
+  // Trigger onMount effect if provided (for lazy loading trigger)
+  useEffect(() => {
+    if (onMount) onMount();
+  }, [onMount]);
+
+  return (
+    <div className="container mx-auto px-4 py-4" style={{ maxWidth: "1200px" }}>
+      <div className="animate-pulse rounded-2xl border border-gray-800 bg-gray-900/50 p-6 backdrop-blur-sm">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="h-8 w-48 rounded bg-gray-800" />
+          <div className="flex gap-2">
+            <div className="h-8 w-8 rounded bg-gray-800" />
+            <div className="h-8 w-8 rounded bg-gray-800" />
+          </div>
+        </div>
+        <div className="grid grid-cols-7 gap-4">
+          {[...Array(35)].map((_, i) => (
+            <div key={i} className="aspect-square rounded-lg bg-gray-800/50" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ReportsSkeleton({ onMount }: { onMount?: () => void }) {
+  useEffect(() => {
+    if (onMount) onMount();
+  }, [onMount]);
+
+  return (
+    <div className="container mx-auto px-4 py-4" style={{ maxWidth: "1200px" }}>
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-32 animate-pulse rounded-xl bg-gray-800" />
+        ))}
+      </div>
+      <div className="h-96 animate-pulse rounded-2xl bg-gray-800/50" />
     </div>
   );
 }

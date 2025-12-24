@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
-import { Trade, TradeMetrics } from "@/types";
+import { Trade, TradeMetrics, PlaybookStats } from "@/types";
 import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
 import { calculateWolfScore } from "@/lib/wolfScore";
 import { WolfScoreCard } from "@/components/dashboard/WolfScoreCard";
@@ -34,6 +34,7 @@ interface DashboardOverviewProps {
   currency: string;
   initialBalance: number;
   accountCreatedAt: string;
+  playbookStats?: PlaybookStats[];
 }
 
 export function DashboardOverview({
@@ -43,6 +44,7 @@ export function DashboardOverview({
   currency,
   initialBalance,
   accountCreatedAt,
+  playbookStats,
 }: DashboardOverviewProps) {
   // Calculate Wolf Score
   const wolfScore = useMemo(
@@ -87,7 +89,7 @@ export function DashboardOverview({
               <div className="mb-2 text-xs tracking-wider text-gray-400 uppercase">
                 Média de Lucro
               </div>
-              <div className="text-2xl font-bold text-[#04df73]">
+              <div className="text-zorin-accent text-2xl font-bold">
                 {formatCurrency(metrics.avgWin, currency)}
               </div>
               <div className="absolute top-4 right-4 text-gray-600">
@@ -164,9 +166,9 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.sharpe >= 2
-                    ? "text-[#00c853]"
+                    ? "text-zorin-accent"
                     : advancedMetrics.sharpe >= 1
-                      ? "text-[#00c853]"
+                      ? "text-zorin-accent"
                       : advancedMetrics.sharpe >= 0
                         ? "text-yellow-400"
                         : "text-[#ef4444]"
@@ -198,9 +200,9 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.calmar >= 3
-                    ? "text-[#00c853]"
+                    ? "text-zorin-accent"
                     : advancedMetrics.calmar >= 1
-                      ? "text-[#00c853]"
+                      ? "text-zorin-accent"
                       : advancedMetrics.calmar >= 0
                         ? "text-yellow-400"
                         : "text-[#ef4444]"
@@ -234,7 +236,7 @@ export function DashboardOverview({
               <div
                 className={`text-xl font-bold ${
                   advancedMetrics.holdTime.avgWinnerTime > advancedMetrics.holdTime.avgLoserTime
-                    ? "text-[#00c853]"
+                    ? "text-zorin-accent"
                     : "text-[#ef4444]"
                 }`}
               >
@@ -266,7 +268,7 @@ export function DashboardOverview({
               <div
                 className={`text-2xl font-bold ${
                   advancedMetrics.streaks.currentStreak.type === "win"
-                    ? "text-[#00c853]"
+                    ? "text-zorin-accent"
                     : advancedMetrics.streaks.currentStreak.type === "loss"
                       ? "text-[#ef4444]"
                       : "text-gray-400"
@@ -338,6 +340,7 @@ export function DashboardOverview({
             currency={currency}
             initialBalance={initialBalance}
             accountCreatedAt={accountCreatedAt}
+            playbookStats={playbookStats}
           />
         </div>
       </CardContent>

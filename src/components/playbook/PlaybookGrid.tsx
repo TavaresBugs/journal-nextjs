@@ -1,10 +1,10 @@
 import { useMemo } from "react";
-import { Trade, Playbook } from "@/types";
+import { Playbook, PlaybookStats } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import { CircularProgress, GlassCard, IconActionButton } from "@/components/ui";
 
 interface PlaybookGridProps {
-  trades: Trade[];
+  stats: PlaybookStats[];
   playbooks: Playbook[];
   currency: string;
   onEdit?: (playbook: Playbook) => void;
@@ -13,23 +13,8 @@ interface PlaybookGridProps {
   onShare?: (playbook: Playbook) => void;
 }
 
-interface StrategyMetrics {
-  name: string;
-  playbook?: Playbook;
-  totalTrades: number;
-  wins: number;
-  losses: number;
-  breakeven: number;
-  netPnL: number;
-  winRate: number;
-  profitFactor: number;
-  avgWin: number;
-  avgLoss: number;
-  expectancy: number;
-}
-
 export function PlaybookGrid({
-  trades,
+  stats,
   playbooks,
   currency,
   onEdit,
@@ -38,103 +23,20 @@ export function PlaybookGrid({
   onShare,
 }: PlaybookGridProps) {
   const strategies = useMemo(() => {
-    const stats = new Map<string, StrategyMetrics>();
+    // Merge stats with playbook details (icon, color, etc)
+    return stats.map((stat) => {
+      // Try to find matching playbook by ID first (if available), then Name
+      const playbook = playbooks.find((p) => (stat.id && p.id === stat.id) || p.name === stat.name);
 
-    // Initialize with Playbooks
-    playbooks.forEach((pb) => {
-      stats.set(pb.name, {
-        name: pb.name,
-        playbook: pb,
-        totalTrades: 0,
-        wins: 0,
-        losses: 0,
-        breakeven: 0,
-        netPnL: 0,
-        winRate: 0,
-        profitFactor: 0,
-        avgWin: 0,
-        avgLoss: 0,
-        expectancy: 0,
-      });
+      return {
+        ...stat,
+        playbook,
+        // Fallbacks for display if no playbook found (e.g. manual strategy)
+        icon: playbook?.icon || "📊",
+        color: playbook?.color || "#9ca3af",
+      };
     });
-
-    // Process Trades
-    trades.forEach((trade) => {
-      const strategyName = trade.strategy || "Sem Estratégia";
-
-      if (!stats.has(strategyName)) {
-        stats.set(strategyName, {
-          name: strategyName,
-          totalTrades: 0,
-          wins: 0,
-          losses: 0,
-          breakeven: 0,
-          netPnL: 0,
-          winRate: 0,
-          profitFactor: 0,
-          avgWin: 0,
-          avgLoss: 0,
-          expectancy: 0,
-        });
-      }
-
-      const metric = stats.get(strategyName)!;
-      metric.totalTrades++;
-      metric.netPnL += trade.pnl || 0;
-
-      if (trade.outcome === "win") {
-        metric.wins++;
-      } else if (trade.outcome === "loss") {
-        metric.losses++;
-      } else if (trade.outcome === "breakeven") {
-        metric.breakeven++;
-      }
-    });
-
-    // Calculate derived metrics
-    return Array.from(stats.values())
-      .map((metric) => {
-        // Win Rate
-        metric.winRate = metric.totalTrades > 0 ? (metric.wins / metric.totalTrades) * 100 : 0;
-
-        // Calculate average win/loss
-        const winningTrades = trades.filter(
-          (t) => (t.strategy || "Sem Estratégia") === metric.name && t.outcome === "win"
-        );
-        const losingTrades = trades.filter(
-          (t) => (t.strategy || "Sem Estratégia") === metric.name && t.outcome === "loss"
-        );
-
-        metric.avgWin =
-          winningTrades.length > 0
-            ? winningTrades.reduce((sum, t) => sum + (t.pnl || 0), 0) / winningTrades.length
-            : 0;
-
-        metric.avgLoss =
-          losingTrades.length > 0
-            ? Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0) / losingTrades.length)
-            : 0;
-
-        // Profit Factor
-        const totalWins = winningTrades.reduce((sum, t) => sum + (t.pnl || 0), 0);
-        const totalLosses = Math.abs(losingTrades.reduce((sum, t) => sum + (t.pnl || 0), 0));
-        metric.profitFactor = totalLosses > 0 ? totalWins / totalLosses : totalWins > 0 ? 999 : 0;
-
-        // Expectancy
-        metric.expectancy =
-          metric.totalTrades > 0
-            ? (metric.winRate / 100) * metric.avgWin -
-              ((100 - metric.winRate) / 100) * metric.avgLoss
-            : 0;
-
-        return metric;
-      })
-      .sort((a, b) => {
-        if (a.name === "Sem Estratégia") return 1;
-        if (b.name === "Sem Estratégia") return -1;
-        return b.netPnL - a.netPnL;
-      });
-  }, [trades, playbooks]);
+  }, [stats, playbooks]);
 
   if (strategies.length === 0) {
     return (

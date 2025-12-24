@@ -69,13 +69,22 @@ export default function HomePage() {
 
         await Promise.race([Promise.all([loadAccounts(), loadSettings()]), timeoutPromise]);
 
-        // Sync all account balances to ensure they're up to date
-        const { syncAllAccountsBalancesAction } = await import("@/app/actions/accounts");
-        const syncResult = await syncAllAccountsBalancesAction();
-        if (syncResult.syncedCount > 0) {
-          // Reload accounts to reflect updated balances
-          await loadAccounts();
-        }
+        setIsLoading(false);
+
+        // Sync all account balances in the background to ensure they're up to date
+        // We don't block the UI for this
+        import("@/app/actions/accounts").then(async ({ syncAllAccountsBalancesAction }) => {
+          try {
+            const syncResult = await syncAllAccountsBalancesAction();
+            if (syncResult.syncedCount > 0) {
+              console.log("Balances synced, reloading accounts...");
+              // Reload accounts to reflect updated balances (silently)
+              await loadAccounts();
+            }
+          } catch (err) {
+            console.error("Background sync error:", err);
+          }
+        });
 
         // Check if user has no accounts after loading
         const currentAccounts = useAccountStore.getState().accounts;
@@ -85,7 +94,6 @@ export default function HomePage() {
       } catch (error) {
         console.error("Error initializing home page:", error);
         setDataError("Erro ao carregar dados. Tente recarregar a página.");
-      } finally {
         setIsLoading(false);
       }
     };
@@ -145,7 +153,7 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Removed blocking gradient to show global background image */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] [background-size:20px_20px] opacity-10" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff33_1px,transparent_1px)] mask-[linear-gradient(180deg,white,rgba(255,255,255,0))] bg-[length:20px_20px] opacity-10" />
 
       <div className="relative z-10 container mx-auto max-w-6xl px-4 py-6">
         {/* Error Banner */}
@@ -202,7 +210,7 @@ export default function HomePage() {
               size="icon"
               onClick={() => signOut()}
               title="Sair da Conta"
-              className="h-12 w-12 rounded-xl hover:!text-red-500"
+              className="h-12 w-12 rounded-xl hover:text-red-500"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

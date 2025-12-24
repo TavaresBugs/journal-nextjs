@@ -176,6 +176,22 @@ export interface Playbook {
   updatedAt: string;
 }
 
+export interface PlaybookStats {
+  id?: string;
+  name: string;
+  totalTrades: number;
+  wins: number;
+  losses: number;
+  breakeven: number;
+  netPnL: number;
+  winRate: number;
+  profitFactor: number;
+  avgWin: number;
+  avgLoss: number;
+  expectancy: number;
+  avgRR: number;
+}
+
 export interface SharedJournal {
   id: string;
   journalEntryId: string;

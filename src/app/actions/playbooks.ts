@@ -8,7 +8,7 @@
 
 import { prismaPlaybookRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
-import { Playbook, SharedPlaybook } from "@/types";
+import { Playbook, SharedPlaybook, PlaybookStats } from "@/types";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -31,6 +31,28 @@ export async function getPlaybooksAction(accountId?: string): Promise<Playbook[]
     return result.data || [];
   } catch (error) {
     console.error("[getPlaybooksAction] Unexpected error:", error);
+    return [];
+  }
+}
+
+/**
+ * Get playbook statistics (aggregated server-side).
+ */
+export async function getPlaybookStatsAction(accountId?: string): Promise<PlaybookStats[]> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const result = await prismaPlaybookRepo.getPlaybookStats(userId, accountId);
+
+    if (result.error) {
+      console.error("[getPlaybookStatsAction] Error:", result.error);
+      return [];
+    }
+
+    return result.data || [];
+  } catch (error) {
+    console.error("[getPlaybookStatsAction] Unexpected error:", error);
     return [];
   }
 }

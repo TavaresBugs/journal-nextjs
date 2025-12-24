@@ -22,6 +22,8 @@ interface TradeStore {
 
   // Actions
   loadTrades: (accountId: string) => Promise<void>;
+  loadAllHistory: (accountId: string) => Promise<void>; // NEW action
+  setAllHistory: (history: TradeLite[]) => void; // NEW action
   loadPage: (accountId: string, page: number) => Promise<void>;
   setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>; // NEW action
   setFilterAsset: (accountId: string, asset: string) => Promise<void>; // NEW action
@@ -43,26 +45,47 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
   isLoadingHistory: false,
 
   loadTrades: async (accountId: string) => {
-    set({ isLoading: true, isLoadingHistory: true });
+    set({ isLoading: true });
     try {
-      // Parallel fetch: Page 1 (Detailed with filters) + All History (Lite)
-      const [pageResponse, historyLite] = await Promise.all([
-        fetchTrades(accountId, 1, get().itemsPerPage, get().sortDirection, get().filterAsset),
-        fetchTradeHistory(accountId),
-      ]);
+      // Only fetch Page 1 initially
+      const pageResponse = await fetchTrades(
+        accountId,
+        1,
+        get().itemsPerPage,
+        get().sortDirection,
+        get().filterAsset
+      );
 
       set({
         trades: pageResponse.data,
         totalCount: pageResponse.count,
-        allHistory: historyLite,
         currentPage: 1,
         isLoading: false,
-        isLoadingHistory: false,
       });
     } catch (error) {
       console.error("Error loading trades:", error);
-      set({ isLoading: false, isLoadingHistory: false });
+      set({ isLoading: false });
     }
+  },
+
+  loadAllHistory: async (accountId: string) => {
+    if (get().allHistory.length > 0 && !get().isLoadingHistory) return;
+
+    set({ isLoadingHistory: true });
+    try {
+      const historyLite = await fetchTradeHistory(accountId);
+      set({
+        allHistory: historyLite,
+        isLoadingHistory: false,
+      });
+    } catch (error) {
+      console.error("Error loading history:", error);
+      set({ isLoadingHistory: false });
+    }
+  },
+
+  setAllHistory: (history: TradeLite[]) => {
+    set({ allHistory: history });
   },
 
   loadPage: async (accountId: string, page: number) => {

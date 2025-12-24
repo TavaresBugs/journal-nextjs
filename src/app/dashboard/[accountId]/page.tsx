@@ -40,6 +40,8 @@ import {
   DashboardMetricsSkeleton,
   DashboardTabsSkeleton,
   DashboardContentSkeleton,
+  CalendarSkeleton, // New import
+  ReportsSkeleton, // New import
 } from "@/components/dashboard/DashboardSkeleton";
 // Types
 import type { Trade, Playbook } from "@/types";
@@ -225,24 +227,31 @@ export default function DashboardPage({
               </TabPanel>
 
               <TabPanel value="calendario" activeTab={activeTab}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>📅 Calendário de Trades</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <TradeCalendar
-                      trades={data.allHistory as unknown as Trade[]}
-                      onDayClick={handleViewDay}
-                    />
-                  </CardContent>
-                </Card>
+                {!data.loadingPhases.heavy.calendar ? (
+                  <CalendarSkeleton onMount={data.loadCalendarData} />
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>📅 Calendário de Trades</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <TradeCalendar
+                        trades={data.allHistory as unknown as Trade[]}
+                        onDayClick={handleViewDay}
+                      />
+                    </CardContent>
+                  </Card>
+                )}
               </TabPanel>
 
               <TabPanel value="playbook" activeTab={activeTab}>
                 <DashboardPlaybooks
+                  accountId={accountId}
                   trades={data.allHistory as unknown as Trade[]}
                   playbooks={data.playbooks}
                   currency={data.currentAccount?.currency || "USD"}
+                  stats={data.playbookStats}
+                  onLoadStats={data.loadPlaybookStats}
                   onCreatePlaybook={() => setIsCreatePlaybookModalOpen(true)}
                   onEditPlaybook={setEditingPlaybook}
                   onDeletePlaybook={actions.handleDeletePlaybook}
@@ -278,14 +287,19 @@ export default function DashboardPage({
               </TabPanel>
 
               <TabPanel value="relatorios" activeTab={activeTab}>
-                <DashboardOverview
-                  metrics={data.metrics}
-                  advancedMetrics={data.advancedMetrics}
-                  allHistory={data.allHistory as unknown as Trade[]}
-                  currency={data.currentAccount.currency}
-                  initialBalance={data.currentAccount.initialBalance}
-                  accountCreatedAt={data.currentAccount.createdAt}
-                />
+                {!data.loadingPhases.heavy.reports ? (
+                  <ReportsSkeleton onMount={data.loadReportsData} />
+                ) : (
+                  <DashboardOverview
+                    metrics={data.metrics}
+                    advancedMetrics={data.advancedMetrics}
+                    allHistory={data.allHistory as unknown as Trade[]}
+                    currency={data.currentAccount.currency || "USD"}
+                    initialBalance={Number(data.currentAccount.initialBalance)}
+                    accountCreatedAt={String(data.currentAccount.createdAt)}
+                    playbookStats={data.playbookStats}
+                  />
+                )}
               </TabPanel>
             </div>
 

@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Trade } from "@/types";
+import type { Trade, PlaybookStats } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import { GlassCard } from "@/components/ui";
 
 interface StrategyComparisonChartProps {
   trades: Trade[];
   currency: string;
+  stats?: PlaybookStats[];
 }
 
 interface StrategyMetric {
@@ -38,8 +39,24 @@ const getRRColor = (rr: number | null) => {
   return "#ef4444";
 };
 
-export function StrategyComparisonChart({ trades, currency }: StrategyComparisonChartProps) {
+export function StrategyComparisonChart({ trades, currency, stats }: StrategyComparisonChartProps) {
   const strategyMetrics: StrategyMetric[] = useMemo(() => {
+    // Priority: use pre-aggregated stats if available (Server-Side Optimization)
+    if (stats && stats.length > 0) {
+      return stats
+        .map((s) => ({
+          strategy: s.name,
+          trades: s.totalTrades,
+          wins: s.wins,
+          losses: s.losses,
+          winRate: s.winRate,
+          pnl: s.netPnL,
+          avgRR: s.avgRR,
+        }))
+        .sort((a, b) => b.pnl - a.pnl);
+    }
+
+    // Fallback: Client-Side Calculation (for legacy or when stats not loaded)
     const strategyStats = trades.reduce(
       (acc, trade) => {
         const strategy = trade.strategy || "Sem Estratégia";
@@ -109,13 +126,13 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
             : null,
       }))
       .sort((a, b) => b.pnl - a.pnl);
-  }, [trades]);
+  }, [trades, stats]);
 
   // Calculate max values for scaling bars
   const maxPnl = Math.max(...strategyMetrics.map((s) => Math.abs(s.pnl)), 1);
   const maxRR = Math.max(...strategyMetrics.map((s) => Math.abs(s.avgRR || 0)), 3);
 
-  if (trades.length === 0) {
+  if (trades.length === 0 && (!stats || stats.length === 0)) {
     return (
       <GlassCard className="p-8">
         <h3 className="mb-8 text-base font-medium text-gray-400">
@@ -236,7 +253,13 @@ export function StrategyComparisonChart({ trades, currency }: StrategyComparison
       {/* Footer Summary */}
       <div className="mt-6 flex flex-wrap gap-4 border-t border-white/5 pt-4 text-xs text-gray-500">
         <span>
-          Total: <span className="font-medium text-gray-300">{trades.length} trades</span>
+          Total:{" "}
+          <span className="font-medium text-gray-300">
+            {stats && stats.length > 0
+              ? stats.reduce((acc, s) => acc + s.totalTrades, 0)
+              : trades.length}{" "}
+            trades
+          </span>
         </span>
         {strategyMetrics.length > 0 && (
           <>

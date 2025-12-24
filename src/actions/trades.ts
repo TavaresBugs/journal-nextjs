@@ -78,41 +78,43 @@ export async function fetchTradeHistory(accountId: string): Promise<TradeLite[]>
     return [];
   }
 
-  const result = await prismaTradeRepo.getByAccountId(accountId, userId);
+  // Use the optimized repository method that selects only necessary fields
+  const result = await prismaTradeRepo.getHistoryLite(accountId, userId);
 
   if (result.error || !result.data) {
     console.error("[fetchTradeHistory] Error:", result.error);
     return [];
   }
 
-  // Convert to TradeLite
-  return result.data.map((trade) => ({
-    id: trade.id,
-    entryDate: trade.entryDate,
-    entryTime: trade.entryTime,
-    exitDate: trade.exitDate,
-    exitTime: trade.exitTime,
-    pnl: trade.pnl,
-    outcome: trade.outcome,
-    accountId: trade.accountId,
-    symbol: trade.symbol,
-    type: trade.type,
-    entryPrice: trade.entryPrice,
-    exitPrice: trade.exitPrice,
-    stopLoss: trade.stopLoss,
-    takeProfit: trade.takeProfit,
-    lot: trade.lot,
-    tags: trade.tags,
-    strategy: trade.strategy,
-    setup: trade.setup,
-    tfAnalise: trade.tfAnalise,
-    tfEntrada: trade.tfEntrada,
-    session: trade.session,
-    entry_quality: trade.entry_quality,
-    market_condition_v2: trade.market_condition_v2,
-    commission: trade.commission,
-    swap: trade.swap,
-  }));
+  return result.data;
+}
+
+/**
+ * Fetch trades by date range for calendar/charts.
+ */
+export async function fetchTradesByDateRange(
+  accountId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<TradeLite[]> {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    console.error("[fetchTradesByDateRange] User not authenticated");
+    return [];
+  }
+
+  const result = await prismaTradeRepo.getHistoryLite(accountId, userId, {
+    start: startDate,
+    end: endDate,
+  });
+
+  if (result.error || !result.data) {
+    console.error("[fetchTradesByDateRange] Error:", result.error);
+    return [];
+  }
+
+  return result.data;
 }
 
 /**

@@ -120,6 +120,10 @@ describe("useDashboardData", () => {
     vi.mocked(useSettingsStore).mockReturnValue({
       loadSettings: mockLoadSettings,
     } as any);
+    (useSettingsStore as any).getState = vi.fn().mockReturnValue({
+      currencies: [],
+      settings: null,
+    });
 
     // Services Default
     vi.mocked(isAdminAction).mockResolvedValue(false);
@@ -151,16 +155,33 @@ describe("useDashboardData", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should load data successfully for valid account", async () => {
+  it("should load data successfully for valid account and respect caching", async () => {
+    // Pre-populate stores to verify caching logic (and avoid waiting for 300ms timeout)
+    (usePlaybookStore as any).getState.mockReturnValue({
+      playbooks: [{ id: "pb1" }],
+      loadPlaybooks: mockLoadPlaybooks,
+    });
+    (useSettingsStore as any).getState.mockReturnValue({
+      currencies: ["USD"],
+      loadSettings: mockLoadSettings,
+    });
+    (useJournalStore as any).getState.mockReturnValue({
+      entries: [{ id: "entry1" }],
+      loadEntries: mockLoadEntries,
+    });
+
     const { result } = renderHook(() => useDashboardData(mockAccount.id), {
       wrapper: createWrapper(),
     });
 
     expect(result.current.isLoading).toBe(true);
     expect(mockLoadTrades).toHaveBeenCalledWith(mockAccount.id);
-    expect(mockLoadEntries).toHaveBeenCalledWith(mockAccount.id);
-    expect(mockLoadPlaybooks).toHaveBeenCalled();
-    expect(mockLoadSettings).toHaveBeenCalled();
+
+    // Because data exists, these should NOT be called (caching check)
+    // And we don't need to wait for the 300ms timeout
+    expect(mockLoadPlaybooks).not.toHaveBeenCalled();
+    expect(mockLoadSettings).not.toHaveBeenCalled();
+    expect(mockLoadEntries).not.toHaveBeenCalled();
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
