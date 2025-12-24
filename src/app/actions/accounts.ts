@@ -30,18 +30,38 @@ import { revalidatePath } from "next/cache";
 export async function getAccountsAction(): Promise<Account[]> {
   try {
     const userId = await getCurrentUserId();
-    if (!userId) return [];
+
+    // Better logging for production debugging
+    if (!userId) {
+      console.error("[getAccountsAction] No userId - user not authenticated");
+      console.error("[getAccountsAction] Environment check:", {
+        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasAnonKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      });
+      return [];
+    }
+
+    console.log("[getAccountsAction] Loading accounts for userId:", userId);
 
     const result = await prismaAccountRepo.getByUserId(userId);
 
     if (result.error) {
-      console.error("[getAccountsAction] Error:", result.error);
+      console.error("[getAccountsAction] Error from repo:", {
+        code: result.error.code,
+        message: result.error.message,
+        userId,
+      });
       return [];
     }
 
+    console.log("[getAccountsAction] Successfully loaded accounts:", result.data?.length || 0);
     return result.data || [];
   } catch (error) {
-    console.error("[getAccountsAction] Unexpected error:", error);
+    console.error("[getAccountsAction] Unexpected error:", {
+      error,
+      message: error instanceof Error ? error.message : "Unknown",
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return [];
   }
 }
