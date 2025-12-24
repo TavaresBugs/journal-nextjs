@@ -55,6 +55,7 @@ export function createPrismaMock() {
     // Core models
     accounts: createMockQueryBuilder("accounts"),
     user_settings: createMockQueryBuilder("user_settings"),
+    settings: createMockQueryBuilder("settings"),
     trades: createMockQueryBuilder("trades"),
     journal_entries: createMockQueryBuilder("journal_entries"),
     journal_images: createMockQueryBuilder("journal_images"),
