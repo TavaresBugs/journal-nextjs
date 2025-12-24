@@ -13,7 +13,7 @@
  * const success = await saveTradeAction(tradeData);
  */
 
-import { prismaTradeRepo, prismaAccountRepo } from "@/lib/database/repositories";
+import { prismaTradeRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade, TradeLite } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
@@ -173,8 +173,8 @@ export async function saveTradeAction(
 
     // Revalidate dashboard and cache tags
     if (trade.accountId) {
-      // Sync balance automatically
-      await syncAccountBalance(trade.accountId, userId);
+      // NOTE: Balance sync is now handled automatically by SQL trigger
+      // See: prisma/migrations/add_balance_sync_trigger.sql
       // Invalidate cached metrics and history (Next.js 15 requires profile arg)
       revalidateTag(`trades:${trade.accountId}`, "max");
       revalidatePath(`/dashboard/${trade.accountId}`, "page");
@@ -218,9 +218,8 @@ export async function saveTradesBatchAction(
       return { success: false, count: 0, error: result.error.message };
     }
 
-    // Sync balance and revalidate only ONCE per batch
+    // Revalidate cache (balance sync is handled by SQL trigger)
     if (accountId) {
-      await syncAccountBalance(accountId, userId);
       revalidateTag(`trades:${accountId}`, "max");
       revalidatePath(`/dashboard/${accountId}`, "page");
     }
@@ -256,7 +255,7 @@ export async function deleteTradeAction(
     }
 
     if (accountId) {
-      await syncAccountBalance(accountId, userId);
+      // NOTE: Balance sync is handled by SQL trigger
       // Invalidate cached metrics and history
       revalidateTag(`trades:${accountId}`, "max");
       // Revalidate to reflect changes
@@ -292,9 +291,7 @@ export async function deleteTradesByAccountAction(
 
     const deletedCount = deleteResult.data || 0;
 
-    // Reset balance to initial since all trades are gone
-    await syncAccountBalance(accountId, userId);
-
+    // NOTE: Balance sync is handled by SQL trigger for each deleted trade
     // Invalidate cached metrics and history
     revalidateTag(`trades:${accountId}`, "max");
     // Revalidate dashboard
@@ -307,25 +304,8 @@ export async function deleteTradesByAccountAction(
   }
 }
 
-// Helper to sync account balance
-async function syncAccountBalance(accountId: string, userId: string) {
-  try {
-    const [accountRes, metricsRes] = await Promise.all([
-      prismaAccountRepo.getById(accountId, userId),
-      prismaTradeRepo.getDashboardMetrics(accountId, userId),
-    ]);
-
-    if (!accountRes.data) return;
-
-    const initialBalance = Number(accountRes.data.initialBalance);
-    const totalPnl = metricsRes.data?.totalPnl || 0;
-    const newBalance = initialBalance + totalPnl;
-
-    await prismaAccountRepo.updateBalance(accountId, userId, newBalance);
-  } catch (error) {
-    console.error("[syncAccountBalance] Error syncing balance:", error);
-  }
-}
+// NOTE: syncAccountBalance helper removed - now handled by SQL trigger
+// See: prisma/migrations/add_balance_sync_trigger.sql
 
 /**
  * Get dashboard metrics for an account.
