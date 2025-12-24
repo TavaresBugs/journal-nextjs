@@ -27,6 +27,10 @@ interface TradeListProps {
   // External filter control
   filterAsset?: string;
   hideHeader?: boolean;
+  // External sort control
+  sortDirection?: "asc" | "desc";
+  onSortChange?: (direction: "asc" | "desc") => void;
+  isLoading?: boolean;
 }
 
 export function TradeList({
@@ -42,6 +46,9 @@ export function TradeList({
   onPageChange,
   filterAsset: externalFilterAsset,
   hideHeader = false,
+  sortDirection: externalSortDirection,
+  onSortChange,
+  isLoading = false,
 }: TradeListProps) {
   const [internalFilterAsset, setInternalFilterAsset] = useState<string>("TODOS OS ATIVOS");
 
@@ -85,12 +92,15 @@ export function TradeList({
 
   // Sort trades by date AND time
   const sortedTrades = useMemo(() => {
+    // If server-side, explicit trades prop is already sorted by backend
+    if (isServerSide) return trades;
+
     return [...filteredTrades].sort((a, b) => {
       const dateTimeA = new Date(`${a.entryDate}T${a.entryTime || "00:00:00"}`).getTime();
       const dateTimeB = new Date(`${b.entryDate}T${b.entryTime || "00:00:00"}`).getTime();
       return sortDirection === "desc" ? dateTimeB - dateTimeA : dateTimeA - dateTimeB;
     });
-  }, [filteredTrades, sortDirection]);
+  }, [filteredTrades, sortDirection, isServerSide, trades]);
 
   const count = isServerSide ? totalCount || 0 : filteredTrades.length;
   const totalPages = Math.ceil(count / itemsPerPage);
@@ -178,8 +188,10 @@ export function TradeList({
       )}
 
       {/* Tabela */}
-      <GlassCard className="bg-zorin-bg/30 overflow-hidden border-white/5 p-0">
-        <div className="overflow-x-auto">
+      <GlassCard
+        className={`bg-zorin-bg/30 overflow-hidden border-white/5 p-0 ${isLoading ? "cursor-wait" : ""}`}
+      >
+        <div className={`overflow-x-auto ${isLoading ? "pointer-events-none opacity-50" : ""}`}>
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-700">
@@ -190,10 +202,21 @@ export function TradeList({
                   AÇÕES
                 </th>
                 <th
-                  className="cursor-pointer px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase transition-colors hover:text-cyan-400"
-                  onClick={() => setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"))}
+                  className={`px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase transition-colors ${
+                    isLoading ? "" : "cursor-pointer hover:text-cyan-400"
+                  }`}
+                  onClick={() => {
+                    if (isLoading) return; // Prevent click while loading
+                    const newDirection =
+                      (externalSortDirection || sortDirection) === "asc" ? "desc" : "asc";
+                    if (onSortChange) {
+                      onSortChange(newDirection);
+                    } else {
+                      setSortDirection(newDirection);
+                    }
+                  }}
                 >
-                  DATA {sortDirection === "desc" ? "↓" : "↑"}
+                  DATA {(externalSortDirection || sortDirection) === "desc" ? "↓" : "↑"}
                 </th>
                 <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
                   ATIVO

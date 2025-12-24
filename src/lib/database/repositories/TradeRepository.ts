@@ -169,18 +169,33 @@ class PrismaTradeRepository {
   async getByAccountId(
     accountId: string,
     userId: string,
-    options?: { limit?: number; offset?: number }
+    options?: {
+      limit?: number;
+      offset?: number;
+      orderBy?: Prisma.tradesOrderByWithRelationInput | Prisma.tradesOrderByWithRelationInput[];
+      symbol?: string; // Add symbol filter
+    }
   ): Promise<Result<Trade[], AppError>> {
     const startTime = performance.now();
-    this.logger.info("Fetching trades by account ID", { accountId, userId });
+    this.logger.info("Fetching trades by account ID", {
+      accountId,
+      userId,
+      symbol: options?.symbol,
+    });
 
     try {
+      const whereClause: Prisma.tradesWhereInput = {
+        account_id: accountId,
+        user_id: userId,
+      };
+
+      if (options?.symbol && options.symbol !== "TODOS OS ATIVOS") {
+        whereClause.symbol = options.symbol;
+      }
+
       const trades = await prisma.trades.findMany({
-        where: {
-          account_id: accountId,
-          user_id: userId,
-        },
-        orderBy: [{ entry_date: "desc" }, { entry_time: "desc" }],
+        where: whereClause,
+        orderBy: options?.orderBy || [{ entry_date: "desc" }, { entry_time: "desc" }],
         take: options?.limit,
         skip: options?.offset,
       });
@@ -221,13 +236,23 @@ class PrismaTradeRepository {
   /**
    * Counts trades for a specific account.
    */
-  async countByAccountId(accountId: string, userId: string): Promise<Result<number, AppError>> {
+  async countByAccountId(
+    accountId: string,
+    userId: string,
+    symbol?: string // Add symbol filter
+  ): Promise<Result<number, AppError>> {
     try {
+      const whereClause: Prisma.tradesWhereInput = {
+        account_id: accountId,
+        user_id: userId,
+      };
+
+      if (symbol && symbol !== "TODOS OS ATIVOS") {
+        whereClause.symbol = symbol;
+      }
+
       const count = await prisma.trades.count({
-        where: {
-          account_id: accountId,
-          user_id: userId,
-        },
+        where: whereClause,
       });
       return { data: count, error: null };
     } catch (error) {
@@ -573,6 +598,31 @@ class PrismaTradeRepository {
       return {
         data: null,
         error: new AppError("Failed to delete trade", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Deletes all trades for a specific account.
+   */
+  async deleteByAccountId(accountId: string, userId: string): Promise<Result<number, AppError>> {
+    this.logger.info("Deleting trades by account", { accountId, userId });
+
+    try {
+      const deleted = await prisma.trades.deleteMany({
+        where: {
+          account_id: accountId,
+          user_id: userId,
+        },
+      });
+
+      this.logger.info("Trades deleted successfully", { count: deleted.count, accountId });
+      return { data: deleted.count, error: null };
+    } catch (error) {
+      this.logger.error("Failed to delete trades by account", { error, accountId });
+      return {
+        data: null,
+        error: new AppError("Failed to delete trades", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }

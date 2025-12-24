@@ -96,10 +96,13 @@ export async function getTradesByIdsAction(tradeIds: string[]): Promise<Trade[]>
 /**
  * Get trades with pagination.
  */
+
 export async function getTradesPaginatedAction(
   accountId: string,
   page: number = 1,
-  pageSize: number = 20
+  pageSize: number = 20,
+  sortDirection: "asc" | "desc" = "desc",
+  filterAsset?: string
 ): Promise<{ data: Trade[]; count: number }> {
   try {
     const userId = await getCurrentUserId();
@@ -107,9 +110,18 @@ export async function getTradesPaginatedAction(
 
     const offset = (page - 1) * pageSize;
 
+    // Use entry_date and entry_time for consistent sorting
+    const orderBy = [{ entry_date: sortDirection }, { entry_time: sortDirection }];
+
     const [tradesResult, countResult] = await Promise.all([
-      prismaTradeRepo.getByAccountId(accountId, userId, { limit: pageSize, offset }),
-      prismaTradeRepo.countByAccountId(accountId, userId),
+      prismaTradeRepo.getByAccountId(accountId, userId, {
+        limit: pageSize,
+        offset,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        orderBy: orderBy as any, // Cast to any to avoid complex Prisma type matching issues in action
+        symbol: filterAsset,
+      }),
+      prismaTradeRepo.countByAccountId(accountId, userId, filterAsset),
     ]);
 
     if (tradesResult.error || countResult.error) {
@@ -265,27 +277,17 @@ export async function deleteTradesByAccountAction(
       return { success: false, deletedCount: 0, error: "Not authenticated" };
     }
 
-    // Get all trades for this account first
-    const tradesResult = await prismaTradeRepo.getByAccountId(accountId, userId);
+    // Use optimized bulk deletion
+    const deleteResult = await prismaTradeRepo.deleteByAccountId(accountId, userId);
 
-    if (tradesResult.error) {
-      console.error("[deleteTradesByAccountAction] Error fetching trades:", tradesResult.error);
-      return { success: false, deletedCount: 0, error: tradesResult.error.message };
+    if (deleteResult.error) {
+      console.error("[deleteTradesByAccountAction] Error deleting trades:", deleteResult.error);
+      return { success: false, deletedCount: 0, error: deleteResult.error.message };
     }
 
-    const trades = tradesResult.data || [];
-    let deletedCount = 0;
-
-    // Delete each trade
-    for (const trade of trades) {
-      const deleteResult = await prismaTradeRepo.delete(trade.id, userId);
-      if (!deleteResult.error) {
-        deletedCount++;
-      }
-    }
+    const deletedCount = deleteResult.data || 0;
 
     // Reset balance to initial since all trades are gone
-    // Or just let sync handle it (it will calculate PnL as 0)
     await syncAccountBalance(accountId, userId);
 
     // Revalidate dashboard

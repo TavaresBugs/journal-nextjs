@@ -220,27 +220,33 @@ export function EditAccountModal({ isOpen, onClose, onSave, account }: EditAccou
                 </div>
               )}
             </div>
-            <Select
-              value={leverage}
-              onValueChange={isLoading || hasTrades ? undefined : setLeverage}
-            >
-              <SelectTrigger
-                className={`flex h-12 w-full items-center justify-between rounded-lg border border-gray-700 bg-[#232b32] px-3 text-sm text-gray-100 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none ${hasTrades ? "cursor-not-allowed opacity-50" : ""}`}
-              >
-                <SelectValue placeholder="Selecione..." />
-              </SelectTrigger>
-              <SelectContent className="border-gray-700 bg-[#232b32]">
-                {leverages.map((lev) => (
-                  <SelectItem
-                    key={lev}
-                    value={lev}
-                    className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
-                  >
-                    {lev}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {hasTrades ? (
+              <Input
+                value={leverage}
+                disabled
+                className="cursor-not-allowed border-gray-700 bg-[#232b32] text-gray-400 opacity-50"
+              />
+            ) : (
+              <Select value={leverage} onValueChange={isLoading ? undefined : setLeverage}>
+                <SelectTrigger
+                  disabled={isLoading}
+                  className="flex h-12 w-full items-center justify-between rounded-lg border border-gray-700 bg-[#232b32] px-3 text-sm text-gray-100 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                >
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent className="border-gray-700 bg-[#232b32]">
+                  {leverages.map((lev) => (
+                    <SelectItem
+                      key={lev}
+                      value={lev}
+                      className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      {lev}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <Input

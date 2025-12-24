@@ -216,6 +216,11 @@ export default function DashboardPage({
                   onDeleteTrade={actions.handleDeleteTrade}
                   onViewDay={handleViewDay}
                   onJournalClick={handleJournalClick}
+                  sortDirection={data.sortDirection}
+                  onSortChange={data.setSortDirection}
+                  filterAsset={data.filterAsset}
+                  onFilterChange={data.setFilterAsset}
+                  isLoading={data.isStoreLoading}
                 />
               </TabPanel>
 

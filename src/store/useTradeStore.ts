@@ -15,15 +15,19 @@ interface TradeStore {
   totalCount: number;
   currentPage: number;
   itemsPerPage: number;
+  sortDirection: "asc" | "desc"; // NEW: Sort direction state
+  filterAsset: string; // NEW: Filter asset state
   isLoading: boolean;
   isLoadingHistory: boolean;
 
   // Actions
   loadTrades: (accountId: string) => Promise<void>;
   loadPage: (accountId: string, page: number) => Promise<void>;
+  setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>; // NEW action
+  setFilterAsset: (accountId: string, asset: string) => Promise<void>; // NEW action
   addTrade: (trade: Trade) => Promise<void>;
   updateTrade: (trade: Trade) => Promise<void>;
-  removeTrade: (id: string, accountId: string) => Promise<void>; // Added accountId param
+  removeTrade: (id: string, accountId: string) => Promise<void>;
   clearTrades: () => void;
 }
 
@@ -32,16 +36,18 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
   allHistory: [],
   totalCount: 0,
   currentPage: 1,
-  itemsPerPage: 10, // Match UI
+  itemsPerPage: 10,
+  sortDirection: "desc", // Default to newest first
+  filterAsset: "TODOS OS ATIVOS",
   isLoading: false,
   isLoadingHistory: false,
 
   loadTrades: async (accountId: string) => {
     set({ isLoading: true, isLoadingHistory: true });
     try {
-      // Parallel fetch: Page 1 (Detailed) + All History (Lite)
+      // Parallel fetch: Page 1 (Detailed with filters) + All History (Lite)
       const [pageResponse, historyLite] = await Promise.all([
-        fetchTrades(accountId, 1, get().itemsPerPage),
+        fetchTrades(accountId, 1, get().itemsPerPage, get().sortDirection, get().filterAsset),
         fetchTradeHistory(accountId),
       ]);
 
@@ -62,10 +68,16 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
   loadPage: async (accountId: string, page: number) => {
     set({ isLoading: true });
     try {
-      const { data, count } = await fetchTrades(accountId, page, get().itemsPerPage);
+      const { data, count } = await fetchTrades(
+        accountId,
+        page,
+        get().itemsPerPage,
+        get().sortDirection,
+        get().filterAsset
+      );
       set({
         trades: data,
-        totalCount: count, // Update count just in case
+        totalCount: count,
         currentPage: page,
         isLoading: false,
       });
@@ -75,8 +87,24 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
     }
   },
 
+  setSortDirection: async (accountId: string, direction: "asc" | "desc") => {
+    // Only reload if changed
+    if (get().sortDirection === direction && get().trades.length > 0) return;
+
+    set({ sortDirection: direction, currentPage: 1 });
+    await get().loadPage(accountId, 1);
+  },
+
+  setFilterAsset: async (accountId: string, asset: string) => {
+    // Only reload if changed
+    if (get().filterAsset === asset) return;
+
+    set({ filterAsset: asset, currentPage: 1 }); // Reset to page 1 on filter change
+    await get().loadPage(accountId, 1);
+  },
+
   addTrade: async (trade: Trade) => {
-    const { trades, allHistory, totalCount } = get();
+    const { trades, allHistory, totalCount, sortDirection } = get();
     // Await the server action result - will throw if fails
     const createdTrade = await createTradeAction(trade);
 
@@ -110,15 +138,26 @@ export const useTradeStore = create<TradeStore>((set, get) => ({
     };
 
     // Optimistic update (now actually confirmed update)
-    // Add to history (newest first)
+    // Add to history (newest first hardcoded for history usually, or matches sort?)
+    // History usually for charts, assumes time order. Keeping desc for history consistency.
     const newHistory = [tradeLite, ...allHistory].sort(
       (a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
     );
 
-    // Add to current page if we are on page 1, else just update count
+    // For the list, IF we are on page 1 AND sort is DESC, we prepend.
+    // If sort is ASC, we might append if page is last? Too complex.
+    // Simplest: Just prepend if DESC and Page 1. If ASC, it goes to end (last page).
+    // If we are strictly server-side sorting, adding to local list is tricky without re-sort.
+    // We will just re-fetch page 1 if we want to be 100% sure, OR just prepend if sort is desc.
+
     let newTrades = trades;
-    if (get().currentPage === 1) {
+    if (sortDirection === "desc" && get().currentPage === 1) {
       newTrades = [createdTrade, ...trades].slice(0, get().itemsPerPage);
+    } else if (sortDirection === "asc") {
+      // If asc, new trade (latest date) likely goes to last page.
+      // We won't see it on current page unless we are on the last page.
+      // For better UX, we might just want to reload the page or accept it won't appear immediately if we are looking at old trades.
+      // Let's leave current page as is for ASC.
     }
 
     set({

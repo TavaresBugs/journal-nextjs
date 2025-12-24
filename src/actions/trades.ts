@@ -32,7 +32,9 @@ async function getCurrentUserId(): Promise<string | null> {
 export async function fetchTrades(
   accountId: string,
   page: number,
-  itemsPerPage: number
+  itemsPerPage: number,
+  sortDirection: "asc" | "desc" = "desc",
+  filterAsset?: string
 ): Promise<{ data: Trade[]; count: number }> {
   const userId = await getCurrentUserId();
 
@@ -41,12 +43,17 @@ export async function fetchTrades(
     return { data: [], count: 0 };
   }
 
+  const orderBy = [{ entry_date: sortDirection }, { entry_time: sortDirection }];
+
   const [tradesResult, countResult] = await Promise.all([
     prismaTradeRepo.getByAccountId(accountId, userId, {
       limit: itemsPerPage,
       offset: (page - 1) * itemsPerPage,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orderBy: orderBy as any,
+      symbol: filterAsset,
     }),
-    prismaTradeRepo.getCount(accountId, userId),
+    prismaTradeRepo.countByAccountId(accountId, userId, filterAsset),
   ]);
 
   if (tradesResult.error) {

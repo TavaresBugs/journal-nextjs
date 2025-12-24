@@ -145,16 +145,23 @@ export function useDashboardActions(
   // Bulk Actions
   const handleDeleteAllTrades = useCallback(async () => {
     try {
-      for (const trade of allHistory) {
-        await removeTrade(trade.id, accountId);
+      // Import dynamically to avoid circular dependencies if any, or just standard import
+      const { deleteTradesByAccountAction } = await import("@/app/actions/trades");
+
+      const result = await deleteTradesByAccountAction(accountId);
+
+      if (result.success) {
+        showToast(`Histórico limpo! ${result.deletedCount} trades removidos.`, "success");
+        // Reload trades to update store
+        loadTrades(accountId);
+      } else {
+        showToast(result.error || "Erro ao limpar histórico", "error");
       }
-      showToast("Todos os trades foram deletados!", "success");
-      loadTrades(accountId);
     } catch (error) {
       console.error("Error deleting all trades:", error);
       showToast("Erro ao deletar trades", "error");
     }
-  }, [allHistory, removeTrade, accountId, showToast, loadTrades]);
+  }, [accountId, showToast, loadTrades]);
 
   return {
     handleCreateTrade,

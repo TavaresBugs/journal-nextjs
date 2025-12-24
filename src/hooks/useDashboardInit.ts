@@ -24,8 +24,11 @@ export interface DashboardInitData {
   // State
   isLoading: boolean;
   isTradesLoading: boolean;
+  isStoreLoading: boolean;
   isAccountReady: boolean;
   isAccountFound: boolean;
+  sortDirection: "asc" | "desc";
+  filterAsset: string;
 }
 
 export interface DashboardInitActions {
@@ -33,6 +36,8 @@ export interface DashboardInitActions {
   loadTrades: (accountId: string) => Promise<void>;
   loadEntries: (accountId: string) => Promise<void>;
   loadPlaybooks: () => Promise<void>;
+  setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>;
+  setFilterAsset: (accountId: string, asset: string) => Promise<void>;
 }
 
 /**
@@ -180,13 +185,18 @@ export function useDashboardInit(
     // State
     isLoading, // Kept for backwards compatibility (isTradesLoading)
     isTradesLoading,
+    isStoreLoading: useTradeStore((state) => state.isLoading),
     isAccountReady,
     isAccountFound,
+    sortDirection: useTradeStore((state) => state.sortDirection),
+    filterAsset: useTradeStore((state) => state.filterAsset),
 
     // Actions
-    loadPage,
     loadTrades,
-    loadEntries,
-    loadPlaybooks,
+    loadPage,
+    loadEntries: useJournalStore.getState().loadEntries,
+    loadPlaybooks: usePlaybookStore.getState().loadPlaybooks,
+    setSortDirection: useTradeStore((state) => state.setSortDirection),
+    setFilterAsset: useTradeStore((state) => state.setFilterAsset),
   };
 }
