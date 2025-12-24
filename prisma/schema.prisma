@@ -1032,9 +1032,10 @@ model trades {
   @@index([outcome], map: "idx_trades_outcome")
   @@index([session], map: "idx_trades_session")
   @@index([strategy], map: "idx_trades_strategy")
-  @@index([user_id, account_id], map: "idx_trades_user_account")
-  @@index([user_id], map: "idx_trades_user_id")
-  @@index([user_id, strategy], map: "idx_trades_user_strategy")
+  @@index([account_id, symbol], map: "idx_trades_account_symbol")
+  @@index([account_id], map: "idx_trades_account")
+  @@index([entry_date], map: "idx_trades_date")
+  @@index([user_id], map: "idx_trades_user")
   @@schema("public")
 }
 

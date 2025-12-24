@@ -92,9 +92,12 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
   const initData = useDashboardInit(accountId, isValidAccount);
 
   // 3. Calculate trade metrics (Client-Side for Reports/Charts)
-  // We keep this for detailed charts that might need full history later
+  // Only calculate if we have history, otherwise return defaults
+  // This prevents heavy calculation on initial load if allHistory is not yet loaded
+  const hasHistory = initData.allHistory && initData.allHistory.length > 0;
+
   const metricsData = useTradeMetrics({
-    trades: initData.allHistory as unknown as Trade[],
+    trades: hasHistory ? (initData.allHistory as unknown as Trade[]) : [],
     entries: initData.entries,
     initialBalance: initData.currentAccount?.initialBalance || 0,
     currentBalance: initData.currentAccount?.currentBalance || 0,
