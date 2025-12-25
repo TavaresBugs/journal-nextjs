@@ -108,6 +108,13 @@ export function useDashboardInit(
       const perfStart = performance.now();
       console.log("🚀 Dashboard init started");
 
+      // RESET: Clear previous init state when switching accounts
+      if (isInitRef.current && isInitRef.current !== accountId) {
+        console.log("🔄 Switching accounts, resetting init state");
+        isInitRef.current = null;
+        setServerMetrics(null); // Clear old metrics
+      }
+
       // Check if already initialized for this account
       if (isInitRef.current === accountId) {
         setIsLoading(false);

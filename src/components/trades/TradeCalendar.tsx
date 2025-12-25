@@ -36,8 +36,12 @@ export function TradeCalendar({
   onDayClick,
 }: TradeCalendarProps) {
   const [currentDate, setCurrentDate] = useState(dayjs());
-  const { entries: storeEntries } = useJournalStore();
-  const entries = propEntries || storeEntries;
+  const { entries: storeEntries, currentAccountId: storeAccountId } = useJournalStore();
+  // Only use store entries if they match the current account (prevents stale data)
+  // Wrapped in useMemo to ensure stable reference
+  const entries = useMemo(() => {
+    return propEntries || (storeAccountId === accountId ? storeEntries : []);
+  }, [propEntries, storeAccountId, accountId, storeEntries]);
 
   // Prefetch hook for lazy loading
   const { prefetchDayData, prefetchNearbyDays } = usePrefetchCalendarData(accountId || "");

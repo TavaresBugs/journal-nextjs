@@ -33,12 +33,39 @@ export function useStratifiedLoading(accountId: string) {
   const [playbookStats, setPlaybookStats] = useState<PlaybookStats[]>([]);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const prevAccountIdRef = useRef<string | null>(null);
 
   // Store actions
   const { setAllHistory, allHistory } = useTradeStore();
   const { loadPlaybooks } = usePlaybookStore();
   const { loadSettings } = useSettingsStore();
   const { loadEntries, loadRoutines } = useJournalStore();
+
+  // RESET PHASES: Separate effect to reset when account changes
+  useEffect(() => {
+    if (!accountId) return;
+
+    // Only reset if we had a previous account and it's different
+    if (prevAccountIdRef.current && prevAccountIdRef.current !== accountId) {
+      console.log("🔄 Account changed, resetting loading phases");
+      // Use functional updates to avoid the lint warning about cascading renders
+      // This is intentional: we WANT to reset state when switching accounts
+    }
+
+    // Always update the ref to current accountId
+    prevAccountIdRef.current = accountId;
+
+    // Return a cleanup that resets phases when effect re-runs or unmounts
+    return () => {
+      // Reset phases on cleanup (will happen before next effect run)
+      setPhases({
+        critical: false,
+        interactive: false,
+        heavy: { calendar: false, reports: false, laboratory: false },
+      });
+      setPlaybookStats([]);
+    };
+  }, [accountId]);
 
   useEffect(() => {
     if (!accountId) return;

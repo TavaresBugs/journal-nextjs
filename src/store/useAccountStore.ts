@@ -162,8 +162,21 @@ export const useAccountStore = create<AccountStore>()(
       },
 
       setCurrentAccount: (id: string) => {
-        const { accounts } = get();
+        const { accounts, currentAccountId } = get();
         const account = accounts.find((acc) => acc.id === id);
+
+        // CLEAR RELATED STORES: Prevent stale data when switching accounts
+        // Only clear if actually switching to a different account
+        if (currentAccountId && currentAccountId !== id) {
+          console.log("🔄 [AccountStore] Clearing related stores for account switch");
+          import("./useTradeStore").then(({ useTradeStore }) => {
+            useTradeStore.getState().clearTrades();
+          });
+          import("./useJournalStore").then(({ useJournalStore }) => {
+            useJournalStore.setState({ entries: [], routines: [], currentAccountId: null });
+          });
+        }
+
         set({
           currentAccountId: id,
           currentAccount: account || null,
