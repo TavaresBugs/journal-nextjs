@@ -156,6 +156,18 @@ export default function DashboardPage({
     setSelectedDate(date);
     setIsDayDetailModalOpen(true);
   };
+
+  // Prefetch optimization: Load data on hover
+  const handleTabHover = (tabValue: string) => {
+    // Prefetch Calendar data when hovering over Calendar tab
+    if (tabValue === "calendario" && !data.loadingPhases.heavy.calendar) {
+      data.loadCalendarData();
+    }
+    // Prefetch Reports data when hovering over Reports tab
+    if (tabValue === "relatorios" && !data.loadingPhases.heavy.reports) {
+      data.loadReportsData();
+    }
+  };
   if (!data.isValidAccount) return null;
   // Use granular loading: only block full page if account isn't ready
   if (!data.isAccountReady || !data.currentAccount) return <DashboardSkeleton />;
@@ -206,7 +218,10 @@ export default function DashboardPage({
                 id="dashboard-navigation"
                 role="navigation"
                 aria-label="Navegação do dashboard"
-                options={tabsOptions}
+                options={tabsOptions.map((opt) => ({
+                  ...opt,
+                  onHover: () => handleTabHover(opt.value),
+                }))}
                 value={activeTab}
                 onChange={setActiveTab}
                 variant="responsive"

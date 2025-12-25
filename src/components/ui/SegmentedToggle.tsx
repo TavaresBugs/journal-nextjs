@@ -6,6 +6,7 @@ interface ToggleOption {
   activeTextColor?: string; // e.g. 'text-amber-400'
   activeBgColor?: string; // e.g. 'bg-linear-to-r from-amber-500/20 to-amber-400/10'
   activeShadowColor?: string; // e.g. 'shadow-[0_0_15px_rgba(245,158,11,0.15)]'
+  onHover?: () => void; // Callback for prefetching on hover
 }
 
 type ToggleSize = "sm" | "md" | "lg";
@@ -79,6 +80,7 @@ export function SegmentedToggle({
         <button
           key={option.value}
           onClick={() => onChange(option.value)}
+          onMouseEnter={() => option.onHover?.()}
           className={`relative z-10 flex flex-1 items-center justify-center gap-2 rounded-lg font-medium transition-all outline-none select-none focus:outline-none ${SIZE_CONFIG[size]} ${isResponsive ? "w-full" : ""} ${
             value === option.value
               ? `${option.activeTextColor ?? "text-cyan-400"} font-semibold ${isResponsive ? `${option.activeBgColor ?? "bg-linear-to-r from-cyan-500/20 to-cyan-400/10"} ${option.activeShadowColor ?? "shadow-[0_0_15px_rgba(6,182,212,0.15)]"} md:bg-transparent! md:shadow-none!` : ""}`
