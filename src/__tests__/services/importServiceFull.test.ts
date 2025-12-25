@@ -1,5 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { parseTradingFile, parseHTMLReport } from "../../services/trades/import";
+import {
+  parseTradingFile,
+  parseHTMLReport,
+  parseTradeDate,
+  normalizeTradeType,
+  cleanSymbol,
+  parseNinjaTraderMoney,
+  parseNinjaTraderDate,
+  parseNinjaTraderContent,
+} from "../../services/trades/import";
 
 // Shared mocks using vi.hoisted
 const { mockLoad, mockGetWorksheet } = vi.hoisted(() => {
@@ -14,9 +24,8 @@ vi.mock("exceljs", () => {
   return {
     default: {
       Workbook: class MockWorkbook {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         xlsx: { load: any };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         getWorksheet: any;
         constructor() {
           this.xlsx = { load: mockLoad };
@@ -29,14 +38,12 @@ vi.mock("exceljs", () => {
 
 // Mock FileReader manually to avoid JSDOM issues/timeouts
 class MockFileReader {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onload: ((e: any) => void) | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   onerror: ((e: any) => void) | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   result: any = null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readAsArrayBuffer(file: any) {
     try {
       let buffer;
@@ -50,7 +57,6 @@ class MockFileReader {
       if (this.onload) {
         this.onload({ target: { result: buffer } });
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (this.onerror) {
         this.onerror(err);
@@ -71,7 +77,7 @@ describe("Import Service Extended Tests", () => {
     });
 
     // Replace FileReader
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     global.FileReader = MockFileReader as any;
   });
 
@@ -85,10 +91,9 @@ describe("Import Service Extended Tests", () => {
     // Inject _buffer for our MockFileReader to find it easily
     if (typeof content === "string") {
       const encoder = new TextEncoder();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       (file as any)._buffer = encoder.encode(content).buffer;
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (file as any)._buffer = content;
     }
     return file;
@@ -202,6 +207,128 @@ describe("Import Service Extended Tests", () => {
       const result = await parseHTMLReport(file);
 
       expect(result.data[0].Profit).toBe("100.00");
+    });
+  });
+
+  describe("parseTradingFile - XLSX", () => {
+    it("parses valid XLSX with standard Columns", async () => {
+      // Mock loading logic
+      mockLoad.mockResolvedValue(undefined);
+
+      const rows = [
+        ["Positions"], // Row 1: Section Header
+        [
+          "Time",
+          "Symbol",
+          "Type",
+          "Volume",
+          "Price",
+          "S / L",
+          "T / P",
+          "Time",
+          "Price",
+          "Commission",
+          "Swap",
+          "Profit",
+        ], // Row 2: Header
+        ["2025.01.01 10:00", "EURUSD", "buy", 1, 1.05, 0, 0, "2025.01.01 11:00", 1.06, 0, 0, 100], // Row 3: Data
+      ];
+
+      mockGetWorksheet.mockReturnValue({
+        eachRow: (callback: any) => {
+          rows.forEach((row, index) => {
+            // ExcelJS uses 1-based indexing for rows
+            callback({ values: [null, ...row] }, index + 1);
+          });
+        },
+      });
+
+      // Create ZIP header to pass "isZip" check
+      const zipHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
+      const file = createMockFile(
+        zipHeader.buffer,
+        "trades.xlsx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+
+      const result = await parseTradingFile(file);
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].Symbol).toBe("EURUSD");
+      expect(result.data[0].Profit).toBe(100);
+    });
+  });
+
+  describe("parseTradingFile - CSV", () => {
+    it("parses valid CSV", async () => {
+      const csvContent = `Positions
+Time,Symbol,Type,Volume,Entry Price,S / L,T / P,Exit Time,Exit Price,Commission,Swap,Profit
+2025.01.01 10:00,GBPUSD,sell,1,1.25,0,0,2025.01.01 11:00,1.24,0,0,100`;
+
+      const file = createMockFile(csvContent, "trades.csv", "text/csv");
+      const result = await parseTradingFile(file);
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].Symbol).toBe("GBPUSD");
+      expect(result.data[0].Type).toBe("sell");
+      // Note: CSV parser splits by comma, so numbers might be strings depending on implementation
+      // The implementation maps cells to string | number.
+      expect(Number(result.data[0].Profit)).toBe(100);
+    });
+  });
+});
+
+describe("Import Utils", () => {
+  describe("parseTradeDate", () => {
+    it("parses various date formats", () => {
+      expect(parseTradeDate("2023.10.01 10:00:00")?.toISOString()).toContain("2023-10-01");
+      expect(parseTradeDate("2023/10/01 10:00:00")?.toISOString()).toContain("2023-10-01");
+      expect(parseTradeDate("01-10-2023 10:00:00")?.toISOString()).toContain("2023-10-01");
+      // expect(parseTradeDate(45200)?.getFullYear()).toBe(2023); // Approximate excel date, might vary by timezone
+    });
+  });
+
+  describe("normalizeTradeType", () => {
+    it("normalizes types", () => {
+      expect(normalizeTradeType("Buy")).toBe("Long");
+      expect(normalizeTradeType("sell")).toBe("Short");
+      expect(normalizeTradeType("Compra")).toBe(null); // Unless "Comprada" matches
+    });
+  });
+
+  describe("cleanSymbol", () => {
+    it("cleans symbols", () => {
+      expect(cleanSymbol("EURUSD.cash")).toBe("EURUSD");
+      expect(cleanSymbol("MNQ 12-25")).toBe("MNQ");
+      expect(cleanSymbol("ES 03-25")).toBe("ES");
+    });
+  });
+
+  describe("NinjaTrader Parsers", () => {
+    it("parses money formats", () => {
+      expect(parseNinjaTraderMoney("$ 1,000.00")).toBe(1000);
+      expect(parseNinjaTraderMoney("1.000,00")).toBe(1000); // PT
+      expect(parseNinjaTraderMoney("($ 100.00)")).toBe(-100);
+    });
+
+    it("parses dates", () => {
+      // 12/19/2024 8:44:03 AM
+      const d = parseNinjaTraderDate("12/19/2024 8:44:03 AM");
+      expect(d?.getDate()).toBe(19);
+      expect(d?.getFullYear()).toBe(2024);
+    });
+  });
+
+  describe("parseNinjaTraderContent", () => {
+    it("parses valid NinjaTrader CSV content", () => {
+      const content = `Instrument;Market position;Avg. entry price;Avg. exit price;Time of entry;Time of exit;Trade number
+ES 03-25;Long;4000;4010;2023-01-01 10:00;2023-01-01 11:00;101`;
+
+      const result = parseNinjaTraderContent(content);
+      expect(result.data).toHaveLength(1);
+      // Check column extraction
+      expect(result.data[0]["Instrument"]).toBe("ES 03-25");
+      expect(result.data[0]["Trade number"]).toBe("101");
     });
   });
 });

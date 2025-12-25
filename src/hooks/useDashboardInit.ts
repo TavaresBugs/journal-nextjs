@@ -117,7 +117,7 @@ export function useDashboardInit(
 
       // Check if already initialized for this account
       if (isInitRef.current === accountId) {
-        setIsLoading(false);
+        // Already initializing, let the running effect handle it
         return;
       }
 

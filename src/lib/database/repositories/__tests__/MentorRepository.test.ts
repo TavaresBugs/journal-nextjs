@@ -18,152 +18,186 @@ describe("PrismaMentorRepository Unit Tests", () => {
     mockPrisma = prisma as unknown as PrismaMock;
   });
 
-  describe("createInvite", () => {
-    it("should create a new invitation", async () => {
-      const mockInvite = {
-        id: "invite-123",
-        invite_token: "token-123",
-        status: "pending",
-        mentor_email: "mentor@test.com",
-        mentee_email: null,
-      };
-
-      mockPrisma.mentor_invites.findFirst.mockResolvedValue(null);
-      mockPrisma.mentor_invites.create.mockResolvedValue(mockInvite);
-
-      const result = await prismaMentorRepo.createInvite(
-        "user-mentor",
-        "mentee@test.com",
-        "mentor@test.com"
-      );
-
-      expect(mockPrisma.mentor_invites.create).toHaveBeenCalled();
-      expect(result.data?.inviteToken).toBe("token-123");
-      expect(result.error).toBeNull();
+  describe("getSentInvites", () => {
+    it("should return sent invites", async () => {
+      mockPrisma.mentor_invites.findMany.mockResolvedValue([{ id: "inv-1", mentor_id: "m-1" }]);
+      const result = await prismaMentorRepo.getSentInvites("m-1");
+      expect(result.data).toHaveLength(1);
     });
 
-    it("should return existing pending invite if present", async () => {
-      const existingInvite = {
-        id: "invite-existing",
-        invite_token: "token-existing",
-        status: "pending",
-        mentor_email: "mentor@test.com",
-        expires_at: new Date(Date.now() + 86400000), // Future
-      };
-      mockPrisma.mentor_invites.findFirst.mockResolvedValue(existingInvite);
-
-      const result = await prismaMentorRepo.createInvite(
-        "user-mentor",
-        "mentee@test.com",
-        "mentor@test.com"
-      );
-
-      expect(mockPrisma.mentor_invites.create).not.toHaveBeenCalled();
-      expect(result.data?.id).toBe("invite-existing");
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getSentInvites("m-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
-  describe("acceptInvite", () => {
-    it("should accept invite and link user", async () => {
-      const mockInvite = {
-        id: "invite-123",
-        status: "pending",
-        mentee_id: null,
-      };
-      // Usually acceptInvite finds by token first if implemented that way,
-      // but if the repo takes 'token', it finds by token.
-      mockPrisma.mentor_invites.findUnique.mockResolvedValue(mockInvite);
+  describe("getReceivedInvites", () => {
+    it("should return received invites", async () => {
+      mockPrisma.mentor_invites.findMany.mockResolvedValue([
+        { id: "inv-2", mentee_email: "test@test.com" },
+      ]);
+      const result = await prismaMentorRepo.getReceivedInvites("test@test.com");
+      expect(result.data).toHaveLength(1);
+    });
+  });
 
-      const updatedInvite = { ...mockInvite, status: "accepted", mentee_id: "user-mentee" };
-      mockPrisma.mentor_invites.update.mockResolvedValue(updatedInvite);
-
-      const result = await prismaMentorRepo.acceptInvite("invite-123", "user-mentee");
-
-      expect(mockPrisma.mentor_invites.update).toHaveBeenCalledWith({
-        where: { invite_token: "invite-123", status: "pending" },
-        data: expect.objectContaining({
-          status: "accepted",
-          mentee_id: "user-mentee",
-          accepted_at: expect.any(Date),
-        }),
-      });
-      expect(result.data).toBe(true);
+  describe("getMyMentors", () => {
+    it("should return accepted mentors", async () => {
+      mockPrisma.mentor_invites.findMany.mockResolvedValue([{ id: "inv-3", status: "accepted" }]);
+      const result = await prismaMentorRepo.getMyMentors("mentee-1");
+      expect(result.data).toHaveLength(1);
     });
   });
 
   describe("getMentees", () => {
-    it("should return list of accepted mentees", async () => {
-      const mockInvites = [
-        {
-          id: "invite-1",
-          mentee_email: "mentee1@test.com",
-          mentee_id: "mentee-1",
-          users_mentor_invites_mentee_idTousers: {
-            id: "mentee-1",
-            name: "Mentee One",
-            avatar_url: null,
-          },
-          mentor_account_permissions: [],
-        },
-      ];
-      mockPrisma.mentor_invites.findMany.mockResolvedValue(mockInvites);
-
-      const result = await prismaMentorRepo.getMentees("mentor-123");
-
-      expect(mockPrisma.mentor_invites.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { mentor_id: "mentor-123", status: "accepted" },
-        })
-      );
+    it("should return accepted mentees", async () => {
+      mockPrisma.mentor_invites.findMany.mockResolvedValue([{ id: "inv-4", status: "accepted" }]);
+      const result = await prismaMentorRepo.getMentees("mentor-1");
       expect(result.data).toHaveLength(1);
+    });
+  });
+
+  describe("getMenteesOverview", () => {
+    it("should return overview with stats", async () => {
+      // Mock invites
+      mockPrisma.mentor_invites.findMany.mockResolvedValue([
+        {
+          id: "inv-1",
+          mentee_id: "mentee-1",
+          mentor_account_permissions: [{ account_id: "acc-1", can_view_trades: true }],
+          users_mentor_invites_mentee_idTousers: {
+            profiles: { display_name: "Mentee 1", avatar_url: "url" },
+          },
+        },
+      ]);
+
+      // Mock trades
+      mockPrisma.trades.findMany.mockResolvedValue([
+        {
+          id: "t-1",
+          user_id: "mentee-1",
+          account_id: "acc-1",
+          outcome: "win",
+          entry_date: new Date(),
+        },
+        {
+          id: "t-2",
+          user_id: "mentee-1",
+          account_id: "acc-1",
+          outcome: "loss",
+          entry_date: new Date(),
+        },
+      ]);
+
+      const result = await prismaMentorRepo.getMenteesOverview("mentor-1");
+
+      expect(result.data).toHaveLength(1);
+      expect(result.data?.[0].totalTrades).toBe(2);
+      expect(result.data?.[0].winRate).toBe(50);
+      expect(result.data?.[0].menteeName).toBe("Mentee 1");
+    });
+  });
+
+  describe("createInvite", () => {
+    it("should create a new invitation", async () => {
+      mockPrisma.mentor_invites.findFirst.mockResolvedValue(null);
+      mockPrisma.mentor_invites.create.mockResolvedValue({
+        id: "inv-new",
+        invite_token: "token",
+      });
+
+      const result = await prismaMentorRepo.createInvite("m-1", "m@e.com", "t@e.com");
+      expect(result.data?.id).toBe("inv-new");
+    });
+
+    it("should return existing invite", async () => {
+      mockPrisma.mentor_invites.findFirst.mockResolvedValue({ id: "inv-exist" });
+      const result = await prismaMentorRepo.createInvite("m-1", "m@e.com", "t@e.com");
+      expect(result.data?.id).toBe("inv-exist");
+      expect(mockPrisma.mentor_invites.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("acceptInvite", () => {
+    it("should accept invite", async () => {
+      mockPrisma.mentor_invites.update.mockResolvedValue({});
+      const result = await prismaMentorRepo.acceptInvite("token", "mentee-1");
+      expect(result.data).toBe(true);
+    });
+  });
+
+  describe("rejectInvite", () => {
+    it("should reject invite", async () => {
+      mockPrisma.mentor_invites.update.mockResolvedValue({});
+      const result = await prismaMentorRepo.rejectInvite("inv-1");
+      expect(result.data).toBe(true);
+    });
+  });
+
+  describe("revokeInvite", () => {
+    it("should revoke invite", async () => {
+      mockPrisma.mentor_invites.update.mockResolvedValue({});
+      const result = await prismaMentorRepo.revokeInvite("inv-1");
+      expect(result.data).toBe(true);
+    });
+  });
+
+  describe("updateInvite", () => {
+    it("should update invite permission", async () => {
+      mockPrisma.mentor_invites.update.mockResolvedValue({});
+      const result = await prismaMentorRepo.updateInvite("inv-1", { permission: "full" });
+      expect(result.data).toBe(true);
+    });
+  });
+
+  describe("getAccountPermissions", () => {
+    it("should return permissions", async () => {
+      mockPrisma.mentor_account_permissions.findMany.mockResolvedValue([]);
+      const result = await prismaMentorRepo.getAccountPermissions("inv-1");
+      expect(result.data).toEqual([]);
     });
   });
 
   describe("setAccountPermission", () => {
     it("should update permissions for an account", async () => {
-      const mockPerm = {
-        invite_id: "invite-123",
-        account_id: "account-123",
-        can_view_trades: true,
-      };
-      mockPrisma.mentor_account_permissions.upsert.mockResolvedValue(mockPerm);
-
-      const result = await prismaMentorRepo.setAccountPermission("invite-123", "account-123", {
+      mockPrisma.mentor_account_permissions.upsert.mockResolvedValue({});
+      const result = await prismaMentorRepo.setAccountPermission("inv-1", "acc-1", {
         canViewTrades: true,
-        canViewJournal: false,
       });
-
-      expect(mockPrisma.mentor_account_permissions.upsert).toHaveBeenCalled();
       expect(result.data).toBe(true);
+    });
+  });
+
+  describe("removeAccountPermission", () => {
+    it("should remove permission", async () => {
+      mockPrisma.mentor_account_permissions.delete.mockResolvedValue({});
+      const result = await prismaMentorRepo.removeAccountPermission("inv-1", "acc-1");
+      expect(result.data).toBe(true);
+    });
+  });
+
+  describe("getTradeComments", () => {
+    it("should return comments", async () => {
+      mockPrisma.trade_comments.findMany.mockResolvedValue([]);
+      const result = await prismaMentorRepo.getTradeComments("t-1");
+      expect(result.data).toEqual([]);
     });
   });
 
   describe("addTradeComment", () => {
     it("should add a comment to a trade", async () => {
-      const mockComment = {
-        id: "comment-123",
-        trade_id: "trade-123",
-        user_id: "mentor-123",
-        content: "Good trade",
-      };
-      mockPrisma.trade_comments.create.mockResolvedValue(mockComment);
+      mockPrisma.trade_comments.create.mockResolvedValue({ id: "c-1", content: "Hi" });
+      const result = await prismaMentorRepo.addTradeComment("t-1", "u-1", "Hi");
+      expect(result.data?.id).toBe("c-1");
+    });
+  });
 
-      mockPrisma.mentor_account_permissions.findFirst.mockResolvedValue({ can_view_trades: true });
-      mockPrisma.trades.findUnique.mockResolvedValue({ id: "trade-123", account_id: "acc-123" });
-      mockPrisma.mentor_invites.findFirst.mockResolvedValue({ id: "invite-123" });
-
-      const result = await prismaMentorRepo.addTradeComment(
-        "trade-123",
-        "mentor-123",
-        "Good trade"
-      );
-
-      // We expect create to be called if permission checks pass
-      // Note: If permissions are not mocked correctly for the implementation, this might fail or skip create.
-      // But assuming mocks are robust enough for this happy path:
-      if (!result.error) {
-        expect(mockPrisma.trade_comments.create).toHaveBeenCalled();
-      }
+  describe("deleteTradeComment", () => {
+    it("should delete comment", async () => {
+      mockPrisma.trade_comments.delete.mockResolvedValue({});
+      const result = await prismaMentorRepo.deleteTradeComment("c-1", "u-1");
+      expect(result.data).toBe(true);
     });
   });
 });

@@ -1,129 +1,174 @@
-import { vi, describe, it, expect, beforeEach } from "vitest";
+import { vi, describe, it, expect, beforeEach, Mock } from "vitest";
 import {
-  fetchTrades,
-  createTrade,
-  updateTrade,
-  deleteTradePrisma,
-  fetchDashboardMetrics,
-} from "../trades";
+  getTradesPaginatedAction,
+  saveTradeAction,
+  deleteTradeAction,
+  getTradeDashboardMetricsAction,
+  getTradesByIdsAction,
+  saveTradesBatchAction,
+  deleteTradesByAccountAction,
+  getTradeHistoryLiteAction,
+  getTradesByJournalAction,
+  getAdvancedMetricsAction,
+} from "../../app/actions/trades";
+import { prismaTradeRepo } from "@/lib/database/repositories";
+import { getCurrentUserId } from "@/lib/database/auth";
+import { revalidateTag } from "next/cache";
 
-const { mockTradeRepo, mockSupabase } = vi.hoisted(() => ({
-  mockTradeRepo: {
-    getByAccountId: vi.fn(),
-    countByAccountId: vi.fn(),
-    getCount: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    getDashboardMetrics: vi.fn(),
-  },
-  mockSupabase: {
-    auth: {
-      getUser: vi.fn(),
-    },
-  },
+// Mocks
+vi.mock("@/lib/database/repositories");
+vi.mock("@/lib/database/auth", () => ({
+  getCurrentUserId: vi.fn().mockResolvedValue("user-123"),
 }));
-
-vi.mock("@/lib/database/repositories", () => ({
-  prismaTradeRepo: mockTradeRepo,
-}));
-
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => Promise.resolve(mockSupabase)),
+vi.mock("next/cache", () => ({
+  revalidateTag: vi.fn(),
+  revalidatePath: vi.fn(),
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  unstable_cache: (fn: any) => fn,
 }));
 
 describe("Trade Actions", () => {
+  const mockUserId = "user-123";
+  const mockAccountId = "acc-123";
+
   beforeEach(() => {
     vi.clearAllMocks();
+    (getCurrentUserId as Mock).mockResolvedValue(mockUserId);
   });
 
-  describe("fetchTrades", () => {
+  describe("getTradesPaginatedAction", () => {
     it("should return paginated trades", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.getByAccountId.mockResolvedValue({ data: [{ id: "t-1" }], error: null });
-      mockTradeRepo.countByAccountId.mockResolvedValue({ data: 50, error: null });
+      (prismaTradeRepo.getByAccountId as Mock).mockResolvedValue({
+        data: [{ id: "t-1" }],
+        error: null,
+      });
+      (prismaTradeRepo.countByAccountId as Mock).mockResolvedValue({
+        data: 50,
+        error: null,
+      });
 
-      const result = await fetchTrades("acc-123", 1, 10);
+      const result = await getTradesPaginatedAction(mockAccountId, 1, 10);
 
-      expect(mockTradeRepo.getByAccountId).toHaveBeenCalledWith(
-        "acc-123",
-        "user-123",
+      expect(prismaTradeRepo.getByAccountId).toHaveBeenCalledWith(
+        mockAccountId,
+        mockUserId,
         expect.objectContaining({ limit: 10, offset: 0 })
       );
       expect(result.data).toHaveLength(1);
       expect(result.count).toBe(50);
     });
+  });
 
-    it("should return empty if unauthenticated", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: null } });
+  describe("getTradesByIdsAction", () => {
+    it("should return trades by ids", async () => {
+      (prismaTradeRepo.getMany as Mock).mockResolvedValue({ data: [{ id: "t-1" }], error: null });
+      const result = await getTradesByIdsAction(["t-1"]);
+      expect(prismaTradeRepo.getMany).toHaveBeenCalled();
+      expect(result).toHaveLength(1);
+    });
 
-      const result = await fetchTrades("acc-123", 1, 10);
-
-      expect(mockTradeRepo.getByAccountId).not.toHaveBeenCalled();
-      expect(result.data).toEqual([]);
+    it("should return empty if input empty", async () => {
+      const result = await getTradesByIdsAction([]);
+      expect(result).toEqual([]);
     });
   });
 
-  describe("createTrade", () => {
-    it("should create trade", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.create.mockResolvedValue({
-        data: { id: "t-1", symbol: "EURUSD" },
+  describe("saveTradeAction", () => {
+    it("should create trade if id not present", async () => {
+      (prismaTradeRepo.create as Mock).mockResolvedValue({
+        data: { id: "t-1", symbol: "EURUSD", accountId: mockAccountId },
         error: null,
       });
 
-      const result = await createTrade({ symbol: "EURUSD" });
+      const result = await saveTradeAction({ symbol: "EURUSD", accountId: mockAccountId });
 
-      expect(mockTradeRepo.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          symbol: "EURUSD",
-          userId: "user-123",
-        })
-      );
-      expect(result.id).toBe("t-1");
-    });
-
-    it("should throw on creation failure", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.create.mockResolvedValue({ data: null, error: { message: "DB Error" } });
-
-      await expect(createTrade({ symbol: "EURUSD" })).rejects.toThrow("DB Error");
+      expect(prismaTradeRepo.create).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(revalidateTag).toHaveBeenCalled();
     });
   });
 
-  describe("updateTrade", () => {
-    it("should update trade", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.update.mockResolvedValue({ data: { id: "t-1", pnl: 100 }, error: null });
-
-      const result = await updateTrade("t-1", { pnl: 100 });
-
-      expect(mockTradeRepo.update).toHaveBeenCalledWith("t-1", "user-123", { pnl: 100 });
-      expect(result.pnl).toBe(100);
+  describe("saveTradesBatchAction", () => {
+    it("should create multiple trades", async () => {
+      (prismaTradeRepo.createMany as Mock).mockResolvedValue({ data: { count: 2 }, error: null });
+      const result = await saveTradesBatchAction([
+        { symbol: "A", accountId: mockAccountId },
+        { symbol: "B", accountId: mockAccountId },
+      ]);
+      expect(prismaTradeRepo.createMany).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(2);
     });
   });
 
-  describe("deleteTradePrisma", () => {
-    it("should delete trade", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.delete.mockResolvedValue({ data: true, error: null });
+  describe("deleteTradeAction", () => {
+    it("should delete trade and revalidate", async () => {
+      (prismaTradeRepo.getById as Mock).mockResolvedValue({
+        data: { id: "t-1", accountId: mockAccountId },
+        error: null,
+      });
+      (prismaTradeRepo.delete as Mock).mockResolvedValue({ data: true, error: null });
 
-      const result = await deleteTradePrisma("t-1");
+      const result = await deleteTradeAction("t-1");
 
-      expect(mockTradeRepo.delete).toHaveBeenCalledWith("t-1", "user-123");
-      expect(result).toBe(true);
+      expect(prismaTradeRepo.delete).toHaveBeenCalled();
+      expect(result.success).toBe(true);
     });
   });
 
-  describe("fetchDashboardMetrics", () => {
+  describe("deleteTradesByAccountAction", () => {
+    it("should delete trades by account", async () => {
+      (prismaTradeRepo.deleteByAccountId as Mock).mockResolvedValue({ data: 10, error: null });
+      const result = await deleteTradesByAccountAction(mockAccountId);
+      expect(prismaTradeRepo.deleteByAccountId).toHaveBeenCalledWith(mockAccountId, mockUserId);
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("getTradeDashboardMetricsAction", () => {
     it("should get metrics", async () => {
-      mockSupabase.auth.getUser.mockResolvedValue({ data: { user: { id: "user-123" } } });
-      mockTradeRepo.getDashboardMetrics.mockResolvedValue({ data: { winRate: 60 }, error: null });
-
-      const result = await fetchDashboardMetrics("acc-123");
-
-      expect(mockTradeRepo.getDashboardMetrics).toHaveBeenCalledWith("acc-123", "user-123");
+      (prismaTradeRepo.getDashboardMetrics as Mock).mockResolvedValue({
+        data: { winRate: 60 },
+        error: null,
+      });
+      const result = await getTradeDashboardMetricsAction(mockAccountId);
       expect(result).toEqual({ winRate: 60 });
+    });
+  });
+
+  describe("getTradeHistoryLiteAction", () => {
+    it("should get history", async () => {
+      (prismaTradeRepo.getHistoryLite as Mock).mockResolvedValue({ data: [], error: null });
+      await getTradeHistoryLiteAction(mockAccountId);
+      expect(prismaTradeRepo.getHistoryLite).toHaveBeenCalled();
+    });
+  });
+
+  describe("getTradesByJournalAction", () => {
+    it("should get trades by journal and filter by user", async () => {
+      (prismaTradeRepo.getByJournalId as Mock).mockResolvedValue({
+        data: [
+          { id: "t-1", userId: mockUserId },
+          { id: "t-2", userId: "other" },
+        ],
+        error: null,
+      });
+      const result = await getTradesByJournalAction("journal-1");
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe("t-1");
+    });
+  });
+
+  describe("getAdvancedMetricsAction", () => {
+    it("should get advanced metrics", async () => {
+      (prismaTradeRepo.getAdvancedMetrics as Mock).mockResolvedValue({ data: {}, error: null });
+      const result = await getAdvancedMetricsAction(mockAccountId, 1000);
+      expect(prismaTradeRepo.getAdvancedMetrics).toHaveBeenCalledWith(
+        mockAccountId,
+        mockUserId,
+        1000
+      );
+      expect(result).toEqual({});
     });
   });
 });

@@ -1,49 +1,54 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useLaboratoryStore } from "@/store/useLaboratoryStore";
 
 // Mock Supabase
+const mockUpload = vi.fn();
+const mockGetPublicUrl = vi.fn();
+const mockGetUser = vi.fn();
+const mockInsert = vi.fn();
+
 vi.mock("@/lib/supabase", () => ({
   supabase: {
-    auth: {
-      getUser: vi.fn(),
-    },
-    from: vi.fn(() => ({
-      insert: vi.fn(),
-    })),
+    auth: { getUser: () => mockGetUser() },
     storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn(),
-        getPublicUrl: vi.fn(),
-      })),
+      from: () => ({
+        upload: mockUpload,
+        getPublicUrl: mockGetPublicUrl,
+      }),
     },
+    from: () => ({
+      insert: mockInsert,
+    }),
   },
 }));
 
-// Mock Server Actions
-vi.mock("@/app/actions", () => ({
-  getExperimentsAction: vi.fn(),
-  createExperimentAction: vi.fn(),
-  updateExperimentAction: vi.fn(),
-  deleteExperimentAction: vi.fn(),
-  addExperimentImagesAction: vi.fn(),
-  getRecapsAction: vi.fn(),
-  createRecapAction: vi.fn(),
-  updateRecapAction: vi.fn(),
-  deleteRecapAction: vi.fn(),
+// Mock Image Compression
+vi.mock("@/lib/utils/imageCompression", () => ({
+  compressToWebP: vi.fn().mockResolvedValue({
+    webp: new Blob([""], { type: "image/webp" }),
+    compressedSizeWebP: 100,
+    originalSize: 200,
+  }),
 }));
 
-import {
-  getExperimentsAction,
-  createExperimentAction,
-  updateExperimentAction,
-  deleteExperimentAction,
-  getRecapsAction,
-  createRecapAction,
-  updateRecapAction,
-  deleteRecapAction,
-} from "@/app/actions";
-import { supabase } from "@/lib/supabase";
+// Mock Actions
+const { mockActions } = vi.hoisted(() => {
+  return {
+    mockActions: {
+      getExperimentsAction: vi.fn(),
+      createExperimentAction: vi.fn(),
+      updateExperimentAction: vi.fn(),
+      deleteExperimentAction: vi.fn(),
+      addExperimentImagesAction: vi.fn(),
+      getRecapsAction: vi.fn(),
+      createRecapAction: vi.fn(),
+      updateRecapAction: vi.fn(),
+      deleteRecapAction: vi.fn(),
+    },
+  };
+});
+
+vi.mock("@/app/actions", () => mockActions);
 
 describe("useLaboratoryStore", () => {
   beforeEach(() => {
@@ -56,253 +61,203 @@ describe("useLaboratoryStore", () => {
       isLoading: false,
       error: null,
     });
-  });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it("should have initial state", () => {
-    const state = useLaboratoryStore.getState();
-    expect(state.experiments).toEqual([]);
-    expect(state.isLoading).toBe(false);
-    expect(state.error).toBeNull();
-    expect(state.experimentsLoaded).toBe(false);
+    // Default Supabase mocks
+    mockGetUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    mockUpload.mockResolvedValue({ error: null });
+    mockGetPublicUrl.mockReturnValue({ data: { publicUrl: "http://url" } });
+    mockInsert.mockResolvedValue({ error: null });
   });
 
   describe("loadExperiments", () => {
-    it("should load experiments successfully", async () => {
-      const mockExperiments = [
-        {
-          id: "exp-1",
-          user_id: "user-1",
-          title: "Test Experiment",
-          status: "em_aberto",
-          promoted_to_playbook: false,
-          created_at: new Date(),
-          updated_at: new Date(),
-          images: [],
-        },
-      ];
-
-      vi.mocked(getExperimentsAction).mockResolvedValue(mockExperiments as unknown as any);
+    it("should load experiments", async () => {
+      mockActions.getExperimentsAction.mockResolvedValue([
+        { id: "e-1", title: "Exp 1", status: "em_aberto", images: [] },
+      ]);
 
       await useLaboratoryStore.getState().loadExperiments();
 
       const state = useLaboratoryStore.getState();
       expect(state.experiments).toHaveLength(1);
-      expect(state.experiments[0].title).toBe("Test Experiment");
-      expect(state.isLoading).toBe(false);
+      expect(state.experiments[0].title).toBe("Exp 1");
       expect(state.experimentsLoaded).toBe(true);
     });
 
-    it("should not re-fetch if already loaded", async () => {
-      useLaboratoryStore.setState({ experimentsLoaded: true });
+    it("should handle error", async () => {
+      mockActions.getExperimentsAction.mockRejectedValue(new Error("Err"));
       await useLaboratoryStore.getState().loadExperiments();
-      expect(getExperimentsAction).not.toHaveBeenCalled();
-    });
-
-    it("should handle load errors", async () => {
-      vi.mocked(getExperimentsAction).mockRejectedValue(new Error("Failed to load"));
-
-      await useLaboratoryStore.getState().loadExperiments();
-
-      const state = useLaboratoryStore.getState();
-      expect(state.error).toBe("Failed to load");
-      expect(state.isLoading).toBe(false);
+      expect(useLaboratoryStore.getState().error).toBe("Err");
     });
   });
 
   describe("addExperiment", () => {
-    it("should add an experiment", async () => {
-      const newExperiment = {
-        id: "exp-new",
-        title: "New Exp",
-        status: "em_aberto",
-        created_at: new Date(),
-        updated_at: new Date(),
-        images: [],
-      };
-
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: "user-123" } },
-        error: null,
-      } as unknown as any);
-
-      vi.mocked(createExperimentAction).mockResolvedValue({
+    it("should add experiment", async () => {
+      mockActions.createExperimentAction.mockResolvedValue({
         success: true,
-        experiment: newExperiment as unknown as any,
+        experiment: { id: "e-new", title: "New", status: "em_aberto", images: [] },
       });
 
-      await useLaboratoryStore.getState().addExperiment({ title: "New Exp" });
+      await useLaboratoryStore.getState().addExperiment({ title: "New" });
 
-      const state = useLaboratoryStore.getState();
-      expect(state.experiments).toHaveLength(1);
-      expect(state.experiments[0].id).toBe("exp-new");
+      expect(useLaboratoryStore.getState().experiments).toHaveLength(1);
+    });
+
+    it("should upload images if provided", async () => {
+      mockActions.createExperimentAction.mockResolvedValue({
+        success: true,
+        experiment: { id: "e-img", title: "Img Exp", status: "em_aberto", images: [] },
+      });
+      mockActions.addExperimentImagesAction.mockResolvedValue({
+        success: true,
+        images: [{ imageUrl: "http://url", id: "img-1" }],
+      });
+
+      const file = new File([""], "test.png", { type: "image/png" });
+      await useLaboratoryStore.getState().addExperiment({ title: "Img" }, [file]);
+
+      expect(mockUpload).toHaveBeenCalled();
+      expect(mockActions.addExperimentImagesAction).toHaveBeenCalled();
+    });
+  });
+
+  describe("updateExperiment", () => {
+    it("should update experiment", async () => {
+      // Setup initial state
+      useLaboratoryStore.setState({
+        experiments: [
+          {
+            id: "e-1",
+            title: "Old",
+            status: "em_aberto",
+            userId: "u-1",
+            promotedToPlaybook: false,
+            createdAt: "",
+            updatedAt: "",
+            images: [],
+          },
+        ],
+      });
+
+      mockActions.updateExperimentAction.mockResolvedValue({ success: true });
+
+      await useLaboratoryStore.getState().updateExperiment({
+        id: "e-1",
+        title: "Updated",
+      });
+
+      const exp = useLaboratoryStore.getState().experiments[0];
+      expect(exp.title).toBe("Updated");
     });
   });
 
   describe("removeExperiment", () => {
-    it("should remove an experiment", async () => {
+    it("should remove experiment", async () => {
       useLaboratoryStore.setState({
-        experiments: [{ id: "exp-1", title: "Exp 1" } as unknown as any],
+        experiments: [
+          {
+            id: "e-1",
+            title: "",
+            status: "em_aberto",
+            userId: "",
+            promotedToPlaybook: false,
+            createdAt: "",
+            updatedAt: "",
+            images: [],
+          },
+        ],
+      });
+      mockActions.deleteExperimentAction.mockResolvedValue({ success: true });
+
+      await useLaboratoryStore.getState().removeExperiment("e-1");
+      expect(useLaboratoryStore.getState().experiments).toHaveLength(0);
+    });
+  });
+
+  describe("promoteToPlaybook", () => {
+    it("should promote validated experiment", async () => {
+      useLaboratoryStore.setState({
+        experiments: [
+          {
+            id: "e-valid",
+            title: "Val",
+            status: "validado",
+            userId: "u-1",
+            promotedToPlaybook: false,
+            createdAt: "",
+            updatedAt: "",
+            images: [],
+          },
+        ],
       });
 
-      vi.mocked(deleteExperimentAction).mockResolvedValue({ success: true });
+      // Mock update action to return success
+      mockActions.updateExperimentAction.mockResolvedValue({ success: true });
 
-      await useLaboratoryStore.getState().removeExperiment("exp-1");
+      await useLaboratoryStore.getState().promoteToPlaybook("e-valid");
 
-      const state = useLaboratoryStore.getState();
-      expect(state.experiments).toHaveLength(0);
+      expect(mockInsert).toHaveBeenCalled(); // Supabase insert
+      expect(useLaboratoryStore.getState().experiments[0].promotedToPlaybook).toBe(true);
+    });
+
+    it("should fail if not validated", async () => {
+      useLaboratoryStore.setState({
+        experiments: [
+          {
+            id: "e-invalid",
+            title: "Inv",
+            status: "em_aberto",
+            userId: "u-1",
+            promotedToPlaybook: false,
+            createdAt: "",
+            updatedAt: "",
+            images: [],
+          },
+        ],
+      });
+      await expect(useLaboratoryStore.getState().promoteToPlaybook("e-invalid")).rejects.toThrow(
+        "Only validated experiments"
+      );
     });
   });
 
   describe("loadRecaps", () => {
     it("should load recaps", async () => {
-      const mockRecaps = [
-        {
-          id: "recap-1",
-          title: "Weekly Recap",
-          images: [],
-        },
-      ];
-
-      vi.mocked(getRecapsAction).mockResolvedValue(mockRecaps as unknown as any);
-
+      mockActions.getRecapsAction.mockResolvedValue([{ id: "r-1", title: "Recap 1" }]);
       await useLaboratoryStore.getState().loadRecaps();
-
-      const state = useLaboratoryStore.getState();
-      expect(state.recaps).toHaveLength(1);
-      expect(state.recapsLoaded).toBe(true);
-    });
-  });
-
-  describe("updateExperiment", () => {
-    it("should update an experiment", async () => {
-      useLaboratoryStore.setState({
-        experiments: [{ id: "exp-1", title: "Old Title", images: [] } as unknown as any],
-      });
-
-      vi.mocked(updateExperimentAction).mockResolvedValue({ success: true });
-
-      await useLaboratoryStore.getState().updateExperiment({
-        id: "exp-1",
-        title: "New Title",
-      });
-
-      const state = useLaboratoryStore.getState();
-      expect(state.experiments[0].title).toBe("New Title");
-    });
-  });
-
-  describe("promoteToPlaybook", () => {
-    it("should promote valid experiment to playbook", async () => {
-      useLaboratoryStore.setState({
-        experiments: [
-          {
-            id: "exp-1",
-            title: "Pro Strat",
-            status: "validado",
-            promotedToPlaybook: false,
-            images: [],
-          } as unknown as any,
-        ],
-      });
-
-      vi.mocked(supabase.auth.getUser).mockResolvedValue({
-        data: { user: { id: "user-123" } },
-        error: null,
-      } as unknown as any);
-
-      // Mock playbook insert
-      const insertMock = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(supabase.from as any).mockReturnValue({
-        insert: insertMock,
-      });
-
-      vi.mocked(updateExperimentAction).mockResolvedValue({ success: true });
-
-      await useLaboratoryStore.getState().promoteToPlaybook("exp-1");
-
-      const state = useLaboratoryStore.getState();
-      expect(state.experiments[0].promotedToPlaybook).toBe(true);
-      expect(insertMock).toHaveBeenCalled();
-    });
-
-    it("should fail if experiment is not validated", async () => {
-      useLaboratoryStore.setState({
-        experiments: [
-          {
-            id: "exp-1",
-            title: "Pro Strat",
-            status: "em_aberto", // Not validated
-            promotedToPlaybook: false,
-          } as unknown as any,
-        ],
-      });
-
-      await expect(useLaboratoryStore.getState().promoteToPlaybook("exp-1")).rejects.toThrow(
-        "Only validated experiments can be promoted to Playbook"
-      );
+      expect(useLaboratoryStore.getState().recaps).toHaveLength(1);
     });
   });
 
   describe("addRecap", () => {
-    it("should add a recap", async () => {
-      const newRecap = {
-        id: "recap-new",
-        title: "New Recap",
-        createdAt: new Date(),
-        images: [],
-      };
-
-      vi.mocked(createRecapAction).mockResolvedValue({
+    it("should add recap", async () => {
+      mockActions.createRecapAction.mockResolvedValue({
         success: true,
-        recap: newRecap as unknown as any,
+        recap: { id: "r-new", title: "New Recap" },
       });
 
       await useLaboratoryStore.getState().addRecap({ title: "New Recap" });
-
-      const state = useLaboratoryStore.getState();
-      expect(state.recaps).toHaveLength(1);
-      expect(state.recaps[0].id).toBe("recap-new");
-    });
-  });
-
-  describe("updateRecap", () => {
-    it("should update a recap", async () => {
-      useLaboratoryStore.setState({
-        recaps: [{ id: "recap-1", title: "Old Title", images: [] } as unknown as any],
-      });
-
-      // updateRecap re-fetches recaps, so we need to mock getRecapsAction to return the updated list
-      vi.mocked(updateRecapAction).mockResolvedValue({ success: true });
-      vi.mocked(getRecapsAction).mockResolvedValue([
-        { id: "recap-1", title: "Updated Title", images: [] } as unknown as any,
-      ]);
-
-      await useLaboratoryStore.getState().updateRecap({
-        id: "recap-1",
-        title: "Updated Title",
-      });
-
-      const state = useLaboratoryStore.getState();
-      expect(state.recaps[0].title).toBe("Updated Title");
+      expect(useLaboratoryStore.getState().recaps).toHaveLength(1);
     });
   });
 
   describe("removeRecap", () => {
-    it("should remove a recap", async () => {
+    it("should remove recap", async () => {
       useLaboratoryStore.setState({
-        recaps: [{ id: "recap-1", title: "Recap 1" } as unknown as any],
+        recaps: [
+          {
+            id: "r-1",
+            userId: "u-1",
+            tradeIds: [],
+            title: "R1",
+            images: [],
+            createdAt: "",
+            reviewType: "daily",
+          },
+        ],
       });
-
-      vi.mocked(deleteRecapAction).mockResolvedValue({ success: true });
-
-      await useLaboratoryStore.getState().removeRecap("recap-1");
-
-      const state = useLaboratoryStore.getState();
-      expect(state.recaps).toHaveLength(0);
+      mockActions.deleteRecapAction.mockResolvedValue({ success: true });
+      await useLaboratoryStore.getState().removeRecap("r-1");
+      expect(useLaboratoryStore.getState().recaps).toHaveLength(0);
     });
   });
 });

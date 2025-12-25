@@ -100,7 +100,7 @@ export function useStratifiedLoading(accountId: string) {
 
         // OPTIMIZATION: Pre-load routines in background
         // This prevents delay when opening DayDetailModal
-        if (useJournalStore.getState().routines.length === 0) {
+        if ((useJournalStore.getState().routines?.length ?? 0) === 0) {
           promises.push(loadRoutines(accountId));
         }
 
