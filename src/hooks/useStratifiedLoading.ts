@@ -38,7 +38,7 @@ export function useStratifiedLoading(accountId: string) {
   const { setAllHistory, allHistory } = useTradeStore();
   const { loadPlaybooks } = usePlaybookStore();
   const { loadSettings } = useSettingsStore();
-  const { loadEntries } = useJournalStore();
+  const { loadEntries, loadRoutines } = useJournalStore();
 
   useEffect(() => {
     if (!accountId) return;
@@ -60,37 +60,21 @@ export function useStratifiedLoading(accountId: string) {
           promises.push(loadPlaybooks());
         }
 
-        // Check if settings are already loaded (e.g. check if currencies are empty or default)
-        const currentSettings = useSettingsStore.getState();
-        // Since we initialize with defaults, we can check if it's the default reference or if we add a 'loaded' flag.
-        // But simpler: just check if we have modified anything or if we have an explicit isLoading flag that was set to false after load.
-        // Actually, let's just use a simple heuristic: if we have defaults, we might still want to load from DB to be sure.
-        // But to avoid double fetch described by user:
-        // We can check if we already fetched. The store preserves state.
-
-        // Let's rely on a more robust check. The store initializes with defaults.
-        // If we want to truly cache, we should maybe add a 'isLoaded' flag to the store.
-        // For now, let's just check if we have *any* non-default data or if we just want to suppress for now.
-        // User said: "veja que nao estamos guardando nada no cash"
-
-        // Implementation: Check specifically if we have data.
-        // Note: The store doesn't have a 'settings' property, it has flat properties.
-        // Let's check isLoading state or just assume if we are in this hook, we might need to load if not loaded.
-        // Actually, the best way is to check if we have valid data.
-
-        // FIX: The error was accessing .settings which doesn't exist.
-        // We will assume we need to load if we haven't confirmed it's loaded.
-        // But to fix the specific error:
-
         // Only load settings if not already loaded (check currencies as indicator)
-        // FIXED: Removed else branch that was always reloading settings unnecessarily
+        const currentSettings = useSettingsStore.getState();
         if (currentSettings.currencies.length === 0) {
           promises.push(loadSettings());
         }
-        // Settings already loaded, skip reload
 
+        // Load journal entries if not cached
         if (useJournalStore.getState().entries.length === 0) {
           promises.push(loadEntries(accountId));
+        }
+
+        // OPTIMIZATION: Pre-load routines in background
+        // This prevents delay when opening DayDetailModal
+        if (useJournalStore.getState().routines.length === 0) {
+          promises.push(loadRoutines(accountId));
         }
 
         if (promises.length > 0) {
@@ -106,7 +90,7 @@ export function useStratifiedLoading(accountId: string) {
     return () => {
       abortControllerRef.current?.abort();
     };
-  }, [accountId, loadPlaybooks, loadSettings, loadEntries]);
+  }, [accountId, loadPlaybooks, loadSettings, loadEntries, loadRoutines]);
 
   // Heavy Data Loaders (On Demand)
 

@@ -72,15 +72,20 @@ export function DayDetailModal({
 
   useEffect(() => {
     if (isOpen && accountId) {
-      loadRoutines(accountId);
-      loadEntries(accountId);
+      // OPTIMIZATION: Only load if not already cached (useStratifiedLoading preloads these)
+      if (routines.length === 0) {
+        loadRoutines(accountId);
+      }
+      if (entries.length === 0) {
+        loadEntries(accountId);
+      }
 
       // Check for mentor connection
       getMyMentors().then((mentors) => {
         setHasMentor(mentors.length > 0);
       });
     }
-  }, [isOpen, accountId, loadRoutines, loadEntries]);
+  }, [isOpen, accountId, loadRoutines, loadEntries, routines.length, entries.length]);
 
   // Load reviews for context (trades + standalone entries of the day)
   useEffect(() => {
