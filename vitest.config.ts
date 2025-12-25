@@ -12,14 +12,16 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       exclude: ["node_modules/", "src/test/", "**/*.d.ts", "**/*.config.*", "**/types/**"],
-      // Temporary thresholds adjusted to current coverage (Issue #82)
-      // Target: 70% for all metrics except branches (55%)
+      // Updated thresholds after Sprint 3 complete (Issue #82)
+      // Achieved: Lines 67.35%, Statements 49.85%, Branches 41.96%, Functions 45.08%
+      // Progress: Lines increased from 57% to 67.35% (+10.35%)
+      // Tests: 1096 passing (151 new tests created across 3 sprints)
       // See: https://github.com/TavaresBugs/journal-nextjs/issues/82
       thresholds: {
-        statements: 41,
-        branches: 34,
-        functions: 37,
-        lines: 57,
+        statements: 49,
+        branches: 41,
+        functions: 45,
+        lines: 67,
       },
     },
   },
