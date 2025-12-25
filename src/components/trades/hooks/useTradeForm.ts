@@ -315,7 +315,8 @@ export function useTradeForm(initialData?: Partial<Trade>) {
   }, [entryPrice, exitPrice, stopLoss, type]);
 
   const calculateEstimates = useCallback(() => {
-    // We need entryPrice, lot, stopLoss, and EITHER takeProfit OR exitPrice to calculate returns
+    // We need entryPrice, lot, stopLoss, and takeProfit to calculate risk/reward estimates
+    // Note: exitPrice is used for REALIZED PnL, not for prospective Risk/Reward display
     if (!entryPrice || !lot || !stopLoss) {
       return { risk: 0, reward: 0 };
     }
@@ -328,20 +329,17 @@ export function useTradeForm(initialData?: Partial<Trade>) {
     // Calculate Risk (always based on Entry vs SL)
     const risk = Math.abs((entry - sl) * lotSize * assetMultiplier);
 
-    // Calculate Reward: Prioritize Exit Price if available, otherwise use Take Profit
-    // If neither is available, reward is 0
+    // Calculate Prospective Reward: Always use Take Profit for risk/reward projection
+    // Exit price is used for actual PnL calculation, not for prospective estimates
     let reward = 0;
 
-    if (exitPrice) {
-      const exit = parseFloat(exitPrice);
-      reward = Math.abs((exit - entry) * lotSize * assetMultiplier);
-    } else if (takeProfit) {
+    if (takeProfit) {
       const tp = parseFloat(takeProfit);
       reward = Math.abs((tp - entry) * lotSize * assetMultiplier);
     }
 
     return { risk, reward };
-  }, [entryPrice, lot, stopLoss, takeProfit, exitPrice, symbol, assets]);
+  }, [entryPrice, lot, stopLoss, takeProfit, symbol, assets]);
 
   const estimates = calculateEstimates();
 
