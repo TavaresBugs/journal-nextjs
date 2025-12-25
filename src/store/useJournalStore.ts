@@ -12,6 +12,7 @@ import { getCurrentUserIdClient } from "@/lib/supabase";
 interface JournalStore {
   entries: JournalEntry[];
   routines: DailyRoutine[];
+  currentAccountId: string | null; // Track which account data is loaded for
   isLoading: boolean;
   error: string | null;
 
@@ -36,15 +37,31 @@ interface JournalStore {
 export const useJournalStore = create<JournalStore>((set, get) => ({
   entries: [],
   routines: [],
+  currentAccountId: null,
   isLoading: false,
   error: null,
 
   // Journal Actions
   loadEntries: async (accountId: string) => {
-    set({ isLoading: true, error: null });
+    const { entries, isLoading, currentAccountId } = get();
+
+    // Skip if already loading
+    if (isLoading) return;
+
+    // Skip if already has entries for this account
+    if (entries.length > 0 && currentAccountId === accountId) {
+      return;
+    }
+
+    // Clear entries if switching accounts
+    if (currentAccountId !== null && currentAccountId !== accountId) {
+      set({ entries: [], currentAccountId: accountId });
+    }
+
+    set({ isLoading: true, error: null, currentAccountId: accountId });
     try {
-      const entries = await getJournalEntriesAction(accountId);
-      set({ entries, isLoading: false });
+      const newEntries = await getJournalEntriesAction(accountId);
+      set({ entries: newEntries, isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

@@ -1,13 +1,38 @@
 import { create } from "zustand";
 import type { Trade, TradeLite } from "@/types";
 // Using Prisma Server Actions for type-safe database queries
+// Consolidated to single canonical location at @/app/actions/trades
 import {
-  fetchTrades,
-  fetchTradeHistory,
-  createTrade as createTradeAction,
-  updateTrade as updateTradeAction,
-  deleteTradePrisma,
-} from "@/actions/trades";
+  getTradesPaginatedAction,
+  getTradeHistoryLiteAction,
+  saveTradeAction,
+  deleteTradeAction,
+} from "@/app/actions/trades";
+
+// Adapter functions to maintain API compatibility with store methods
+const fetchTrades = getTradesPaginatedAction;
+const fetchTradeHistory = getTradeHistoryLiteAction;
+
+const createTradeAction = async (trade: Partial<Trade>): Promise<Trade> => {
+  const result = await saveTradeAction(trade);
+  if (!result.success || !result.trade) {
+    throw new Error(result.error || "Failed to create trade");
+  }
+  return result.trade;
+};
+
+const updateTradeAction = async (tradeId: string, trade: Partial<Trade>): Promise<Trade> => {
+  const result = await saveTradeAction({ ...trade, id: tradeId });
+  if (!result.success || !result.trade) {
+    throw new Error(result.error || "Failed to update trade");
+  }
+  return result.trade;
+};
+
+const deleteTradePrisma = async (tradeId: string): Promise<boolean> => {
+  const result = await deleteTradeAction(tradeId);
+  return result.success;
+};
 
 interface TradeStore {
   trades: Trade[]; // Current page trades

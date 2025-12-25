@@ -6,8 +6,7 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
-import { getTradeDashboardMetricsAction } from "@/app/actions/trades";
-import { getAccountById } from "@/app/actions/accounts";
+import { batchDashboardInitAction } from "@/app/actions/_batch/dashboardInit";
 
 import { useToast } from "@/providers/ToastProvider";
 
@@ -119,50 +118,72 @@ export function useDashboardInit(
       isInitRef.current = accountId;
 
       try {
-        const t1 = performance.now();
-        // Optimized: Direct fetch instead of full list load
+        const perfT1 = performance.now();
+
+        // Check if we have cached account data first
         let account = useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
 
-        if (!account) {
-          const fetchedAccount = await getAccountById(accountId);
-          if (fetchedAccount) {
-            account = fetchedAccount;
-            // Inject into store without triggering full reload
-            useAccountStore.setState((state) => ({
-              accounts: state.accounts.some((a) => a.id === accountId)
-                ? state.accounts
-                : [...state.accounts, fetchedAccount],
-              currentAccount: fetchedAccount,
-              currentAccountId: accountId,
-            }));
+        if (account) {
+          // Fast path: Account in cache, just set it
+          useAccountStore.getState().setCurrentAccount(accountId);
+          setIsAccountReady(true);
+          console.log(`✅ Account (cached): ${(performance.now() - perfT1).toFixed(0)}ms`);
+
+          // Still need to fetch fresh metrics and trades - use batch for efficiency
+          try {
+            const batchResult = await batchDashboardInitAction(accountId, 1, 10);
+            if (batchResult?.metrics) {
+              setServerMetrics(batchResult.metrics);
+            }
+            if (batchResult?.trades) {
+              useTradeStore.setState({
+                trades: batchResult.trades.data,
+                totalCount: batchResult.trades.count,
+                currentPage: 1,
+              });
+            }
+          } catch (batchErr) {
+            console.warn("Fast path batch fetch failed:", batchErr);
+            // Don't redirect - we have the account, just missing fresh data
           }
         } else {
-          useAccountStore.getState().setCurrentAccount(accountId);
+          // Slow path: Need full batch fetch including account
+          const batchResult = await batchDashboardInitAction(accountId, 1, 10);
+
+          if (!batchResult?.account) {
+            console.error("Account not found:", accountId);
+            setIsAccountFound(false);
+            router.push("/");
+            return;
+          }
+
+          account = batchResult.account;
+
+          // Inject account into store
+          useAccountStore.setState((state) => ({
+            accounts: state.accounts.some((a) => a.id === accountId)
+              ? state.accounts
+              : [...state.accounts, batchResult.account!],
+            currentAccount: batchResult.account,
+            currentAccountId: accountId,
+          }));
+
+          setIsAccountReady(true);
+
+          // Set metrics and trades from batch result
+          if (batchResult.metrics) {
+            setServerMetrics(batchResult.metrics);
+          }
+          if (batchResult.trades) {
+            useTradeStore.setState({
+              trades: batchResult.trades.data,
+              totalCount: batchResult.trades.count,
+              currentPage: 1,
+            });
+          }
         }
-        console.log(`✅ Account loaded: ${(performance.now() - t1).toFixed(0)}ms`);
 
-        if (!account) {
-          console.error("Account not found after loading:", accountId);
-          setIsAccountFound(false);
-          router.push("/");
-          return;
-        }
-
-        setIsAccountReady(true); // Account is ready, can render header
-
-        // CRITICAL PHASE: Load Page 1 of trades AND Server Metrics in parallel
-        // We use server metrics for the header to avoid loading full history
-        const t2 = performance.now();
-        const [metricsResult] = await Promise.all([
-          getTradeDashboardMetricsAction(accountId),
-          loadTrades(accountId),
-        ]);
-        console.log(`✅ Metrics + Trades: ${(performance.now() - t2).toFixed(0)}ms`);
-        console.log(`🏁 Total init time: ${(performance.now() - perfStart).toFixed(0)}ms`);
-
-        if (metricsResult) {
-          setServerMetrics(metricsResult);
-        }
+        console.log(`🏁 [Batch] Total init: ${(performance.now() - perfStart).toFixed(0)}ms`);
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");
@@ -177,6 +198,49 @@ export function useDashboardInit(
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId, showToast]);
+
+  // OPTIMIZATION: Background load allHistory after critical phase completes
+  // This makes Calendar and Reports tabs open instantly
+  useEffect(() => {
+    // Only trigger after init is complete and we have an account
+    if (isLoading || !currentAccount) return;
+
+    const currentAccountId = currentAccount.id;
+    const storeHistory = useTradeStore.getState().allHistory;
+    const storeAccountId = useTradeStore.getState().currentAccountId;
+
+    // Skip if already have history for this account
+    if (storeHistory.length > 0 && storeAccountId === currentAccountId) return;
+
+    // Use requestIdleCallback for true background loading (or setTimeout fallback)
+    const loadInBackground = () => {
+      import("@/app/actions/trades").then(({ getTradeHistoryLiteAction }) => {
+        getTradeHistoryLiteAction(currentAccountId)
+          .then((history) => {
+            // Only set if still on same account (user didn't navigate away)
+            if (
+              useTradeStore.getState().currentAccountId === currentAccountId ||
+              !useTradeStore.getState().currentAccountId
+            ) {
+              useTradeStore.setState({
+                allHistory: history,
+                currentAccountId: currentAccountId,
+              });
+              console.log(`✅ Background history loaded: ${history.length} trades`);
+            }
+          })
+          .catch((err) => {
+            console.warn("Background history load failed:", err);
+          });
+      });
+    };
+
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(loadInBackground, { timeout: 2000 });
+    } else {
+      setTimeout(loadInBackground, 500);
+    }
+  }, [isLoading, currentAccount]);
 
   return {
     // Account

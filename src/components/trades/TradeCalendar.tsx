@@ -125,27 +125,34 @@ export function TradeCalendar({
   };
 
   // Pre-calculate stats for all days in calendar using useMemo
+  // OPTIMIZED: Use Maps and Sets for O(n) complexity instead of O(n*m)
   const dayStatsMap = useMemo(() => {
     const statsMap: Record<string, DayStatsResult & { dayTrades: Trade[]; journalCount: number }> =
       {};
+
+    // PRE-INDEX: Group entries by date for O(1) lookup
+    const entriesByDate = new Map<string, typeof entries>();
+    entries.forEach((e) => {
+      if (!entriesByDate.has(e.date)) entriesByDate.set(e.date, []);
+      entriesByDate.get(e.date)!.push(e);
+    });
 
     // Calculate stats for days with trades
     Object.keys(tradesByDay).forEach((dateStr) => {
       const dayTrades = tradesByDay[dateStr];
       const stats = calculateDayStats(dayTrades);
+
+      // PRE-INDEX: Create Set of trade IDs for O(1) lookup
+      const dayTradeIds = new Set(dayTrades.map((t) => t.id));
+
       // Count journal entries for this day, excluding ones linked to today's trades
-      const dayEntries = entries.filter((e) => {
-        if (e.date !== dateStr) return false;
-
-        // If entry is linked to trades, check if it's linked to any of today's trades
-        if (e.tradeIds && e.tradeIds.length > 0) {
-          const isLinkedToDayTrade = e.tradeIds.some((tid) =>
-            dayTrades.some((dt) => dt.id === tid)
-          );
-          return !isLinkedToDayTrade;
-        }
-
-        return true;
+      // Now O(k) where k = entries for this day, instead of O(n*m)
+      const dayEntriesRaw = entriesByDate.get(dateStr) || [];
+      const dayEntries = dayEntriesRaw.filter((e) => {
+        // If no trade IDs linked, include the entry
+        if (!e.tradeIds?.length) return true;
+        // Exclude if any linked trade is in today's trades (O(1) lookup per tradeId)
+        return !e.tradeIds.some((tid) => dayTradeIds.has(tid));
       });
 
       statsMap[dateStr] = {
@@ -156,11 +163,12 @@ export function TradeCalendar({
     });
 
     // Also add stats for days with only journal entries (no trades)
-    const journalOnlyDates = new Set(entries.map((e) => e.date).filter((date) => !statsMap[date]));
+    // Use entriesByDate for efficiency
+    const tradeDates = new Set(Object.keys(tradesByDay));
+    entriesByDate.forEach((dayEntries, dateStr) => {
+      if (tradeDates.has(dateStr)) return; // Already processed above
 
-    journalOnlyDates.forEach((date) => {
-      const dayEntries = entries.filter((e) => e.date === date);
-      statsMap[date] = {
+      statsMap[dateStr] = {
         ...calculateDayStats([]),
         dayTrades: [],
         journalCount: dayEntries.length,

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import type { Account } from "@/types";
 import {
   getAccountsAction,
@@ -172,9 +172,67 @@ export const useAccountStore = create<AccountStore>()(
     }),
     {
       name: "account-storage",
+      storage: createJSONStorage(() => sessionStorage), // Use sessionStorage for security
       partialize: (state) => ({
         currentAccountId: state.currentAccountId,
+        accounts: state.accounts, // Cache accounts to avoid refetch on refresh
       }),
+      version: 1,
+      onRehydrateStorage: () => (state) => {
+        // Background refresh to sync with server after hydration
+        // Only if we have cached accounts and NOT currently viewing a dashboard
+        if (state && state.accounts.length > 0) {
+          // Use a longer timeout and only refresh if user is on home page
+          setTimeout(() => {
+            // Check if user is currently on dashboard - don't interrupt!
+            if (window.location.pathname.includes("/dashboard/")) {
+              console.log("[AccountStore] Skipping background refresh - user on dashboard");
+              return;
+            }
+
+            getAccountsAction()
+              .then((freshAccounts) => {
+                const currentState = useAccountStore.getState();
+
+                // Only update if accounts have actually changed
+                const hasChanged =
+                  JSON.stringify(
+                    currentState.accounts.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      current_balance: a.currentBalance,
+                    }))
+                  ) !==
+                  JSON.stringify(
+                    freshAccounts.map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      current_balance: a.currentBalance,
+                    }))
+                  );
+
+                if (hasChanged) {
+                  console.log("[AccountStore] Accounts updated from server");
+                  useAccountStore.setState({ accounts: freshAccounts });
+
+                  // IMPORTANT: Also update currentAccount if it exists
+                  if (currentState.currentAccountId) {
+                    const updated = freshAccounts.find(
+                      (a) => a.id === currentState.currentAccountId
+                    );
+                    if (updated) {
+                      useAccountStore.setState({ currentAccount: updated });
+                    }
+                  }
+                }
+              })
+              .catch((err) => {
+                console.warn("[AccountStore] Background refresh failed:", err);
+                // Silently fail - cached data is still usable
+              });
+          }, 2000); // Increased to 2 seconds
+        }
+      },
     }
   )
 );

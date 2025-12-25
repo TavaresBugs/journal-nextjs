@@ -397,3 +397,55 @@ export async function getTradesByJournalAction(journalId: string): Promise<Trade
     return [];
   }
 }
+
+/**
+ * Get advanced metrics for analytics (Sharpe, Calmar, streaks, etc).
+ * CACHED: 60 seconds TTL, invalidated when trades change.
+ * OPTIMIZED: Calculated server-side using SQL instead of client-side JS.
+ */
+export async function getAdvancedMetricsAction(
+  accountId: string,
+  initialBalance: number
+): Promise<{
+  avgPnl: number;
+  pnlStdDev: number;
+  sharpeRatio: number;
+  maxDrawdown: number;
+  maxDrawdownPercent: number;
+  calmarRatio: number;
+  currentStreak: number;
+  maxWinStreak: number;
+  maxLossStreak: number;
+  profitFactor: number;
+  avgWin: number;
+  avgLoss: number;
+  largestWin: number;
+  largestLoss: number;
+} | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    // Use unstable_cache for time-based caching
+    const getCachedAdvancedMetrics = unstable_cache(
+      async (accId: string, uId: string, balance: number) => {
+        const result = await prismaTradeRepo.getAdvancedMetrics(accId, uId, balance);
+        if (result.error) {
+          console.error("[getAdvancedMetricsAction] Error:", result.error);
+          return null;
+        }
+        return result.data || null;
+      },
+      [`advanced-metrics-${accountId}`],
+      {
+        revalidate: 60, // 60 seconds TTL
+        tags: [`trades:${accountId}`, `metrics:${accountId}`],
+      }
+    );
+
+    return await getCachedAdvancedMetrics(accountId, userId, initialBalance);
+  } catch (error) {
+    console.error("[getAdvancedMetricsAction] Unexpected error:", error);
+    return null;
+  }
+}

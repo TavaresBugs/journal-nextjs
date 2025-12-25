@@ -5,7 +5,7 @@ import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { fetchTradeHistory } from "@/actions/trades";
+import { getTradeHistoryLiteAction as fetchTradeHistory } from "@/app/actions/trades";
 import { getPlaybookStatsAction } from "@/app/actions/playbooks";
 import { PlaybookStats } from "@/types";
 

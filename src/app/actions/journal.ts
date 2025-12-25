@@ -20,25 +20,38 @@ import { prismaJournalRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { createClient } from "@/lib/supabase/server";
 import { JournalEntry, JournalImage } from "@/types";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
  * Get all journal entries for an account.
+ * CACHED: 60 seconds TTL, invalidated when journal changes.
  */
 export async function getJournalEntriesAction(accountId: string): Promise<JournalEntry[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const result = await prismaJournalRepo.getByAccountId(accountId);
+    // Use unstable_cache for time-based caching
+    const getCachedEntries = unstable_cache(
+      async (accId: string, uId: string) => {
+        const result = await prismaJournalRepo.getByAccountId(accId);
 
-    if (result.error) {
-      console.error("[getJournalEntriesAction] Error:", result.error);
-      return [];
-    }
+        if (result.error) {
+          console.error("[getJournalEntriesAction] Error:", result.error);
+          return [];
+        }
 
-    // Filter for user ownership as extra security
-    return (result.data || []).filter((e) => e.userId === userId);
+        // Filter for user ownership as extra security
+        return (result.data || []).filter((e) => e.userId === uId);
+      },
+      [`journal-entries-${accountId}`],
+      {
+        revalidate: 60, // 60 seconds TTL
+        tags: [`journal:${accountId}`],
+      }
+    );
+
+    return await getCachedEntries(accountId, userId);
   } catch (error) {
     console.error("[getJournalEntriesAction] Unexpected error:", error);
     return [];
@@ -146,8 +159,9 @@ export async function saveJournalEntryAction(
       return { success: false, error: result.error.message };
     }
 
-    // Revalidate dashboard
+    // Revalidate dashboard and cache
     if (entry.accountId) {
+      revalidateTag(`journal:${entry.accountId}`, "max");
       revalidatePath(`/dashboard/${entry.accountId}`, "page");
     }
 
@@ -198,6 +212,12 @@ export async function deleteJournalEntryAction(
     if (result.error) {
       console.error("[deleteJournalEntryAction] Error:", result.error);
       return { success: false, error: result.error.message };
+    }
+
+    // Invalidate cache for the account if we can find it
+    if (entryResult.data?.accountId) {
+      revalidateTag(`journal:${entryResult.data.accountId}`, "max");
+      revalidatePath(`/dashboard/${entryResult.data.accountId}`, "page");
     }
 
     return { success: true };
