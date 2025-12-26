@@ -292,10 +292,33 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
             }
           : t
       )
-      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
+      .sort((a, b) => {
+        // Sort by date first, then by time
+        const dateA = new Date(a.entryDate).getTime();
+        const dateB = new Date(b.entryDate).getTime();
+        if (dateA !== dateB) return dateB - dateA; // Descending by date
+        // If same date, sort by time
+        const timeA = a.entryTime || "00:00";
+        const timeB = b.entryTime || "00:00";
+        return timeB.localeCompare(timeA); // Descending by time
+      });
+
+    // Also re-sort the trades list to reflect the updated order
+    const sortDirection = get().sortDirection;
+    const sortedTrades = updatedTrades.sort((a, b) => {
+      const dateA = new Date(a.entryDate).getTime();
+      const dateB = new Date(b.entryDate).getTime();
+      if (dateA !== dateB) {
+        return sortDirection === "desc" ? dateB - dateA : dateA - dateB;
+      }
+      // If same date, sort by time
+      const timeA = a.entryTime || "00:00";
+      const timeB = b.entryTime || "00:00";
+      return sortDirection === "desc" ? timeB.localeCompare(timeA) : timeA.localeCompare(timeB);
+    });
 
     set({
-      trades: updatedTrades,
+      trades: sortedTrades,
       allHistory: updatedHistory,
     });
   },
