@@ -3,10 +3,10 @@
 > Sistema completo de gerenciamento de trading journal com Next.js, TypeScript e Supabase, focado em traders profissionais.
 
 [![CI](https://github.com/TavaresBugs/journal-nextjs/actions/workflows/ci.yml/badge.svg)](https://github.com/TavaresBugs/journal-nextjs/actions/workflows/ci.yml)
-[![Next.js](https://img.shields.io/badge/Next.js-14+-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Latest-green?logo=supabase)](https://supabase.com/)
-[![Tests](https://img.shields.io/badge/Tests-287%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-1095%20passing-brightgreen)]()
 [![License](https://img.shields.io/badge/License-Private-red)]()
 
 ---
@@ -40,7 +40,7 @@ Trading Journal Pro é uma plataforma completa para traders registrarem, analisa
 - [x] Compartilhamento via token
 - [x] Calculadora de impostos (day trade 20%)
 - [x] Design System completo (20+ variantes de botões)
-- [x] 287 testes automatizados (Vitest)
+- [x] 1095+ testes automatizados (Vitest)
 
 ### 🔄 Em Desenvolvimento
 
@@ -55,7 +55,7 @@ Trading Journal Pro é uma plataforma completa para traders registrarem, analisa
 
 ### Frontend
 
-- **Framework:** Next.js 14+ (App Router)
+- **Framework:** Next.js 16 (App Router)
 - **Linguagem:** TypeScript (strict mode)
 - **Estilização:** Tailwind CSS v3
 - **UI Base:** shadcn/ui (customizado)
@@ -73,7 +73,7 @@ Trading Journal Pro é uma plataforma completa para traders registrarem, analisa
 
 ### Dev Tools
 
-- **Testes:** Vitest (287 tests passing)
+- **Testes:** Vitest (1095+ tests passing)
 - **Linting:** ESLint + Prettier
 - **Type Check:** TypeScript strict
 - **Git Hooks:** Husky + lint-staged (pre-commit)
@@ -89,7 +89,7 @@ journal-nextjs/
 │   ├── app/                    # Next.js App Router
 │   │   ├── (auth)/             # Rotas autenticadas
 │   │   ├── dashboard/          # Dashboard principal
-│   │   ├── actions/            # Server Actions
+│   │   ├── actions/            # Server Actions (CANONICAL namespace)
 │   │   └── ...                 # Features (trades, journal, etc)
 │   │
 │   ├── components/             # 📖 Ver README (UI Library)
@@ -116,7 +116,7 @@ journal-nextjs/
 │
 ├── docs/                       # Documentação completa
 ├── scripts/                    # Scripts utilitários
-├── tests/                      # Testes (671 passando)
+├── tests/                      # Testes (1095+ passando)
 └── supabase/migrations/        # Migrations do banco
 
 ~71 diretórios, ~195 arquivos, ~29.600 linhas
@@ -141,7 +141,7 @@ journal-nextjs/
 - **Total de arquivos:** 195 (TS/TSX)
 - **Total de linhas:** ~29.600 (reduzido de 31.400 após refatoração)
 - **Componentes reutilizáveis:** 50+
-- **Testes:** 287 passando
+- **Testes:** 1095+ passando
 - **Coverage:** ~60%
 
 ### Refatoração Dezembro 2025
@@ -337,7 +337,7 @@ O projeto usa [Husky](https://typicode.github.io/husky/) + [lint-staged](https:/
 - ♻️ Refatoração de ~2.000 linhas duplicadas
 - 🎨 Padronização de Button, Modal, Forms
 - 📝 Documentação completa criada
-- ✅ 287 testes passando (+156 novos)
+- ✅ 1095+ testes passando
 
 ### v0.8.0 (Novembro 2025) - Otimizações
 

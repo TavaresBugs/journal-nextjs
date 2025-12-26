@@ -8,7 +8,7 @@
 
 ## 🎯 Resumo Executivo (TL;DR)
 
-**Trading Journal Pro** é uma aplicação web para traders profissionais registrarem, analisarem e melhorarem sua performance. Construída com Next.js 14+, TypeScript e Supabase, oferece gestão de trades, diário psicológico, playbooks de estratégias e sistema de mentoria.
+**Trading Journal Pro** é uma aplicação web para traders profissionais registrarem, analisarem e melhorarem sua performance. Construída com Next.js 16, TypeScript e Supabase, oferece gestão de trades, diário psicológico, playbooks de estratégias e sistema de mentoria.
 
 ---
 
@@ -42,14 +42,14 @@
 
 ### Frontend
 
-| Tecnologia       | Versão           | Justificativa                             |
-| ---------------- | ---------------- | ----------------------------------------- |
-| **Next.js**      | 14+ (App Router) | SSR, layouts aninhados, Server Components |
-| **TypeScript**   | 5.0+ (strict)    | Tipagem forte, menos bugs                 |
-| **Tailwind CSS** | v3               | Produtividade, design consistente         |
-| **shadcn/ui**    | Customizado      | Base de componentes premium               |
-| **React Query**  | v5               | Cache, sincronização servidor             |
-| **Zustand**      | v4               | Estado global simples                     |
+| Tecnologia       | Versão          | Justificativa                             |
+| ---------------- | --------------- | ----------------------------------------- |
+| **Next.js**      | 16 (App Router) | SSR, layouts aninhados, Server Components |
+| **TypeScript**   | 5.0+ (strict)   | Tipagem forte, menos bugs                 |
+| **Tailwind CSS** | v3              | Produtividade, design consistente         |
+| **shadcn/ui**    | Customizado     | Base de componentes premium               |
+| **React Query**  | v5              | Cache, sincronização servidor             |
+| **Zustand**      | v4              | Estado global simples                     |
 
 > **Por que não Redux?** Zustand oferece menos boilerplate e integra melhor com React Query para separar estado local/servidor.
 
@@ -64,11 +64,11 @@
 
 ### Ferramentas de Desenvolvimento
 
-| Ferramenta            | Função                          |
-| --------------------- | ------------------------------- |
-| **Vitest**            | Testes unitários (287 passando) |
-| **ESLint + Prettier** | Formatação e linting            |
-| **Husky**             | Git hooks (pre-commit)          |
+| Ferramenta            | Função                            |
+| --------------------- | --------------------------------- |
+| **Vitest**            | Testes unitários (1095+ passando) |
+| **ESLint + Prettier** | Formatação e linting              |
+| **Husky**             | Git hooks (pre-commit)            |
 
 ---
 
@@ -127,7 +127,7 @@ journal-nextjs/
 | Total de arquivos         | ~195 (TS/TSX) |
 | Total de linhas           | ~29.600       |
 | Componentes reutilizáveis | 50+           |
-| Testes passando           | 287           |
+| Testes passando           | 1095+         |
 | Coverage estimado         | ~60%          |
 
 ### Refatoração v0.9.0

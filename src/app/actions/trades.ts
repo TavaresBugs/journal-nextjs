@@ -349,23 +349,55 @@ export async function getTradeDashboardMetricsAction(accountId: string): Promise
 /**
  * Get lightweight trade history for analytics.
  * CACHED: 60 seconds TTL, invalidated when trades change.
+ *
+ * @param accountId - Account to fetch trades for
+ * @param options - Optional filters:
+ *   - dateFrom: Start date (YYYY-MM-DD) to filter trades (inclusive)
+ *   - dateTo: End date (YYYY-MM-DD) to filter trades (inclusive)
+ *   - limit: Maximum number of trades to return (for pagination)
  */
-export async function getTradeHistoryLiteAction(accountId: string): Promise<TradeLite[]> {
+export async function getTradeHistoryLiteAction(
+  accountId: string,
+  options?: {
+    dateFrom?: string;
+    dateTo?: string;
+    limit?: number;
+  }
+): Promise<TradeLite[]> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
+    // Build date range if provided
+    const dateRange = options?.dateFrom
+      ? {
+          start: new Date(options.dateFrom),
+          end: options?.dateTo ? new Date(options.dateTo) : new Date(),
+        }
+      : undefined;
+
+    // Build cache key based on options
+    const cacheKey = dateRange
+      ? `trade-history-${accountId}-${options?.dateFrom}-${options?.dateTo}`
+      : `trade-history-${accountId}`;
+
     // Use unstable_cache for time-based caching
     const getCachedHistory = unstable_cache(
       async (accId: string, uId: string) => {
-        const result = await prismaTradeRepo.getHistoryLite(accId, uId);
+        const result = await prismaTradeRepo.getHistoryLite(accId, uId, dateRange);
         if (result.error) {
           console.error("[getTradeHistoryLiteAction] Error:", result.error);
           return [];
         }
+
+        // Apply limit if specified
+        if (options?.limit && result.data) {
+          return result.data.slice(0, options.limit);
+        }
+
         return result.data || [];
       },
-      [`trade-history-${accountId}`],
+      [cacheKey],
       {
         revalidate: 60, // 60 seconds TTL
         tags: [`trades:${accountId}`, `history:${accountId}`],

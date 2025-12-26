@@ -6,7 +6,10 @@ import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
-import { batchDashboardInitAction } from "@/app/actions/_batch/dashboardInit";
+import {
+  batchDashboardInitAction,
+  type DashboardInitResult,
+} from "@/app/actions/_batch/dashboardInit";
 
 import { useToast } from "@/providers/ToastProvider";
 
@@ -25,15 +28,14 @@ export interface DashboardInitData {
   entries: ReturnType<typeof useJournalStore.getState>["entries"];
   playbooks: ReturnType<typeof usePlaybookStore.getState>["playbooks"];
 
-  // Metrics (Server-Side)
+  // Metrics (Server-Side) - Type matches DashboardInitResult["metrics"]
   serverMetrics: {
     totalTrades: number;
-    winRate: number;
-    profitFactor: number; // Note: Action might return null properties if no trades
-    totalPnl: number;
     wins: number;
     losses: number;
     breakeven: number;
+    winRate: number;
+    totalPnl: number;
   } | null;
   playbookStats: PlaybookStats[];
 
@@ -91,8 +93,7 @@ export function useDashboardInit(
   const [isTradesLoading, setIsTradesLoading] = useState(true);
   const [isAccountReady, setIsAccountReady] = useState(false);
   const [isAccountFound, setIsAccountFound] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [serverMetrics, setServerMetrics] = useState<any>(null);
+  const [serverMetrics, setServerMetrics] = useState<DashboardInitResult["metrics"]>(null);
 
   // Refs
   const isInitRef = useRef<string | null>(null);
@@ -208,6 +209,7 @@ export function useDashboardInit(
 
   // OPTIMIZATION: Background load allHistory after critical phase completes
   // This makes Calendar and Reports tabs open instantly
+  // NOTE: Now loads only last 12 months to reduce data transfer for large accounts
   useEffect(() => {
     // Only trigger after init is complete and we have an account
     if (isLoading || !currentAccount) return;
@@ -219,10 +221,22 @@ export function useDashboardInit(
     // Skip if already have history for this account
     if (storeHistory.length > 0 && storeAccountId === currentAccountId) return;
 
+    // RACE PROTECTION: Skip if another load is in progress
+    if (useTradeStore.getState().isLoadingHistory) return;
+
     // Use requestIdleCallback for true background loading (or setTimeout fallback)
     const loadInBackground = () => {
+      // Mark as loading BEFORE starting
+      useTradeStore.setState({ isLoadingHistory: true, currentAccountId: currentAccountId });
+
       import("@/app/actions/trades").then(({ getTradeHistoryLiteAction }) => {
-        getTradeHistoryLiteAction(currentAccountId)
+        // Calculate date range for last 12 months
+        const now = new Date();
+        const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        const dateFrom = oneYearAgo.toISOString().split("T")[0];
+        const dateTo = now.toISOString().split("T")[0];
+
+        getTradeHistoryLiteAction(currentAccountId, { dateFrom, dateTo })
           .then((history) => {
             // Only set if still on same account (user didn't navigate away)
             if (
@@ -232,12 +246,18 @@ export function useDashboardInit(
               useTradeStore.setState({
                 allHistory: history,
                 currentAccountId: currentAccountId,
+                isLoadingHistory: false,
               });
-              console.log(`✅ Background history loaded: ${history.length} trades`);
+              console.log(
+                `✅ Background history loaded: ${history.length} trades (last 12 months)`
+              );
+            } else {
+              useTradeStore.setState({ isLoadingHistory: false });
             }
           })
           .catch((err) => {
             console.warn("Background history load failed:", err);
+            useTradeStore.setState({ isLoadingHistory: false });
           });
       });
     };

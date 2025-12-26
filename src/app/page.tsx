@@ -81,8 +81,8 @@ export default function HomePage() {
             const syncResult = await syncAllAccountsBalancesAction();
             if (syncResult.syncedCount > 0) {
               console.log("Balances synced, reloading accounts...");
-              // Reload accounts to reflect updated balances (silently)
-              await loadAccounts();
+              // Reload accounts to reflect updated balances (force refresh)
+              await loadAccounts({ force: true });
             }
           } catch (err) {
             console.error("Background sync error:", err);

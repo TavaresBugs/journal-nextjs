@@ -17,7 +17,7 @@ interface AccountStore {
   error: string | null;
 
   // Actions
-  loadAccounts: () => Promise<void>;
+  loadAccounts: (options?: { force?: boolean }) => Promise<void>;
   addAccount: (account: Account) => Promise<void>;
   updateAccount: (account: Account) => Promise<void>;
   updateAccountBalance: (accountId: string, totalPnL: number) => Promise<void>;
@@ -35,16 +35,30 @@ export const useAccountStore = create<AccountStore>()(
       isInitializing: false,
       error: null,
 
-      loadAccounts: async () => {
+      loadAccounts: async (options?: { force?: boolean }) => {
+        const { isLoading, accounts } = get();
+
+        // RACE PROTECTION: Skip if already loading
+        if (isLoading) {
+          console.log("[AccountStore] Skip loadAccounts - already loading");
+          return;
+        }
+
+        // Skip if already have accounts (unless forced)
+        if (accounts.length > 0 && !options?.force) {
+          console.log("[AccountStore] Skip loadAccounts - using cached accounts");
+          return;
+        }
+
         set({ isLoading: true, error: null });
         try {
-          const accounts = await getAccountsAction();
-          set({ accounts, isLoading: false });
+          const fetchedAccounts = await getAccountsAction();
+          set({ accounts: fetchedAccounts, isLoading: false });
 
           // Refresh current account object if selected
           const { currentAccountId } = get();
           if (currentAccountId) {
-            const current = accounts.find((a) => a.id === currentAccountId) || null;
+            const current = fetchedAccounts.find((a) => a.id === currentAccountId) || null;
             if (current) {
               set({ currentAccount: current });
             }
@@ -138,7 +152,7 @@ export const useAccountStore = create<AccountStore>()(
           console.error("Error updating balance:", error);
           // Rollback handling complex here due to optimistic update call above
           // For now assuming updateAccount handles the view state
-          get().loadAccounts();
+          get().loadAccounts({ force: true });
         }
       },
 
