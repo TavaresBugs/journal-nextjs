@@ -14,6 +14,7 @@
  */
 
 import { prismaTradeRepo } from "@/lib/database/repositories";
+import { prisma } from "@/lib/database"; // Direct access for journal link checks
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade, TradeLite } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
@@ -175,6 +176,15 @@ export async function saveTradeAction(
     if (trade.accountId) {
       // NOTE: Balance sync is now handled automatically by SQL trigger
       // See: prisma/migrations/add_balance_sync_trigger.sql
+
+      // SYNC JOURNAL DATE: If trade date changed, check/update linked journal
+      if (trade.id && trade.entryDate && userId) {
+        // Run in background (fire and forget) to not block UI
+        syncJournalDates(trade.id, trade.entryDate, userId, trade.accountId).catch((err) =>
+          console.error("[saveTradeAction] Journal sync failed:", err)
+        );
+      }
+
       // Invalidate cached metrics and history (Next.js 15 requires profile arg)
       revalidateTag(`trades:${trade.accountId}`, "max");
       revalidatePath(`/dashboard/${trade.accountId}`, "page");
@@ -479,5 +489,70 @@ export async function getAdvancedMetricsAction(
   } catch (error) {
     console.error("[getAdvancedMetricsAction] Unexpected error:", error);
     return null;
+  }
+}
+
+/**
+ * Helper to sync journal date with trade date.
+ * If a trade date changes and it's linked to a journal:
+ * 1. If it's the ONLY trade in that journal -> Update journal date to match.
+ * 2. If there are other trades -> Do nothing (safety).
+ */
+async function syncJournalDates(
+  tradeId: string,
+  newDate: Date | string,
+  userId: string,
+  accountId: string
+) {
+  try {
+    // 1. Find journals linked to this trade
+    const links = await prisma.journal_entry_trades.findMany({
+      where: { trade_id: tradeId },
+      include: {
+        journal_entries: {
+          include: {
+            journal_entry_trades: true,
+          },
+        },
+      },
+    });
+
+    if (links.length === 0) return;
+
+    for (const link of links) {
+      const journal = link.journal_entries;
+      if (!journal) continue;
+
+      // Security check
+      if (journal.user_id !== userId) continue;
+
+      // Check for other trades
+      const otherTrades = journal.journal_entry_trades.filter((t) => t.trade_id !== tradeId);
+
+      // Only auto-update if this is the exclusive trade defining this journal
+      if (otherTrades.length === 0) {
+        const dateObj = new Date(newDate);
+        // Compare dates (ignoring time for safety, though journal date is usually date-only)
+        const journalDateStr = journal.date.toISOString().split("T")[0];
+        const newDateStr = dateObj.toISOString().split("T")[0];
+
+        if (journalDateStr !== newDateStr) {
+          console.log(
+            `[Sync] Updating journal ${journal.id} date from ${journalDateStr} to ${newDateStr}`
+          );
+
+          await prisma.journal_entries.update({
+            where: { id: journal.id },
+            data: { date: dateObj },
+          });
+
+          // Invalidate journal cache
+          revalidateTag(`journals:${accountId}`, "max");
+        }
+      }
+    }
+  } catch (error) {
+    console.error("[syncJournalDates] Error syncing dates:", error);
+    // Don't throw, just log. This is a background maintenance task.
   }
 }
