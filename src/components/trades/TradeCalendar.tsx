@@ -141,6 +141,9 @@ export function TradeCalendar({
       entriesByDate.get(e.date)!.push(e);
     });
 
+    // PRE-INDEX: Create set of ALL trade IDs to check if entries are linked to trades in ANY date
+    const allTradeIds = new Set(trades.map((t) => t.id));
+
     // Calculate stats for days with trades
     Object.keys(tradesByDay).forEach((dateStr) => {
       const dayTrades = tradesByDay[dateStr];
@@ -172,15 +175,27 @@ export function TradeCalendar({
     entriesByDate.forEach((dayEntries, dateStr) => {
       if (tradeDates.has(dateStr)) return; // Already processed above
 
-      statsMap[dateStr] = {
-        ...calculateDayStats([]),
-        dayTrades: [],
-        journalCount: dayEntries.length,
-      };
+      // FIX: Filter out entries that are linked to trades in other dates
+      // These entries should only be shown on the date of their linked trade
+      const standaloneEntries = dayEntries.filter((e) => {
+        // If no trade IDs linked, include the entry
+        if (!e.tradeIds?.length) return true;
+        // Exclude if linked to ANY existing trade (it will be shown on the trade's date)
+        return !e.tradeIds.some((tid) => allTradeIds.has(tid));
+      });
+
+      // Only add to statsMap if there are standalone entries
+      if (standaloneEntries.length > 0) {
+        statsMap[dateStr] = {
+          ...calculateDayStats([]),
+          dayTrades: [],
+          journalCount: standaloneEntries.length,
+        };
+      }
     });
 
     return statsMap;
-  }, [tradesByDay, entries]);
+  }, [tradesByDay, entries, trades]);
 
   // Get journal count for a date (from lightweight availability map or full entries)
   const getJournalCountForDate = (dateStr: string): number => {

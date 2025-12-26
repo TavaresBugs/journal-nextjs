@@ -1,7 +1,14 @@
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
 import { Trade, TradeMetrics, PlaybookStats } from "@/types";
-import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
+import {
+  formatCurrency,
+  formatTimeMinutes,
+  calculateSharpeRatio,
+  calculateCalmarRatio,
+  calculateAverageHoldTime,
+  calculateConsecutiveStreaks,
+} from "@/lib/calculations";
 import { calculateWolfScore } from "@/lib/wolfScore";
 import { WolfScoreCard } from "@/components/dashboard/WolfScoreCard";
 import { WeekdayPerformanceCard } from "@/components/dashboard/WeekdayPerformanceCard";
@@ -39,13 +46,26 @@ interface DashboardOverviewProps {
 
 export function DashboardOverview({
   metrics,
-  advancedMetrics,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  advancedMetrics: _propsAdvancedMetrics, // Ignored - we calculate fresh from allHistory
   allHistory,
   currency,
   initialBalance,
   accountCreatedAt,
   playbookStats,
 }: DashboardOverviewProps) {
+  // FIX: Calculate advanced metrics FRESH from allHistory to avoid stale data
+  // The passed advancedMetrics from useDashboardData may be calculated before history loads
+  const advancedMetrics = useMemo(
+    () => ({
+      sharpe: calculateSharpeRatio(allHistory),
+      calmar: calculateCalmarRatio(allHistory, initialBalance),
+      holdTime: calculateAverageHoldTime(allHistory),
+      streaks: calculateConsecutiveStreaks(allHistory),
+    }),
+    [allHistory, initialBalance]
+  );
+
   // Calculate Wolf Score
   const wolfScore = useMemo(
     () => calculateWolfScore(allHistory, metrics, initialBalance),
