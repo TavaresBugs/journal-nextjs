@@ -4,6 +4,7 @@ import { useDashboardInit } from "./useDashboardInit";
 import { useTradeMetrics } from "./useTradeMetrics";
 import { useUserPermissions } from "./useUserPermissions";
 import { useAccountStore } from "@/store/useAccountStore";
+import { useTradeStore } from "@/store/useTradeStore";
 import { PlaybookStats, Trade } from "@/types";
 
 // Re-export types for backwards compatibility
@@ -111,6 +112,7 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
   // 5. Balance Synchronization Check
   // Ensure the account balance matches the sum of trade PnL
   const { pnlMetrics } = metricsData;
+  const { serverAdvancedMetrics } = useTradeStore(); // Get server metrics
 
   useEffect(() => {
     if (!initData.currentAccount || !pnlMetrics) return;
@@ -190,7 +192,27 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
       losses: initData.serverMetrics?.losses ?? metricsData.metrics.losses,
       breakeven: initData.serverMetrics?.breakeven ?? metricsData.metrics.breakeven,
     },
-    advancedMetrics: metricsData.advancedMetrics,
+    advancedMetrics: serverAdvancedMetrics
+      ? {
+          sharpe: serverAdvancedMetrics.sharpeRatio,
+          calmar: serverAdvancedMetrics.calmarRatio,
+          // Hold time not yet in server metrics, keep client calc
+          holdTime: metricsData.advancedMetrics.holdTime,
+          streaks: {
+            maxWinStreak: serverAdvancedMetrics.maxWinStreak,
+            maxLossStreak: serverAdvancedMetrics.maxLossStreak,
+            currentStreak: {
+              type:
+                serverAdvancedMetrics.currentStreak > 0
+                  ? "win"
+                  : serverAdvancedMetrics.currentStreak < 0
+                    ? "loss"
+                    : "none",
+              count: Math.abs(serverAdvancedMetrics.currentStreak),
+            },
+          },
+        }
+      : metricsData.advancedMetrics,
     streakMetrics: metricsData.streakMetrics,
     pnl: displayPnl,
     pnlPercent: displayPnlPercent,

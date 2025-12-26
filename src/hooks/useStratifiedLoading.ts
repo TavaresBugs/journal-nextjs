@@ -5,7 +5,11 @@ import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { getTradeHistoryLiteAction as fetchTradeHistory } from "@/app/actions/trades";
+import { useAccountStore } from "@/store/useAccountStore"; // Added this import
+import {
+  getTradeHistoryLiteAction as fetchTradeHistory,
+  getAdvancedMetricsAction, // Added this import
+} from "@/app/actions/trades";
 import { getPlaybookStatsAction } from "@/app/actions/playbooks";
 import { PlaybookStats } from "@/types";
 
@@ -36,7 +40,13 @@ export function useStratifiedLoading(accountId: string) {
   const prevAccountIdRef = useRef<string | null>(null);
 
   // Store actions
-  const { setAllHistory, allHistory, isLoadingHistory } = useTradeStore();
+  const {
+    setAllHistory,
+    setAdvancedMetrics,
+    allHistory,
+    isLoadingHistory,
+    serverAdvancedMetrics,
+  } = useTradeStore(); // Modified this line
   const { loadPlaybooks } = usePlaybookStore();
   const { loadSettings } = useSettingsStore();
   const { loadEntries, loadRoutines } = useJournalStore();
@@ -127,8 +137,15 @@ export function useStratifiedLoading(accountId: string) {
     // Check if we need to load history
     // RACE PROTECTION: Also check isLoadingHistory to avoid duplicate calls
     if (allHistory.length === 0 && !isLoadingHistory) {
-      // Lazy load history (ALL history for performance reports/calendar correct data)
-      const history = await fetchTradeHistory(accountId, {});
+      // Lazy load history (last 12 months for performance)
+      // We limit client-side history to 1 year for charts/calendar speed
+      // Global metrics are handled by serverAdvancedMetrics
+      const now = new Date();
+      const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      const dateFrom = oneYearAgo.toISOString().split("T")[0];
+      const dateTo = now.toISOString().split("T")[0];
+
+      const history = await fetchTradeHistory(accountId, { dateFrom, dateTo });
       setAllHistory(history);
     }
 
@@ -149,20 +166,40 @@ export function useStratifiedLoading(accountId: string) {
   const loadReportsData = async () => {
     if (phases.heavy.reports) return;
 
-    // Load history (if needed) AND Playbook Stats in parallel
-    // We reuse loadPlaybookStats logic but we need to run it in parallel with history
-    // RACE PROTECTION: Also check isLoadingHistory to avoid duplicate calls
+    // Load history, Playbook Stats, AND Server Metrics in parallel
+    // RACE PROTECTION: Also check isLoadingHistory/serverAdvancedMetrics to avoid duplicate calls
+
+    // Helper vars for history limit
+    const now = new Date();
+    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    const dateFrom = oneYearAgo.toISOString().split("T")[0];
+    const dateTo = now.toISOString().split("T")[0];
+
     const historyPromise =
       allHistory.length === 0 && !isLoadingHistory
-        ? fetchTradeHistory(accountId, {})
+        ? fetchTradeHistory(accountId, { dateFrom, dateTo })
         : Promise.resolve(null);
+
     const statsPromise =
       playbookStats.length === 0 ? getPlaybookStatsAction(accountId) : Promise.resolve(null);
 
-    const [history, stats] = await Promise.all([historyPromise, statsPromise]);
+    // Get initial balance for calculations
+    const account = useAccountStore.getState().currentAccount;
+    const initialBalance = account?.initialBalance || 0;
+
+    const metricsPromise = !serverAdvancedMetrics
+      ? getAdvancedMetricsAction(accountId, initialBalance)
+      : Promise.resolve(null);
+
+    const [history, stats, metrics] = await Promise.all([
+      historyPromise,
+      statsPromise,
+      metricsPromise,
+    ]);
 
     if (history) setAllHistory(history);
     if (stats) setPlaybookStats(stats);
+    if (metrics) setAdvancedMetrics(metrics);
 
     setPhases((prev) => ({
       ...prev,

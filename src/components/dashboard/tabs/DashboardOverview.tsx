@@ -1,15 +1,7 @@
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
 import { Trade, TradeMetrics, PlaybookStats } from "@/types";
-import {
-  calculateTradeMetrics,
-  formatCurrency,
-  formatTimeMinutes,
-  calculateSharpeRatio,
-  calculateCalmarRatio,
-  calculateAverageHoldTime,
-  calculateConsecutiveStreaks,
-} from "@/lib/calculations";
+import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
 import { calculateWolfScore } from "@/lib/wolfScore";
 import { WolfScoreCard } from "@/components/dashboard/WolfScoreCard";
 import { WeekdayPerformanceCard } from "@/components/dashboard/WeekdayPerformanceCard";
@@ -46,30 +38,16 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  metrics: _propsMetrics, // Ignore props metrics to avoid stale data
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  advancedMetrics: _propsAdvancedMetrics, // Ignored - we calculate fresh from allHistory
+  metrics,
+  advancedMetrics,
   allHistory,
   currency,
   initialBalance,
   accountCreatedAt,
   playbookStats,
 }: DashboardOverviewProps) {
-  // FIX: Calculate ALL metrics FRESH from allHistory
-  // This ensures that if allHistory is present (which Wolf Score proves it is),
-  // then the displayed metrics will ALWAYS be correct and in sync.
-  const metrics = useMemo(() => calculateTradeMetrics(allHistory || []), [allHistory]);
-
-  const advancedMetrics = useMemo(
-    () => ({
-      sharpe: calculateSharpeRatio(allHistory || []),
-      calmar: calculateCalmarRatio(allHistory || [], initialBalance),
-      holdTime: calculateAverageHoldTime(allHistory || []),
-      streaks: calculateConsecutiveStreaks(allHistory || []),
-    }),
-    [allHistory, initialBalance]
-  );
+  // Use passed metrics (now optimized with Server-Side Calculation preference)
+  // This avoids heavy client-side recalcs and respects server data
 
   // Calculate Wolf Score
   const wolfScore = useMemo(

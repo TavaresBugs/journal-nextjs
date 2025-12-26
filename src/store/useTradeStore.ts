@@ -47,10 +47,29 @@ interface TradeStore {
   isLoading: boolean;
   isLoadingHistory: boolean;
 
+  // Server-side calculated metrics (Performance Optimization)
+  serverAdvancedMetrics: {
+    avgPnl: number;
+    pnlStdDev: number;
+    sharpeRatio: number;
+    maxDrawdown: number;
+    maxDrawdownPercent: number;
+    calmarRatio: number;
+    currentStreak: number;
+    maxWinStreak: number;
+    maxLossStreak: number;
+    profitFactor: number;
+    avgWin: number;
+    avgLoss: number;
+    largestWin: number;
+    largestLoss: number;
+  } | null;
+
   // Actions
   loadTrades: (accountId: string) => Promise<void>;
   loadAllHistory: (accountId: string) => Promise<void>; // NEW action
   setAllHistory: (history: TradeLite[]) => void; // NEW action
+  setAdvancedMetrics: (metrics: TradeStore["serverAdvancedMetrics"]) => void; // Fixed missing action
   loadPage: (accountId: string, page: number) => Promise<void>;
   setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>; // NEW action
   setFilterAsset: (accountId: string, asset: string) => Promise<void>; // NEW action
@@ -72,6 +91,7 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
   filterAsset: "TODOS OS ATIVOS",
   isLoading: false,
   isLoadingHistory: false,
+  serverAdvancedMetrics: null, // Initial state
 
   loadTrades: async (accountId: string) => {
     set({ isLoading: true });
@@ -120,10 +140,14 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
       return;
     }
 
-    // Start new load with promise lock
-    // REMOVED 12-month limit: Load ALL history to ensure performance reports
-    // show correct data regardless of trade dates (e.g. replays, old imports)
-    const promise = fetchTradeHistory(accountId, {});
+    // Calculate date range for last 12 months
+    const now = new Date();
+    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+    const dateFrom = oneYearAgo.toISOString().split("T")[0];
+    const dateTo = now.toISOString().split("T")[0];
+
+    // Start new load with promise lock (now with date filter for performance)
+    const promise = fetchTradeHistory(accountId, { dateFrom, dateTo });
     set({
       historyPromise: promise,
       currentAccountId: accountId,
@@ -148,6 +172,10 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
 
   setAllHistory: (history: TradeLite[]) => {
     set({ allHistory: history });
+  },
+
+  setAdvancedMetrics: (metrics) => {
+    set({ serverAdvancedMetrics: metrics });
   },
 
   loadPage: async (accountId: string, page: number) => {

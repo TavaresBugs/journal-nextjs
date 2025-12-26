@@ -230,7 +230,7 @@ export function useDashboardInit(
       useTradeStore.setState({ isLoadingHistory: true, currentAccountId: currentAccountId });
 
       import("@/app/actions/trades").then(({ getTradeHistoryLiteAction }) => {
-        // Calculate date range for last 12 months
+        // Calculate date range for last 12 months for performance
         const now = new Date();
         const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
         const dateFrom = oneYearAgo.toISOString().split("T")[0];
