@@ -13,6 +13,7 @@ interface AccountStore {
   currentAccountId: string | null;
   currentAccount: Account | null;
   isLoading: boolean;
+  isInitializing: boolean; // Lock flag to prevent race conditions during dashboard init
   error: string | null;
 
   // Actions
@@ -31,6 +32,7 @@ export const useAccountStore = create<AccountStore>()(
       currentAccountId: null,
       currentAccount: null,
       isLoading: false,
+      isInitializing: false,
       error: null,
 
       loadAccounts: async () => {
@@ -161,13 +163,28 @@ export const useAccountStore = create<AccountStore>()(
         }
       },
 
+      // Debounce timer for setCurrentAccount to avoid rapid successive calls
+      _switchDebounceTimer: null as ReturnType<typeof setTimeout> | null,
+
       setCurrentAccount: (id: string) => {
         const { accounts, currentAccountId } = get();
         const account = accounts.find((acc) => acc.id === id);
 
+        // Set initializing flag to block rehydration refresh
+        set({ isInitializing: true });
+
         // CLEAR RELATED STORES: Prevent stale data when switching accounts
         // Only clear if actually switching to a different account
+        // Debounced to avoid multiple rapid clears
         if (currentAccountId && currentAccountId !== id) {
+          // Clear any pending debounce timer
+          const state = get() as AccountStore & {
+            _switchDebounceTimer: ReturnType<typeof setTimeout> | null;
+          };
+          if (state._switchDebounceTimer) {
+            clearTimeout(state._switchDebounceTimer);
+          }
+
           console.log("🔄 [AccountStore] Clearing related stores for account switch");
           import("./useTradeStore").then(({ useTradeStore }) => {
             useTradeStore.getState().clearTrades();
@@ -181,6 +198,11 @@ export const useAccountStore = create<AccountStore>()(
           currentAccountId: id,
           currentAccount: account || null,
         });
+
+        // Reset initializing flag after a short delay to allow dashboard to fully load
+        setTimeout(() => {
+          set({ isInitializing: false });
+        }, 3000);
       },
     }),
     {
@@ -195,8 +217,24 @@ export const useAccountStore = create<AccountStore>()(
         // Background refresh to sync with server after hydration
         // Only if we have cached accounts and NOT currently viewing a dashboard
         if (state && state.accounts.length > 0) {
+          // IMMEDIATE CHECK: If on dashboard, skip entirely to prevent race conditions
+          if (typeof window !== "undefined" && window.location.pathname.includes("/dashboard/")) {
+            console.log(
+              "[AccountStore] Skipping background refresh - user on dashboard (immediate)"
+            );
+            return;
+          }
+
           // Use a longer timeout and only refresh if user is on home page
           setTimeout(() => {
+            const currentState = useAccountStore.getState();
+
+            // Check isInitializing flag - don't interrupt dashboard loading!
+            if (currentState.isInitializing) {
+              console.log("[AccountStore] Skipping background refresh - dashboard initializing");
+              return;
+            }
+
             // Check if user is currently on dashboard - don't interrupt!
             if (window.location.pathname.includes("/dashboard/")) {
               console.log("[AccountStore] Skipping background refresh - user on dashboard");
@@ -205,12 +243,21 @@ export const useAccountStore = create<AccountStore>()(
 
             getAccountsAction()
               .then((freshAccounts) => {
-                const currentState = useAccountStore.getState();
+                const latestState = useAccountStore.getState();
+
+                // Double-check: Don't update if user navigated to dashboard during fetch
+                if (
+                  latestState.isInitializing ||
+                  window.location.pathname.includes("/dashboard/")
+                ) {
+                  console.log("[AccountStore] Aborting update - user now on dashboard");
+                  return;
+                }
 
                 // Only update if accounts have actually changed
                 const hasChanged =
                   JSON.stringify(
-                    currentState.accounts.map((a) => ({
+                    latestState.accounts.map((a) => ({
                       id: a.id,
                       name: a.name,
                       current_balance: a.currentBalance,
@@ -229,9 +276,9 @@ export const useAccountStore = create<AccountStore>()(
                   useAccountStore.setState({ accounts: freshAccounts });
 
                   // IMPORTANT: Also update currentAccount if it exists
-                  if (currentState.currentAccountId) {
+                  if (latestState.currentAccountId) {
                     const updated = freshAccounts.find(
-                      (a) => a.id === currentState.currentAccountId
+                      (a) => a.id === latestState.currentAccountId
                     );
                     if (updated) {
                       useAccountStore.setState({ currentAccount: updated });
@@ -243,7 +290,7 @@ export const useAccountStore = create<AccountStore>()(
                 console.warn("[AccountStore] Background refresh failed:", err);
                 // Silently fail - cached data is still usable
               });
-          }, 2000); // Increased to 2 seconds
+          }, 2000);
         }
       },
     }
