@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
 import { Trade, TradeMetrics, PlaybookStats } from "@/types";
 import {
+  calculateTradeMetrics,
   formatCurrency,
   formatTimeMinutes,
   calculateSharpeRatio,
@@ -45,7 +46,8 @@ interface DashboardOverviewProps {
 }
 
 export function DashboardOverview({
-  metrics,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  metrics: _propsMetrics, // Ignore props metrics to avoid stale data
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   advancedMetrics: _propsAdvancedMetrics, // Ignored - we calculate fresh from allHistory
   allHistory,
@@ -54,14 +56,17 @@ export function DashboardOverview({
   accountCreatedAt,
   playbookStats,
 }: DashboardOverviewProps) {
-  // FIX: Calculate advanced metrics FRESH from allHistory to avoid stale data
-  // The passed advancedMetrics from useDashboardData may be calculated before history loads
+  // FIX: Calculate ALL metrics FRESH from allHistory
+  // This ensures that if allHistory is present (which Wolf Score proves it is),
+  // then the displayed metrics will ALWAYS be correct and in sync.
+  const metrics = useMemo(() => calculateTradeMetrics(allHistory || []), [allHistory]);
+
   const advancedMetrics = useMemo(
     () => ({
-      sharpe: calculateSharpeRatio(allHistory),
-      calmar: calculateCalmarRatio(allHistory, initialBalance),
-      holdTime: calculateAverageHoldTime(allHistory),
-      streaks: calculateConsecutiveStreaks(allHistory),
+      sharpe: calculateSharpeRatio(allHistory || []),
+      calmar: calculateCalmarRatio(allHistory || [], initialBalance),
+      holdTime: calculateAverageHoldTime(allHistory || []),
+      streaks: calculateConsecutiveStreaks(allHistory || []),
     }),
     [allHistory, initialBalance]
   );
