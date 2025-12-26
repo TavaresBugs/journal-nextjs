@@ -120,14 +120,10 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
       return;
     }
 
-    // Calculate date range for last 12 months
-    const now = new Date();
-    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    const dateFrom = oneYearAgo.toISOString().split("T")[0];
-    const dateTo = now.toISOString().split("T")[0];
-
-    // Start new load with promise lock (now with date filter)
-    const promise = fetchTradeHistory(accountId, { dateFrom, dateTo });
+    // Start new load with promise lock
+    // REMOVED 12-month limit: Load ALL history to ensure performance reports
+    // show correct data regardless of trade dates (e.g. replays, old imports)
+    const promise = fetchTradeHistory(accountId, {});
     set({
       historyPromise: promise,
       currentAccountId: accountId,

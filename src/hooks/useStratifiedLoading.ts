@@ -121,25 +121,14 @@ export function useStratifiedLoading(accountId: string) {
 
   // Heavy Data Loaders (On Demand)
 
-  // Helper to get last 12 months date range
-  const getLastYearDateRange = () => {
-    const now = new Date();
-    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    return {
-      dateFrom: oneYearAgo.toISOString().split("T")[0],
-      dateTo: now.toISOString().split("T")[0],
-    };
-  };
-
   const loadCalendarData = async () => {
     if (phases.heavy.calendar) return;
 
     // Check if we need to load history
     // RACE PROTECTION: Also check isLoadingHistory to avoid duplicate calls
     if (allHistory.length === 0 && !isLoadingHistory) {
-      // Lazy load history (last 12 months for performance)
-      const { dateFrom, dateTo } = getLastYearDateRange();
-      const history = await fetchTradeHistory(accountId, { dateFrom, dateTo });
+      // Lazy load history (ALL history for performance reports/calendar correct data)
+      const history = await fetchTradeHistory(accountId, {});
       setAllHistory(history);
     }
 
@@ -163,10 +152,9 @@ export function useStratifiedLoading(accountId: string) {
     // Load history (if needed) AND Playbook Stats in parallel
     // We reuse loadPlaybookStats logic but we need to run it in parallel with history
     // RACE PROTECTION: Also check isLoadingHistory to avoid duplicate calls
-    const { dateFrom, dateTo } = getLastYearDateRange();
     const historyPromise =
       allHistory.length === 0 && !isLoadingHistory
-        ? fetchTradeHistory(accountId, { dateFrom, dateTo })
+        ? fetchTradeHistory(accountId, {})
         : Promise.resolve(null);
     const statsPromise =
       playbookStats.length === 0 ? getPlaybookStatsAction(accountId) : Promise.resolve(null);
