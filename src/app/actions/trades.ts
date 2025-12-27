@@ -145,7 +145,7 @@ export async function getTradesPaginatedAction(
  */
 export async function saveTradeAction(
   trade: Partial<Trade>
-): Promise<{ success: boolean; trade?: Trade; error?: string }> {
+): Promise<{ success: boolean; trade?: Trade; error?: string; journalSynced?: boolean }> {
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -172,17 +172,26 @@ export async function saveTradeAction(
       return { success: false, error: result.error.message };
     }
 
+    let journalSynced = false;
+
     // Revalidate dashboard and cache tags
     if (trade.accountId) {
       // NOTE: Balance sync is now handled automatically by SQL trigger
       // See: prisma/migrations/add_balance_sync_trigger.sql
 
       // SYNC JOURNAL DATE: If trade date changed, check/update linked journal
+      // Now awaited so we can inform the frontend about the sync
       if (trade.id && trade.entryDate && userId) {
-        // Run in background (fire and forget) to not block UI
-        syncJournalDates(trade.id, trade.entryDate, userId, trade.accountId).catch((err) =>
-          console.error("[saveTradeAction] Journal sync failed:", err)
-        );
+        try {
+          journalSynced = await syncJournalDates(
+            trade.id,
+            trade.entryDate,
+            userId,
+            trade.accountId
+          );
+        } catch (err) {
+          console.error("[saveTradeAction] Journal sync failed:", err);
+        }
       }
 
       // Invalidate cached metrics and history (Next.js 15 requires profile arg)
@@ -190,7 +199,7 @@ export async function saveTradeAction(
       revalidatePath(`/dashboard/${trade.accountId}`, "page");
     }
 
-    return { success: true, trade: result.data || undefined };
+    return { success: true, trade: result.data || undefined, journalSynced };
   } catch (error) {
     console.error("[saveTradeAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
@@ -497,13 +506,15 @@ export async function getAdvancedMetricsAction(
  * If a trade date changes and it's linked to a journal:
  * 1. If it's the ONLY trade in that journal -> Update journal date to match.
  * 2. If there are other trades -> Do nothing (safety).
+ *
+ * @returns true if any journal was updated, false otherwise
  */
 async function syncJournalDates(
   tradeId: string,
   newDate: Date | string,
   userId: string,
   accountId: string
-) {
+): Promise<boolean> {
   try {
     // 1. Find journals linked to this trade
     const links = await prisma.journal_entry_trades.findMany({
@@ -517,7 +528,9 @@ async function syncJournalDates(
       },
     });
 
-    if (links.length === 0) return;
+    if (links.length === 0) return false;
+
+    let anyUpdated = false;
 
     for (const link of links) {
       const journal = link.journal_entries;
@@ -548,11 +561,15 @@ async function syncJournalDates(
 
           // Invalidate journal cache
           revalidateTag(`journals:${accountId}`, "max");
+          anyUpdated = true;
         }
       }
     }
+
+    return anyUpdated;
   } catch (error) {
     console.error("[syncJournalDates] Error syncing dates:", error);
     // Don't throw, just log. This is a background maintenance task.
+    return false;
   }
 }

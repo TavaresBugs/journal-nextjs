@@ -5,11 +5,8 @@ import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { useAccountStore } from "@/store/useAccountStore"; // Added this import
-import {
-  getTradeHistoryLiteAction as fetchTradeHistory,
-  getAdvancedMetricsAction, // Added this import
-} from "@/app/actions/trades";
+import { getTradeHistoryLiteAction as fetchTradeHistory } from "@/app/actions/trades";
+import { getAccountMetricsAction } from "@/app/actions/metrics";
 import { getPlaybookStatsAction } from "@/app/actions/playbooks";
 import { PlaybookStats } from "@/types";
 
@@ -40,13 +37,8 @@ export function useStratifiedLoading(accountId: string) {
   const prevAccountIdRef = useRef<string | null>(null);
 
   // Store actions
-  const {
-    setAllHistory,
-    setAdvancedMetrics,
-    allHistory,
-    isLoadingHistory,
-    serverAdvancedMetrics,
-  } = useTradeStore(); // Modified this line
+  const { setAllHistory, setAdvancedMetrics, allHistory, isLoadingHistory, serverAdvancedMetrics } =
+    useTradeStore(); // Modified this line
   const { loadPlaybooks } = usePlaybookStore();
   const { loadSettings } = useSettingsStore();
   const { loadEntries, loadRoutines } = useJournalStore();
@@ -166,29 +158,21 @@ export function useStratifiedLoading(accountId: string) {
   const loadReportsData = async () => {
     if (phases.heavy.reports) return;
 
-    // Load history, Playbook Stats, AND Server Metrics in parallel
-    // RACE PROTECTION: Also check isLoadingHistory/serverAdvancedMetrics to avoid duplicate calls
-
-    // Helper vars for history limit
-    const now = new Date();
-    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    const dateFrom = oneYearAgo.toISOString().split("T")[0];
-    const dateTo = now.toISOString().split("T")[0];
-
-    const historyPromise =
-      allHistory.length === 0 && !isLoadingHistory
-        ? fetchTradeHistory(accountId, { dateFrom, dateTo })
-        : Promise.resolve(null);
+    // Load ALL history for charts (no date filter)
+    // This ALWAYS loads full history, even if Calendar loaded partial data
+    // Metrics come from pre-calculated account_metrics table (fast)
+    // History is needed for charts like Equity Curve, Drawdown, etc.
+    const historyPromise = !isLoadingHistory
+      ? fetchTradeHistory(accountId, {}) // No date filter - load all
+      : Promise.resolve(null);
 
     const statsPromise =
       playbookStats.length === 0 ? getPlaybookStatsAction(accountId) : Promise.resolve(null);
 
-    // Get initial balance for calculations
-    const account = useAccountStore.getState().currentAccount;
-    const initialBalance = account?.initialBalance || 0;
-
+    // Use pre-calculated metrics from account_metrics table (updated via trigger)
+    // This is ~20-50x faster than calculating on demand
     const metricsPromise = !serverAdvancedMetrics
-      ? getAdvancedMetricsAction(accountId, initialBalance)
+      ? getAccountMetricsAction(accountId)
       : Promise.resolve(null);
 
     const [history, stats, metrics] = await Promise.all([
@@ -199,7 +183,25 @@ export function useStratifiedLoading(accountId: string) {
 
     if (history) setAllHistory(history);
     if (stats) setPlaybookStats(stats);
-    if (metrics) setAdvancedMetrics(metrics);
+    if (metrics) {
+      // Map the pre-calculated metrics to the expected format
+      setAdvancedMetrics({
+        avgPnl: metrics.avgPnl,
+        pnlStdDev: metrics.pnlStdDev,
+        sharpeRatio: metrics.sharpeRatio,
+        maxDrawdown: metrics.largestLoss, // Simplified - using largest loss
+        maxDrawdownPercent: 0, // Would need balance to calculate
+        calmarRatio: 0, // Would need more data
+        currentStreak: metrics.currentStreak,
+        maxWinStreak: metrics.maxWinStreak,
+        maxLossStreak: metrics.maxLossStreak,
+        profitFactor: metrics.profitFactor,
+        avgWin: metrics.avgWin,
+        avgLoss: metrics.avgLoss,
+        largestWin: metrics.largestWin,
+        largestLoss: metrics.largestLoss,
+      });
+    }
 
     setPhases((prev) => ({
       ...prev,

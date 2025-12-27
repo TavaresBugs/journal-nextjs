@@ -21,12 +21,15 @@ const createTradeAction = async (trade: Partial<Trade>): Promise<Trade> => {
   return result.trade;
 };
 
-const updateTradeAction = async (tradeId: string, trade: Partial<Trade>): Promise<Trade> => {
+const updateTradeAction = async (
+  tradeId: string,
+  trade: Partial<Trade>
+): Promise<{ trade: Trade; journalSynced?: boolean }> => {
   const result = await saveTradeAction({ ...trade, id: tradeId });
   if (!result.success || !result.trade) {
     throw new Error(result.error || "Failed to update trade");
   }
-  return result.trade;
+  return { trade: result.trade, journalSynced: result.journalSynced };
 };
 
 const deleteTradePrisma = async (tradeId: string): Promise<boolean> => {
@@ -140,14 +143,9 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
       return;
     }
 
-    // Calculate date range for last 12 months
-    const now = new Date();
-    const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-    const dateFrom = oneYearAgo.toISOString().split("T")[0];
-    const dateTo = now.toISOString().split("T")[0];
-
-    // Start new load with promise lock (now with date filter for performance)
-    const promise = fetchTradeHistory(accountId, { dateFrom, dateTo });
+    // Load ALL history for reports (no date filter)
+    // The 12-month filter was causing issues with older trades not appearing in reports
+    const promise = fetchTradeHistory(accountId);
     set({
       historyPromise: promise,
       currentAccountId: accountId,
@@ -282,7 +280,7 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
 
   updateTrade: async (trade: Trade) => {
     const { trades, allHistory } = get();
-    const updatedTrade = await updateTradeAction(trade.id, trade);
+    const { trade: updatedTrade, journalSynced } = await updateTradeAction(trade.id, trade);
 
     // Update in current page list if exists
     const updatedTrades = trades.map((t) => (t.id === updatedTrade.id ? updatedTrade : t));
@@ -351,6 +349,15 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
       trades: sortedTrades,
       allHistory: updatedHistory,
     });
+
+    // If journal date was synced, force reload of journal entries
+    if (journalSynced && updatedTrade.accountId) {
+      // Import dynamically to avoid circular deps
+      const { useJournalStore } = await import("./useJournalStore");
+      // Clear current account so loadEntries will refresh
+      useJournalStore.setState({ entries: [], currentAccountId: null });
+      useJournalStore.getState().loadEntries(updatedTrade.accountId);
+    }
   },
 
   removeTrade: async (id: string, accountId: string) => {

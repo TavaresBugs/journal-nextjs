@@ -191,6 +191,10 @@ export function useDashboardData(accountId: string): DashboardData & DashboardDa
       wins: initData.serverMetrics?.wins ?? metricsData.metrics.wins,
       losses: initData.serverMetrics?.losses ?? metricsData.metrics.losses,
       breakeven: initData.serverMetrics?.breakeven ?? metricsData.metrics.breakeven,
+      // Advanced metrics from serverAdvancedMetrics (pre-calculated via trigger)
+      profitFactor: serverAdvancedMetrics?.profitFactor ?? metricsData.metrics.profitFactor,
+      avgWin: serverAdvancedMetrics?.avgWin ?? metricsData.metrics.avgWin,
+      avgLoss: serverAdvancedMetrics?.avgLoss ?? metricsData.metrics.avgLoss,
     },
     advancedMetrics: serverAdvancedMetrics
       ? {
