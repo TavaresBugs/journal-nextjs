@@ -16,6 +16,9 @@ vi.mock("@/lib/supabase", () => ({
   getCurrentUserIdClient: vi.fn(),
 }));
 
+// Mock console.error to avoid noise in tests
+const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
 vi.mock("@/app/actions/accounts", () => ({
   saveAccountAction: vi.fn(),
   saveSettingsAction: vi.fn(),
@@ -126,5 +129,6 @@ describe("Migration Service", () => {
     (getCurrentUserIdClient as any).mockRejectedValue(new Error("Fatal error"));
     const result = await migrateLocalStorageToSupabase();
     expect(result).toBe(false);
+    expect(consoleErrorSpy).toHaveBeenCalled();
   });
 });

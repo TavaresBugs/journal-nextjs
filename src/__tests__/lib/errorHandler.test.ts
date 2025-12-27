@@ -17,6 +17,9 @@ describe("errorHandler", () => {
     // Since it's a module level variable, we can override it via registerToastHandler(null as any) if needed
     // but the types don't allow null. We can just register a dummy one.
     registerToastHandler(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "debug").mockImplementation(() => {});
   });
 
   afterEach(() => {

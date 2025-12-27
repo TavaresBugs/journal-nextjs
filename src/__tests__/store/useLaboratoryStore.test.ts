@@ -118,6 +118,23 @@ describe("useLaboratoryStore", () => {
       expect(mockUpload).toHaveBeenCalled();
       expect(mockActions.addExperimentImagesAction).toHaveBeenCalled();
     });
+    it("should handle error during creation", async () => {
+      mockActions.createExperimentAction.mockResolvedValue({
+        success: false,
+        error: "Create failed",
+      });
+      await expect(useLaboratoryStore.getState().addExperiment({ title: "New" })).rejects.toThrow(
+        "Create failed"
+      );
+      expect(useLaboratoryStore.getState().error).toBe("Create failed");
+    });
+
+    it("should throw if user not authenticated", async () => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+      await expect(useLaboratoryStore.getState().addExperiment({ title: "New" })).rejects.toThrow(
+        "User not authenticated"
+      );
+    });
   });
 
   describe("updateExperiment", () => {
@@ -148,6 +165,16 @@ describe("useLaboratoryStore", () => {
       const exp = useLaboratoryStore.getState().experiments[0];
       expect(exp.title).toBe("Updated");
     });
+    it("should handle error during update", async () => {
+      mockActions.updateExperimentAction.mockResolvedValue({
+        success: false,
+        error: "Update failed",
+      });
+      await expect(
+        useLaboratoryStore.getState().updateExperiment({ id: "e-1", title: "Upd" })
+      ).rejects.toThrow("Update failed");
+      expect(useLaboratoryStore.getState().error).toBe("Update failed");
+    });
   });
 
   describe("removeExperiment", () => {
@@ -170,6 +197,16 @@ describe("useLaboratoryStore", () => {
 
       await useLaboratoryStore.getState().removeExperiment("e-1");
       expect(useLaboratoryStore.getState().experiments).toHaveLength(0);
+    });
+    it("should handle error during removal", async () => {
+      mockActions.deleteExperimentAction.mockResolvedValue({
+        success: false,
+        error: "Delete failed",
+      });
+      await expect(useLaboratoryStore.getState().removeExperiment("e-1")).rejects.toThrow(
+        "Delete failed"
+      );
+      expect(useLaboratoryStore.getState().error).toBe("Delete failed");
     });
   });
 
@@ -218,6 +255,26 @@ describe("useLaboratoryStore", () => {
         "Only validated experiments"
       );
     });
+    it("should handle promotion error", async () => {
+      useLaboratoryStore.setState({
+        experiments: [
+          {
+            id: "e-valid",
+            title: "Val",
+            status: "validado",
+            userId: "u-1",
+            promotedToPlaybook: false,
+            createdAt: "",
+            updatedAt: "",
+            images: [],
+          },
+        ],
+      });
+      mockInsert.mockResolvedValue({ error: { message: "DB Error" } });
+      await expect(useLaboratoryStore.getState().promoteToPlaybook("e-valid")).rejects.toThrow(
+        "DB Error"
+      );
+    });
   });
 
   describe("loadRecaps", () => {
@@ -237,6 +294,43 @@ describe("useLaboratoryStore", () => {
 
       await useLaboratoryStore.getState().addRecap({ title: "New Recap" });
       expect(useLaboratoryStore.getState().recaps).toHaveLength(1);
+    });
+    it("should handle error during recap creation", async () => {
+      mockActions.createRecapAction.mockResolvedValue({ success: false, error: "Create failed" });
+      await expect(useLaboratoryStore.getState().addRecap({ title: "New" })).rejects.toThrow(
+        "Create failed"
+      );
+    });
+  });
+
+  describe("updateRecap", () => {
+    it("should update recap", async () => {
+      useLaboratoryStore.setState({
+        recaps: [
+          {
+            id: "r-1",
+            title: "Old",
+            tradeIds: [],
+            images: [],
+            userId: "u-1",
+            createdAt: "",
+            reviewType: "daily",
+          },
+        ],
+      });
+      mockActions.updateRecapAction.mockResolvedValue({ success: true });
+      mockActions.getRecapsAction.mockResolvedValue([{ id: "r-1", title: "Updated" }]);
+
+      await useLaboratoryStore.getState().updateRecap({ id: "r-1", title: "Updated" });
+      const recap = useLaboratoryStore.getState().recaps[0];
+      expect(recap.title).toBe("Updated");
+    });
+
+    it("should handle error during recap update", async () => {
+      mockActions.updateRecapAction.mockResolvedValue({ success: false, error: "Update failed" });
+      await expect(
+        useLaboratoryStore.getState().updateRecap({ id: "r-1", title: "Upd" })
+      ).rejects.toThrow("Update failed");
     });
   });
 
@@ -258,6 +352,20 @@ describe("useLaboratoryStore", () => {
       mockActions.deleteRecapAction.mockResolvedValue({ success: true });
       await useLaboratoryStore.getState().removeRecap("r-1");
       expect(useLaboratoryStore.getState().recaps).toHaveLength(0);
+    });
+    it("should handle error during recap removal", async () => {
+      mockActions.deleteRecapAction.mockResolvedValue({ success: false, error: "Delete failed" });
+      await expect(useLaboratoryStore.getState().removeRecap("r-1")).rejects.toThrow(
+        "Delete failed"
+      );
+    });
+  });
+
+  describe("clearError", () => {
+    it("should clear error", () => {
+      useLaboratoryStore.setState({ error: "Some error" });
+      useLaboratoryStore.getState().clearError();
+      expect(useLaboratoryStore.getState().error).toBeNull();
     });
   });
 });

@@ -40,6 +40,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.getReceivedInvites("test@test.com");
       expect(result.data).toHaveLength(1);
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getReceivedInvites("test@test.com");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("getMyMentors", () => {
@@ -48,6 +54,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.getMyMentors("mentee-1");
       expect(result.data).toHaveLength(1);
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getMyMentors("mentee-1");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("getMentees", () => {
@@ -55,6 +67,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.mentor_invites.findMany.mockResolvedValue([{ id: "inv-4", status: "accepted" }]);
       const result = await prismaMentorRepo.getMentees("mentor-1");
       expect(result.data).toHaveLength(1);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getMentees("mentor-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -96,6 +114,13 @@ describe("PrismaMentorRepository Unit Tests", () => {
       expect(result.data?.[0].totalTrades).toBe(2);
       expect(result.data?.[0].winRate).toBe(50);
       expect(result.data?.[0].menteeName).toBe("Mentee 1");
+      expect(result.data?.[0].menteeName).toBe("Mentee 1");
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getMenteesOverview("mentor-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -117,6 +142,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       expect(result.data?.id).toBe("inv-exist");
       expect(mockPrisma.mentor_invites.create).not.toHaveBeenCalled();
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.findFirst.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.createInvite("m-1", "m@e.com", "t@e.com");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("acceptInvite", () => {
@@ -124,6 +155,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.mentor_invites.update.mockResolvedValue({});
       const result = await prismaMentorRepo.acceptInvite("token", "mentee-1");
       expect(result.data).toBe(true);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.update.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.acceptInvite("token", "mentee-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -133,6 +170,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.rejectInvite("inv-1");
       expect(result.data).toBe(true);
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.update.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.rejectInvite("inv-1");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("revokeInvite", () => {
@@ -140,6 +183,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.mentor_invites.update.mockResolvedValue({});
       const result = await prismaMentorRepo.revokeInvite("inv-1");
       expect(result.data).toBe(true);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.update.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.revokeInvite("inv-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -149,6 +198,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.updateInvite("inv-1", { permission: "full" });
       expect(result.data).toBe(true);
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_invites.update.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.updateInvite("inv-1", { permission: "full" });
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("getAccountPermissions", () => {
@@ -156,6 +211,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.mentor_account_permissions.findMany.mockResolvedValue([]);
       const result = await prismaMentorRepo.getAccountPermissions("inv-1");
       expect(result.data).toEqual([]);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_account_permissions.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getAccountPermissions("inv-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -175,6 +236,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.removeAccountPermission("inv-1", "acc-1");
       expect(result.data).toBe(true);
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.mentor_account_permissions.delete.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.removeAccountPermission("inv-1", "acc-1");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("getTradeComments", () => {
@@ -182,6 +249,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.trade_comments.findMany.mockResolvedValue([]);
       const result = await prismaMentorRepo.getTradeComments("t-1");
       expect(result.data).toEqual([]);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.trade_comments.findMany.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.getTradeComments("t-1");
+      expect(result.error).not.toBeNull();
     });
   });
 
@@ -191,6 +264,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       const result = await prismaMentorRepo.addTradeComment("t-1", "u-1", "Hi");
       expect(result.data?.id).toBe("c-1");
     });
+
+    it("should return error on failure", async () => {
+      mockPrisma.trade_comments.create.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.addTradeComment("t-1", "u-1", "Hi");
+      expect(result.error).not.toBeNull();
+    });
   });
 
   describe("deleteTradeComment", () => {
@@ -198,6 +277,12 @@ describe("PrismaMentorRepository Unit Tests", () => {
       mockPrisma.trade_comments.delete.mockResolvedValue({});
       const result = await prismaMentorRepo.deleteTradeComment("c-1", "u-1");
       expect(result.data).toBe(true);
+    });
+
+    it("should return error on failure", async () => {
+      mockPrisma.trade_comments.delete.mockRejectedValue(new Error("Err"));
+      const result = await prismaMentorRepo.deleteTradeComment("c-1", "u-1");
+      expect(result.error).not.toBeNull();
     });
   });
 });
