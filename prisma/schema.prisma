@@ -448,8 +448,8 @@ model accounts {
   created_at                 DateTime?                    @default(now()) @db.Timestamptz(6)
   updated_at                 DateTime?                    @default(now()) @db.Timestamptz(6)
   user_id                    String?                      @db.Uuid
-  users                      users?                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   account_metrics            account_metrics?
+  users                      users?                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   daily_routines             daily_routines[]
   journal_entries            journal_entries[]
   mentor_account_permissions mentor_account_permissions[]
@@ -464,31 +464,30 @@ model accounts {
 /// Pre-calculated metrics for each account, updated automatically via SQL trigger.
 /// This improves report performance from ~200-500ms to ~5-10ms.
 model account_metrics {
-  account_id          String   @id @db.Uuid
-  user_id             String   @db.Uuid
-  total_trades        Int      @default(0)
-  wins                Int      @default(0)
-  losses              Int      @default(0)
-  breakeven           Int      @default(0)
-  win_rate            Decimal  @default(0) @db.Decimal(5, 2)
-  total_pnl           Decimal  @default(0) @db.Decimal(15, 2)
-  profit_factor       Decimal  @default(0) @db.Decimal(10, 2)
-  avg_win             Decimal  @default(0) @db.Decimal(15, 2)
-  avg_loss            Decimal  @default(0) @db.Decimal(15, 2)
-  largest_win         Decimal  @default(0) @db.Decimal(15, 2)
-  largest_loss        Decimal  @default(0) @db.Decimal(15, 2)
-  sharpe_ratio        Decimal  @default(0) @db.Decimal(6, 2)
-  avg_pnl             Decimal  @default(0) @db.Decimal(15, 2)
-  pnl_std_dev         Decimal  @default(0) @db.Decimal(15, 2)
-  max_win_streak      Int      @default(0)
-  max_loss_streak     Int      @default(0)
-  current_streak      Int      @default(0)
-  current_streak_type String   @default("none") @db.VarChar(10)
-  weekday_stats       Json     @default("{}")
-  updated_at          DateTime @default(now()) @db.Timestamptz(6)
-  accounts            accounts @relation(fields: [account_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  account_id          String    @id @db.Uuid
+  user_id             String    @db.Uuid
+  total_trades        Int?      @default(0)
+  wins                Int?      @default(0)
+  losses              Int?      @default(0)
+  breakeven           Int?      @default(0)
+  win_rate            Decimal?  @default(0) @db.Decimal(5, 2)
+  total_pnl           Decimal?  @default(0) @db.Decimal(15, 2)
+  profit_factor       Decimal?  @default(0) @db.Decimal(10, 2)
+  avg_win             Decimal?  @default(0) @db.Decimal(15, 2)
+  avg_loss            Decimal?  @default(0) @db.Decimal(15, 2)
+  largest_win         Decimal?  @default(0) @db.Decimal(15, 2)
+  largest_loss        Decimal?  @default(0) @db.Decimal(15, 2)
+  sharpe_ratio        Decimal?  @default(0) @db.Decimal(6, 2)
+  avg_pnl             Decimal?  @default(0) @db.Decimal(15, 2)
+  pnl_std_dev         Decimal?  @default(0) @db.Decimal(15, 2)
+  max_win_streak      Int?      @default(0)
+  max_loss_streak     Int?      @default(0)
+  current_streak      Int?      @default(0)
+  current_streak_type String?   @default("none") @db.VarChar(10)
+  weekday_stats       Json?     @default("{\"0\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"1\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"2\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"3\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"4\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"5\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}, \"6\": {\"pnl\": 0, \"wins\": 0, \"trades\": 0}}")
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  accounts            accounts  @relation(fields: [account_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([user_id], map: "idx_account_metrics_user_id")
   @@schema("public")
 }
 
@@ -513,12 +512,7 @@ model audit_logs {
   session_id        String?   @db.VarChar(255)
   users             users?    @relation(fields: [user_id], references: [id], onUpdate: NoAction)
 
-  @@index([action], map: "idx_audit_logs_action")
-  @@index([created_at(sort: Desc)], map: "idx_audit_logs_created")
-  @@index([resource_type, resource_id], map: "idx_audit_logs_resource")
   @@index([user_id], map: "idx_audit_logs_user")
-  @@index([target_user_email], map: "idx_audit_logs_target_email")
-  @@index([target_user_id], map: "idx_audit_logs_target_user")
   @@schema("public")
 }
 
@@ -563,10 +557,8 @@ model economic_events {
   updated_at DateTime? @default(now()) @db.Timestamptz(6)
 
   @@unique([date, time, currency, event_name], map: "economic_events_date_time_unique")
-  @@index([currency], map: "idx_economic_events_currency")
   @@index([date], map: "idx_economic_events_date")
   @@index([date, currency], map: "idx_economic_events_date_currency")
-  @@index([impact], map: "idx_economic_events_impact")
   @@schema("public")
 }
 
@@ -602,7 +594,7 @@ model journal_entries {
 
   @@index([account_id, date(sort: Desc)], map: "idx_journal_entries_account_date")
   @@index([user_id, date(sort: Desc)], map: "idx_journal_entries_user_date")
-  @@index([user_id], map: "idx_journal_entries_user_id")
+  @@index([trade_id], map: "idx_journal_entries_trade_id")
   @@schema("public")
 }
 
@@ -617,7 +609,6 @@ model journal_entry_trades {
 
   @@unique([journal_entry_id, trade_id])
   @@index([journal_entry_id, trade_id], map: "idx_journal_entry_trades_composite")
-  @@index([journal_entry_id], map: "idx_journal_entry_trades_journal_id")
   @@index([trade_id], map: "idx_journal_entry_trades_trade_id")
   @@schema("public")
 }
@@ -657,8 +648,6 @@ model laboratory_experiments {
   users                users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   laboratory_images    laboratory_images[]
 
-  @@index([created_at(sort: Desc)], map: "idx_laboratory_experiments_created")
-  @@index([status], map: "idx_laboratory_experiments_status")
   @@index([user_id], map: "idx_laboratory_experiments_user_id")
   @@schema("public")
 }
@@ -714,13 +703,8 @@ model laboratory_recaps {
   trades                  trades?                   @relation(fields: [trade_id], references: [id], onUpdate: NoAction)
   users                   users                     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([created_at(sort: Desc)], map: "idx_laboratory_recaps_created")
   @@index([trade_id], map: "idx_laboratory_recaps_trade_id")
   @@index([user_id], map: "idx_laboratory_recaps_user_id")
-  @@index([linked_id], map: "idx_recaps_linked_id")
-  @@index([linked_type], map: "idx_recaps_linked_type")
-  @@index([review_type], map: "idx_recaps_review_type")
-  @@index([week_start_date, week_end_date], map: "idx_recaps_week_dates")
   @@schema("public")
 }
 
@@ -755,9 +739,7 @@ model mental_entries {
   source        String?   @default("grid")
   users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([created_at(sort: Desc)], map: "idx_mental_entries_created_at")
   @@index([user_id], map: "idx_mental_entries_user_id")
-  @@index([zone_detected], map: "idx_mental_entries_zone")
   @@schema("public")
 }
 
@@ -775,8 +757,6 @@ model mental_logs {
   created_at        DateTime? @default(now()) @db.Timestamptz(6)
   users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([created_at(sort: Desc)], map: "idx_mental_logs_created_at")
-  @@index([mood_tag], map: "idx_mental_logs_mood_tag")
   @@index([user_id], map: "idx_mental_logs_user_id")
   @@schema("public")
 }
@@ -794,7 +774,6 @@ model mental_profiles {
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
   users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([category], map: "idx_mental_profiles_category")
   @@index([user_id], map: "idx_mental_profiles_user_id")
   @@schema("public")
 }
@@ -866,7 +845,6 @@ model mentor_reviews {
   users_mentor_reviews_mentor_idTousers users            @relation("mentor_reviews_mentor_idTousers", fields: [mentor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   trades                                trades?          @relation(fields: [trade_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([is_read], map: "idx_mentor_reviews_is_read")
   @@index([journal_entry_id], map: "idx_mentor_reviews_journal_entry_id")
   @@index([mentee_id], map: "idx_mentor_reviews_mentee_id")
   @@index([mentor_id], map: "idx_mentor_reviews_mentor_id")
@@ -885,7 +863,6 @@ model playbook_stars {
   users              users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([shared_playbook_id, user_id])
-  @@index([shared_playbook_id], map: "idx_playbook_stars_shared_id")
   @@index([user_id], map: "idx_playbook_stars_user_id")
   @@schema("public")
 }
@@ -999,7 +976,6 @@ model trade_comments {
   trades     trades    @relation(fields: [trade_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([created_at(sort: Desc)], map: "idx_trade_comments_created")
   @@index([trade_id], map: "idx_trade_comments_trade")
   @@index([user_id], map: "idx_trade_comments_user")
   @@schema("public")
@@ -1057,17 +1033,12 @@ model trades {
   @@index([account_id, entry_date(sort: Desc), entry_time(sort: Desc)], map: "idx_trades_account_date")
   @@index([created_at(sort: Desc)], map: "idx_trades_created_at")
   @@index([entry_date], map: "idx_trades_entry_date")
-  @@index([entry_quality], map: "idx_trades_entry_quality")
-  @@index([htf_aligned], map: "idx_trades_htf_aligned")
-  @@index([market_condition], map: "idx_trades_market_condition")
-  @@index([market_condition_v2], map: "idx_trades_market_condition_v2")
-  @@index([outcome], map: "idx_trades_outcome")
-  @@index([session], map: "idx_trades_session")
-  @@index([strategy], map: "idx_trades_strategy")
-  @@index([account_id, symbol], map: "idx_trades_account_symbol")
-  @@index([account_id], map: "idx_trades_account")
-  @@index([entry_date], map: "idx_trades_date")
-  @@index([user_id], map: "idx_trades_user")
+  @@index([account_id, user_id, entry_date(sort: Desc)], map: "idx_trades_account_user_date")
+  @@index([account_id, user_id, outcome, pnl], map: "idx_trades_account_user_outcome")
+  @@index([account_id, user_id, symbol], map: "idx_trades_account_user_symbol")
+  @@index([user_id, account_id], map: "idx_trades_user_account")
+  @@index([user_id], map: "idx_trades_user_id")
+  @@index([user_id, strategy], map: "idx_trades_user_strategy")
   @@schema("public")
 }
 
@@ -1110,7 +1081,6 @@ model users_extended {
   @@index([approved_by], map: "idx_users_extended_approved_by")
   @@index([email], map: "idx_users_extended_email")
   @@index([role], map: "idx_users_extended_role")
-  @@index([status], map: "idx_users_extended_status")
   @@schema("public")
 }
 

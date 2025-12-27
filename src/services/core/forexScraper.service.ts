@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { chromium } from "playwright";
 import { format, parse } from "date-fns";
 
 export interface ScrapedEvent {
@@ -30,50 +30,43 @@ const IMPACT_MAP: Record<string, ScrapedEvent["impact"]> = {
 };
 
 /**
- * Buscar eventos usando Puppeteer (Headless Chrome) para evitar bloqueios 403
+ * Buscar eventos usando Playwright (Headless Chromium) para evitar bloqueios 403
  */
 export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
   let browser = null;
   try {
     // Calcular a data de início da semana (Domingo) para usar no parâmetro ?week=
-    // O Forex Factory aceita o dia de início da semana (ex: Dec14.2025)
-    // Isso garante que a view carregue a semana cheia (Sun-Sat) e não pare na Quinta.
     const today = new Date();
     const startOfWeekDate = new Date(today);
-    startOfWeekDate.setDate(today.getDate() - today.getDay()); // Vai para o Domingo recente
+    startOfWeekDate.setDate(today.getDate() - today.getDay());
 
     // Formato: MMMd.yyyy (ex: Dec14.2025)
     const weekParam = format(startOfWeekDate, "MMMd.yyyy");
     const targetUrl = `${FOREX_FACTORY_URL}?week=${weekParam}`;
 
-    console.log(`[Scraper] Iniciando Puppeteer (Modo Stealth + Week) para ${targetUrl}...`);
+    console.log(`[Scraper] Iniciando Playwright (Modo Stealth + Week) para ${targetUrl}...`);
 
     // Launch browser
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    browser = await chromium.launch({ headless: true });
+
+    // Create context with viewport and user agent
+    const context = await browser.newContext({
+      viewport: { width: 1366, height: 768 },
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+      extraHTTPHeaders: {
+        "Accept-Language": "en-US,en;q=0.9",
+        Referer: "https://www.google.com/",
+      },
     });
 
-    const page = await browser.newPage();
-
-    // Configurar Viewport e User-Agent realistas
-    await page.setViewport({ width: 1366, height: 768 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-    );
-
-    // Headers adicionais para parecer humano e driblar CF
-    await page.setExtraHTTPHeaders({
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://www.google.com/",
-    });
+    const page = await context.newPage();
 
     console.log("[Scraper] Navegando para a página...");
 
-    await page.goto(targetUrl, { waitUntil: "networkidle2", timeout: 60000 });
+    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 60000 });
 
-    // Incremental Scroll para garantir que o Lazy Loading (se houver) carregue as linhas do meio
-    // Forex Factory às vezes usa virtual scrolling ou delay em linhas do meio
+    // Incremental Scroll para garantir que o Lazy Loading carregue as linhas
     await page.evaluate(async () => {
       await new Promise<void>((resolve) => {
         let totalHeight = 0;
@@ -92,50 +85,41 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
     });
 
     // Esperar um pouco mais após o scroll completo
-    await new Promise((r) => setTimeout(r, 1000));
+    await page.waitForTimeout(1000);
 
     // Esperar seletor da tabela
-    await page.waitForSelector(".calendar__table", { timeout: 30000 });
+    await page.locator(".calendar__table").waitFor({ timeout: 30000 });
 
     console.log("[Scraper] Página carregada. Extraindo dados...");
 
     // Executar script no contexto da página para extrair dados
     const rawEvents = await page.evaluate(() => {
-      // Selector correto: tr.calendar__row (com duplo underscore)
       const rows = Array.from(document.querySelectorAll("tr.calendar__row"));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results: any[] = [];
 
-      // Armazena a data e hora correntes para preencher linhas vazias (comum no FF)
       let currentDateText = "";
-      let currentTime = ""; // NOVO: Propagar horário para eventos consecutivos no mesmo horário
+      let currentTime = "";
 
       rows.forEach((row) => {
-        // Ignorar linhas de separação de dia (.calendar__row--day-breaker) se não tiver conteúdo útil
         if (row.classList.contains("calendar__row--day-breaker")) return;
 
-        // 1. Data
-        // A data vem dentro de .calendar__date. Se não tiver texto, usa a anterior.
         const dateText =
           row.querySelector(".calendar__date .date")?.textContent?.trim() ||
           row.querySelector(".calendar__date")?.textContent?.trim() ||
           "";
 
-        // Se encontramos uma data nova, atualizamos a corrente
         if (dateText) {
           currentDateText = dateText;
         }
 
-        // 2. Tempo - PROPAGAR se vazio (eventos no mesmo horário não repetem o time)
         const timeText = row.querySelector(".calendar__time")?.textContent?.trim() || "";
         if (timeText) {
-          currentTime = timeText; // Atualiza o horário atual
+          currentTime = timeText;
         }
 
-        // 3. Moeda
         const currency = row.querySelector(".calendar__currency")?.textContent?.trim() || "";
 
-        // 4. Impacto
         const impactSpan = row.querySelector(".calendar__impact span");
         const impactTitle = impactSpan?.getAttribute("title") || "";
         const impactClass = impactSpan?.className || "";
@@ -148,19 +132,16 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
         else if (impactTitle.includes("Low") || impactClass.includes("icon--ff-impact-yel"))
           impact = "low";
 
-        // 5. Nome
         const eventName = row.querySelector(".calendar__event-title")?.textContent?.trim() || "";
 
-        // 6. Valores
         const actual = row.querySelector(".calendar__actual")?.textContent?.trim() || null;
         const forecast = row.querySelector(".calendar__forecast")?.textContent?.trim() || null;
         const previous = row.querySelector(".calendar__previous")?.textContent?.trim() || null;
 
-        // Só adicionar se tiver moeda e nome (filtra linhas de cabeçalho/vazias)
         if (currency && eventName) {
           results.push({
-            dateText: currentDateText, // "SunDec 14"
-            time: currentTime, // Usa horário propagado (eventos consecutivos herdam o horário)
+            dateText: currentDateText,
+            time: currentTime,
             currency,
             impact,
             event_name: eventName,
@@ -176,19 +157,16 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
 
     console.log(`[Scraper] RAW: ${rawEvents.length} linhas extraídas. Processando datas...`);
 
-    // Processar datas fora do browser context (temos acesso ao date-fns aqui)
     const events: ScrapedEvent[] = [];
 
     for (const raw of rawEvents) {
       if (!raw.dateText) continue;
 
       const isoDate = parseForexFactoryDate(raw.dateText);
-      if (!isoDate) continue; // Só pular se não conseguir parsear a data
+      if (!isoDate) continue;
 
-      // Converter tempo para 24h (se vazio, usar "All Day" como fallback)
       const time24 = convertTo24Hour(raw.time) || "All Day";
 
-      // Incluir todos os eventos que têm data válida (não filtrar por tempo)
       events.push({
         date: isoDate,
         time: time24,
@@ -204,11 +182,11 @@ export async function scrapeForexFactory(): Promise<ScrapedEvent[]> {
     console.log(`[Scraper] Sucesso! ${events.length} eventos processados e prontos.`);
     return events;
   } catch (error) {
-    console.error("[Scraper] Erro crítico no Puppeteer:", error);
+    console.error("[Scraper] Erro crítico no Playwright:", error);
     if (error instanceof Error) {
       console.error("Message:", error.message);
     }
-    throw error; // Relança para o route.ts pegar e usar fallback
+    throw error;
   } finally {
     if (browser) {
       await browser.close();
@@ -228,24 +206,21 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
 
     console.log(`[Scraper History] Iniciando para MÊS: ${targetUrl}...`);
 
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    browser = await chromium.launch({ headless: true });
+
+    const context = await browser.newContext({
+      viewport: { width: 1366, height: 768 },
+      userAgent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+      extraHTTPHeaders: {
+        "Accept-Language": "en-US,en;q=0.9",
+        Referer: "https://www.google.com/",
+      },
     });
 
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1366, height: 768 });
+    const page = await context.newPage();
 
-    // Stealth Headers
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
-    );
-    await page.setExtraHTTPHeaders({
-      "Accept-Language": "en-US,en;q=0.9",
-      Referer: "https://www.google.com/",
-    });
-
-    await page.goto(targetUrl, { waitUntil: "networkidle2", timeout: 90000 }); // Maior timeout para mês
+    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 90000 });
 
     // Incremental Scroll (Mês é longo, precisa de mais scroll)
     await page.evaluate(async () => {
@@ -261,19 +236,19 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
             clearInterval(timer);
             resolve();
           }
-        }, 50); // Scroll um pouco mais rápido mas ainda suave
+        }, 50);
       });
     });
 
-    await new Promise((r) => setTimeout(r, 2000));
-    await page.waitForSelector(".calendar__table", { timeout: 30000 });
+    await page.waitForTimeout(2000);
+    await page.locator(".calendar__table").waitFor({ timeout: 30000 });
 
     const rawEvents = await page.evaluate(() => {
       const rows = Array.from(document.querySelectorAll("tr.calendar__row"));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const results: any[] = [];
       let currentDateText = "";
-      let currentTime = ""; // Propagar horário para eventos consecutivos
+      let currentTime = "";
 
       rows.forEach((row) => {
         if (row.classList.contains("calendar__row--day-breaker")) return;
@@ -285,7 +260,6 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
 
         if (dateText) currentDateText = dateText;
 
-        // Propagar horário quando vazio
         const timeText = row.querySelector(".calendar__time")?.textContent?.trim() || "";
         if (timeText) currentTime = timeText;
 
@@ -311,7 +285,7 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
         if (currency && eventName) {
           results.push({
             dateText: currentDateText,
-            time: currentTime, // Usa horário propagado
+            time: currentTime,
             currency,
             impact,
             event_name: eventName,
@@ -327,15 +301,13 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
     console.log(`[Scraper History] ${rawEvents.length} linhas extraídas.`);
     const events: ScrapedEvent[] = [];
 
-    // Ano alvo para o parse da data (evita bug de virada de ano)
     const targetYear = targetDate.getFullYear();
 
     for (const raw of rawEvents) {
       if (!raw.dateText) continue;
 
-      // Usar função de parse adaptada para receber o ano correto
       const isoDate = parseForexFactoryDateWithYear(raw.dateText, targetYear);
-      if (!isoDate) continue; // Só pular se não conseguir parsear a data
+      if (!isoDate) continue;
 
       const time24 = convertTo24Hour(raw.time) || "All Day";
 
@@ -355,7 +327,7 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
   } catch (error) {
     console.error("[Scraper History] Erro:", error);
     if (browser) await browser.close();
-    return []; // Retorna array vazio em vez de erro para não travar o loop de meses
+    return [];
   } finally {
     if (browser) await browser.close();
   }
@@ -387,16 +359,13 @@ function parseForexFactoryDateWithYear(dateStr: string, year: number): string {
 function convertTo24Hour(timeStr: string): string {
   if (!timeStr) return "";
 
-  // Limpar espaços ou quebras de linha
   const cleanTime = timeStr.trim();
 
-  // Casos especiais
   if (cleanTime.toLowerCase().includes("day") || cleanTime.toLowerCase().includes("tentative")) {
     return cleanTime;
   }
 
   try {
-    // timeStr ex: "1:30pm" ou "10:00am"
     const match = cleanTime.match(/(\d{1,2}):(\d{2})([ap]m)/i);
     if (!match) return cleanTime;
 
@@ -423,23 +392,16 @@ function convertTo24Hour(timeStr: string): string {
  */
 function parseForexFactoryDate(dateStr: string): string {
   try {
-    // dateStr ex: "SunDec 14" ou "Dec 14"
-    // Regex melhorada: Busca explicitamente pelo Mês (Jan|Feb...) ignorando o dia da semana (Sun|Mon...) antes
     const match = dateStr.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*(\d+)/i);
 
     if (!match) return "";
 
-    const monthStr = match[1]; // "Dec"
-    const dayStr = match[2]; // "14"
+    const monthStr = match[1];
+    const dayStr = match[2];
 
     const currentYear = new Date().getFullYear();
 
-    // Tentar criar data com ano atual
-    // MMM d yyyy -> Dec 14 2024
     const parsedDate = parse(`${monthStr} ${dayStr} ${currentYear}`, "MMM d yyyy", new Date());
-
-    // Se a data parseada for muito antiga (ex: scrapper rodando em Jan pegando Dezembro), ajustar ano?
-    // Por enquanto assume ano corrente. O Forex Factory geralmente mostra o ano na URL mas não na célula.
 
     return format(parsedDate, "yyyy-MM-dd");
   } catch {
@@ -449,9 +411,6 @@ function parseForexFactoryDate(dateStr: string): string {
 
 /**
  * Compara dois arrays de eventos scraped para verificar consistência (Double-Check)
- * @param scrape1 Primeiro resultado do scrape
- * @param scrape2 Segundo resultado do scrape
- * @returns { match: boolean, diff: string[] } - match true se iguais, diff com lista de diferenças
  */
 export function compareScrapedEvents(
   scrape1: ScrapedEvent[],
@@ -459,20 +418,17 @@ export function compareScrapedEvents(
 ): { match: boolean; diff: string[]; stats: { scrape1Count: number; scrape2Count: number } } {
   const diff: string[] = [];
 
-  // Criar chave única para cada evento
   const createKey = (e: ScrapedEvent) => `${e.date}|${e.time}|${e.currency}|${e.event_name}`;
 
   const set1 = new Set(scrape1.map(createKey));
   const set2 = new Set(scrape2.map(createKey));
 
-  // Eventos no scrape1 mas não no scrape2
   for (const key of set1) {
     if (!set2.has(key)) {
       diff.push(`[Apenas Scrape1] ${key}`);
     }
   }
 
-  // Eventos no scrape2 mas não no scrape1
   for (const key of set2) {
     if (!set1.has(key)) {
       diff.push(`[Apenas Scrape2] ${key}`);

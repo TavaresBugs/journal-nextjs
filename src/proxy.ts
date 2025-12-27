@@ -68,23 +68,16 @@ export default async function middleware(req: NextRequest) {
     }
   );
 
-  // 3. Auth & Session Refresh
+  // 3. Auth - Use getUser() for secure authentication
+  // getUser() authenticates by contacting Supabase Auth server (more secure than getSession())
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session?.expires_at) {
-    // Refresh session if expiring in < 10 mins
-    const expiresIn = session.expires_at * 1000 - Date.now();
-    if (expiresIn < 10 * 60 * 1000 && expiresIn > 0) {
-      await supabase.auth.refreshSession();
-    }
-  }
+    data: { user },
+  } = await supabase.auth.getUser();
 
   // 4. User Status & Role
   let userContext = null;
-  if (session?.user) {
-    userContext = await checkUserStatus(supabase, session.user.id);
+  if (user) {
+    userContext = await checkUserStatus(supabase, user.id);
   }
 
   // 5. Access Decision
@@ -99,7 +92,7 @@ export default async function middleware(req: NextRequest) {
         path: pathname,
         method: req.method,
         ip,
-        userId: session?.user?.id,
+        userId: user?.id,
         role: userContext?.role,
         action: "redirected",
         reason: "access_policy",
