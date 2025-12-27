@@ -12,7 +12,7 @@ import {
   deleteMentalLogAction,
   getZoneAverageAction,
   getZoneStatsAction,
-} from "../../app/actions/mental";
+} from "../mental";
 import { prismaMentalRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 // import { revalidatePath } from "next/cache";

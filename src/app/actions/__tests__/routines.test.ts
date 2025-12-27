@@ -3,7 +3,7 @@ import {
   getDailyRoutinesAction,
   saveDailyRoutineAction,
   deleteDailyRoutineAction,
-} from "../../app/actions/routines";
+} from "../routines";
 import { prismaRoutineRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { revalidatePath } from "next/cache";

@@ -10,7 +10,7 @@ import {
   getTradeHistoryLiteAction,
   getTradesByJournalAction,
   getAdvancedMetricsAction,
-} from "../../app/actions/trades";
+} from "../trades";
 import { prismaTradeRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { revalidateTag } from "next/cache";

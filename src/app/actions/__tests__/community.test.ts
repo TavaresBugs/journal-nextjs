@@ -4,7 +4,7 @@ import {
   getLeaderboardAction,
   sharePlaybookAction,
   togglePlaybookStarAction,
-} from "../../app/actions/community";
+} from "../community";
 import { prismaCommunityRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 

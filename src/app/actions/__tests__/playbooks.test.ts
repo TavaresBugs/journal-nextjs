@@ -7,7 +7,7 @@ import {
   updatePlaybookAction,
   deletePlaybookAction,
   clonePlaybookAction,
-} from "../../app/actions/playbooks";
+} from "../playbooks";
 import { prismaPlaybookRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { revalidateTag } from "next/cache";

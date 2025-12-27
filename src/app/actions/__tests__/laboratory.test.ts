@@ -11,7 +11,7 @@ import {
   createRecapAction,
   updateRecapAction,
   deleteRecapAction,
-} from "../../app/actions/laboratory";
+} from "../laboratory";
 import { prismaLaboratoryRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 

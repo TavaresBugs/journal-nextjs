@@ -8,7 +8,7 @@ import {
   unlinkTradeFromJournalAction,
   addJournalImageAction,
   removeJournalImageAction,
-} from "../../app/actions/journal";
+} from "../journal";
 import { prismaJournalRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { createClient } from "@/lib/supabase/server";

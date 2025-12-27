@@ -10,7 +10,7 @@ import {
   markReviewAsReadAction,
   getUnreadReviewCountAction,
   getReviewsForContextAction,
-} from "../../app/actions/reviews";
+} from "../reviews";
 import { prismaReviewRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 // import { revalidatePath } from "next/cache";

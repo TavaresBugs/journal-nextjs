@@ -5,7 +5,7 @@ import {
   getMenteeTradesAction,
   acceptInviteAction,
   addTradeCommentAction,
-} from "../../app/actions/mentor";
+} from "../mentor";
 import { prismaMentorRepo, prismaAdminRepo, prismaTradeRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { createClient } from "@/lib/supabase/server";

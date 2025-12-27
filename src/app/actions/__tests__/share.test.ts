@@ -4,7 +4,7 @@ import {
   getSharedJournalByTokenAction,
   getMySharedJournalsAction,
   deleteShareLinkAction,
-} from "../../app/actions/share";
+} from "../share";
 import { prismaShareRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 

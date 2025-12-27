@@ -4,7 +4,7 @@ import {
   getCurrentUserExtendedAction,
   isAdminAction,
   updateUserStatusAction,
-} from "../../app/actions/admin";
+} from "../admin";
 import { prismaAdminRepo } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { logUserStatusChange } from "@/lib/services/auditService";

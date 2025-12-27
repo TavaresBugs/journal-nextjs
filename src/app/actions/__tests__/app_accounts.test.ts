@@ -12,7 +12,7 @@ import {
   checkAccountHasTradesAction,
   syncAllAccountsBalancesAction,
   getAccountById,
-} from "../../app/actions/accounts";
+} from "../accounts";
 import {
   prismaAccountRepo,
   prismaSettingsRepo,
