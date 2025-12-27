@@ -1,0 +1,85 @@
+{
+  "symbol": "MNQ",
+  "timeframe": "4H",
+  "chunkSize": 5000,
+  "totalCandles": 39954,
+  "totalChunks": 8,
+  "firstDate": "2000-01-03",
+  "lastDate": "2025-12-26",
+  "firstTime": 946897200,
+  "lastTime": 1766775600,
+  "chunks": [
+    {
+      "file": "chunk-0.json",
+      "index": 0,
+      "count": 5000,
+      "firstDate": "2000-01-03",
+      "lastDate": "2003-04-10",
+      "firstTime": 946897200,
+      "lastTime": 1049968800
+    },
+    {
+      "file": "chunk-1.json",
+      "index": 1,
+      "count": 5000,
+      "firstDate": "2003-04-10",
+      "lastDate": "2006-07-11",
+      "firstTime": 1049983200,
+      "lastTime": 1152640800
+    },
+    {
+      "file": "chunk-2.json",
+      "index": 2,
+      "count": 5000,
+      "firstDate": "2006-07-11",
+      "lastDate": "2009-10-12",
+      "firstTime": 1152655200,
+      "lastTime": 1255327200
+    },
+    {
+      "file": "chunk-3.json",
+      "index": 3,
+      "count": 5000,
+      "firstDate": "2009-10-12",
+      "lastDate": "2013-01-10",
+      "firstTime": 1255341600,
+      "lastTime": 1357815600
+    },
+    {
+      "file": "chunk-4.json",
+      "index": 4,
+      "count": 5000,
+      "firstDate": "2013-01-10",
+      "lastDate": "2016-04-12",
+      "firstTime": 1357830000,
+      "lastTime": 1460498400
+    },
+    {
+      "file": "chunk-5.json",
+      "index": 5,
+      "count": 5000,
+      "firstDate": "2016-04-13",
+      "lastDate": "2019-07-12",
+      "firstTime": 1460512800,
+      "lastTime": 1562896800
+    },
+    {
+      "file": "chunk-6.json",
+      "index": 6,
+      "count": 5000,
+      "firstDate": "2019-07-12",
+      "lastDate": "2022-10-06",
+      "firstTime": 1562911200,
+      "lastTime": 1665093600
+    },
+    {
+      "file": "chunk-7.json",
+      "index": 7,
+      "count": 4954,
+      "firstDate": "2022-10-07",
+      "lastDate": "2025-12-26",
+      "firstTime": 1665108000,
+      "lastTime": 1766775600
+    }
+  ]
+}
