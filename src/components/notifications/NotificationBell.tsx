@@ -178,6 +178,7 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
           onClick={() => setIsOpen(!isOpen)}
           className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-gray-700 bg-gray-800/80 text-gray-400 backdrop-blur-sm transition-all duration-200 hover:border-cyan-500/50 hover:bg-gray-800 hover:text-cyan-400"
           title="Notificações"
+          aria-label="Notificações"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -187,6 +188,7 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
             viewBox="0 0 24 24"
             stroke="currentColor"
             strokeWidth={2}
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"
@@ -208,7 +210,7 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
           <div className="absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border border-gray-700 bg-[#2d3436] shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-700 px-4 py-3">
-              <h3 className="font-semibold text-white">Notificações</h3>
+              <h2 className="font-semibold text-white">Notificações</h2>
               {notifications.length > 0 && (
                 <button
                   onClick={markAllAnnouncementsRead}

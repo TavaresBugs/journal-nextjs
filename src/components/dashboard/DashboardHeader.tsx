@@ -176,7 +176,8 @@ export function DashboardHeader({
                       variant="primary"
                       size="icon"
                       title={title}
-                      className="h-12 w-12 flex-shrink-0 rounded-xl"
+                      aria-label={title}
+                      className="h-12 w-12 shrink-0 rounded-xl"
                     >
                       <Icon size={24} />
                     </Button>
@@ -191,7 +192,8 @@ export function DashboardHeader({
             size="icon"
             onClick={onSettingsClick}
             title="Configurações"
-            className="h-12 w-12 flex-shrink-0 rounded-xl"
+            aria-label="Configurações"
+            className="h-12 w-12 shrink-0 rounded-xl"
           >
             <SettingsIcon size={24} />
           </Button>
@@ -209,7 +211,8 @@ export function DashboardHeader({
                     variant="primary"
                     size="icon"
                     title={title}
-                    className="h-11 w-11 flex-shrink-0 rounded-xl"
+                    aria-label={title}
+                    className="h-11 w-11 shrink-0 rounded-xl"
                   >
                     <Icon size={22} />
                   </Button>
@@ -224,7 +227,8 @@ export function DashboardHeader({
           size="icon"
           onClick={onSettingsClick}
           title="Configurações"
-          className="h-11 w-11 flex-shrink-0 rounded-xl"
+          aria-label="Configurações"
+          className="h-11 w-11 shrink-0 rounded-xl"
         >
           <SettingsIcon size={22} />
         </Button>
