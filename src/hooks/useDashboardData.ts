@@ -86,16 +86,20 @@ export interface DashboardDataActions {
  * @param prefetchedAccount - Optional account data prefetched from server component (LCP optimization)
  * @returns Data, metrics, permissions, and loading states
  */
+import { DashboardInitResult } from "@/app/actions/_batch/dashboardInit";
+
+// ... existing imports
+
 export function useDashboardData(
   accountId: string,
-  prefetchedAccount?: ReturnType<typeof useDashboardInit>["currentAccount"]
+  initialData?: DashboardInitResult
 ): DashboardData & DashboardDataActions {
   // 1. Validate account ID format
   const { isValidAccount } = useAccountValidation(accountId);
 
   // 2. Initialize dashboard data (loads trades, entries, playbooks, etc.)
-  // Pass prefetchedAccount to skip initial account fetch for faster LCP
-  const initData = useDashboardInit(accountId, isValidAccount, prefetchedAccount);
+  // Pass initialData to skip initial fetches for faster LCP
+  const initData = useDashboardInit(accountId, isValidAccount, initialData);
 
   // 3. Calculate trade metrics (Client-Side for Reports/Charts)
   // Only calculate if we have history, otherwise return defaults

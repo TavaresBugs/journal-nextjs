@@ -36,7 +36,7 @@ import {
 } from "@/components/dashboard/DashboardSkeleton";
 
 // Types
-import type { Trade, Playbook, Account } from "@/types";
+import type { Trade, Playbook } from "@/types";
 
 // ============================================
 // DYNAMIC IMPORTS - PERFORMANCE OPTIMIZATION
@@ -112,21 +112,23 @@ const tabsOptions = [
   { value: "relatorios", label: <>📊 Relatórios</> },
 ];
 
+import { DashboardInitResult } from "@/app/actions/_batch/dashboardInit";
+
 interface DashboardClientProps {
   accountId: string;
-  prefetchedAccount: Account;
+  initialData: DashboardInitResult;
   queryDate?: string;
 }
 
 /**
  * Client component containing all interactive dashboard logic.
- * Receives prefetched account from server component for instant LCP.
+ * Receives full initial data from server component for instant LCP.
  */
-export function DashboardClient({ accountId, prefetchedAccount, queryDate }: DashboardClientProps) {
+export function DashboardClient({ accountId, initialData, queryDate }: DashboardClientProps) {
   const { showToast } = useToast();
 
-  // Custom hooks for data and actions (pass prefetched account)
-  const data = useDashboardData(accountId, prefetchedAccount);
+  // Custom hooks for data and actions (pass initial data)
+  const data = useDashboardData(accountId, initialData);
   const actions = useDashboardActions(accountId, {
     onTradeCreated: () => setActiveTab("lista"),
     onBalanceUpdated: () => setIsSettingsModalOpen(false),
@@ -163,8 +165,8 @@ export function DashboardClient({ accountId, prefetchedAccount, queryDate }: Das
   // UI State
   const [activeTab, setActiveTab] = useState("novo");
 
-  // Use prefetched account for immediate rendering (LCP optimization)
-  const currentAccount = data.currentAccount || prefetchedAccount;
+  // Use initial data for immediate rendering (LCP optimization)
+  const currentAccount = data.currentAccount || initialData.account;
 
   // Callbacks
   const handleJournalClick = useCallback(
@@ -195,6 +197,10 @@ export function DashboardClient({ accountId, prefetchedAccount, queryDate }: Das
       data.loadReportsData();
     }
   };
+
+  if (!currentAccount) {
+    return <DashboardContentSkeleton />;
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden">

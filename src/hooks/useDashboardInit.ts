@@ -69,13 +69,13 @@ export interface DashboardInitActions {
  *
  * @param accountId - The account ID to initialize
  * @param isValidAccount - Whether the account ID format is valid
- * @param prefetchedAccount - Optional account data prefetched from server component (LCP optimization)
+ * @param initialData - Optional full data prefetched from server component (LCP optimization)
  * @returns Dashboard data, loading states, and action handlers
  */
 export function useDashboardInit(
   accountId: string,
   isValidAccount: boolean,
-  prefetchedAccount?: DashboardInitData["currentAccount"]
+  initialData?: DashboardInitResult
 ): DashboardInitData & DashboardInitActions {
   const router = useRouter();
   const { showToast } = useToast();
@@ -90,35 +90,67 @@ export function useDashboardInit(
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
 
-  // Local State - If prefetchedAccount exists, start with account ready
-  const [isLoading, setIsLoading] = useState(!prefetchedAccount);
-  const [isTradesLoading, setIsTradesLoading] = useState(true);
-  const [isAccountReady, setIsAccountReady] = useState(!!prefetchedAccount);
+  // Local State - If initialData exists, start with everything ready
+  const [isLoading, setIsLoading] = useState(!initialData?.account);
+  // If we have initial trades, we are not loading trades
+  const [isTradesLoading, setIsTradesLoading] = useState(!initialData?.trades);
+  const [isAccountReady, setIsAccountReady] = useState(!!initialData?.account);
   const [isAccountFound, setIsAccountFound] = useState(true);
-  const [serverMetrics, setServerMetrics] = useState<DashboardInitResult["metrics"]>(null);
+  const [serverMetrics, setServerMetrics] = useState<DashboardInitResult["metrics"]>(
+    initialData?.metrics || null
+  );
 
   // Refs
   const isInitRef = useRef<string | null>(null);
 
-  // LCP OPTIMIZATION: If prefetchedAccount exists, inject it into store immediately
+  // LCP OPTIMIZATION: If initialData exists, inject it into store immediately
+  // This must run before effects to ensure render consistency
+  if (initialData?.account && !useAccountStore.getState().currentAccount) {
+    // Direct store manipulation for hydration before mount/effect if possible,
+    // or rely on the effect below. React 18 concurrent mode prefers effects or specific hydration flow.
+    // But for this LCP fix, we want data avail immediately.
+  }
+
   useEffect(() => {
-    if (prefetchedAccount && !currentAccount) {
+    if (initialData?.account) {
+      // Inject Account
       useAccountStore.setState((state) => ({
         accounts: state.accounts.some((a) => a.id === accountId)
           ? state.accounts
-          : [...state.accounts, prefetchedAccount],
-        currentAccount: prefetchedAccount,
+          : [...state.accounts, initialData.account!],
+        currentAccount: initialData.account,
         currentAccountId: accountId,
       }));
       setIsAccountReady(true);
-      console.log("⚡ Prefetched account injected into store");
+
+      // Inject Trades
+      if (initialData.trades) {
+        useTradeStore.setState({
+          trades: initialData.trades.data,
+          totalCount: initialData.trades.count,
+          currentPage: 1,
+        });
+        setIsTradesLoading(false);
+      }
+
+      // Inject Metrics
+      if (initialData.metrics) {
+        setServerMetrics(initialData.metrics);
+      }
+
+      console.log("⚡ [LCP] Initial data injected into store");
     }
-  }, [prefetchedAccount, accountId, currentAccount]);
+  }, [initialData, accountId]);
 
   // Initialization Effect
   useEffect(() => {
     if (!isValidAccount) {
       setIsLoading(false);
+      return;
+    }
+
+    // Skip if we already have initialData for this account
+    if (initialData?.account && initialData.account.id === accountId) {
       return;
     }
 
@@ -131,6 +163,7 @@ export function useDashboardInit(
         console.log("🔄 Switching accounts, resetting init state");
         isInitRef.current = null;
         setServerMetrics(null); // Clear old metrics
+        setIsTradesLoading(true);
       }
 
       // Check if already initialized for this account
@@ -145,20 +178,16 @@ export function useDashboardInit(
       try {
         const perfT1 = performance.now();
 
-        // Check if we have prefetched or cached account data first
-        let account =
-          prefetchedAccount ||
-          useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
+        // Check if we have cached account data first (fallback if no initialData)
+        let account = useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
 
         if (account) {
-          // Fast path: Account already available, just set it
+          // Fast path: Account cached
           useAccountStore.getState().setCurrentAccount(accountId);
           setIsAccountReady(true);
-          console.log(
-            `✅ Account (${prefetchedAccount ? "prefetched" : "cached"}): ${(performance.now() - perfT1).toFixed(0)}ms`
-          );
+          console.log(`✅ Account (cached): ${(performance.now() - perfT1).toFixed(0)}ms`);
 
-          // Still need to fetch fresh metrics and trades - use batch for efficiency
+          // Still need to fetch fresh metrics and trades
           try {
             const batchResult = await batchDashboardInitAction(accountId, 1, 10, true);
             if (batchResult?.metrics) {
@@ -173,16 +202,14 @@ export function useDashboardInit(
             }
           } catch (batchErr) {
             console.warn("Fast path batch fetch failed:", batchErr);
-            // Don't redirect - we have the account, just missing fresh data
           }
         } else {
-          // Slow path: Need full batch fetch including account
+          // Slow path: Need full batch fetch
           const batchResult = await batchDashboardInitAction(accountId, 1, 10);
 
           if (!batchResult) {
-            console.error("Batch init failed (server error or auth)");
+            console.error("Batch init failed");
             showToast("Erro de conexão. Tente recarregar.", "error");
-            // Do NOT redirect on generic error - let user retry
             setIsLoading(false);
             return;
           }
@@ -197,7 +224,7 @@ export function useDashboardInit(
 
           account = batchResult.account;
 
-          // Inject account into store
+          // Inject account
           useAccountStore.setState((state) => ({
             accounts: state.accounts.some((a) => a.id === accountId)
               ? state.accounts
@@ -208,7 +235,6 @@ export function useDashboardInit(
 
           setIsAccountReady(true);
 
-          // Set metrics and trades from batch result
           if (batchResult.metrics) {
             setServerMetrics(batchResult.metrics);
           }
@@ -225,7 +251,6 @@ export function useDashboardInit(
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");
-        // Reset lock on failure so we can try again
         isInitRef.current = null;
       } finally {
         setIsLoading(false);
