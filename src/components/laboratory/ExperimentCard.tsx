@@ -19,6 +19,16 @@ const STATUS_CONFIG: Record<ExperimentStatus, { label: string; color: string; bg
   descartado: { label: "Descartado", color: "text-red-400", bgColor: "bg-red-500/20" },
 };
 
+const TAG_COLORS = [
+  { bg: "bg-purple-500/20", text: "text-purple-300", border: "border-purple-500/30" },
+  { bg: "bg-cyan-500/20", text: "text-cyan-300", border: "border-cyan-500/30" },
+  { bg: "bg-emerald-500/20", text: "text-emerald-300", border: "border-emerald-500/30" },
+  { bg: "bg-orange-500/20", text: "text-orange-300", border: "border-orange-500/30" },
+  { bg: "bg-pink-500/20", text: "text-pink-300", border: "border-pink-500/30" },
+];
+
+const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
+
 export function ExperimentCard({
   experiment,
   onView,
@@ -85,8 +95,18 @@ export function ExperimentCard({
           </div>
         )}
         {experiment.category && (
-          <div className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-400">
-            {experiment.category}
+          <div className="flex flex-wrap gap-1">
+            {experiment.category.split(", ").map((tag, index) => {
+              const color = getTagColor(index);
+              return (
+                <span
+                  key={tag}
+                  className={`rounded px-2 py-0.5 text-xs font-medium ${color.bg} ${color.text} border ${color.border}`}
+                >
+                  🏷️ {tag.trim()}
+                </span>
+              );
+            })}
           </div>
         )}
       </div>

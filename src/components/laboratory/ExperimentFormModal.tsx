@@ -24,7 +24,6 @@ interface ExperimentFormModalProps {
 }
 
 const STATUS_OPTIONS: { value: ExperimentStatus; label: string }[] = [
-  { value: "em_aberto", label: "Em Aberto" },
   { value: "testando", label: "Testando" },
   { value: "validado", label: "Validado" },
   { value: "descartado", label: "Descartado" },
@@ -63,7 +62,7 @@ export function ExperimentFormModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [experimentType, setExperimentType] = useState("");
-  const [status, setStatus] = useState<ExperimentStatus>("em_aberto");
+  const [status, setStatus] = useState<ExperimentStatus>("testando");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -75,7 +74,7 @@ export function ExperimentFormModal({
     setTitle("");
     setDescription("");
     setExperimentType("");
-    setStatus("em_aberto");
+    setStatus("testando");
     setTags([]);
     setTagInput("");
     setSelectedFiles([]);
