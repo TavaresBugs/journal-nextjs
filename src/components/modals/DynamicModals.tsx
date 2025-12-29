@@ -112,6 +112,7 @@ export const SettingsModal = dynamic(
 );
 
 // Laboratory Modals (heavy with complex forms)
+// Laboratory Modals (heavy with complex forms)
 export const RecapFormModal = dynamic(
   () =>
     import("@/components/laboratory/RecapFormModal").then((mod) => ({
@@ -128,6 +129,24 @@ export const CreateExperimentModal = dynamic(
     import("@/components/laboratory/CreateExperimentModal").then((mod) => ({
       default: mod.CreateExperimentModal,
     })),
+  {
+    loading: () => <ModalSkeleton />,
+    ssr: false,
+  }
+);
+
+// Import & Detail Modals
+export const ImportModal = dynamic(
+  () => import("@/components/import/ImportModal").then((mod) => ({ default: mod.ImportModal })),
+  {
+    loading: () => <ModalSkeleton />,
+    ssr: false,
+  }
+);
+
+export const DayDetailModal = dynamic(
+  () =>
+    import("@/components/journal/DayDetailModal").then((mod) => ({ default: mod.DayDetailModal })),
   {
     loading: () => <ModalSkeleton />,
     ssr: false,

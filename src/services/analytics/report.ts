@@ -1,6 +1,17 @@
-import * as ExcelJS from "exceljs";
+/**
+ * Excel Report Generator
+ *
+ * NOTE: Excel export functionality is currently DISABLED because ExcelJS
+ * was removed to reduce bundle size (~800KB savings).
+ *
+ * To re-enable:
+ * 1. Run: npm install exceljs
+ * 2. Restore the original implementation from git history
+ *
+ * The helper functions are preserved and can be used for other report formats.
+ */
+
 import { Trade } from "@/types";
-import { getTradesAction } from "@/app/actions/trades";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 
@@ -26,189 +37,23 @@ interface MonthlyMetrics {
 
 /**
  * Generates an Excel report for a given period and account.
- * @param accountId - The account ID to fetch trades for.
- * @param startDate - Start date of the report period.
- * @param endDate - End date of the report period.
- * @returns Promise that resolves to a Blob containing the Excel file.
+ *
+ * @deprecated Excel export is currently disabled. ExcelJS was removed to reduce bundle size.
+ * @throws Error - Always throws, indicating the feature is disabled.
  */
 export async function generateReport(
-  accountId: string,
-  startDate: Date,
-  endDate: Date
+  _accountId: string,
+  _startDate: Date,
+  _endDate: Date
 ): Promise<Blob> {
-  const allTrades = await getTradesAction(accountId);
+  // Suppress unused vars warning until feature is re-enabled
+  void _accountId;
+  void _startDate;
+  void _endDate;
 
-  // Filter trades by date range
-  const trades = allTrades.filter((t) => {
-    if (!t.entryDate) return false;
-    const date = dayjs(t.entryDate);
-    return (
-      date.isAfter(dayjs(startDate).subtract(1, "day")) &&
-      date.isBefore(dayjs(endDate).add(1, "day"))
-    );
-  });
-
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = "Trading Journal";
-  workbook.created = new Date();
-
-  // ---------------------------------------------------------
-  // SHEET 1: RESUMO
-  // ---------------------------------------------------------
-  const summarySheet = workbook.addWorksheet("Resumo");
-
-  // Calculate metrics
-  const metrics = calculateReportMetrics(trades);
-
-  summarySheet.columns = [
-    { header: "Métrica", key: "metric", width: 20 },
-    { header: "Valor", key: "value", width: 20 },
-  ];
-
-  const periodStr = `${dayjs(startDate).format("DD/MM/YYYY")} a ${dayjs(endDate).format("DD/MM/YYYY")}`;
-
-  summarySheet.addRows([
-    { metric: "Período do Relatório", value: periodStr },
-    { metric: "Total de Trades", value: metrics.totalTrades },
-    { metric: "Win Rate", value: metrics.winRate / 100 }, // Stored as decimal for formatting
-    { metric: "Profit Factor", value: metrics.profitFactor },
-    { metric: "Lucro/Prejuízo Total", value: metrics.totalPnL },
-    { metric: "Melhor Trade", value: metrics.bestTrade },
-    { metric: "Pior Trade", value: metrics.worstTrade },
-  ]);
-
-  // Format numbers
-  // Win Rate
-  summarySheet.getRow(4).getCell(2).numFmt = "0.00%";
-
-  // Profit Factor
-  summarySheet.getRow(5).getCell(2).numFmt = "0.00";
-
-  // Money columns
-  const moneyRows = [6, 7, 8]; // PnL, Best, Worst
-  moneyRows.forEach((rowIndex) => {
-    summarySheet.getRow(rowIndex).getCell(2).numFmt = '"$"#,##0.00;[Red]\-"$"#,##0.00';
-  });
-
-  // Styling headers
-  summarySheet.getRow(1).font = { bold: true };
-  summarySheet.getRow(1).fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FFE0E0E0" },
-  };
-
-  // ---------------------------------------------------------
-  // SHEET 2: TRADES
-  // ---------------------------------------------------------
-  const tradesSheet = workbook.addWorksheet("Trades");
-
-  tradesSheet.columns = [
-    { header: "Data", key: "date", width: 12 },
-    { header: "Ativo", key: "symbol", width: 10 },
-    { header: "Direção", key: "type", width: 8 },
-    { header: "Entrada", key: "entry", width: 12 },
-    { header: "Saída", key: "exit", width: 12 },
-    { header: "Resultado", key: "pnl", width: 12 },
-    { header: "%", key: "percent", width: 10 },
-  ];
-
-  // Header styling
-  tradesSheet.getRow(1).font = { bold: true };
-  tradesSheet.getRow(1).fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FF4F81BD" }, // Blue header
-  };
-  tradesSheet.getRow(1).font = { color: { argb: "FFFFFFFF" }, bold: true };
-
-  trades.forEach((trade) => {
-    const pnl = trade.pnl || 0;
-    // Simple % calc based on price movement
-    let percent = 0;
-    if (trade.entryPrice && trade.exitPrice) {
-      if (trade.type === "Long") {
-        percent = (trade.exitPrice - trade.entryPrice) / trade.entryPrice;
-      } else {
-        percent = (trade.entryPrice - trade.exitPrice) / trade.entryPrice;
-      }
-    }
-
-    const row = tradesSheet.addRow({
-      date: dayjs(trade.entryDate).format("DD/MM/YYYY"),
-      symbol: trade.symbol,
-      type: trade.type,
-      entry: trade.entryPrice,
-      exit: trade.exitPrice || 0,
-      pnl: pnl,
-      percent: percent,
-    });
-
-    // Conditional formatting
-    const pnlCell = row.getCell("pnl");
-    pnlCell.numFmt = '"$"#,##0.00;[Red]\-"$"#,##0.00';
-    if (pnl > 0) {
-      pnlCell.font = { color: { argb: "FF008000" } }; // Green
-    } else if (pnl < 0) {
-      pnlCell.font = { color: { argb: "FFFF0000" } }; // Red
-    }
-
-    const percentCell = row.getCell("percent");
-    percentCell.numFmt = "0.00%";
-    if (percent > 0) {
-      percentCell.font = { color: { argb: "FF008000" } };
-    } else if (percent < 0) {
-      percentCell.font = { color: { argb: "FFFF0000" } };
-    }
-  });
-
-  // ---------------------------------------------------------
-  // SHEET 3: MENSAL
-  // ---------------------------------------------------------
-  const monthlySheet = workbook.addWorksheet("Mensal");
-
-  monthlySheet.columns = [
-    { header: "Mês", key: "month", width: 15 },
-    { header: "Trades", key: "trades", width: 10 },
-    { header: "Wins", key: "wins", width: 10 },
-    { header: "Losses", key: "losses", width: 10 },
-    { header: "P/L", key: "pnl", width: 15 },
-    { header: "Win Rate", key: "winRate", width: 12 },
-  ];
-
-  monthlySheet.getRow(1).font = { bold: true };
-  monthlySheet.getRow(1).fill = {
-    type: "pattern",
-    pattern: "solid",
-    fgColor: { argb: "FF9BBB59" }, // Greenish header
-  };
-  monthlySheet.getRow(1).font = { color: { argb: "FFFFFFFF" }, bold: true };
-
-  const monthlyData = calculateMonthlyMetrics(trades);
-
-  monthlyData.forEach((m) => {
-    const row = monthlySheet.addRow({
-      month: m.month,
-      trades: m.trades,
-      wins: m.wins,
-      losses: m.losses,
-      pnl: m.pnl,
-      winRate: m.winRate / 100, // Excel expects 0-1 for percentage format
-    });
-
-    const pnlCell = row.getCell("pnl");
-    pnlCell.numFmt = '"$"#,##0.00;[Red]\-"$"#,##0.00';
-    if (m.pnl > 0) pnlCell.font = { color: { argb: "FF008000" } };
-    else if (m.pnl < 0) pnlCell.font = { color: { argb: "FFFF0000" } };
-
-    const winRateCell = row.getCell("winRate");
-    winRateCell.numFmt = "0.00%";
-  });
-
-  const buffer = await workbook.xlsx.writeBuffer();
-  return new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+  throw new Error(
+    "Excel export is currently disabled. To enable, install exceljs: npm install exceljs"
+  );
 }
 
 /**
@@ -229,10 +74,10 @@ export function downloadExcel(blob: Blob, filename: string): void {
 }
 
 // ---------------------------------------------------------
-// HELPER FUNCTIONS
+// HELPER FUNCTIONS (preserved for potential future use)
 // ---------------------------------------------------------
 
-function calculateReportMetrics(trades: Trade[]): ReportMetrics {
+export function calculateReportMetrics(trades: Trade[]): ReportMetrics {
   const wins = trades.filter((t) => t.outcome === "win").length;
   const losses = trades.filter((t) => t.outcome === "loss").length;
   const totalTrades = trades.length;
@@ -271,13 +116,13 @@ function calculateReportMetrics(trades: Trade[]): ReportMetrics {
   };
 }
 
-function calculateMonthlyMetrics(trades: Trade[]): MonthlyMetrics[] {
+export function calculateMonthlyMetrics(trades: Trade[]): MonthlyMetrics[] {
   const groups: Record<string, Trade[]> = {};
 
   trades.forEach((t) => {
     if (!t.entryDate) return;
     const date = dayjs(t.entryDate);
-    const key = date.format("YYYY-MM"); // Key for sorting
+    const key = date.format("YYYY-MM");
     if (!groups[key]) groups[key] = [];
     groups[key].push(t);
   });
@@ -289,7 +134,6 @@ function calculateMonthlyMetrics(trades: Trade[]): MonthlyMetrics[] {
       const date = dayjs(key, "YYYY-MM");
       const monthName = date.format("MMMM YYYY");
 
-      // Use first letter uppercase
       const formattedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
 
       const wins = monthlyTrades.filter((t) => t.outcome === "win").length;

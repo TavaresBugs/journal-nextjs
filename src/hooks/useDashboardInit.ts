@@ -69,11 +69,13 @@ export interface DashboardInitActions {
  *
  * @param accountId - The account ID to initialize
  * @param isValidAccount - Whether the account ID format is valid
+ * @param prefetchedAccount - Optional account data prefetched from server component (LCP optimization)
  * @returns Dashboard data, loading states, and action handlers
  */
 export function useDashboardInit(
   accountId: string,
-  isValidAccount: boolean
+  isValidAccount: boolean,
+  prefetchedAccount?: DashboardInitData["currentAccount"]
 ): DashboardInitData & DashboardInitActions {
   const router = useRouter();
   const { showToast } = useToast();
@@ -88,15 +90,30 @@ export function useDashboardInit(
   const { entries, loadEntries } = useJournalStore();
   const { playbooks, loadPlaybooks } = usePlaybookStore();
 
-  // Local State
-  const [isLoading, setIsLoading] = useState(true);
+  // Local State - If prefetchedAccount exists, start with account ready
+  const [isLoading, setIsLoading] = useState(!prefetchedAccount);
   const [isTradesLoading, setIsTradesLoading] = useState(true);
-  const [isAccountReady, setIsAccountReady] = useState(false);
+  const [isAccountReady, setIsAccountReady] = useState(!!prefetchedAccount);
   const [isAccountFound, setIsAccountFound] = useState(true);
   const [serverMetrics, setServerMetrics] = useState<DashboardInitResult["metrics"]>(null);
 
   // Refs
   const isInitRef = useRef<string | null>(null);
+
+  // LCP OPTIMIZATION: If prefetchedAccount exists, inject it into store immediately
+  useEffect(() => {
+    if (prefetchedAccount && !currentAccount) {
+      useAccountStore.setState((state) => ({
+        accounts: state.accounts.some((a) => a.id === accountId)
+          ? state.accounts
+          : [...state.accounts, prefetchedAccount],
+        currentAccount: prefetchedAccount,
+        currentAccountId: accountId,
+      }));
+      setIsAccountReady(true);
+      console.log("⚡ Prefetched account injected into store");
+    }
+  }, [prefetchedAccount, accountId, currentAccount]);
 
   // Initialization Effect
   useEffect(() => {
@@ -128,18 +145,22 @@ export function useDashboardInit(
       try {
         const perfT1 = performance.now();
 
-        // Check if we have cached account data first
-        let account = useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
+        // Check if we have prefetched or cached account data first
+        let account =
+          prefetchedAccount ||
+          useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
 
         if (account) {
-          // Fast path: Account in cache, just set it
+          // Fast path: Account already available, just set it
           useAccountStore.getState().setCurrentAccount(accountId);
           setIsAccountReady(true);
-          console.log(`✅ Account (cached): ${(performance.now() - perfT1).toFixed(0)}ms`);
+          console.log(
+            `✅ Account (${prefetchedAccount ? "prefetched" : "cached"}): ${(performance.now() - perfT1).toFixed(0)}ms`
+          );
 
           // Still need to fetch fresh metrics and trades - use batch for efficiency
           try {
-            const batchResult = await batchDashboardInitAction(accountId, 1, 10);
+            const batchResult = await batchDashboardInitAction(accountId, 1, 10, true);
             if (batchResult?.metrics) {
               setServerMetrics(batchResult.metrics);
             }

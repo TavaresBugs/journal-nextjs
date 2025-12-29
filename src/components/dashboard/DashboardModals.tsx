@@ -6,9 +6,9 @@ import {
   PlaybookFormModal,
   ViewPlaybookModal,
   SharePlaybookModal,
+  DayDetailModal,
+  ImportModal,
 } from "@/components/modals/DynamicModals";
-import { DayDetailModal } from "@/components/journal/DayDetailModal";
-import { ImportModal } from "@/components/import/ImportModal";
 import { Trade, Playbook } from "@/types";
 
 interface DashboardModalsProps {

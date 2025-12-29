@@ -3,8 +3,32 @@ import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/component
 import { Trade, TradeMetrics, PlaybookStats } from "@/types";
 import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
 import { calculateWolfScore } from "@/lib/wolfScore";
-import { WolfScoreCard } from "@/components/dashboard/WolfScoreCard";
-import { WeekdayPerformanceCard } from "@/components/dashboard/WeekdayPerformanceCard";
+const WolfScoreCard = dynamic(
+  () => import("@/components/dashboard/WolfScoreCard").then((mod) => mod.WolfScoreCard),
+  {
+    loading: () => (
+      <div className="flex h-64 items-center justify-center rounded-xl border border-gray-800 bg-gray-900/50">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+const WeekdayPerformanceCard = dynamic(
+  () =>
+    import("@/components/dashboard/WeekdayPerformanceCard").then(
+      (mod) => mod.WeekdayPerformanceCard
+    ),
+  {
+    loading: () => (
+      <div className="flex h-64 items-center justify-center rounded-xl border border-gray-800 bg-gray-900/50">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
+      </div>
+    ),
+    ssr: false,
+  }
+);
 import dynamic from "next/dynamic";
 
 interface AdvancedMetrics {

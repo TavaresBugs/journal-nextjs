@@ -147,6 +147,48 @@ export function ReportsSkeleton({ onMount }: { onMount?: () => void }) {
   );
 }
 
+export function FormSkeleton() {
+  return (
+    <div className="animate-pulse space-y-5">
+      {/* Toggle skeleton */}
+      <div className="mb-2 h-10 rounded-lg bg-gray-800" />
+
+      {/* Market Conditions Section */}
+      <div className="space-y-4 rounded-lg border border-gray-800 p-4">
+        <div className="h-4 w-32 rounded bg-gray-700" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-10 rounded-lg bg-gray-800" />
+          ))}
+        </div>
+      </div>
+
+      {/* Financial Section */}
+      <div className="space-y-4 rounded-lg border border-gray-800 p-4">
+        <div className="h-4 w-24 rounded bg-gray-700" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-10 rounded-lg bg-gray-800" />
+          ))}
+        </div>
+      </div>
+
+      {/* Date/Time Section */}
+      <div className="space-y-4 rounded-lg border border-gray-800 p-4">
+        <div className="h-4 w-28 rounded bg-gray-700" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-10 rounded-lg bg-gray-800" />
+          ))}
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="mt-6 h-12 rounded-lg bg-gray-700" />
+    </div>
+  );
+}
+
 /**
  * DashboardSkeleton - Loading skeleton for the main dashboard page
  * Mirrors the structure of the dashboard with animated placeholders

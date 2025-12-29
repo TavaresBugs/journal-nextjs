@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 import { ToastProvider } from "@/providers/ToastProvider";
 import { ClientProviders } from "@/components/layout/ClientProviders";
-import { AxeAccessibility, SkipLinks } from "@/components/accessibility";
+import { SkipLinks } from "@/components/accessibility";
 
 export default function RootLayout({
   children,
@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning={true}>
         <SkipLinks />
-        <AxeAccessibility />
+        {/* <AxeAccessibility /> - Removed for performance (1.2s blocking task) */}
         <ToastProvider>
           <main id="main-content" tabIndex={-1} className="outline-none">
             <ClientProviders>{children}</ClientProviders>

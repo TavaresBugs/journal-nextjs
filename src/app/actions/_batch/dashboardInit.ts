@@ -44,7 +44,8 @@ export interface DashboardInitResult {
 export async function batchDashboardInitAction(
   accountId: string,
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
+  skipAccount: boolean = false
 ): Promise<DashboardInitResult | null> {
   try {
     const userId = await getCurrentUserId();
@@ -57,8 +58,10 @@ export async function batchDashboardInitAction(
 
     // Execute all queries in parallel with a single auth check
     const [accountResult, metricsResult, tradesResult, countResult] = await Promise.all([
-      // 1. Get account
-      prismaAccountRepo.getById(accountId, userId),
+      // 1. Get account (skip if already available)
+      skipAccount
+        ? Promise.resolve({ data: null, error: null })
+        : prismaAccountRepo.getById(accountId, userId),
 
       // 2. Get cached metrics (60s TTL)
       unstable_cache(

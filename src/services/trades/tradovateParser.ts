@@ -143,60 +143,58 @@ export const cleanTradovateSymbol = (symbol: string): string => {
 };
 
 /**
- * Parses Tradovate CSV content string.
+ * Parses Tradovate CSV content string using PapaParse.
  */
 export const parseTradovateContent = (content: string): TradovateImportResult => {
   if (!content) throw new Error("File is empty");
 
-  // Split by lines and filter empty lines
-  const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  // Import PapaParse synchronously for content parsing
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Papa = require("papaparse") as typeof import("papaparse");
 
-  if (lines.length < 2) {
+  // Parse CSV with PapaParse (auto-detects delimiter, handles quotes)
+  const result = Papa.parse(content, {
+    skipEmptyLines: true,
+    dynamicTyping: false,
+    header: true, // Use first row as headers
+    transformHeader: (header: string) => header.trim().toLowerCase(),
+  });
+
+  if (result.errors.length > 0) {
+    console.warn("Tradovate CSV parse warnings:", result.errors);
+  }
+
+  if (!result.data || result.data.length === 0) {
     throw new Error("CSV file must have at least a header and one data row");
   }
 
-  // Parse header
-  const headerLine = lines[0];
-  const headers = headerLine.split(",").map((h) => h.trim());
-
   // Validate required columns
-  const requiredColumns = ["symbol", "pnl", "boughtTimestamp", "soldTimestamp"];
+  const requiredColumns = ["symbol", "pnl", "boughttimestamp", "soldtimestamp"];
+  const availableHeaders = result.meta.fields || [];
   const missingColumns = requiredColumns.filter(
-    (col) => !headers.some((h) => h.toLowerCase() === col.toLowerCase())
+    (col) => !availableHeaders.some((h: string) => h === col)
   );
 
   if (missingColumns.length > 0) {
     throw new Error(`Missing required columns: ${missingColumns.join(", ")}`);
   }
 
-  // Create header index map
-  const headerIndex: { [key: string]: number } = {};
-  headers.forEach((h, i) => {
-    headerIndex[h.toLowerCase()] = i;
-  });
-
   // Parse data rows
   const data: TradovateRawTrade[] = [];
   let totalPnL = 0;
 
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const values = line.split(",").map((v) => v.trim());
-
-    // Skip if not enough values
-    if (values.length < 7) continue;
-
+  for (const row of result.data as Record<string, string>[]) {
     const trade: TradovateRawTrade = {
-      symbol: values[headerIndex["symbol"]] || "",
-      qty: values[headerIndex["qty"]] || "1",
-      buyPrice: values[headerIndex["buyprice"]] || "",
-      sellPrice: values[headerIndex["sellprice"]] || "",
-      pnl: values[headerIndex["pnl"]] || "",
-      boughtTimestamp: values[headerIndex["boughttimestamp"]] || "",
-      soldTimestamp: values[headerIndex["soldtimestamp"]] || "",
-      duration: values[headerIndex["duration"]] || "",
-      buyFillId: values[headerIndex["buyfillid"]] || undefined,
-      sellFillId: values[headerIndex["sellfillid"]] || undefined,
+      symbol: row["symbol"] || "",
+      qty: row["qty"] || "1",
+      buyPrice: row["buyprice"] || "",
+      sellPrice: row["sellprice"] || "",
+      pnl: row["pnl"] || "",
+      boughtTimestamp: row["boughttimestamp"] || "",
+      soldTimestamp: row["soldtimestamp"] || "",
+      duration: row["duration"] || "",
+      buyFillId: row["buyfillid"] || undefined,
+      sellFillId: row["sellfillid"] || undefined,
     };
 
     // Only add if we have valid essential data

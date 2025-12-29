@@ -4,6 +4,7 @@ import type { Trade, PlaybookStats } from "@/types";
 import dynamic from "next/dynamic";
 
 // Lightweight Charts (40kb vs 450kb) - Performance optimized, v5 API
+// Kept as dynamic imports since they are likely LCP candidates or near top of fold
 const EquityCurveLightweight = dynamic(
   () => import("@/components/charts/lightweight").then((m) => m.EquityCurveLightweight),
   { ssr: false }
@@ -14,36 +15,8 @@ const PerformanceTimelineLightweight = dynamic(
   { ssr: false }
 );
 
-const DrawdownChartLightweight = dynamic(
-  () => import("@/components/charts/lightweight").then((m) => m.DrawdownChartLightweight),
-  { ssr: false }
-);
-
-// Recharts components (modular)
-const StrategyComparisonChart = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.StrategyComparisonChart),
-  { ssr: false }
-);
-const WinLossDistributionChart = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.WinLossDistributionChart),
-  { ssr: false }
-);
-const AssetPerformanceChart = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.AssetPerformanceChart),
-  { ssr: false }
-);
-const MonthlyPerformanceGrid = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.MonthlyPerformanceGrid),
-  { ssr: false }
-);
-const WeekdayWinRateChart = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.WeekdayWinRateChart),
-  { ssr: false }
-);
-const RMultipleDistributionChart = dynamic(
-  () => import("@/components/charts/recharts").then((m) => m.RMultipleDistributionChart),
-  { ssr: false }
-);
+// Recharts components - Wrapped in LazyChartWrapper for true on-scroll loading
+import { LazyChartWrapper } from "@/components/charts/LazyChartWrapper";
 
 interface ChartsProps {
   trades: Trade[];
@@ -79,8 +52,20 @@ export function Charts({
           Análise de Distribuição
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <StrategyComparisonChart trades={trades} currency={currency} stats={playbookStats} />
-          <WinLossDistributionChart trades={trades} />
+          <LazyChartWrapper
+            height={300}
+            loader={() =>
+              import("@/components/charts/recharts").then((m) => m.StrategyComparisonChart)
+            }
+            props={{ trades, currency, stats: playbookStats }}
+          />
+          <LazyChartWrapper
+            height={300}
+            loader={() =>
+              import("@/components/charts/recharts").then((m) => m.WinLossDistributionChart)
+            }
+            props={{ trades }}
+          />
         </div>
       </div>
 
@@ -104,8 +89,18 @@ export function Charts({
           Análise de Ativos e Timing
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <AssetPerformanceChart trades={trades} currency={currency} />
-          <WeekdayWinRateChart trades={trades} />
+          <LazyChartWrapper
+            height={300}
+            loader={() =>
+              import("@/components/charts/recharts").then((m) => m.AssetPerformanceChart)
+            }
+            props={{ trades, currency }}
+          />
+          <LazyChartWrapper
+            height={300}
+            loader={() => import("@/components/charts/recharts").then((m) => m.WeekdayWinRateChart)}
+            props={{ trades }}
+          />
         </div>
       </div>
 
@@ -117,7 +112,13 @@ export function Charts({
         <h2 className="text-sm font-semibold tracking-wider text-gray-400 uppercase">
           Histórico Mensal
         </h2>
-        <MonthlyPerformanceGrid trades={trades} currency={currency} />
+        <LazyChartWrapper
+          height={400}
+          loader={() =>
+            import("@/components/charts/recharts").then((m) => m.MonthlyPerformanceGrid)
+          }
+          props={{ trades, currency }}
+        />
       </div>
 
       {/* Separator */}
@@ -129,12 +130,20 @@ export function Charts({
           Análise de Risco
         </h2>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <DrawdownChartLightweight
-            trades={trades}
-            initialBalance={initialBalance}
-            accountCreatedAt={accountCreatedAt}
+          <LazyChartWrapper
+            height={300}
+            loader={() =>
+              import("@/components/charts/lightweight").then((m) => m.DrawdownChartLightweight)
+            }
+            props={{ trades, initialBalance, accountCreatedAt }}
           />
-          <RMultipleDistributionChart trades={trades} />
+          <LazyChartWrapper
+            height={300}
+            loader={() =>
+              import("@/components/charts/recharts").then((m) => m.RMultipleDistributionChart)
+            }
+            props={{ trades }}
+          />
         </div>
       </div>
     </div>

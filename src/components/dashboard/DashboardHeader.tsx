@@ -3,9 +3,22 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui";
-import { NotificationBell } from "@/components/notifications";
-import { MentalButton } from "@/components/mental";
+import dynamic from "next/dynamic";
 import type { Account } from "@/types";
+
+// Dynamic imports for non-critical header components
+const NotificationBell = dynamic(
+  () => import("@/components/notifications").then((mod) => mod.NotificationBell),
+  {
+    ssr: false,
+    loading: () => <div className="h-12 w-12 rounded-xl bg-gray-800/50" />,
+  }
+);
+
+const MentalButton = dynamic(() => import("@/components/mental").then((mod) => mod.MentalButton), {
+  ssr: false,
+  loading: () => <div className="h-12 w-12 rounded-xl bg-gray-800/50" />,
+});
 
 interface DashboardHeaderProps {
   account: Account;

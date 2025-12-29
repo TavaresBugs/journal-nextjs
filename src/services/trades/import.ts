@@ -1,4 +1,5 @@
-import ExcelJS from "exceljs";
+// ExcelJS loaded dynamically to reduce bundle size (~800KB savings)
+// import ExcelJS from "exceljs"; // REMOVED - see dynamic import in parseTradingFile
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 
@@ -33,6 +34,7 @@ export interface ImportResult {
 /**
  * Reads and parses the trading file (XLSX/CSV).
  * Handles metadata skipping, section detection, and duplicate column mapping.
+ * ExcelJS is loaded dynamically only when parsing XLSX files.
  */
 export const parseTradingFile = async (file: File): Promise<ImportResult> => {
   return new Promise((resolve, reject) => {
@@ -49,11 +51,17 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
         const isCSV = file.name.endsWith(".csv") || file.type === "text/csv";
 
         if (isCSV) {
-          // Parse CSV manually
-          const textDecoder = new TextDecoder("utf-8");
-          const text = textDecoder.decode(data as ArrayBuffer);
-          const lines = text.split(/\r?\n/);
-          rows = lines.map((line) => line.split(",").map((cell) => cell.trim()));
+          // Dynamic import PapaParse for CSV parsing (~40KB vs manual parsing)
+          // Provides: auto-delimiter detection, quote handling, encoding support
+          const Papa = await import("papaparse");
+          const text = new TextDecoder("utf-8").decode(data as ArrayBuffer);
+
+          const result = Papa.default.parse(text, {
+            skipEmptyLines: true,
+            dynamicTyping: false, // Keep as strings for consistent handling
+          });
+
+          rows = result.data as unknown[][];
         } else {
           // Check for Magic Bytes to detect actual file type
           const buffer = data as ArrayBuffer;
@@ -90,28 +98,23 @@ export const parseTradingFile = async (file: File): Promise<ImportResult> => {
             );
           }
 
-          // Parse XLSX with exceljs
-          const workbook = new ExcelJS.Workbook();
+          // Dynamic import - read-excel-file (~15KB vs ExcelJS ~800KB)
+          // Only supports reading, but that's all we need for import
+          const readXlsxFile = await import("read-excel-file");
+
           try {
-            await workbook.xlsx.load(buffer);
+            // read-excel-file returns rows as arrays directly
+            const xlsxRows = await readXlsxFile.default(file);
+            rows = xlsxRows as unknown[][];
           } catch (err: unknown) {
             const errMsg = err instanceof Error ? err.message : String(err);
-            if (errMsg.includes("disallowed character")) {
+            if (errMsg.includes("disallowed character") || errMsg.includes("invalid")) {
               throw new Error(
                 "Para sua segurança e dos seus dados, abra o arquivo Excel e salve-o com o mesmo nome novamente. Isso removerá caracteres inválidos e permitirá a importação correta."
               );
             }
             throw err;
           }
-
-          const worksheet = workbook.getWorksheet(1);
-          if (!worksheet) throw new Error("No worksheet found");
-
-          worksheet.eachRow((row, rowNumber) => {
-            const rowValues = row.values as unknown[];
-            // ExcelJS row.values is 1-indexed, so we slice from index 1
-            rows[rowNumber - 1] = rowValues.slice(1);
-          });
         }
 
         // 1. Find "Positions" section
@@ -601,51 +604,47 @@ export const parseNinjaTraderCSV = async (file: File): Promise<ImportResult> => 
 
 /**
  * Parsing logic extracted for testing and reusability
+ * Uses PapaParse for reliable CSV parsing with auto-delimiter detection
  */
 export const parseNinjaTraderContent = (content: string): ImportResult => {
   if (!content) throw new Error("File is empty");
 
-  // Split by lines and filter empty lines
-  const lines = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  // Import PapaParse synchronously since this is a sync function
+  // Note: In production builds, this will be tree-shaken if not used
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Papa = require("papaparse") as typeof import("papaparse");
 
-  if (lines.length < 2) {
+  // PapaParse auto-detects delimiter (comma or semicolon)
+  const result = Papa.parse(content, {
+    skipEmptyLines: true,
+    dynamicTyping: false,
+    header: true, // Use first row as headers
+  });
+
+  if (result.errors.length > 0) {
+    console.warn("CSV parse warnings:", result.errors);
+  }
+
+  if (!result.data || result.data.length === 0) {
     throw new Error("CSV file must have at least a header and one data row");
   }
 
-  // Detect Delimiter (semicolon vs comma) based on the header row
-  const headerLine = lines[0];
-  const semicolonCount = (headerLine.match(/;/g) || []).length;
-  const commaCount = (headerLine.match(/,/g) || []).length;
-  const delimiter = semicolonCount > commaCount ? ";" : ",";
-
-  const headers = headerLine.split(delimiter).map((h) => h.trim());
-
-  // Parse data rows
-  const rawData: RawTradeData[] = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    const values = line.split(delimiter);
-
-    // Skip if not enough values
-    if (values.length < 3) continue;
-
-    const rowData: RawTradeData = {};
-    headers.forEach((header, index) => {
-      if (index < values.length && header) {
-        const val = values[index]?.trim() || "";
-        // Clean quotes if comma delimiter used (CSV standard)
-        rowData[header] = val.replace(/^"|"$/g, "");
-      }
+  // Filter rows that look like trade data (have a trade number)
+  const rawData: RawTradeData[] = (result.data as Record<string, string>[])
+    .filter((row) => {
+      const tradeNum = row["Núm. Neg."] || row["Trade number"];
+      return tradeNum && !isNaN(Number(tradeNum));
+    })
+    .map((row) => {
+      // Convert to RawTradeData format
+      const rowData: RawTradeData = {};
+      Object.entries(row).forEach(([key, val]) => {
+        if (key && val !== undefined) {
+          rowData[key] = String(val).trim();
+        }
+      });
+      return rowData;
     });
-
-    // Only add rows that look like trade data (have a trade number)
-    // Check English "Trade number" or Portuguese "Núm. Neg."
-    const tradeNum = rowData["Núm. Neg."] || rowData["Trade number"];
-    if (tradeNum && !isNaN(Number(tradeNum))) {
-      rawData.push(rowData);
-    }
-  }
 
   return { data: rawData };
 };
