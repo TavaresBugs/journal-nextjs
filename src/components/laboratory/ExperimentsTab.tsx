@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Button,
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui";
+import { Button } from "@/components/ui";
 import { ExperimentCard } from "./ExperimentCard";
 import type { LaboratoryExperiment, ExperimentStatus } from "@/types";
 
@@ -40,18 +33,11 @@ export function ExperimentsTab({
   isLoading = false,
 }: ExperimentsTabProps) {
   const [statusFilter, setStatusFilter] = useState<ExperimentStatus | "all">("all");
-  const [categoryFilter, setCategoryFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Get unique categories
-  const categories = Array.from(
-    new Set(experiments.map((e) => e.category).filter(Boolean))
-  ) as string[];
 
   // Filter experiments
   const filteredExperiments = experiments.filter((exp) => {
     if (statusFilter !== "all" && exp.status !== statusFilter) return false;
-    if (categoryFilter && exp.category !== categoryFilter) return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
@@ -107,32 +93,6 @@ export function ExperimentsTab({
             </button>
           ))}
         </div>
-
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="flex h-11 min-w-[180px] items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
-              <SelectValue placeholder="Todas Categorias" />
-            </SelectTrigger>
-            <SelectContent className="border-gray-700 bg-gray-800">
-              <SelectItem
-                value=""
-                className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
-              >
-                Todas Categorias
-              </SelectItem>
-              {categories.map((cat) => (
-                <SelectItem
-                  key={cat}
-                  value={cat}
-                  className="cursor-pointer py-2 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
-                >
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
       </div>
 
       {/* Loading State */}
