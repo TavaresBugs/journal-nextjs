@@ -1,18 +1,19 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   Modal,
   Input,
-  Button,
   Select,
   SelectTrigger,
   SelectContent,
   SelectItem,
   SelectValue,
+  ModalFooterActions,
 } from "@/components/ui";
 import type { ExperimentStatus } from "@/types";
 import { CreateExperimentData } from "@/store/useLaboratoryStore";
+import { RecapImageUploader } from "./recap";
 
 interface CreateExperimentModalProps {
   isOpen: boolean;
@@ -54,26 +55,32 @@ export function CreateExperimentModal({
   const [expectedRiskReward, setExpectedRiskReward] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length > 0) {
-      setSelectedFiles((prev) => [...prev, ...files]);
-      files.forEach((file) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setPreviews((prev) => [...prev, event.target?.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-  };
+  const handleAddFiles = useCallback((files: File[]) => {
+    setSelectedFiles((prev) => [...prev, ...files]);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviews((prev) => [...prev, event.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }, []);
 
-  const removeFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
-  };
+  const handleRemoveImage = useCallback(
+    (index: number) => {
+      const isNewFile = index >= previews.length - selectedFiles.length;
+      if (isNewFile) {
+        const existingCount = previews.length - selectedFiles.length;
+        const fileIndex = index - existingCount;
+        setSelectedFiles((files) => files.filter((_, i) => i !== fileIndex));
+      }
+      setPreviews((prev) => prev.filter((_, i) => i !== index));
+      setCarouselIndex((prevIdx) => Math.max(0, Math.min(prevIdx, previews.length - 2)));
+    },
+    [previews.length, selectedFiles.length]
+  );
 
   const handleTagKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -122,6 +129,7 @@ export function CreateExperimentModal({
     setExpectedRiskReward("");
     setSelectedFiles([]);
     setPreviews([]);
+    setCarouselIndex(0);
   };
 
   const handleClose = () => {
@@ -247,77 +255,24 @@ export function CreateExperimentModal({
           />
         </div>
 
-        {/* Image Upload */}
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-300">
-            Screenshots de Gráficos
-          </label>
+        {/* Image Upload - Using standardized RecapImageUploader */}
+        <RecapImageUploader
+          previews={previews}
+          carouselIndex={carouselIndex}
+          onCarouselIndexChange={setCarouselIndex}
+          onAddFiles={handleAddFiles}
+          onRemoveImage={handleRemoveImage}
+        />
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-gray-600 py-8 text-gray-400 transition-colors hover:border-cyan-500 hover:text-cyan-400"
-          >
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-            <span>Clique para adicionar imagens</span>
-          </button>
-
-          {/* Previews */}
-          {previews.length > 0 && (
-            <div className="mt-4 grid grid-cols-3 gap-3">
-              {previews.map((preview, index) => (
-                <div key={index} className="group relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="h-24 w-full rounded-lg object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    className="absolute top-1 right-1 rounded-full bg-red-500/80 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 border-t border-gray-700 pt-4">
-          <Button variant="ghost" onClick={handleClose} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button type="submit" variant="gradient-success" disabled={!title.trim() || isLoading}>
-            {isLoading ? "Salvando..." : "Criar Experimento"}
-          </Button>
-        </div>
+        {/* Actions - Using standardized ModalFooterActions */}
+        <ModalFooterActions
+          isSubmit
+          onSecondary={handleClose}
+          primaryLabel="Criar Experimento"
+          isLoading={isLoading}
+          disabled={!title.trim()}
+          primaryVariant="gradient-success"
+        />
       </form>
     </Modal>
   );
