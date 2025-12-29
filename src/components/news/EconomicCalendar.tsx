@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useLayoutEffect, useEffect } from "react";
+import { useState, useMemo, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getEventsForWeek, getEventsByDate } from "@/lib/repositories/economicEvents.repository";
@@ -11,7 +11,6 @@ import { WeekPickerCalendar } from "@/components/ui/WeekPicker";
 import { EventRow, EventsTableHeader } from "./EventRow";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { isAdminAction as isAdmin } from "@/app/actions/admin";
 
 // Icons (inline SVGs)
 
@@ -240,24 +239,9 @@ export function EconomicCalendar() {
     "none",
   ]);
   const [filterCurrency, setFilterCurrency] = useState<string[]>([]);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshMessage, setRefreshMessage] = useState<{
-    type: "success" | "error" | "info";
-    text: string;
-  } | null>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [calendarCoords, setCalendarCoords] = useState<{ top: number; left: number } | null>(null);
-  const [isAdminUser, setIsAdminUser] = useState(false);
   const dateButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Check if the current user is an admin
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      const adminStatus = await isAdmin();
-      setIsAdminUser(adminStatus);
-    };
-    checkAdminStatus();
-  }, []);
 
   // Calculate position for portal dropdown
   useLayoutEffect(() => {
@@ -276,49 +260,12 @@ export function EconomicCalendar() {
     data: events,
     isLoading,
     isError,
-    refetch,
   } = useQuery({
     queryKey: ["economic-events", format(currentWeek, "yyyy-MM-dd"), viewMode],
     queryFn: () =>
       viewMode === "today" ? getEventsByDate(new Date()) : getEventsForWeek(currentWeek),
     staleTime: 1000 * 60 * 60,
   });
-
-  // Manual refresh handler
-  const handleManualRefresh = async () => {
-    setIsRefreshing(true);
-    setRefreshMessage(null);
-
-    try {
-      const response = await fetch("/api/sync-calendar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          setRefreshMessage({
-            type: "info",
-            text: data.error || "Aguarde alguns minutos para atualizar novamente",
-          });
-        } else {
-          setRefreshMessage({ type: "error", text: data.error || "Erro ao atualizar" });
-        }
-        return;
-      }
-
-      setRefreshMessage({ type: "success", text: `${data.synced} eventos atualizados!` });
-      await refetch();
-    } catch (error) {
-      console.error("Erro ao atualizar:", error);
-      setRefreshMessage({ type: "error", text: "Erro de conexão. Tente novamente." });
-    } finally {
-      setIsRefreshing(false);
-      setTimeout(() => setRefreshMessage(null), 5000);
-    }
-  };
 
   // Filter events
   const filteredEvents = useMemo(() => {
@@ -437,7 +384,7 @@ export function EconomicCalendar() {
                 createPortal(
                   <>
                     <div
-                      className="fixed inset-0 z-[9998] bg-transparent"
+                      className="fixed inset-0 z-9998 bg-transparent"
                       onClick={() => setIsCalendarOpen(false)}
                     />
                     <div
@@ -486,80 +433,8 @@ export function EconomicCalendar() {
                 Semana
               </Button>
             </div>
-
-            {/* Admin Only Buttons */}
-            {isAdminUser && (
-              <div className="ml-auto flex gap-2 md:ml-0">
-                <IconActionButton
-                  variant="delete"
-                  onClick={async () => {
-                    // ... same logic
-                    if (!window.confirm("Tem certeza? Isso apagará TODOS os eventos desta semana."))
-                      return;
-                    setIsRefreshing(true);
-                    try {
-                      await fetch("/api/sync-calendar", { method: "DELETE" });
-                      setRefreshMessage({ type: "success", text: "Limpo!" });
-                      await refetch();
-                    } catch {
-                      setRefreshMessage({ type: "error", text: "Erro." });
-                    } finally {
-                      setIsRefreshing(false);
-                      setTimeout(() => setRefreshMessage(null), 3000);
-                    }
-                  }}
-                  disabled={isRefreshing}
-                  title="Limpar"
-                />
-
-                <IconActionButton
-                  variant="refresh"
-                  onClick={handleManualRefresh}
-                  disabled={isRefreshing}
-                  className={isRefreshing ? "animate-spin text-blue-500" : ""}
-                  title="Sincronizar"
-                />
-
-                <IconActionButton
-                  variant="database"
-                  onClick={async () => {
-                    // ... same logic
-                    if (!window.confirm("Sync anual?")) return;
-                    setIsRefreshing(true);
-                    setRefreshMessage({ type: "info", text: "Sincronizando..." });
-                    try {
-                      await fetch("/api/sync-history", { method: "POST" });
-                      setRefreshMessage({ type: "success", text: "Feito!" });
-                      await refetch();
-                    } catch {
-                      setRefreshMessage({ type: "error", text: "Erro" });
-                    } finally {
-                      setIsRefreshing(false);
-                      setTimeout(() => setRefreshMessage(null), 5000);
-                    }
-                  }}
-                  disabled={isRefreshing}
-                  title="Histórico"
-                />
-              </div>
-            )}
           </div>
         </div>
-
-        {/* Refresh Message */}
-        {refreshMessage && (
-          <div
-            className={`mb-4 rounded-lg px-3 py-2 text-sm ${
-              refreshMessage.type === "success"
-                ? "bg-green-500/20 text-green-400"
-                : refreshMessage.type === "error"
-                  ? "bg-red-500/20 text-red-400"
-                  : "bg-blue-500/20 text-blue-400"
-            }`}
-          >
-            {refreshMessage.text}
-          </div>
-        )}
 
         {/* Filters - Mobile Collapsible / Desktop Always Visible */}
         <details className="group md:hidden">
@@ -627,7 +502,7 @@ export function EconomicCalendar() {
             <p>
               Nenhum evento encontrado{viewMode === "today" ? " para hoje" : " para esta semana"}.
             </p>
-            <p className="text-sm">Clique no botão 🔄 para sincronizar com o Forex Factory.</p>
+            <p className="text-sm">Aguarde a atualização automática do sistema.</p>
           </div>
         </GlassCard>
       )}

@@ -2,7 +2,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const TRACE_FILE = "Trace-20251229T110124.json"; // Using the one found
+const TRACE_FILE = process.argv[2] || "Trace-20251229T110124.json"; // Use argument or default
 const filePath = path.join(process.cwd(), TRACE_FILE);
 
 console.log(`Analyzing ${filePath}...`);

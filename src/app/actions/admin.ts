@@ -14,6 +14,7 @@
  */
 
 import { prismaAdminRepo, UserExtended, AuditLog, AdminStats } from "@/lib/database/repositories";
+import { deleteCurrentWeekEvents } from "@/lib/repositories/economicEvents.repository";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { prisma } from "@/lib/database";
 import {
@@ -516,12 +517,18 @@ export async function getUniqueActionsAction(): Promise<string[]> {
 // GITHUB ACTIONS SYNC
 // ========================================
 
+const WORKFLOW_MAP = {
+  calendar: "sync-calendar.yml",
+  monthly: "sync-monthly.yml",
+  history: "sync-history.yml",
+};
+
 /**
  * Trigger a GitHub Actions workflow dispatch.
  * Used for manual synchronization of calendar/monthly data.
  */
 export async function triggerGithubSyncAction(
-  workflow: "calendar" | "monthly"
+  workflow: "calendar" | "monthly" | "history"
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const userId = await getCurrentUserId();
@@ -544,7 +551,7 @@ export async function triggerGithubSyncAction(
       return { success: false, error: "Configuration Error: GITHUB_TOKEN missing" };
     }
 
-    const workflowFile = workflow === "calendar" ? "sync-calendar.yml" : "sync-monthly.yml";
+    const workflowFile = WORKFLOW_MAP[workflow];
     const url = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/${workflowFile}/dispatches`;
 
     console.log(`[triggerGithubSyncAction] Triggering ${workflowFile}...`);
@@ -578,6 +585,41 @@ export async function triggerGithubSyncAction(
     return { success: true };
   } catch (error) {
     console.error("[triggerGithubSyncAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Delete all events for the current week.
+ * Used for manual cleanup.
+ */
+export async function deleteWeeklyEventsAction(): Promise<{
+  success: boolean;
+  deletedCount?: number;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify admin status
+    const isAdmin = await prismaAdminRepo.isAdmin(userId);
+    if (!isAdmin.data) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    const count = await deleteCurrentWeekEvents();
+
+    await logActionAction("delete_weekly_events", "system", "calendar", {
+      deleted_count: count,
+      triggered_at: new Date().toISOString(),
+    });
+
+    return { success: true, deletedCount: count };
+  } catch (error) {
+    console.error("[deleteWeeklyEventsAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
   }
 }
