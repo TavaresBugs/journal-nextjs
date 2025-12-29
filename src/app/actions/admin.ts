@@ -511,3 +511,73 @@ export async function getUniqueActionsAction(): Promise<string[]> {
     return [];
   }
 }
+
+// ========================================
+// GITHUB ACTIONS SYNC
+// ========================================
+
+/**
+ * Trigger a GitHub Actions workflow dispatch.
+ * Used for manual synchronization of calendar/monthly data.
+ */
+export async function triggerGithubSyncAction(
+  workflow: "calendar" | "monthly"
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    // Verify admin status
+    const isAdmin = await prismaAdminRepo.isAdmin(userId);
+    if (!isAdmin.data) {
+      return { success: false, error: "Not authorized" };
+    }
+
+    const githubToken = process.env.GITHUB_TOKEN;
+    const repoOwner = process.env.GITHUB_REPO_OWNER || "JhonTavares"; // Use env vars ideally
+    const repoName = process.env.GITHUB_REPO_NAME || "Journal-NextJs"; // Use env vars ideally
+
+    if (!githubToken) {
+      console.error("[triggerGithubSyncAction] GITHUB_TOKEN is missing.");
+      return { success: false, error: "Configuration Error: GITHUB_TOKEN missing" };
+    }
+
+    const workflowFile = workflow === "calendar" ? "sync-calendar.yml" : "sync-monthly.yml";
+    const url = `https://api.github.com/repos/${repoOwner}/${repoName}/actions/workflows/${workflowFile}/dispatches`;
+
+    console.log(`[triggerGithubSyncAction] Triggering ${workflowFile}...`);
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+        Authorization: `Bearer ${githubToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ref: "main",
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[triggerGithubSyncAction] GitHub API Error ${response.status}:`, errorText);
+      return {
+        success: false,
+        error: `GitHub API Error: ${response.status}`,
+      };
+    }
+
+    await logActionAction("trigger_sync", "system", workflowFile, {
+      workflow,
+      triggered_at: new Date().toISOString(),
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[triggerGithubSyncAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}

@@ -7,6 +7,7 @@ import {
   AdminUserTable,
   AdminAuditLogTable,
   AdminMentorTable,
+  AdminSyncControl,
 } from "@/components/admin";
 import { BackButton } from "@/components/shared/BackButton";
 import { SegmentedToggle } from "@/components/ui";
@@ -51,6 +52,9 @@ export default function AdminPage() {
 
         {/* Stats */}
         <AdminStatsCards stats={stats || null} />
+
+        {/* Sync Control */}
+        <AdminSyncControl />
 
         {/* Tabs */}
         <SegmentedToggle
