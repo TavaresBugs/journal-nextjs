@@ -31,6 +31,14 @@ const STATUS_OPTIONS: { value: ExperimentStatus; label: string }[] = [
   { value: "descartado", label: "Descartado" },
 ];
 
+const TIPO_OPTIONS = [
+  { value: "contexto", label: "Contexto" },
+  { value: "entrada", label: "Entrada" },
+];
+
+const getStatusLabel = (value: ExperimentStatus) =>
+  STATUS_OPTIONS.find((o) => o.value === value)?.label || value;
+
 // Badge colors for tags
 const TAG_COLORS = [
   { bg: "bg-purple-500/20", text: "text-purple-300", border: "border-purple-500/30" },
@@ -54,6 +62,7 @@ export function ExperimentFormModal({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [experimentType, setExperimentType] = useState("");
   const [status, setStatus] = useState<ExperimentStatus>("em_aberto");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -65,6 +74,7 @@ export function ExperimentFormModal({
   const handleReset = useCallback(() => {
     setTitle("");
     setDescription("");
+    setExperimentType("");
     setStatus("em_aberto");
     setTags([]);
     setTagInput("");
@@ -199,13 +209,33 @@ export function ExperimentFormModal({
           />
         </div>
 
-        {/* Status and Tags row */}
+        {/* Tipo and Status row */}
         <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Tipo</label>
+            <Select value={experimentType} onValueChange={setExperimentType}>
+              <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className="border-gray-700 bg-gray-800">
+                {TIPO_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    className="cursor-pointer py-2.5 text-white hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Status</label>
             <Select value={status} onValueChange={(v) => setStatus(v as ExperimentStatus)}>
               <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
-                <SelectValue placeholder="Selecione..." />
+                <span>{getStatusLabel(status)}</span>
               </SelectTrigger>
               <SelectContent className="border-gray-700 bg-gray-800">
                 {STATUS_OPTIONS.map((opt) => (
@@ -220,46 +250,46 @@ export function ExperimentFormModal({
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-          {/* Tags with badges */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-300">Tags / Categoria</label>
-            <div
-              className="flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800/50 px-3 py-2 transition-colors focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500"
-              onClick={() => document.getElementById("experiment-tag-input")?.focus()}
-            >
-              {tags.map((tag, index) => {
-                const color = getTagColor(index);
-                return (
-                  <span
-                    key={index}
-                    className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${color.bg} ${color.text} border ${color.border}`}
+        {/* Tags with badges */}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-gray-300">Tags</label>
+          <div
+            className="flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800/50 px-3 py-2 transition-colors focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500"
+            onClick={() => document.getElementById("experiment-tag-input")?.focus()}
+          >
+            {tags.map((tag, index) => {
+              const color = getTagColor(index);
+              return (
+                <span
+                  key={index}
+                  className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${color.bg} ${color.text} border ${color.border}`}
+                >
+                  🏷️ {tag}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeTag(index);
+                    }}
+                    className="flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-black/20 hover:text-white"
+                    title="Remover tag"
                   >
-                    🏷️ {tag}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeTag(index);
-                      }}
-                      className="flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-black/20 hover:text-white"
-                      title="Remover tag"
-                    >
-                      ×
-                    </button>
-                  </span>
-                );
-              })}
-              <input
-                id="experiment-tag-input"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleTagKeyDown}
-                placeholder={tags.length === 0 ? "Scalping Breakout FVG" : ""}
-                className="min-w-[80px] flex-1 border-none bg-transparent text-sm text-gray-100 placeholder-gray-500 outline-none"
-                autoComplete="off"
-              />
-            </div>
+                    ×
+                  </button>
+                </span>
+              );
+            })}
+            <input
+              id="experiment-tag-input"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={handleTagKeyDown}
+              placeholder={tags.length === 0 ? "Scalping Breakout FVG" : ""}
+              className="min-w-[80px] flex-1 border-none bg-transparent text-sm text-gray-100 placeholder-gray-500 outline-none"
+              autoComplete="off"
+            />
           </div>
         </div>
 
