@@ -27,7 +27,8 @@ export function AdminSyncControl() {
         showToast(`Erro ao iniciar sincronização: ${result.error}`, "error");
       }
     } catch (err) {
-      showToast("Erro inesperado ao conectar com GitHub.", "error");
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      showToast(`Erro de conexão: ${errorMessage}`, "error");
       console.error(err);
     } finally {
       setLoading(null);
@@ -76,7 +77,8 @@ export function AdminSyncControl() {
         showToast(`Erro ao iniciar workflow: ${result.error}`, "error");
       }
     } catch (err) {
-      showToast("Erro inesperado ao conectar com GitHub.", "error");
+      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      showToast(`Erro de conexão: ${errorMessage}`, "error");
       console.error(err);
     } finally {
       setLoading(null);
