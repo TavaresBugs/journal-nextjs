@@ -91,7 +91,14 @@ describe("useDashboardInit", () => {
 
     // Mock Batch Action Success
     vi.mocked(batchDashboardInitAction).mockImplementation(async (id) => {
-      if (id === "invalid-acc") return null;
+      // Simulate "Account Not Found" (valid response, but empty account)
+      if (id === "invalid-acc") {
+        return {
+          account: null,
+          trades: { data: [], count: 0 },
+          metrics: null,
+        };
+      }
 
       return {
         account: {

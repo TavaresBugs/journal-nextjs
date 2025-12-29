@@ -179,9 +179,18 @@ export function useDashboardInit(
           // Slow path: Need full batch fetch including account
           const batchResult = await batchDashboardInitAction(accountId, 1, 10);
 
-          if (!batchResult?.account) {
+          if (!batchResult) {
+            console.error("Batch init failed (server error or auth)");
+            showToast("Erro de conexão. Tente recarregar.", "error");
+            // Do NOT redirect on generic error - let user retry
+            setIsLoading(false);
+            return;
+          }
+
+          if (!batchResult.account) {
             console.error("Account not found:", accountId);
             setIsAccountFound(false);
+            showToast("Conta não encontrada.", "error");
             router.push("/");
             return;
           }

@@ -354,7 +354,6 @@ export function DashboardClient({ accountId, prefetchedAccount, queryDate }: Das
                 ) : (
                   <DashboardOverview
                     metrics={data.metrics}
-                    advancedMetrics={data.advancedMetrics}
                     allHistory={data.allHistory as unknown as Trade[]}
                     currency={currentAccount.currency || "USD"}
                     initialBalance={Number(currentAccount.initialBalance)}

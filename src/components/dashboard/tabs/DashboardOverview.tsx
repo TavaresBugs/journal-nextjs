@@ -31,21 +31,6 @@ const WeekdayPerformanceCard = dynamic(
 );
 import dynamic from "next/dynamic";
 
-interface AdvancedMetrics {
-  sharpe: number;
-  calmar: number;
-  holdTime: {
-    avgWinnerTime: number;
-    avgLoserTime: number;
-    avgAllTrades: number;
-  };
-  streaks: {
-    maxWinStreak: number;
-    maxLossStreak: number;
-    currentStreak: { type: "win" | "loss" | "none"; count: number };
-  };
-}
-
 const Charts = dynamic(() => import("@/components/reports/Charts").then((mod) => mod.Charts), {
   ssr: false,
   loading: () => <div className="py-10 text-center text-gray-500">Carregando gráficos...</div>,
@@ -53,7 +38,6 @@ const Charts = dynamic(() => import("@/components/reports/Charts").then((mod) =>
 
 interface DashboardOverviewProps {
   metrics: TradeMetrics;
-  advancedMetrics: AdvancedMetrics;
   allHistory: Trade[];
   currency: string;
   initialBalance: number;
@@ -61,9 +45,10 @@ interface DashboardOverviewProps {
   playbookStats?: PlaybookStats[];
 }
 
+import { useAdvancedMetrics } from "@/hooks/useAdvancedMetrics";
+
 export function DashboardOverview({
   metrics,
-  advancedMetrics,
   allHistory,
   currency,
   initialBalance,
@@ -72,6 +57,14 @@ export function DashboardOverview({
 }: DashboardOverviewProps) {
   // Use passed metrics (now optimized with Server-Side Calculation preference)
   // This avoids heavy client-side recalcs and respects server data
+
+  // LCP OPTIMIZATION: Calculate advanced metrics (Sharpe, Calmar) lazily here
+  // instead of blocking the main thread in DashboardClient.
+  const { advancedMetrics } = useAdvancedMetrics({
+    trades: allHistory,
+    entries: [], // Not needed for charts/reports logic, only for streak which uses trades
+    initialBalance,
+  });
 
   // Calculate Wolf Score
   const wolfScore = useMemo(

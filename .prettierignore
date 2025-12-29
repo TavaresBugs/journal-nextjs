@@ -1,0 +1,6 @@
+Trace-*.json
+scripts/analyze-trace.js
+.next
+node_modules
+dist
+coverage
