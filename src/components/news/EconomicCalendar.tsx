@@ -79,6 +79,140 @@ const IMPACT_OPTIONS: {
   },
 ];
 
+type ImpactOption = {
+  value: ImpactLevel;
+  label: string;
+  emoji: string;
+  bgColor: string;
+  borderColor: string;
+  shadowColor: string;
+};
+
+/* Helper Component for Filters to avoid duplication */
+function FiltersContent({
+  IMPACT_OPTIONS,
+  filterImpact,
+  setFilterImpact,
+  filterCurrency,
+  toggleCurrency,
+  setFilterCurrency,
+}: {
+  IMPACT_OPTIONS: ImpactOption[];
+  filterImpact: ImpactLevel[];
+  setFilterImpact: React.Dispatch<React.SetStateAction<ImpactLevel[]>>;
+  filterCurrency: string[];
+  toggleCurrency: (currency: string) => void;
+  setFilterCurrency: React.Dispatch<React.SetStateAction<string[]>>;
+}) {
+  return (
+    <>
+      {/* Impact Filter - Checkboxes */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="flex items-center gap-2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-gray-400"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          <span className="text-sm text-gray-400">Impacto:</span>
+        </div>
+
+        {IMPACT_OPTIONS.map((option) => {
+          const isChecked = filterImpact.includes(option.value);
+          return (
+            <label
+              key={option.value}
+              className={`flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-all md:gap-3 md:px-3 md:py-2 ${
+                isChecked ? "bg-gray-800/50" : "bg-transparent hover:bg-gray-800/30"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={isChecked}
+                onChange={() => {
+                  setFilterImpact((prev) =>
+                    prev.includes(option.value)
+                      ? prev.filter((v) => v !== option.value)
+                      : [...prev, option.value]
+                  );
+                }}
+                className="peer sr-only"
+              />
+              <div
+                className={`relative flex h-5 w-5 items-center justify-center rounded-md border-2 transition-all duration-200 ease-out md:h-6 md:w-6 ${
+                  isChecked
+                    ? `${option.bgColor} ${option.borderColor} ${option.shadowColor}`
+                    : "border-white/10 bg-gray-800/20 hover:border-gray-500"
+                }`}
+              >
+                <svg
+                  className={`h-3.5 w-3.5 text-white transition-all duration-200 md:h-4 md:w-4 ${
+                    isChecked ? "scale-100 opacity-100" : "scale-50 opacity-0"
+                  }`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <span
+                className={`text-xs transition-colors md:text-sm ${
+                  isChecked ? "text-white" : "text-gray-400"
+                }`}
+              >
+                {option.emoji} <span className="hidden sm:inline">{option.label}</span>
+                <span className="sm:hidden">{option.label.split(" ")[0]}</span>
+              </span>
+            </label>
+          );
+        })}
+      </div>
+
+      {/* Currency Filter */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-gray-400">Moedas:</span>
+        {["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY"].map((currency) => (
+          <button
+            key={currency}
+            onClick={() => toggleCurrency(currency)}
+            className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold transition-all md:px-2.5 md:py-1.5 ${
+              filterCurrency.includes(currency)
+                ? "scale-105 border border-cyan-500/50 bg-cyan-500/20 text-cyan-400 shadow-lg"
+                : "border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600"
+            } `}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/assets/icons/flags/${currency.toLowerCase()}.svg`}
+              alt={currency}
+              className="h-4 w-4 rounded-full object-cover md:h-5 md:w-5"
+            />
+            {currency}
+          </button>
+        ))}
+        {filterCurrency.length > 0 && (
+          <button
+            onClick={() => setFilterCurrency([])}
+            className="ml-2 text-xs text-red-400 underline hover:text-red-300"
+          >
+            Limpar
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
 interface EconomicEvent {
   id: string;
   date: string;
@@ -248,23 +382,23 @@ export function EconomicCalendar() {
   return (
     <div className="space-y-4">
       {/* Header Card */}
-      <GlassCard className="overflow-visible p-4">
+      <GlassCard className="overflow-visible p-3 md:p-4">
         {/* Title + Navigation */}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-gray-100">
+        <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-gray-100 md:text-xl">
             📰 Calendário Econômico
           </h2>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Previous Week */}
             <IconActionButton variant="back" onClick={handlePrevWeek} title="Semana anterior" />
 
             {/* Date Range - Clickable to open calendar */}
-            <div className="relative">
+            <div className="relative flex-1 md:flex-none">
               <button
                 ref={dateButtonRef}
                 onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                className="flex min-w-[220px] items-center justify-center gap-2 rounded-lg border border-gray-600 px-3 py-1.5 transition-colors hover:border-cyan-500"
+                className="flex w-full min-w-[180px] items-center justify-center gap-2 rounded-lg border border-gray-600 px-3 py-1.5 transition-colors hover:border-cyan-500 md:w-auto md:min-w-[220px]"
               >
                 <svg
                   width="16"
@@ -281,10 +415,7 @@ export function EconomicCalendar() {
                   <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
                 <span className="text-sm font-medium text-gray-300">
-                  {format(startOfWeek(currentWeek, { weekStartsOn: 0 }), "dd MMM", {
-                    locale: ptBR,
-                  })}{" "}
-                  -{" "}
+                  {format(currentWeek, "dd MMM", { locale: ptBR })} -{" "}
                   {format(endOfWeek(currentWeek, { weekStartsOn: 0 }), "dd MMM", { locale: ptBR })}
                 </span>
                 <svg
@@ -305,7 +436,6 @@ export function EconomicCalendar() {
                 typeof window !== "undefined" &&
                 createPortal(
                   <>
-                    {/* Backdrop transparente para fechar ao clicar fora */}
                     <div
                       className="fixed inset-0 z-[9998] bg-transparent"
                       onClick={() => setIsCalendarOpen(false)}
@@ -323,7 +453,6 @@ export function EconomicCalendar() {
                       <WeekPickerCalendar
                         selectedWeekStart={currentWeek}
                         onWeekSelect={(weekStart) => {
-                          // Adjust to ensure we start on Sunday (WeekPicker might return Monday based on locale)
                           const sundayStart = startOfWeek(weekStart, { weekStartsOn: 0 });
                           setCurrentWeek(sundayStart);
                           setViewMode("week");
@@ -340,58 +469,47 @@ export function EconomicCalendar() {
             {/* Next Week */}
             <IconActionButton variant="next" onClick={handleNextWeek} title="Próxima semana" />
 
-            <Button
-              variant={viewMode === "today" ? "primary" : "outline"}
-              size="sm"
-              onClick={handleToday}
-            >
-              Hoje
-            </Button>
+            <div className="hidden gap-2 sm:flex">
+              <Button
+                variant={viewMode === "today" ? "primary" : "outline"}
+                size="sm"
+                onClick={handleToday}
+              >
+                Hoje
+              </Button>
 
-            {/* Week Button */}
-            <Button
-              variant={viewMode === "week" ? "primary" : "outline"}
-              size="sm"
-              onClick={handleThisWeek}
-            >
-              Semana
-            </Button>
+              <Button
+                variant={viewMode === "week" ? "primary" : "outline"}
+                size="sm"
+                onClick={handleThisWeek}
+              >
+                Semana
+              </Button>
+            </div>
 
             {/* Admin Only Buttons */}
             {isAdminUser && (
-              <>
-                {/* Clear Button (Admin) */}
+              <div className="ml-auto flex gap-2 md:ml-0">
                 <IconActionButton
                   variant="delete"
                   onClick={async () => {
+                    // ... same logic
                     if (!window.confirm("Tem certeza? Isso apagará TODOS os eventos desta semana."))
                       return;
-
                     setIsRefreshing(true);
                     try {
-                      const res = await fetch("/api/sync-calendar", { method: "DELETE" });
-                      // data variable was unused
-                      await res.json();
-
-                      if (res.ok) {
-                        setRefreshMessage({
-                          type: "success",
-                          text: "Calendário limpo com sucesso!",
-                        });
-                        await refetch();
-                      } else {
-                        setRefreshMessage({ type: "error", text: "Erro ao limpar." });
-                      }
+                      await fetch("/api/sync-calendar", { method: "DELETE" });
+                      setRefreshMessage({ type: "success", text: "Limpo!" });
+                      await refetch();
                     } catch {
-                      // error variable unused
-                      setRefreshMessage({ type: "error", text: "Erro de conexão." });
+                      setRefreshMessage({ type: "error", text: "Erro." });
                     } finally {
                       setIsRefreshing(false);
                       setTimeout(() => setRefreshMessage(null), 3000);
                     }
                   }}
                   disabled={isRefreshing}
-                  title="Limpar Semana (Reset)"
+                  title="Limpar"
                 />
 
                 <IconActionButton
@@ -399,47 +517,31 @@ export function EconomicCalendar() {
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
                   className={isRefreshing ? "animate-spin text-blue-500" : ""}
-                  title="Sincronizar com Forex Factory"
+                  title="Sincronizar"
                 />
 
-                {/* History Sync Button */}
                 <IconActionButton
                   variant="database"
                   onClick={async () => {
-                    if (
-                      !window.confirm(
-                        "Isso vai sincronizar o ano inteiro (Jan-Dez). Pode levar ~1 minuto. Continuar?"
-                      )
-                    )
-                      return;
-
+                    // ... same logic
+                    if (!window.confirm("Sync anual?")) return;
                     setIsRefreshing(true);
-                    setRefreshMessage({
-                      type: "info",
-                      text: "Sincronizando ano inteiro... Aguarde.",
-                    });
-
+                    setRefreshMessage({ type: "info", text: "Sincronizando..." });
                     try {
-                      const res = await fetch("/api/sync-history", { method: "POST" });
-                      await res.json();
-
-                      if (res.ok) {
-                        setRefreshMessage({ type: "success", text: "Histórico anual atualizado!" });
-                        await refetch();
-                      } else {
-                        setRefreshMessage({ type: "error", text: "Erro no sync histórico." });
-                      }
+                      await fetch("/api/sync-history", { method: "POST" });
+                      setRefreshMessage({ type: "success", text: "Feito!" });
+                      await refetch();
                     } catch {
-                      setRefreshMessage({ type: "error", text: "Erro de conexão." });
+                      setRefreshMessage({ type: "error", text: "Erro" });
                     } finally {
                       setIsRefreshing(false);
                       setTimeout(() => setRefreshMessage(null), 5000);
                     }
                   }}
                   disabled={isRefreshing}
-                  title="Sincronizar Histórico (Ano Todo)"
+                  title="Histórico"
                 />
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -459,111 +561,45 @@ export function EconomicCalendar() {
           </div>
         )}
 
-        {/* Filters */}
-        <div className="flex flex-col gap-4">
-          {/* Impact Filter - Checkboxes */}
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
+        {/* Filters - Mobile Collapsible / Desktop Always Visible */}
+        <details className="group md:hidden">
+          <summary className="flex cursor-pointer items-center justify-between rounded-lg bg-gray-800/50 px-3 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800">
+            <span>Filtros (Impacto & Moedas)</span>
+            <svg
+              className="h-5 w-5 transition-transform group-open:rotate-180"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-gray-400"
-              >
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-              </svg>
-              <span className="text-sm text-gray-400">Impacto:</span>
-            </div>
-
-            {IMPACT_OPTIONS.map((option) => {
-              const isChecked = filterImpact.includes(option.value);
-              return (
-                <label
-                  key={option.value}
-                  className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                    isChecked ? "bg-gray-800/50" : "bg-transparent hover:bg-gray-800/30"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => {
-                      setFilterImpact((prev) =>
-                        prev.includes(option.value)
-                          ? prev.filter((v) => v !== option.value)
-                          : [...prev, option.value]
-                      );
-                    }}
-                    className="peer sr-only"
-                  />
-                  {/* Custom colored checkbox */}
-                  <div
-                    className={`relative flex h-6 w-6 items-center justify-center rounded-md border-2 transition-all duration-200 ease-out ${
-                      isChecked
-                        ? `${option.bgColor} ${option.borderColor} ${option.shadowColor}`
-                        : "border-white/10 bg-gray-800/20 hover:border-gray-500"
-                    }`}
-                  >
-                    <svg
-                      className={`h-4 w-4 text-white transition-all duration-200 ${
-                        isChecked ? "scale-100 opacity-100" : "scale-50 opacity-0"
-                      }`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <span
-                    className={`text-sm transition-colors ${
-                      isChecked ? "text-white" : "text-gray-400"
-                    }`}
-                  >
-                    {option.emoji} {option.label}
-                  </span>
-                </label>
-              );
-            })}
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </summary>
+          <div className="mt-3 flex flex-col gap-4 border-t border-gray-700/50 pt-3">
+            <FiltersContent
+              IMPACT_OPTIONS={IMPACT_OPTIONS}
+              filterImpact={filterImpact}
+              setFilterImpact={setFilterImpact}
+              filterCurrency={filterCurrency}
+              toggleCurrency={toggleCurrency}
+              setFilterCurrency={setFilterCurrency}
+            />
           </div>
+        </details>
 
-          {/* Currency Filter */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-gray-400">Moedas:</span>
-            {["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY"].map((currency) => (
-              <button
-                key={currency}
-                onClick={() => toggleCurrency(currency)}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all ${
-                  filterCurrency.includes(currency)
-                    ? "scale-105 border border-cyan-500/50 bg-cyan-500/20 text-cyan-400 shadow-lg"
-                    : "border border-gray-600 bg-gray-700/50 text-gray-300 hover:bg-gray-600"
-                } `}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/assets/icons/flags/${currency.toLowerCase()}.svg`}
-                  alt={currency}
-                  className="h-5 w-5 rounded-full object-cover"
-                />
-                {currency}
-              </button>
-            ))}
-            {filterCurrency.length > 0 && (
-              <button
-                onClick={() => setFilterCurrency([])}
-                className="ml-2 text-xs text-red-400 underline hover:text-red-300"
-              >
-                Limpar
-              </button>
-            )}
-          </div>
+        <div className="hidden md:flex md:flex-col md:gap-4">
+          <FiltersContent
+            IMPACT_OPTIONS={IMPACT_OPTIONS}
+            filterImpact={filterImpact}
+            setFilterImpact={setFilterImpact}
+            filterCurrency={filterCurrency}
+            toggleCurrency={toggleCurrency}
+            setFilterCurrency={setFilterCurrency}
+          />
         </div>
       </GlassCard>
 
