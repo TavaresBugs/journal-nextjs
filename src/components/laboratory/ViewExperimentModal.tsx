@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Modal, Button } from "@/components/ui";
+import { Modal, Button, IconActionButton } from "@/components/ui";
 import type { LaboratoryExperiment, ExperimentStatus } from "@/types";
 
 interface ViewExperimentModalProps {
@@ -41,17 +41,27 @@ export function ViewExperimentModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🧪 Detalhes do Experimento" maxWidth="3xl">
-      <div className="space-y-6">
-        {/* Header with status */}
-        <div className="flex items-start justify-between gap-4">
-          <h2 className="text-2xl font-bold text-white">{experiment.title}</h2>
-          <span
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${statusConfig.bgColor} ${statusConfig.color}`}
-          >
-            {statusConfig.label}
-          </span>
-        </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`🧪 ${experiment.title}`}
+      maxWidth="3xl"
+      headerActions={
+        <IconActionButton
+          variant="edit"
+          size="md"
+          onClick={() => onEdit(experiment)}
+          className="[&_svg]:h-6 [&_svg]:w-6"
+        />
+      }
+    >
+      <div className="space-y-4">
+        {/* Status badge */}
+        <span
+          className={`inline-flex rounded-full px-3 py-1.5 text-sm font-medium ${statusConfig.bgColor} ${statusConfig.color}`}
+        >
+          {statusConfig.label}
+        </span>
 
         {/* Description */}
         {experiment.description && (
@@ -93,24 +103,24 @@ export function ViewExperimentModal({
         {experiment.images.length > 0 && (
           <div>
             <h3 className="mb-3 text-sm font-medium text-gray-300">Screenshots</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-2 md:grid-cols-4">
               {experiment.images.map((img, index) => (
                 <a
                   key={img.id}
                   href={img.imageUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative overflow-hidden rounded-xl border border-gray-700 transition-colors hover:border-cyan-500"
+                  className="group relative overflow-hidden rounded-lg border border-gray-700 transition-colors hover:border-cyan-500"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img.imageUrl}
                     alt={img.description || `Screenshot ${index + 1}`}
-                    className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                     <svg
-                      className="h-8 w-8 text-white"
+                      className="h-6 w-6 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -129,12 +139,6 @@ export function ViewExperimentModal({
           </div>
         )}
 
-        {/* Timestamps */}
-        <div className="flex items-center justify-between border-t border-gray-700 pt-4 text-xs text-gray-500">
-          <span>Criado em: {formatDate(experiment.createdAt)}</span>
-          <span>Atualizado em: {formatDate(experiment.updatedAt)}</span>
-        </div>
-
         {/* Promoted Status */}
         {experiment.promotedToPlaybook && (
           <div className="flex items-center gap-3 rounded-xl border border-green-500/30 bg-green-500/10 p-4">
@@ -148,11 +152,16 @@ export function ViewExperimentModal({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex justify-end gap-3 border-t border-gray-700 pt-4">
+        {/* Footer - Timestamp and Promote button only */}
+        <div className="flex items-center justify-between border-t border-gray-700 pt-3">
+          <span className="text-xs text-gray-500">
+            Criado em: {formatDate(experiment.createdAt)}
+          </span>
+
           {experiment.status === "validado" && !experiment.promotedToPlaybook && (
             <Button
               variant="gradient-success"
+              size="sm"
               onClick={() => {
                 onPromote(experiment.id);
                 onClose();
@@ -162,18 +171,6 @@ export function ViewExperimentModal({
               Promover para Playbook
             </Button>
           )}
-          <Button
-            variant="secondary"
-            onClick={() => {
-              onEdit(experiment);
-              onClose();
-            }}
-          >
-            Editar
-          </Button>
-          <Button variant="ghost" onClick={onClose}>
-            Fechar
-          </Button>
         </div>
       </div>
     </Modal>
