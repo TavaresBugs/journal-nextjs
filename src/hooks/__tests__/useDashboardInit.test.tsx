@@ -124,7 +124,7 @@ describe("useDashboardInit", () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(mockBatchInit).toHaveBeenCalledWith("acc-1", 1, 10);
+    expect(mockBatchInit).toHaveBeenCalledWith("acc-1", 1, 10, true);
     expect(result.current.isAccountFound).toBe(true);
     expect(result.current.serverMetrics).toEqual({ totalTrades: 10, totalPnl: 100 });
   });

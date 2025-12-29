@@ -36,6 +36,13 @@ vi.mock("exceljs", () => {
   };
 });
 
+// Mock read-excel-file
+vi.mock("read-excel-file", () => {
+  return {
+    default: vi.fn(),
+  };
+});
+
 // Mock FileReader manually to avoid JSDOM issues/timeouts
 class MockFileReader {
   onload: ((e: any) => void) | null = null;
@@ -96,6 +103,11 @@ describe("Import Service Extended Tests", () => {
     } else {
       (file as any)._buffer = content;
     }
+    // Polyfill arrayBuffer for JSDOM/read-excel-file compatibility
+    file.arrayBuffer = async () => {
+      if ((file as any)._buffer) return (file as any)._buffer;
+      return new ArrayBuffer(0);
+    };
     return file;
   };
 
@@ -123,9 +135,13 @@ describe("Import Service Extended Tests", () => {
 
     it("handles ExcelJS disallowed character error", async () => {
       // Override mock for this specific test
-      mockLoad.mockRejectedValue(new Error("disallowed character in sheet"));
+      // Mock read-excel-file to throw
+      const readExcelFile = await import("read-excel-file");
+      vi.mocked(readExcelFile.default).mockRejectedValue(
+        new Error("disallowed character in sheet")
+      );
 
-      // Create a valid-looking ZIP header so it tries to use ExcelJS
+      // Create a valid-looking ZIP header so it tries to use parsing logic
       const zipHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
       const file = createMockFile(
         zipHeader.buffer,
@@ -234,14 +250,10 @@ describe("Import Service Extended Tests", () => {
         ["2025.01.01 10:00", "EURUSD", "buy", 1, 1.05, 0, 0, "2025.01.01 11:00", 1.06, 0, 0, 100], // Row 3: Data
       ];
 
-      mockGetWorksheet.mockReturnValue({
-        eachRow: (callback: any) => {
-          rows.forEach((row, index) => {
-            // ExcelJS uses 1-based indexing for rows
-            callback({ values: [null, ...row] }, index + 1);
-          });
-        },
-      });
+      // Mock read-excel-file return value
+      // It returns Promise<Row[]> where Row is Cell[]
+      const readExcelFile = await import("read-excel-file");
+      vi.mocked(readExcelFile.default).mockResolvedValue(rows as any);
 
       // Create ZIP header to pass "isZip" check
       const zipHeader = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);

@@ -132,7 +132,7 @@ describe("useDashboardInit", () => {
     });
 
     // Expect batch action call instead of individual calls
-    expect(batchDashboardInitAction).toHaveBeenCalledWith(accountId, 1, 10);
+    expect(batchDashboardInitAction).toHaveBeenCalledWith(accountId, 1, 10, true);
     expect(mockSetCurrentAccount).toHaveBeenCalledWith(accountId);
 
     expect(result.current.isAccountReady).toBe(true);
