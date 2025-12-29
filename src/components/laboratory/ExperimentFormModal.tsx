@@ -57,8 +57,6 @@ export function ExperimentFormModal({
   const [status, setStatus] = useState<ExperimentStatus>("em_aberto");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
-  const [expectedWinRate, setExpectedWinRate] = useState("");
-  const [expectedRiskReward, setExpectedRiskReward] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -70,8 +68,6 @@ export function ExperimentFormModal({
     setStatus("em_aberto");
     setTags([]);
     setTagInput("");
-    setExpectedWinRate("");
-    setExpectedRiskReward("");
     setSelectedFiles([]);
     setPreviews([]);
     setCarouselIndex(0);
@@ -86,8 +82,6 @@ export function ExperimentFormModal({
       setDescription(initialData.description || "");
       setStatus(initialData.status);
       setTags(initialData.category ? initialData.category.split(", ").map((t) => t.trim()) : []);
-      setExpectedWinRate(initialData.expectedWinRate?.toString() || "");
-      setExpectedRiskReward(initialData.expectedRiskReward?.toString() || "");
       setPreviews(initialData.images?.map((img) => img.imageUrl) || []);
       setSelectedFiles([]);
       setCarouselIndex(0);
@@ -152,8 +146,6 @@ export function ExperimentFormModal({
         description: description.trim() || undefined,
         status,
         category: tags.length > 0 ? tags.join(", ") : undefined,
-        expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
-        expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
       };
       await onSubmit(updateData, selectedFiles);
     } else {
@@ -162,8 +154,6 @@ export function ExperimentFormModal({
         description: description.trim() || undefined,
         status,
         category: tags.length > 0 ? tags.join(", ") : undefined,
-        expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
-        expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
       };
       await onSubmit(createData, selectedFiles);
     }
@@ -271,32 +261,6 @@ export function ExperimentFormModal({
               />
             </div>
           </div>
-        </div>
-
-        {/* Expected metrics row */}
-        <div className="grid grid-cols-2 gap-4">
-          <Input
-            label="Win Rate Esperado (%)"
-            type="number"
-            value={expectedWinRate}
-            onChange={(e) => setExpectedWinRate(e.target.value)}
-            placeholder="Ex: 65"
-            min="0"
-            max="100"
-            step="0.1"
-            autoComplete="off"
-          />
-
-          <Input
-            label="Risk/Reward Esperado"
-            type="number"
-            value={expectedRiskReward}
-            onChange={(e) => setExpectedRiskReward(e.target.value)}
-            placeholder="Ex: 2.5"
-            min="0"
-            step="0.1"
-            autoComplete="off"
-          />
         </div>
 
         {/* Image Upload - Using standardized RecapImageUploader */}
