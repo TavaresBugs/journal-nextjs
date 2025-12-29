@@ -124,10 +124,10 @@ export const RecapFormModal = dynamic(
   }
 );
 
-export const CreateExperimentModal = dynamic(
+export const ExperimentFormModal = dynamic(
   () =>
-    import("@/components/laboratory/CreateExperimentModal").then((mod) => ({
-      default: mod.CreateExperimentModal,
+    import("@/components/laboratory/ExperimentFormModal").then((mod) => ({
+      default: mod.ExperimentFormModal,
     })),
   {
     loading: () => <ModalSkeleton />,

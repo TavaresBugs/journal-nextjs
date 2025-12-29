@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   Modal,
   Input,
@@ -11,14 +11,16 @@ import {
   SelectValue,
   ModalFooterActions,
 } from "@/components/ui";
-import type { ExperimentStatus } from "@/types";
-import { CreateExperimentData } from "@/store/useLaboratoryStore";
+import type { ExperimentStatus, LaboratoryExperiment } from "@/types";
+import { CreateExperimentData, UpdateExperimentData } from "@/store/useLaboratoryStore";
 import { RecapImageUploader } from "./recap";
 
-interface CreateExperimentModalProps {
+interface ExperimentFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateExperimentData, files: File[]) => Promise<void>;
+  mode: "create" | "edit";
+  initialData?: LaboratoryExperiment | null;
+  onSubmit: (data: CreateExperimentData | UpdateExperimentData, files: File[]) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -40,12 +42,16 @@ const TAG_COLORS = [
 
 const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
 
-export function CreateExperimentModal({
+export function ExperimentFormModal({
   isOpen,
   onClose,
+  mode,
+  initialData,
   onSubmit,
   isLoading = false,
-}: CreateExperimentModalProps) {
+}: ExperimentFormModalProps) {
+  const isEditMode = mode === "edit";
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ExperimentStatus>("em_aberto");
@@ -56,6 +62,39 @@ export function CreateExperimentModal({
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
   const [carouselIndex, setCarouselIndex] = useState(0);
+
+  // Reset & Initialize
+  const handleReset = useCallback(() => {
+    setTitle("");
+    setDescription("");
+    setStatus("em_aberto");
+    setTags([]);
+    setTagInput("");
+    setExpectedWinRate("");
+    setExpectedRiskReward("");
+    setSelectedFiles([]);
+    setPreviews([]);
+    setCarouselIndex(0);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (isEditMode && initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setTitle(initialData.title);
+      setDescription(initialData.description || "");
+      setStatus(initialData.status);
+      setTags(initialData.category ? initialData.category.split(", ").map((t) => t.trim()) : []);
+      setExpectedWinRate(initialData.expectedWinRate?.toString() || "");
+      setExpectedRiskReward(initialData.expectedRiskReward?.toString() || "");
+      setPreviews(initialData.images?.map((img) => img.imageUrl) || []);
+      setSelectedFiles([]);
+      setCarouselIndex(0);
+    } else {
+      handleReset();
+    }
+  }, [isOpen, isEditMode, initialData, handleReset]);
 
   const handleAddFiles = useCallback((files: File[]) => {
     setSelectedFiles((prev) => [...prev, ...files]);
@@ -106,39 +145,44 @@ export function CreateExperimentModal({
     e.preventDefault();
     if (!title.trim()) return;
 
-    const data: CreateExperimentData = {
-      title: title.trim(),
-      description: description.trim() || undefined,
-      status,
-      category: tags.length > 0 ? tags.join(", ") : undefined,
-      expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
-      expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
-    };
+    if (isEditMode && initialData) {
+      const updateData: UpdateExperimentData = {
+        id: initialData.id,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        status,
+        category: tags.length > 0 ? tags.join(", ") : undefined,
+        expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
+        expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
+      };
+      await onSubmit(updateData, selectedFiles);
+    } else {
+      const createData: CreateExperimentData = {
+        title: title.trim(),
+        description: description.trim() || undefined,
+        status,
+        category: tags.length > 0 ? tags.join(", ") : undefined,
+        expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
+        expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
+      };
+      await onSubmit(createData, selectedFiles);
+    }
 
-    await onSubmit(data, selectedFiles);
-    handleReset();
+    handleClose();
   };
 
-  const handleReset = () => {
-    setTitle("");
-    setDescription("");
-    setStatus("em_aberto");
-    setTags([]);
-    setTagInput("");
-    setExpectedWinRate("");
-    setExpectedRiskReward("");
-    setSelectedFiles([]);
-    setPreviews([]);
-    setCarouselIndex(0);
-  };
-
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     handleReset();
     onClose();
-  };
+  }, [handleReset, onClose]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="🧪 Novo Experimento" maxWidth="xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEditMode ? `✏️ Editar Experimento` : "🧪 Novo Experimento"}
+      maxWidth="xl"
+    >
       <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {/* Title */}
         <Input
@@ -268,7 +312,7 @@ export function CreateExperimentModal({
         <ModalFooterActions
           isSubmit
           onSecondary={handleClose}
-          primaryLabel="Criar Experimento"
+          primaryLabel={isEditMode ? "Salvar Alterações" : "Criar Experimento"}
           isLoading={isLoading}
           disabled={!title.trim()}
           primaryVariant="gradient-success"
@@ -276,4 +320,11 @@ export function CreateExperimentModal({
       </form>
     </Modal>
   );
+}
+
+// Re-export as CreateExperimentModal for backwards compatibility
+export function CreateExperimentModal(
+  props: Omit<ExperimentFormModalProps, "mode" | "initialData">
+) {
+  return <ExperimentFormModal {...props} mode="create" initialData={null} />;
 }

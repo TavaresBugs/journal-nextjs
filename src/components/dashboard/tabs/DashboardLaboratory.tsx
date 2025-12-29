@@ -12,14 +12,15 @@ import {
 import {
   ExperimentsTab,
   RecapsTab,
-  CreateExperimentModal,
+  ExperimentFormModal,
   ViewExperimentModal,
   ViewRecapModal,
-  RecapFormModal, // Unified Modal
+  RecapFormModal,
 } from "@/components/laboratory";
 import {
   useLaboratoryStore,
   CreateExperimentData,
+  UpdateExperimentData,
   CreateRecapData,
   UpdateRecapData,
 } from "@/store/useLaboratoryStore";
@@ -38,12 +39,13 @@ const LABORATORY_TABS_OPTIONS = [
 export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
   const [activeTab, setActiveTab] = useState("experiments");
 
-  // Modals state
-  const [showCreateExperiment, setShowCreateExperiment] = useState(false);
+  // Experiment Modals state
+  const [showExperimentForm, setShowExperimentForm] = useState(false);
+  const [experimentFormMode, setExperimentFormMode] = useState<"create" | "edit">("create");
   const [showViewExperiment, setShowViewExperiment] = useState(false);
   const [selectedExperiment, setSelectedExperiment] = useState<LaboratoryExperiment | null>(null);
 
-  // Recap Modals state variables
+  // Recap Modals state
   const [showRecapForm, setShowRecapForm] = useState(false);
   const [recapFormMode, setRecapFormMode] = useState<"create" | "edit">("create");
   const [showViewRecap, setShowViewRecap] = useState(false);
@@ -59,6 +61,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     loadExperiments,
     loadRecaps,
     addExperiment,
+    updateExperiment,
     removeExperiment,
     promoteToPlaybook,
     addRecap,
@@ -83,8 +86,6 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
 
   // Load data on mount (with caching check)
   useEffect(() => {
-    // Only load if not already loaded (handled by store flags)
-    // The store actions now check the flags internally too, but doing it here prevents calling the action entirely
     if (!experimentsLoaded) {
       loadExperiments();
     }
@@ -94,9 +95,23 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
   }, [loadExperiments, loadRecaps, experimentsLoaded, recapsLoaded]);
 
   // Experiment handlers
-  const handleCreateExperiment = async (data: CreateExperimentData, files: File[]) => {
-    await addExperiment(data, files);
-    setShowCreateExperiment(false);
+  const handleOpenCreateExperiment = () => {
+    setSelectedExperiment(null);
+    setExperimentFormMode("create");
+    setShowExperimentForm(true);
+  };
+
+  const handleExperimentSubmit = async (
+    data: CreateExperimentData | UpdateExperimentData,
+    files: File[]
+  ) => {
+    if (experimentFormMode === "create") {
+      await addExperiment(data as CreateExperimentData, files);
+    } else {
+      await updateExperiment(data as UpdateExperimentData, files);
+    }
+    setShowExperimentForm(false);
+    setSelectedExperiment(null);
   };
 
   const handleViewExperiment = (experiment: LaboratoryExperiment) => {
@@ -106,7 +121,9 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
 
   const handleEditExperiment = (experiment: LaboratoryExperiment) => {
     setSelectedExperiment(experiment);
-    setShowViewExperiment(true);
+    setShowViewExperiment(false); // Close view modal
+    setExperimentFormMode("edit");
+    setShowExperimentForm(true); // Open form modal in edit mode
   };
 
   const handleDeleteExperiment = async (id: string) => {
@@ -175,7 +192,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
           <TabPanel value="experiments" activeTab={activeTab}>
             <ExperimentsTab
               experiments={experiments}
-              onCreateNew={() => setShowCreateExperiment(true)}
+              onCreateNew={handleOpenCreateExperiment}
               onView={handleViewExperiment}
               onEdit={handleEditExperiment}
               onDelete={handleDeleteExperiment}
@@ -198,11 +215,16 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
         </CardContent>
       </Card>
 
-      {/* Experiment Modals */}
-      <CreateExperimentModal
-        isOpen={showCreateExperiment}
-        onClose={() => setShowCreateExperiment(false)}
-        onSubmit={handleCreateExperiment}
+      {/* Unified Experiment Form Modal (Create & Edit) */}
+      <ExperimentFormModal
+        isOpen={showExperimentForm}
+        onClose={() => {
+          setShowExperimentForm(false);
+          setSelectedExperiment(null);
+        }}
+        mode={experimentFormMode}
+        initialData={selectedExperiment}
+        onSubmit={handleExperimentSubmit}
         isLoading={isLoading}
       />
 
