@@ -63,7 +63,7 @@ describe("PrismaTradeRepository Unit Tests", () => {
     it("should return trades by ids", async () => {
       const mockTrades = [createMockData.trade({ id: "t-1" })];
       mockPrisma.trades.findMany.mockResolvedValue(mockTrades);
-      const result = await prismaTradeRepo.getMany(["t-1"]);
+      const result = await prismaTradeRepo.getMany({ where: { id: { in: ["t-1"] } } });
       expect(result.data).toHaveLength(1);
     });
   });

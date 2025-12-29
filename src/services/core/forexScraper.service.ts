@@ -389,6 +389,7 @@ function convertTo24Hour(timeStr: string): string {
 
 /**
  * Converter data do formato FF ("SunDec 14") para ISO ("2025-12-14")
+ * Handles year rollover: if current month is Dec and event month is Jan, use next year
  */
 function parseForexFactoryDate(dateStr: string): string {
   try {
@@ -399,9 +400,37 @@ function parseForexFactoryDate(dateStr: string): string {
     const monthStr = match[1];
     const dayStr = match[2];
 
-    const currentYear = new Date().getFullYear();
+    const now = new Date();
+    const currentMonth = now.getMonth(); // 0-11 (0 = Jan, 11 = Dec)
+    let targetYear = now.getFullYear();
 
-    const parsedDate = parse(`${monthStr} ${dayStr} ${currentYear}`, "MMM d yyyy", new Date());
+    // Map month string to number (0-11)
+    const monthMap: Record<string, number> = {
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
+    };
+    const eventMonth = monthMap[monthStr.charAt(0).toUpperCase() + monthStr.slice(1).toLowerCase()];
+
+    // Year rollover logic:
+    // If we're in Dec (11) and event is in Jan (0), use next year
+    // If we're in Jan (0) and event is in Dec (11), use previous year (historical scrape)
+    if (currentMonth === 11 && eventMonth === 0) {
+      targetYear = now.getFullYear() + 1;
+    } else if (currentMonth === 0 && eventMonth === 11) {
+      targetYear = now.getFullYear() - 1;
+    }
+
+    const parsedDate = parse(`${monthStr} ${dayStr} ${targetYear}`, "MMM d yyyy", new Date());
 
     return format(parsedDate, "yyyy-MM-dd");
   } catch {

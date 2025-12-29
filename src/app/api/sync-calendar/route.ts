@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Helper para garantir que o impacto seja um dos valores aceitos pelo banco
-function mapImpact(scrapeImpact: string): "high" | "medium" | "low" {
+function mapImpact(scrapeImpact: string): "high" | "medium" | "low" | "none" {
   switch (scrapeImpact) {
     case "high":
       return "high";
@@ -184,8 +184,10 @@ function mapImpact(scrapeImpact: string): "high" | "medium" | "low" {
       return "medium";
     case "low":
       return "low";
+    case "none":
+      return "none";
     default:
-      return "low"; // Default para 'none' ou desconhecido
+      return "none"; // Default para desconhecido
   }
 }
 

@@ -23,7 +23,7 @@ export interface DBEvent {
   date: string;
   time: string;
   currency: string;
-  impact: "high" | "medium" | "low";
+  impact: "high" | "medium" | "low" | "none";
   event_name: string;
   actual: string | null;
   forecast: string | null;
@@ -121,19 +121,19 @@ export function transformEventsToDBFormat(events: ForexFactoryEvent[]): DBEvent[
     const time = `${hours}:${minutes}`;
 
     // Mapear impacto
-    const impactMap: Record<string, "high" | "medium" | "low"> = {
+    const impactMap: Record<string, "high" | "medium" | "low" | "none"> = {
       High: "high",
       Medium: "medium",
       Low: "low",
-      Holiday: "low",
-      NonEconomic: "low",
+      Holiday: "none",
+      NonEconomic: "none",
     };
 
     return {
       date: eventDate.toISOString().split("T")[0],
       time,
       currency: event.country.toUpperCase(),
-      impact: impactMap[event.impact] || "low",
+      impact: impactMap[event.impact] || "none",
       event_name: event.title,
       actual: event.actual || null,
       forecast: event.forecast || null,

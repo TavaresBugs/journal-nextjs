@@ -124,30 +124,44 @@ export function EquityCurveLightweight({
   useEffect(() => {
     if (!areaSeriesRef.current || !baselineSeriesRef.current) return;
 
-    // Update colors based on profit status
-    const color = isProfit ? "#00c853" : "#ef4444"; // Zorin Green or Red
-    const topColor = isProfit ? "rgba(0, 200, 83, 0.4)" : "rgba(239, 68, 68, 0.4)";
+    try {
+      // Update colors based on profit status
+      const color = isProfit ? "#00c853" : "#ef4444"; // Zorin Green or Red
+      const topColor = isProfit ? "rgba(0, 200, 83, 0.4)" : "rgba(239, 68, 68, 0.4)";
 
-    areaSeriesRef.current.applyOptions({
-      lineColor: color,
-      topColor: topColor,
-      bottomColor: "rgba(0, 0, 0, 0)", // Transparent bottom
-    });
+      areaSeriesRef.current.applyOptions({
+        lineColor: color,
+        topColor: topColor,
+        bottomColor: "rgba(0, 0, 0, 0)", // Transparent bottom
+      });
 
-    // Set Data
-    areaSeriesRef.current.setData(chartData);
+      // Set Data
+      areaSeriesRef.current.setData(chartData);
 
-    // Set Baseline Data
-    if (chartData.length > 0) {
-      baselineSeriesRef.current.setData([
-        { time: chartData[0].time, value: initialBalance },
-        { time: chartData[chartData.length - 1].time, value: initialBalance },
-      ]);
-    }
+      // Set Baseline Data - ensure we have at least 2 different timestamps
+      if (chartData.length > 0) {
+        const firstTime = chartData[0].time;
+        const lastTime = chartData[chartData.length - 1].time;
 
-    // Fit content if chart exists
-    if (chartRef.current) {
-      chartRef.current.timeScale().fitContent();
+        // Only set 2 points if times are different, otherwise use single point
+        if (firstTime !== lastTime) {
+          baselineSeriesRef.current.setData([
+            { time: firstTime, value: initialBalance },
+            { time: lastTime, value: initialBalance },
+          ]);
+        } else {
+          // Single point or all same time - just use one point
+          baselineSeriesRef.current.setData([{ time: firstTime, value: initialBalance }]);
+        }
+      }
+
+      // Fit content if chart exists
+      if (chartRef.current) {
+        chartRef.current.timeScale().fitContent();
+      }
+    } catch {
+      // Chart was disposed during update - ignore this error
+      // This can happen during React StrictMode or fast navigation
     }
   }, [chartData, isProfit, initialBalance]);
 

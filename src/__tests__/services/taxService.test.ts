@@ -235,7 +235,14 @@ describe("Tax Service", () => {
     it("should set amount to 0 for negative tax due", () => {
       const calculation = {
         month: "2023-10",
+        grossProfit: 0,
+        costs: 0,
+        netResult: 0,
+        accumulatedLoss: 0,
+        taxableBasis: 0,
+        irrfDeduction: 50,
         taxDue: -50, // IRRF greater than tax
+        dayTradeLossCarryForward: 0,
       };
 
       const result = generateDARFData(calculation);
@@ -246,7 +253,14 @@ describe("Tax Service", () => {
     it("should calculate due date in next month", () => {
       const calculation = {
         month: "2023-11",
+        grossProfit: 100,
+        costs: 0,
+        netResult: 100,
+        accumulatedLoss: 0,
+        taxableBasis: 100,
+        irrfDeduction: 0,
         taxDue: 100,
+        dayTradeLossCarryForward: 0,
       };
 
       const result = generateDARFData(calculation);
@@ -257,7 +271,14 @@ describe("Tax Service", () => {
     it("should handle year change in due date", () => {
       const calculation = {
         month: "2023-12",
+        grossProfit: 100,
+        costs: 0,
+        netResult: 100,
+        accumulatedLoss: 0,
+        taxableBasis: 100,
+        irrfDeduction: 0,
         taxDue: 100,
+        dayTradeLossCarryForward: 0,
       };
 
       const result = generateDARFData(calculation);

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { useRouter } from "next/navigation";
 
@@ -33,8 +33,9 @@ describe("DashboardHeader", () => {
       currentBalance: 10000,
       currency: "USD",
       leverage: "1:100",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      maxDrawdown: 0,
     },
     isAdminUser: false,
     isMentorUser: false,

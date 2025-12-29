@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import {
   createSupabaseMock,
   mockMatchMedia,
@@ -93,8 +93,14 @@ describe("mockBuilders", () => {
     it("should create a mock that returns expected methods", () => {
       mockResizeObserver();
 
-      // The mock returns an object with observe, unobserve, disconnect
-      const mockInstance = (global.ResizeObserver as unknown as ReturnType<typeof vi.fn>)();
+      // The mock is a vi.fn() that returns an object with observe, unobserve, disconnect
+      // Call it as a function (vi.fn() returns a callable mock)
+      const MockedResizeObserver = global.ResizeObserver as unknown as () => {
+        observe: unknown;
+        unobserve: unknown;
+        disconnect: unknown;
+      };
+      const mockInstance = MockedResizeObserver();
 
       expect(mockInstance.observe).toBeDefined();
       expect(mockInstance.unobserve).toBeDefined();
