@@ -72,6 +72,25 @@ export default function HomePage() {
 
         await Promise.race([Promise.all([loadAccounts(), loadSettings()]), timeoutPromise]);
 
+        // Fix for race condition (e.g. React Strict Mode or concurrent calls):
+        // If store is still loading after loadAccounts returns (meaning we skipped due to "already loading"),
+        // we must wait for the actual loading to finish before checking accounts.
+        if (useAccountStore.getState().isLoading) {
+          await new Promise<void>((resolve) => {
+            const unsubscribe = useAccountStore.subscribe((state) => {
+              if (!state.isLoading) {
+                unsubscribe();
+                resolve();
+              }
+            });
+            // Safety timeout of 3s in case store gets stuck
+            setTimeout(() => {
+              unsubscribe();
+              resolve();
+            }, 3000);
+          });
+        }
+
         setIsLoading(false);
 
         // Sync all account balances in the background to ensure they're up to date
@@ -89,7 +108,7 @@ export default function HomePage() {
           }
         });
 
-        // Check if user has no accounts after loading
+        // Check if user has no accounts after fully confirming loading is done
         const currentAccounts = useAccountStore.getState().accounts;
         if (currentAccounts.length === 0) {
           setIsCreateModalOpen(true);
