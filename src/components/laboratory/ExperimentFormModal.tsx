@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
-  SelectValue,
   ModalFooterActions,
 } from "@/components/ui";
 import type { ExperimentStatus, LaboratoryExperiment } from "@/types";
@@ -38,6 +37,7 @@ const TIPO_OPTIONS = [
 
 const getStatusLabel = (value: ExperimentStatus) =>
   STATUS_OPTIONS.find((o) => o.value === value)?.label || value;
+const getTipoLabel = (value: string) => TIPO_OPTIONS.find((o) => o.value === value)?.label || value;
 
 // Badge colors for tags
 const TAG_COLORS = [
@@ -181,7 +181,7 @@ export function ExperimentFormModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={isEditMode ? `✏️ Editar Experimento` : "🧪 Novo Experimento"}
-      maxWidth="xl"
+      maxWidth="4xl"
     >
       <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {/* Title */}
@@ -215,7 +215,7 @@ export function ExperimentFormModal({
             <label className="mb-2 block text-sm font-medium text-gray-300">Tipo</label>
             <Select value={experimentType} onValueChange={setExperimentType}>
               <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
-                <SelectValue placeholder="Selecione..." />
+                <span>{experimentType ? getTipoLabel(experimentType) : "Selecione..."}</span>
               </SelectTrigger>
               <SelectContent className="border-gray-700 bg-gray-800">
                 {TIPO_OPTIONS.map((opt) => (
