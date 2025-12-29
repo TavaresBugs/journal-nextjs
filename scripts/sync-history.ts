@@ -76,8 +76,8 @@ async function main() {
       // Avançar para próximo mês
       currentIterDate = addMonths(currentIterDate, 1);
 
-      // Delay gentil para não ser bloqueado (2 segundos entre meses)
-      await new Promise((r) => setTimeout(r, 2000));
+      // Delay gentil para não ser bloqueado (5 segundos entre meses)
+      await new Promise((r) => setTimeout(r, 5000));
     }
 
     console.log("\n===========================================");

@@ -220,7 +220,7 @@ export async function scrapeForexFactoryMonth(targetDate: Date): Promise<Scraped
 
     const page = await context.newPage();
 
-    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 90000 });
+    await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 180000 });
 
     // Incremental Scroll (Mês é longo, precisa de mais scroll)
     await page.evaluate(async () => {
