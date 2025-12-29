@@ -175,12 +175,14 @@ const SelectContent = React.forwardRef<
     null
   );
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     if (context?.open && context.triggerRef.current) {
+      let rafId: number;
+      let debounceTimer: ReturnType<typeof setTimeout>;
+
       const updatePosition = () => {
         if (context.triggerRef.current) {
           const rect = context.triggerRef.current.getBoundingClientRect();
-          // Use viewport-relative positions (works inside modals with scroll)
           setCoords({
             top: rect.bottom + 4,
             left: rect.left,
@@ -188,13 +190,26 @@ const SelectContent = React.forwardRef<
           });
         }
       };
-      updatePosition();
-      window.addEventListener("resize", updatePosition);
-      window.addEventListener("scroll", updatePosition, true); // Capture phase to catch all scrolls
+
+      // Deferred initial position calculation for faster response
+      rafId = requestAnimationFrame(updatePosition);
+
+      // Debounced handler for scroll/resize events
+      const debouncedUpdate = () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          rafId = requestAnimationFrame(updatePosition);
+        }, 16); // ~60fps
+      };
+
+      window.addEventListener("resize", debouncedUpdate);
+      window.addEventListener("scroll", debouncedUpdate, true);
 
       return () => {
-        window.removeEventListener("resize", updatePosition);
-        window.removeEventListener("scroll", updatePosition, true);
+        cancelAnimationFrame(rafId);
+        clearTimeout(debounceTimer);
+        window.removeEventListener("resize", debouncedUpdate);
+        window.removeEventListener("scroll", debouncedUpdate, true);
       };
     }
   }, [context?.open, context?.triggerRef]);

@@ -60,7 +60,7 @@ export function Modal({
     <div
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center p-4",
-        !noBackdrop && "bg-black/30 backdrop-blur-xs"
+        !noBackdrop && "bg-black/50"
       )}
       onClick={onClose}
     >

@@ -23,12 +23,14 @@ export function useBlockBodyScroll(isOpen: boolean) {
       // Salvar posição atual do scroll
       savedScrollY = window.scrollY;
 
-      // Aplicar estilos para bloquear scroll
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.top = `-${savedScrollY}px`;
-      document.body.style.width = "100%";
-      document.body.style.touchAction = "none";
+      // Defer DOM mutations to next frame to prevent blocking input events
+      requestAnimationFrame(() => {
+        document.body.style.overflow = "hidden";
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${savedScrollY}px`;
+        document.body.style.width = "100%";
+        document.body.style.touchAction = "none";
+      });
     }
 
     // Cleanup: decrementar contador
@@ -37,14 +39,16 @@ export function useBlockBodyScroll(isOpen: boolean) {
 
       // Só restaurar estilos quando todos os modais fecharem
       if (lockCount === 0) {
-        document.body.style.overflow = "";
-        document.body.style.position = "";
-        document.body.style.top = "";
-        document.body.style.width = "";
-        document.body.style.touchAction = "";
+        requestAnimationFrame(() => {
+          document.body.style.overflow = "";
+          document.body.style.position = "";
+          document.body.style.top = "";
+          document.body.style.width = "";
+          document.body.style.touchAction = "";
 
-        // Restaurar posição do scroll
-        window.scrollTo(0, savedScrollY);
+          // Restaurar posição do scroll
+          window.scrollTo(0, savedScrollY);
+        });
       }
     };
   }, [isOpen]);
