@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import {
   Modal,
   Input,
@@ -28,6 +28,17 @@ const STATUS_OPTIONS: { value: ExperimentStatus; label: string }[] = [
   { value: "descartado", label: "Descartado" },
 ];
 
+// Badge colors for tags
+const TAG_COLORS = [
+  { bg: "bg-purple-500/20", text: "text-purple-300", border: "border-purple-500/30" },
+  { bg: "bg-cyan-500/20", text: "text-cyan-300", border: "border-cyan-500/30" },
+  { bg: "bg-emerald-500/20", text: "text-emerald-300", border: "border-emerald-500/30" },
+  { bg: "bg-orange-500/20", text: "text-orange-300", border: "border-orange-500/30" },
+  { bg: "bg-pink-500/20", text: "text-pink-300", border: "border-pink-500/30" },
+];
+
+const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
+
 export function CreateExperimentModal({
   isOpen,
   onClose,
@@ -37,7 +48,8 @@ export function CreateExperimentModal({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<ExperimentStatus>("em_aberto");
-  const [category, setCategory] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [expectedWinRate, setExpectedWinRate] = useState("");
   const [expectedRiskReward, setExpectedRiskReward] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -48,8 +60,6 @@ export function CreateExperimentModal({
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       setSelectedFiles((prev) => [...prev, ...files]);
-
-      // Generate previews
       files.forEach((file) => {
         const reader = new FileReader();
         reader.onload = (event) => {
@@ -65,16 +75,35 @@ export function CreateExperimentModal({
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleTagKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        const newTag = tagInput.trim().toUpperCase();
+        if (newTag && !tags.includes(newTag)) {
+          setTags((prev) => [...prev, newTag]);
+          setTagInput("");
+        }
+      } else if (e.key === "Backspace" && !tagInput && tags.length > 0) {
+        setTags((prev) => prev.slice(0, -1));
+      }
+    },
+    [tagInput, tags]
+  );
+
+  const removeTag = useCallback((index: number) => {
+    setTags((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!title.trim()) return;
 
     const data: CreateExperimentData = {
       title: title.trim(),
       description: description.trim() || undefined,
       status,
-      category: category.trim() || undefined,
+      category: tags.length > 0 ? tags.join(", ") : undefined,
       expectedWinRate: expectedWinRate ? parseFloat(expectedWinRate) : undefined,
       expectedRiskReward: expectedRiskReward ? parseFloat(expectedRiskReward) : undefined,
     };
@@ -87,7 +116,8 @@ export function CreateExperimentModal({
     setTitle("");
     setDescription("");
     setStatus("em_aberto");
-    setCategory("");
+    setTags([]);
+    setTagInput("");
     setExpectedWinRate("");
     setExpectedRiskReward("");
     setSelectedFiles([]);
@@ -101,7 +131,7 @@ export function CreateExperimentModal({
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="🧪 Novo Experimento" maxWidth="xl">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
         {/* Title */}
         <Input
           label="Título da Estratégia"
@@ -109,6 +139,7 @@ export function CreateExperimentModal({
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Ex: Breakout com FVG no M5"
           required
+          autoComplete="off"
         />
 
         {/* Description */}
@@ -122,10 +153,11 @@ export function CreateExperimentModal({
             placeholder="Descreva a ideia, condições de entrada, saída esperada..."
             className="w-full resize-none rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
             rows={4}
+            autoComplete="off"
           />
         </div>
 
-        {/* Status and Category row */}
+        {/* Status and Tags row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Status</label>
@@ -147,12 +179,46 @@ export function CreateExperimentModal({
             </Select>
           </div>
 
-          <Input
-            label="Tags / Categoria"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Ex: Scalping, Breakout"
-          />
+          {/* Tags with badges */}
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Tags / Categoria</label>
+            <div
+              className="flex min-h-12 w-full flex-wrap items-center gap-1.5 rounded-xl border border-gray-700 bg-gray-800/50 px-3 py-2 transition-colors focus-within:border-cyan-500 focus-within:ring-1 focus-within:ring-cyan-500"
+              onClick={() => document.getElementById("experiment-tag-input")?.focus()}
+            >
+              {tags.map((tag, index) => {
+                const color = getTagColor(index);
+                return (
+                  <span
+                    key={index}
+                    className={`flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium ${color.bg} ${color.text} border ${color.border}`}
+                  >
+                    🏷️ {tag}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeTag(index);
+                      }}
+                      className="flex h-4 w-4 items-center justify-center rounded-full transition-colors hover:bg-black/20 hover:text-white"
+                      title="Remover tag"
+                    >
+                      ×
+                    </button>
+                  </span>
+                );
+              })}
+              <input
+                id="experiment-tag-input"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder={tags.length === 0 ? "Scalping Breakout FVG" : ""}
+                className="min-w-[80px] flex-1 border-none bg-transparent text-sm text-gray-100 placeholder-gray-500 outline-none"
+                autoComplete="off"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Expected metrics row */}
@@ -166,6 +232,7 @@ export function CreateExperimentModal({
             min="0"
             max="100"
             step="0.1"
+            autoComplete="off"
           />
 
           <Input
@@ -176,6 +243,7 @@ export function CreateExperimentModal({
             placeholder="Ex: 2.5"
             min="0"
             step="0.1"
+            autoComplete="off"
           />
         </div>
 
