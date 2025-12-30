@@ -494,6 +494,46 @@ class PrismaMentalRepository {
     }
   }
 
+  /**
+   * Update a mental log.
+   */
+  async updateLog(
+    logId: string,
+    userId: string,
+    data: Partial<{
+      moodTag: string;
+      step1Problem: string;
+      step2Validation: string;
+      step3Flaw: string;
+      step4Correction: string;
+      step5Logic: string;
+    }>
+  ): Promise<Result<MentalLog, AppError>> {
+    this.logger.info("Updating mental log", { logId });
+
+    try {
+      const updated = await prisma.mental_logs.update({
+        where: { id: logId, user_id: userId },
+        data: {
+          mood_tag: data.moodTag,
+          step_1_problem: data.step1Problem,
+          step_2_validation: data.step2Validation,
+          step_3_flaw: data.step3Flaw,
+          step_4_correction: data.step4Correction,
+          step_5_logic: data.step5Logic,
+        },
+      });
+
+      return { data: mapLogFromPrisma(updated), error: null };
+    } catch (error) {
+      this.logger.error("Failed to update log", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to update log", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
   // ========================================
   // ANALYTICS
   // ========================================

@@ -95,6 +95,17 @@ const WIZARD_STEPS = [
   { id: 6, title: "Sua Verdade", subtitle: "Respire fundo e internalize sua nova perspectiva" },
 ];
 
+// Emotion config for profile titles
+const EMOTION_CONFIG: Record<string, { emoji: string; label: string; color: string }> = {
+  fear: { emoji: "😰", label: "Medo", color: "text-blue-400" },
+  greed: { emoji: "🤑", label: "Ganância", color: "text-yellow-400" },
+  fomo: { emoji: "😱", label: "FOMO", color: "text-purple-400" },
+  tilt: { emoji: "🤬", label: "Tilt", color: "text-red-400" },
+  revenge: { emoji: "😤", label: "Revenge", color: "text-orange-400" },
+  hesitation: { emoji: "🤔", label: "Hesitação", color: "text-cyan-400" },
+  overconfidence: { emoji: "😎", label: "Excesso de Confiança", color: "text-green-400" },
+};
+
 // Profiles Tab Component
 function ProfilesTab({ refreshTrigger }: { refreshTrigger: number }) {
   const [profiles, setProfiles] = useState<EmotionalProfile[]>([]);
@@ -128,55 +139,87 @@ function ProfilesTab({ refreshTrigger }: { refreshTrigger: number }) {
   const handleProfileSaved = async () => {
     const data = await getEmotionalProfilesAction();
     setProfiles(data);
+    setSelectedProfile(null);
   };
 
-  if (selectedProfile) {
-    return (
-      <div className="animate-fadeIn">
-        <EmotionalProfileView
-          profile={selectedProfile}
-          onBack={() => setSelectedProfile(null)}
-          onSave={handleProfileSaved}
-        />
-      </div>
-    );
-  }
+  // Get config for selected profile
+  const selectedConfig = selectedProfile
+    ? EMOTION_CONFIG[selectedProfile.emotionType] || {
+        emoji: "💭",
+        label: selectedProfile.emotionType,
+        color: "text-gray-400",
+      }
+    : null;
 
-  return (
-    <div className="animate-fadeIn">
-      <div className="mb-4">
-        <h3 className="text-sm font-bold tracking-wider text-gray-300 uppercase">
-          Perfis Emocionais
-        </h3>
-        <p className="mt-1 text-xs text-gray-500">
-          Clique em um perfil para configurar seus gatilhos e padrões
+  // Modal title component
+  const ModalTitle = selectedConfig ? (
+    <div className="flex items-center gap-3">
+      <span className="text-3xl">{selectedConfig.emoji}</span>
+      <div>
+        <h2 className={`text-xl font-bold ${selectedConfig.color}`}>
+          {selectedConfig.label} Profile
+        </h2>
+        <p className="text-xs text-gray-500">
+          {selectedProfile?.occurrenceCount || 0} ocorrência
+          {(selectedProfile?.occurrenceCount || 0) !== 1 ? "s" : ""} registradas
         </p>
       </div>
-
-      {isLoading ? (
-        <div className="py-8 text-center text-gray-500">Carregando...</div>
-      ) : error ? (
-        <div className="py-8 text-center">
-          <p className="text-gray-500">{error}</p>
-          <button
-            onClick={loadProfiles}
-            className="mt-3 rounded-lg bg-white/5 px-4 py-2 text-gray-300 transition-colors hover:bg-white/10"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {profiles.map((profile) => (
-            <EmotionalProfileCard
-              key={profile.id}
-              profile={profile}
-              onClick={() => setSelectedProfile(profile)}
-            />
-          ))}
-        </div>
-      )}
     </div>
+  ) : null;
+
+  return (
+    <>
+      <div className="animate-fadeIn">
+        <div className="mb-4">
+          <h3 className="text-sm font-bold tracking-wider text-gray-300 uppercase">
+            Perfis Emocionais
+          </h3>
+          <p className="mt-1 text-xs text-gray-500">
+            Clique em um perfil para configurar seus gatilhos e padrões
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="py-8 text-center text-gray-500">Carregando...</div>
+        ) : error ? (
+          <div className="py-8 text-center">
+            <p className="text-gray-500">{error}</p>
+            <button
+              onClick={loadProfiles}
+              className="mt-3 rounded-lg bg-white/5 px-4 py-2 text-gray-300 transition-colors hover:bg-white/10"
+            >
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {profiles.map((profile) => (
+              <EmotionalProfileCard
+                key={profile.id}
+                profile={profile}
+                onClick={() => setSelectedProfile(profile)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Profile Detail Modal - Uses proper Modal header */}
+      <Modal
+        isOpen={!!selectedProfile}
+        onClose={() => setSelectedProfile(null)}
+        title={ModalTitle}
+        maxWidth="4xl"
+      >
+        {selectedProfile && (
+          <EmotionalProfileView
+            profile={selectedProfile}
+            onBack={() => setSelectedProfile(null)}
+            onSave={handleProfileSaved}
+          />
+        )}
+      </Modal>
+    </>
   );
 }
 
@@ -457,7 +500,7 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                         value={getCurrentValue()}
                         onChange={(e) => setCurrentValue(e.target.value)}
                         placeholder={getPlaceholder(currentStep, moodTag)}
-                        className="focus:border-zorin-primary/50 focus:ring-zorin-primary/30 h-56 w-full resize-none rounded-xl border border-white/5 bg-black/20 p-4 text-gray-100 placeholder-gray-500 backdrop-blur-sm transition-all focus:ring-1 focus:outline-none"
+                        className="focus:border-zorin-primary/50 focus:ring-zorin-primary/30 h-56 w-full resize-none rounded-xl border border-white/5 bg-[#232b32] p-4 text-gray-100 placeholder-gray-500 backdrop-blur-sm transition-all focus:ring-1 focus:outline-none"
                         autoFocus
                       />
                       {/* Hint centered + Step indicator right */}

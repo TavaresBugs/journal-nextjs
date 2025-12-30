@@ -247,6 +247,74 @@ class PrismaEmotionalProfileRepository {
       };
     }
   }
+
+  /**
+   * Sync occurrence counts based on actual mental logs.
+   * Counts mental_logs per mood_tag and updates emotional_profiles.
+   */
+  async syncOccurrenceCounts(userId: string): Promise<Result<Record<string, number>, AppError>> {
+    this.logger.info("Syncing occurrence counts", { userId });
+
+    try {
+      // Get counts from mental_logs grouped by mood_tag
+      const logCounts = await prisma.mental_logs.groupBy({
+        by: ["mood_tag"],
+        where: { user_id: userId },
+        _count: { id: true },
+      });
+
+      // Build a map of emotion type to count
+      const countsMap: Record<string, number> = {};
+      for (const entry of logCounts) {
+        if (entry.mood_tag) {
+          const emotionType = entry.mood_tag.toLowerCase();
+          countsMap[emotionType] = entry._count.id;
+        }
+      }
+
+      // Update each profile's occurrence_count
+      for (const emotionType of EMOTION_TYPES) {
+        const count = countsMap[emotionType] || 0;
+
+        // Get the last occurrence date for this emotion
+        const lastLog = await prisma.mental_logs.findFirst({
+          where: {
+            user_id: userId,
+            mood_tag: { equals: emotionType, mode: "insensitive" },
+          },
+          orderBy: { created_at: "desc" },
+          select: { created_at: true },
+        });
+
+        await prisma.emotional_profiles.upsert({
+          where: {
+            user_id_emotion_type: { user_id: userId, emotion_type: emotionType },
+          },
+          create: {
+            user_id: userId,
+            emotion_type: emotionType,
+            occurrence_count: count,
+            last_occurrence: lastLog?.created_at || null,
+            triggers: [],
+          },
+          update: {
+            occurrence_count: count,
+            last_occurrence: lastLog?.created_at || null,
+            updated_at: new Date(),
+          },
+        });
+      }
+
+      this.logger.info("Synced occurrence counts", { userId, countsMap });
+      return { data: countsMap, error: null };
+    } catch (error) {
+      this.logger.error("Failed to sync occurrence counts", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to sync occurrence counts", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
 }
 
 export const prismaEmotionalProfileRepo = new PrismaEmotionalProfileRepository();

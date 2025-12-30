@@ -10,6 +10,7 @@ export {
   GlassCardContent,
   GlassCardFooter,
 } from "./GlassCard";
+export { SolidCard, SolidCardHeader, SolidCardTitle } from "./SolidCard";
 // Select components - consolidated
 export {
   Select,

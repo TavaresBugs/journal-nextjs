@@ -337,6 +337,39 @@ export async function deleteMentalLogAction(
 }
 
 /**
+ * Update a mental log.
+ */
+export async function updateMentalLogAction(
+  id: string,
+  data: {
+    moodTag?: string;
+    step1Problem?: string;
+    step2Validation?: string;
+    step3Flaw?: string;
+    step4Correction?: string;
+    step5Logic?: string;
+  }
+): Promise<{ success: boolean; log?: MentalLog; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const result = await prismaMentalRepo.updateLog(id, userId, data);
+    if (result.error) {
+      console.error("[updateMentalLogAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true, log: result.data || undefined };
+  } catch (error) {
+    console.error("[updateMentalLogAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
  * Get zone average for the current user.
  */
 export async function getZoneAverageAction(limit = 5): Promise<number> {

@@ -26,8 +26,13 @@ export async function getEmotionalProfilesAction(): Promise<EmotionalProfile[]> 
       return [];
     }
 
-    console.log("[getEmotionalProfilesAction] profiles count:", result.data?.length);
-    return result.data || [];
+    // Sync occurrence counts from actual mental logs
+    await prismaEmotionalProfileRepo.syncOccurrenceCounts(userId);
+
+    // Re-fetch after sync to get updated counts
+    const updatedResult = await prismaEmotionalProfileRepo.getProfiles(userId);
+    console.log("[getEmotionalProfilesAction] profiles count:", updatedResult.data?.length);
+    return updatedResult.data || [];
   } catch (error) {
     console.error("[getEmotionalProfilesAction] Unexpected error:", error);
     return [];
@@ -121,6 +126,35 @@ export async function incrementEmotionOccurrenceAction(
     return { success: true };
   } catch (error) {
     console.error("[incrementEmotionOccurrenceAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Sync occurrence counts based on actual mental logs.
+ * This recalculates the occurrence count for each emotion type
+ * based on the real number of mental logs in the database.
+ */
+export async function syncOccurrenceCountsAction(): Promise<{
+  success: boolean;
+  synced?: Record<string, number>;
+  error?: string;
+}> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const result = await prismaEmotionalProfileRepo.syncOccurrenceCounts(userId);
+    if (result.error) {
+      console.error("[syncOccurrenceCountsAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true, synced: result.data || undefined };
+  } catch (error) {
+    console.error("[syncOccurrenceCountsAction] Unexpected error:", error);
     return { success: false, error: "Unexpected error occurred" };
   }
 }
