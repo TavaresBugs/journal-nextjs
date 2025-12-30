@@ -25,6 +25,7 @@ import {
   UpdateRecapData,
 } from "@/store/useLaboratoryStore";
 import { useJournalStore } from "@/store/useJournalStore";
+import { useAccountStore } from "@/store/useAccountStore";
 import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite } from "@/types";
 
 interface DashboardLaboratoryProps {
@@ -76,6 +77,9 @@ export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryPr
     loadEntries,
     currentAccountId: journalAccountId,
   } = useJournalStore();
+
+  // Account Store - for filtering trades by account
+  const { accounts } = useAccountStore();
 
   // Map journal entries to lightweight format for the modal
   const journalEntriesLite: JournalEntryLite[] = useMemo(
@@ -254,6 +258,7 @@ export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryPr
         onEdit={handleEditExperiment}
         onPromote={handlePromoteExperiment}
         availableTrades={trades}
+        accounts={accounts}
       />
 
       {/* Unified Recap Form Modal (Create & Edit) */}

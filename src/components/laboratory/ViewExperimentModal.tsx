@@ -4,7 +4,13 @@ import React, { useState } from "react";
 import { Modal, Button, IconActionButton } from "@/components/ui";
 import { ImagePreviewLightbox, type ImageItem } from "@/components/shared/ImagePreviewLightbox";
 import { ExperimentTradesSection } from "./experiment";
-import type { LaboratoryExperiment, ExperimentStatus, ExperimentType, TradeLite } from "@/types";
+import type {
+  LaboratoryExperiment,
+  ExperimentStatus,
+  ExperimentType,
+  TradeLite,
+  Account,
+} from "@/types";
 
 interface ViewExperimentModalProps {
   isOpen: boolean;
@@ -13,6 +19,7 @@ interface ViewExperimentModalProps {
   onEdit: (experiment: LaboratoryExperiment) => void;
   onPromote: (id: string) => void;
   availableTrades?: TradeLite[];
+  accounts?: Account[];
 }
 
 const STATUS_CONFIG: Record<ExperimentStatus, { label: string; color: string; bgColor: string }> = {
@@ -44,6 +51,7 @@ export function ViewExperimentModal({
   onEdit,
   onPromote,
   availableTrades = [],
+  accounts = [],
 }: ViewExperimentModalProps) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
@@ -175,7 +183,11 @@ export function ViewExperimentModal({
           )}
 
           {/* Trades Section - Prós/Contras */}
-          <ExperimentTradesSection experimentId={experiment.id} availableTrades={availableTrades} />
+          <ExperimentTradesSection
+            experimentId={experiment.id}
+            availableTrades={availableTrades}
+            accounts={accounts}
+          />
 
           {/* Promoted Status */}
           {experiment.promotedToPlaybook && (

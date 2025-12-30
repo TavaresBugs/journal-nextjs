@@ -4,19 +4,21 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/Button";
 import { IconActionButton } from "@/components/ui";
 import { ProbabilityChart } from "@/components/checklist/ProbabilityChart";
+import { AssetIcon } from "@/components/shared/AssetIcon";
 import {
   linkTradeToExperimentAction,
   unlinkTradeFromExperimentAction,
   getExperimentTradesAction,
 } from "@/app/actions/laboratory";
 import type { ExperimentLinkedTrade } from "@/lib/database/repositories";
-import type { TradeLite } from "@/types";
+import type { TradeLite, Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import dayjs from "dayjs";
 
 interface ExperimentTradesSectionProps {
   experimentId: string;
   availableTrades: TradeLite[];
+  accounts?: Account[];
   onRefreshNeeded?: () => void;
 }
 
@@ -27,10 +29,12 @@ interface ExperimentTradesSectionProps {
 export function ExperimentTradesSection({
   experimentId,
   availableTrades,
+  accounts = [],
   onRefreshNeeded,
 }: ExperimentTradesSectionProps) {
   const [linkedTrades, setLinkedTrades] = useState<ExperimentLinkedTrade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("all");
 
   // Load linked trades on mount
   useEffect(() => {
@@ -52,12 +56,18 @@ export function ExperimentTradesSection({
   // Filter already-linked trades
   const linkedTradeIds = useMemo(() => new Set(linkedTrades.map((t) => t.tradeId)), [linkedTrades]);
 
+  // Filter by account
+  const filteredByAccount = useMemo(() => {
+    if (selectedAccountId === "all") return availableTrades;
+    return availableTrades.filter((t) => t.accountId === selectedAccountId);
+  }, [availableTrades, selectedAccountId]);
+
   const filterAvailableTrades = useCallback(
     (query: string) => {
       if (!query) return [];
       const lowerQuery = query.toLowerCase();
 
-      return availableTrades.filter((trade) => {
+      return filteredByAccount.filter((trade) => {
         if (linkedTradeIds.has(trade.id)) return false;
 
         // Search by symbol
@@ -78,7 +88,7 @@ export function ExperimentTradesSection({
         return false;
       });
     },
-    [availableTrades, linkedTradeIds]
+    [filteredByAccount, linkedTradeIds]
   );
 
   // Link trade handler
@@ -158,7 +168,26 @@ export function ExperimentTradesSection({
   }
 
   return (
-    <div className="animate-fadeIn space-y-8">
+    <div className="animate-fadeIn space-y-6">
+      {/* Account Filter */}
+      {accounts.length > 1 && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-400">Filtrar por conta:</span>
+          <select
+            value={selectedAccountId}
+            onChange={(e) => setSelectedAccountId(e.target.value)}
+            className="rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-1.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
+          >
+            <option value="all">Todas as contas</option>
+            {accounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Prós Column */}
         <div className="flex h-full flex-col rounded-xl border border-emerald-500/20 bg-emerald-900/10 p-4">
@@ -185,6 +214,7 @@ export function ExperimentTradesSection({
                   <span className="text-xs text-gray-500">
                     {dayjs(trade.entryDate).format("DD/MM")}
                   </span>
+                  <AssetIcon symbol={trade.symbol} size="sm" />
                   <span className="font-medium">{trade.symbol}</span>
                   <span
                     className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
@@ -246,6 +276,7 @@ export function ExperimentTradesSection({
                   <span className="text-xs text-gray-500">
                     {dayjs(trade.entryDate).format("DD/MM")}
                   </span>
+                  <AssetIcon symbol={trade.symbol} size="sm" />
                   <span className="font-medium">{trade.symbol}</span>
                   <span
                     className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
@@ -435,6 +466,7 @@ function TradeSearchInput({ variant, onSelect, searchTrades }: TradeSearchInputP
                 <span className="text-xs text-gray-500">
                   {dayjs(trade.entryDate).format("DD/MM")}
                 </span>
+                <AssetIcon symbol={trade.symbol} size="sm" />
                 <span className="font-medium text-gray-300">{trade.symbol}</span>
                 <span
                   className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${

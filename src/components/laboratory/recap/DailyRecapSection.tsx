@@ -3,6 +3,7 @@
 import React, { memo, useMemo, useRef, useEffect } from "react";
 import type { TradeLite, JournalEntryLite, RecapLinkedType } from "@/types";
 import { format, parseISO } from "date-fns";
+import { AssetIcon } from "@/components/shared/AssetIcon";
 
 interface SearchRecord {
   type: RecapLinkedType;
@@ -51,6 +52,34 @@ export const DailyRecapSection = memo(function DailyRecapSection({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onShowDropdownChange]);
+
+  // Get linked record details from id
+  const linkedRecordDetails = useMemo(() => {
+    if (!linkedType || !linkedId) return null;
+
+    if (linkedType === "trade") {
+      const trade = trades.find((t) => t.id === linkedId);
+      if (trade) {
+        return {
+          type: "trade" as const,
+          symbol: trade.symbol,
+          date: trade.entryDate,
+          outcome: trade.outcome,
+        };
+      }
+    } else {
+      const journal = journalEntries.find((j) => j.id === linkedId);
+      if (journal) {
+        return {
+          type: "journal" as const,
+          symbol: journal.asset,
+          date: journal.date,
+          title: journal.title,
+        };
+      }
+    }
+    return null;
+  }, [linkedType, linkedId, trades, journalEntries]);
 
   // Get recent records (last 30 days)
   const recentRecords = useMemo((): SearchRecord[] => {
@@ -137,10 +166,11 @@ export const DailyRecapSection = memo(function DailyRecapSection({
         Vincular a um registro (opcional)
       </label>
       <div className="relative">
-        {linkedType && linkedId ? (
-          <div className="flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3">
+        {linkedType && linkedId && linkedRecordDetails ? (
+          <div className="flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3">
+            {/* Type Badge */}
             <span
-              className={`rounded px-2 py-0.5 text-xs font-medium ${
+              className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
                 linkedType === "trade"
                   ? "bg-green-500/20 text-green-400"
                   : "bg-blue-500/20 text-blue-400"
@@ -148,14 +178,50 @@ export const DailyRecapSection = memo(function DailyRecapSection({
             >
               {linkedType === "trade" ? "TRADE" : "DIÁRIO"}
             </span>
-            <span className="flex-1 text-white">{recordSearch}</span>
+
+            {/* Asset Icon + Symbol */}
+            {linkedRecordDetails.symbol && (
+              <div className="flex items-center gap-1.5 rounded-lg border border-gray-700/50 bg-gray-800/60 px-2 py-0.5">
+                <AssetIcon symbol={linkedRecordDetails.symbol} size="sm" />
+                <span className="text-xs font-medium text-gray-300">
+                  {linkedRecordDetails.symbol}
+                </span>
+              </div>
+            )}
+
+            {/* Date */}
+            <span className="text-sm text-gray-400">
+              {format(parseISO(linkedRecordDetails.date), "dd MMM yyyy")}
+            </span>
+
+            {/* Outcome indicator for trades */}
+            {linkedRecordDetails.outcome && (
+              <span
+                className={`text-sm font-bold ${
+                  linkedRecordDetails.outcome === "win"
+                    ? "text-green-400"
+                    : linkedRecordDetails.outcome === "loss"
+                      ? "text-red-400"
+                      : "text-yellow-400"
+                }`}
+              >
+                {linkedRecordDetails.outcome === "win"
+                  ? "✓"
+                  : linkedRecordDetails.outcome === "loss"
+                    ? "✗"
+                    : "⬤"}
+              </span>
+            )}
+
+            {/* Spacer + Remove button */}
+            <div className="flex-1" />
             <button
               type="button"
               onClick={() => {
                 onRecordSearchChange("");
                 onClearRecord();
               }}
-              className="rounded-full p-1 text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
+              className="shrink-0 rounded-full p-1 text-gray-400 transition-colors hover:bg-red-500/20 hover:text-red-400"
               title="Remover vínculo"
             >
               <svg
@@ -225,8 +291,9 @@ export const DailyRecapSection = memo(function DailyRecapSection({
                   onClick={() => handleSelectRecord(record)}
                   className="flex w-full items-center gap-3 border-b border-gray-700/50 px-4 py-3 text-left last:border-0 hover:bg-gray-700/50"
                 >
+                  {/* Type Badge */}
                   <span
-                    className={`rounded px-2 py-0.5 text-xs font-medium ${
+                    className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
                       record.type === "trade"
                         ? "bg-green-500/20 text-green-400"
                         : "bg-blue-500/20 text-blue-400"
@@ -234,13 +301,27 @@ export const DailyRecapSection = memo(function DailyRecapSection({
                   >
                     {record.type === "trade" ? "TRADE" : "DIÁRIO"}
                   </span>
-                  <span className="flex-1 truncate text-white">{record.label}</span>
-                  <span className="text-sm text-gray-400">
+
+                  {/* Asset Icon + Symbol */}
+                  {record.symbol && (
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <AssetIcon symbol={record.symbol} size="sm" />
+                      <span className="text-sm font-medium text-white">{record.symbol}</span>
+                    </div>
+                  )}
+                  {!record.symbol && (
+                    <span className="flex-1 truncate text-white">{record.label}</span>
+                  )}
+
+                  {/* Date */}
+                  <span className="ml-auto text-sm text-gray-400">
                     {format(parseISO(record.date), "dd/MM")}
                   </span>
+
+                  {/* Outcome indicator */}
                   {record.outcome && (
                     <span
-                      className={`text-sm ${
+                      className={`text-sm font-bold ${
                         record.outcome === "win"
                           ? "text-green-400"
                           : record.outcome === "loss"
