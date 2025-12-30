@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useBlockBodyScroll } from "@/hooks/useBlockBodyScroll";
 import { IconActionButton } from "@/components/ui/IconActionButton";
@@ -25,7 +25,7 @@ describe("Hooks and UI Utils", () => {
       // Test runner does this usually if we unmount manually.
     });
 
-    it("should lock body scroll when open", () => {
+    it("should lock body scroll when open", async () => {
       // We need a test component to use the hook
       const TestComponent = ({ open }: { open: boolean }) => {
         useBlockBodyScroll(open);
@@ -34,14 +34,18 @@ describe("Hooks and UI Utils", () => {
 
       const { unmount } = render(<TestComponent open={true} />);
 
-      expect(document.body.style.overflow).toBe("hidden");
-      expect(document.body.style.position).toBe("fixed");
-      expect(document.body.style.top).toBe("-100px");
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("hidden");
+        expect(document.body.style.position).toBe("fixed");
+        expect(document.body.style.top).toBe("-100px");
+      });
 
       unmount();
 
-      expect(document.body.style.overflow).toBe("");
-      expect(window.scrollTo).toHaveBeenCalledWith(0, 100);
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("");
+        expect(window.scrollTo).toHaveBeenCalledWith(0, 100);
+      });
     });
 
     it("should not lock if not open", () => {
@@ -55,7 +59,7 @@ describe("Hooks and UI Utils", () => {
       expect(document.body.style.overflow).toBe("");
     });
 
-    it("should handle nested locks", () => {
+    it("should handle nested locks", async () => {
       const TestComponent = ({ open }: { open: boolean }) => {
         useBlockBodyScroll(open);
         return null;
@@ -63,19 +67,30 @@ describe("Hooks and UI Utils", () => {
 
       // Render first modal
       const { unmount: unmount1 } = render(<TestComponent open={true} />);
-      expect(document.body.style.overflow).toBe("hidden");
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("hidden");
+      });
 
       // Render second modal
       const { unmount: unmount2 } = render(<TestComponent open={true} />);
-      expect(document.body.style.overflow).toBe("hidden"); // Still hidden
+      // Still hidden
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("hidden");
+      });
 
       // Unmount second (nested)
       unmount2();
-      expect(document.body.style.overflow).toBe("hidden"); // Still hidden, count is 1
+      // Still hidden, count is 1
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("hidden");
+      });
 
       // Unmount first
       unmount1();
-      expect(document.body.style.overflow).toBe(""); // Released
+      // Released
+      await waitFor(() => {
+        expect(document.body.style.overflow).toBe("");
+      });
     });
   });
 

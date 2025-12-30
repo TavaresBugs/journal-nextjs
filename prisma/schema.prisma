@@ -415,6 +415,7 @@ model users {
   mental_entries                                   mental_entries[]
   mental_logs                                      mental_logs[]
   mental_profiles                                  mental_profiles[]
+  emotional_profiles                               emotional_profiles[]
   mentor_invites_mentor_invites_mentee_idTousers   mentor_invites[]         @relation("mentor_invites_mentee_idTousers")
   mentor_invites_mentor_invites_mentor_idTousers   mentor_invites[]         @relation("mentor_invites_mentor_idTousers")
   mentor_reviews_mentor_reviews_mentee_idTousers   mentor_reviews[]         @relation("mentor_reviews_mentee_idTousers")
@@ -794,6 +795,43 @@ model mental_profiles {
   users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([user_id], map: "idx_mental_profiles_user_id")
+  @@schema("public")
+}
+
+/// Structured emotional profiles for psychological analysis (Fear, Greed, Tilt, etc.)
+/// Each emotion type has its own profile with Quick Notes, Injecting Logic, Levels, Triggers, and History.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model emotional_profiles {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String    @db.Uuid
+  emotion_type        String    @db.VarChar(30) // fear, greed, tilt, fomo, revenge, hesitation, overconfidence
+  
+  // Quick Notes
+  first_sign          String?   // Primeiro sinal da emoção
+  corrective_actions  String?   // Ações corretivas
+  
+  // Injecting Logic
+  injecting_logic     String?   // Lógica para injetar quando sentir a emoção
+  
+  // Níveis (JSON com 1-10)
+  anger_levels        Json?     @default("{}") // {"1": "...", "2": "...", ...}
+  technical_changes   Json?     @default("{}") // {"1": "...", "2": "...", ...}
+  
+  // Triggers e History
+  triggers            String[]  // Lista de gatilhos
+  history             String?   // Contexto histórico
+  
+  // Contadores automáticos
+  occurrence_count    Int       @default(0)
+  last_occurrence     DateTime? @db.Timestamptz(6)
+  
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
+  
+  users               users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, emotion_type])
+  @@index([user_id], map: "idx_emotional_profiles_user_id")
   @@schema("public")
 }
 

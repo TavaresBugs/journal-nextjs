@@ -121,7 +121,7 @@ describe("RecapFormModal", () => {
   it("should search and select a record", async () => {
     render(<RecapFormModal {...defaultProps} />);
 
-    const searchInput = screen.getByPlaceholderText("Buscar por ativo, data ou diário...");
+    const searchInput = screen.getByPlaceholderText("Ex: NQ, ES, 2024-12-15 ou título do diário");
     fireEvent.change(searchInput, { target: { value: "EUR" } });
     fireEvent.focus(searchInput);
 
@@ -134,7 +134,14 @@ describe("RecapFormModal", () => {
     fireEvent.click(screen.getByText("EURUSD"));
 
     // Check if input updated
-    expect(searchInput).toHaveValue("EURUSD");
+    // Check if input is removed (replaced by selected view)
+    await waitFor(() => {
+      expect(
+        screen.queryByPlaceholderText("Ex: NQ, ES, 2024-12-15 ou título do diário")
+      ).not.toBeInTheDocument();
+      // Verify the selected record UI is present (e.g. TRADE badge)
+      expect(screen.getByText("TRADE")).toBeInTheDocument();
+    });
   });
 
   it("should populate data in edit mode", () => {

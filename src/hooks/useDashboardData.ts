@@ -70,6 +70,7 @@ export interface DashboardDataActions {
   loadCalendarData: () => Promise<void>; // New
   loadReportsData: () => Promise<void>; // New
   loadPlaybookStats: () => Promise<void>; // New
+  loadHistoryForMonth: (date: Date) => Promise<void>; // New
 }
 
 /**
@@ -255,5 +256,6 @@ export function useDashboardData(
     loadCalendarData: initData.loadCalendarData,
     loadReportsData: initData.loadReportsData,
     loadPlaybookStats: initData.loadPlaybookStats,
+    loadHistoryForMonth: initData.loadHistoryForMonth,
   };
 }

@@ -14,6 +14,7 @@ interface TradeCalendarProps {
   journalAvailability?: Record<string, number>; // OPTIMIZED: date -> count map for instant badges
   accountId?: string; // For prefetching
   onDayClick?: (date: string, dayTrades: Trade[]) => void;
+  onMonthChange?: (date: dayjs.Dayjs) => void;
 }
 
 interface DayStatsResult {
@@ -34,6 +35,7 @@ export function TradeCalendar({
   journalAvailability,
   accountId,
   onDayClick,
+  onMonthChange,
 }: TradeCalendarProps) {
   const [currentDate, setCurrentDate] = useState(dayjs());
   const { entries: storeEntries, currentAccountId: storeAccountId } = useJournalStore();
@@ -222,11 +224,22 @@ export function TradeCalendar({
   const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
   const handlePrevMonth = () => {
-    setCurrentDate((prev) => prev.subtract(1, "month"));
+    const newDate = currentDate.subtract(1, "month");
+    console.log("📅 TradeCalendar: Prev Month clicked:", newDate.format("YYYY-MM"));
+    setCurrentDate(newDate);
+    if (onMonthChange) {
+      console.log("calendar: triggering onMonthChange");
+      onMonthChange(newDate);
+    } else {
+      console.warn("calendar: onMonthChange prop is missing");
+    }
   };
 
   const handleNextMonth = () => {
-    setCurrentDate((prev) => prev.add(1, "month"));
+    const newDate = currentDate.add(1, "month");
+    console.log("📅 TradeCalendar: Next Month clicked:", newDate.format("YYYY-MM"));
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate);
   };
 
   return (

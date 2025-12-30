@@ -36,6 +36,16 @@ export function useStratifiedLoading(accountId: string) {
   const abortControllerRef = useRef<AbortController | null>(null);
   const prevAccountIdRef = useRef<string | null>(null);
 
+  // Tracking loaded years to avoid redundant fetches (Client-side Cache)
+  const loadedYears = useRef<Set<string>>(new Set());
+
+  // Reset loaded years when account changes
+  useEffect(() => {
+    if (loadedYears.current) {
+      loadedYears.current.clear();
+    }
+  }, [accountId]);
+
   // Store actions
   const { setAllHistory, setAdvancedMetrics, allHistory, isLoadingHistory, serverAdvancedMetrics } =
     useTradeStore(); // Modified this line
@@ -209,11 +219,62 @@ export function useStratifiedLoading(accountId: string) {
     }));
   };
 
+  /**
+   * Load history for a specific year (Batch Loading)
+   * Fetches the entire year of trades to optimize performance.
+   * Also implements "Proximity Prefetch": if month is Jan/Feb, fetches previous year too.
+   */
+  const loadHistoryForMonth = async (date: Date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth(); // 0-indexed (0=Jan, 1=Feb)
+
+    // Helper to fetch a full year
+    const fetchYear = async (targetYear: number) => {
+      const yearKey = `${accountId}-${targetYear}`;
+
+      if (loadedYears.current.has(yearKey)) {
+        console.log(`⏩ Year ${targetYear} already loaded/loading. Skipping.`);
+        return;
+      }
+
+      // Mark as loaded immediately to prevent race conditions (Optimistic Lock)
+      loadedYears.current.add(yearKey);
+
+      const dateFrom = `${targetYear}-01-01`;
+      const dateTo = `${targetYear}-12-31`;
+
+      console.log(`📅 Batch Loading Year ${targetYear}...`);
+
+      try {
+        const history = await fetchTradeHistory(accountId, { dateFrom, dateTo });
+        console.log(`✅ Loaded ${history.length} trades for Year ${targetYear}`);
+
+        if (history.length > 0) {
+          useTradeStore.getState().mergeHistory(history);
+        }
+      } catch (error) {
+        console.error(`Error loading year ${targetYear}:`, error);
+        loadedYears.current.delete(yearKey); // Allow retry on failure
+      }
+    };
+
+    // 1. Fetch current target year
+    await fetchYear(year);
+
+    // 2. Proximity Prefetch: If Jan (0) or Feb (1), fetch previous year too
+    if (month <= 1) {
+      console.log(`🚀 Proximity Prefetch triggered for ${year - 1}`);
+      // No await here - let it run in background
+      fetchYear(year - 1);
+    }
+  };
+
   return {
     phases,
     loadCalendarData,
     loadReportsData,
     playbookStats,
     loadPlaybookStats, // Exposed
+    loadHistoryForMonth, // New
   };
 }

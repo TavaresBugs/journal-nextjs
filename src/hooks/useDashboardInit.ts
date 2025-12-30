@@ -60,6 +60,7 @@ export interface DashboardInitActions {
   loadCalendarData: () => Promise<void>;
   loadReportsData: () => Promise<void>;
   loadPlaybookStats: () => Promise<void>;
+  loadHistoryForMonth: (date: Date) => Promise<void>; // New
 }
 
 /**
@@ -81,8 +82,14 @@ export function useDashboardInit(
   const { showToast } = useToast();
 
   // Stratified Loading
-  const { phases, loadCalendarData, loadReportsData, playbookStats, loadPlaybookStats } =
-    useStratifiedLoading(accountId);
+  const {
+    phases,
+    loadCalendarData,
+    loadReportsData,
+    playbookStats,
+    loadPlaybookStats,
+    loadHistoryForMonth,
+  } = useStratifiedLoading(accountId);
 
   // Store State
   const { currentAccount } = useAccountStore();
@@ -358,5 +365,6 @@ export function useDashboardInit(
     loadCalendarData,
     loadReportsData,
     loadPlaybookStats,
+    loadHistoryForMonth,
   };
 }

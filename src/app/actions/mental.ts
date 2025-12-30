@@ -1,6 +1,10 @@
 "use server";
 
-import { prismaMentalRepo } from "@/lib/database/repositories";
+import {
+  prismaMentalRepo,
+  prismaEmotionalProfileRepo,
+  EMOTION_TYPES,
+} from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 import {
   MentalProfile,
@@ -246,6 +250,29 @@ export async function getMentalLogsAction(limit = 20): Promise<MentalLog[]> {
 }
 
 /**
+ * Get mental logs filtered by mood/emotion type.
+ */
+export async function getMentalLogsByMoodAction(moodTag: string, limit = 10): Promise<MentalLog[]> {
+  try {
+    const userId = await getCurrentUserId();
+    console.log(`[getMentalLogsByMoodAction] userId: ${userId}, moodTag: ${moodTag}`);
+    if (!userId) return [];
+
+    const result = await prismaMentalRepo.getLogsByMood(userId, moodTag, limit);
+    console.log(`[getMentalLogsByMoodAction] Found logs: ${result.data?.length}`);
+    if (result.error) {
+      console.error("[getMentalLogsByMoodAction] Error:", result.error);
+      return [];
+    }
+
+    return result.data || [];
+  } catch (error) {
+    console.error("[getMentalLogsByMoodAction] Unexpected error:", error);
+    return [];
+  }
+}
+
+/**
  * Save a new mental log (wizard).
  */
 export async function saveMentalLogAction(data: {
@@ -266,6 +293,15 @@ export async function saveMentalLogAction(data: {
     if (result.error) {
       console.error("[saveMentalLogAction] Error:", result.error);
       return { success: false, error: result.error.message };
+    }
+
+    // Increment occurrence count in emotional profile
+    const emotionType = data.moodTag.toLowerCase();
+    if (EMOTION_TYPES.includes(emotionType as (typeof EMOTION_TYPES)[number])) {
+      await prismaEmotionalProfileRepo.incrementOccurrence(
+        userId,
+        emotionType as (typeof EMOTION_TYPES)[number]
+      );
     }
 
     return { success: true, log: result.data || undefined };

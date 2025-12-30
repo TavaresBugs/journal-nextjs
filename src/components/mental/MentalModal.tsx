@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Modal, GlassCard, SegmentedToggle } from "@/components/ui";
 import { saveMentalLogAction } from "@/app/actions/mental";
+import { getEmotionalProfilesAction } from "@/app/actions/emotionalProfile";
 import type { MentalLog } from "@/lib/database/repositories/MentalRepository";
+import type { EmotionalProfile } from "@/lib/database/repositories/EmotionalProfileRepository";
 import { PerformanceGauge } from "./PerformanceGauge";
 import { MentalGrid } from "./MentalGrid";
+import { EmotionalProfileCard } from "./EmotionalProfileCard";
+import { EmotionalProfileView } from "./EmotionalProfileView";
 
 interface MentalModalProps {
   isOpen: boolean;
@@ -58,14 +62,123 @@ const MOOD_OPTIONS: MoodOption[] = [
 ];
 
 const WIZARD_STEPS = [
-  { id: 0, title: "Qual é o sentimento?", subtitle: "Identifique o bloqueio mental" },
-  { id: 1, title: "Descreva o Problema", subtitle: "O que você está sentindo? O que quer fazer?" },
-  { id: 2, title: "Validação", subtitle: "Por que esse sentimento faz sentido?" },
-  { id: 3, title: "A Falha", subtitle: "Onde está o erro nessa lógica?" },
-  { id: 4, title: "A Correção", subtitle: "Qual é a verdade lógica?" },
-  { id: 5, title: "Reforço", subtitle: "Por que a correção está certa?" },
-  { id: 6, title: "Sua Verdade", subtitle: "Respire fundo e internalize" },
+  {
+    id: 0,
+    title: "Qual é o sentimento?",
+    subtitle: "Identifique o bloqueio mental que está enfrentando agora",
+  },
+  {
+    id: 1,
+    title: "Descreva o Problema",
+    subtitle: "O que você está sentindo? O que quer fazer? Seja honesto e específico",
+  },
+  {
+    id: 2,
+    title: "Validação",
+    subtitle: "Por que faz sentido você estar sentindo isso? Valide sua emoção sem julgamento",
+  },
+  {
+    id: 3,
+    title: "A Falha",
+    subtitle: "Onde está o erro nessa lógica? O que você está ignorando ou exagerando?",
+  },
+  {
+    id: 4,
+    title: "A Correção",
+    subtitle: "Qual é a verdade lógica? Escreva o pensamento racional que substitui a emoção",
+  },
+  {
+    id: 5,
+    title: "Reforço",
+    subtitle: "Por que essa correção está certa? Reforce com evidências e argumentos",
+  },
+  { id: 6, title: "Sua Verdade", subtitle: "Respire fundo e internalize sua nova perspectiva" },
 ];
+
+// Profiles Tab Component
+function ProfilesTab({ refreshTrigger }: { refreshTrigger: number }) {
+  const [profiles, setProfiles] = useState<EmotionalProfile[]>([]);
+  const [selectedProfile, setSelectedProfile] = useState<EmotionalProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadProfiles = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      console.log("[ProfilesTab] Loading profiles...");
+      const data = await getEmotionalProfilesAction();
+      console.log("[ProfilesTab] Loaded profiles:", data?.length);
+      setProfiles(data);
+      if (data.length === 0) {
+        setError("Nenhum perfil retornado. Verifique o console do servidor.");
+      }
+    } catch (err) {
+      console.error("[ProfilesTab] Error loading profiles:", err);
+      setError("Erro ao carregar perfis");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProfiles();
+  }, [refreshTrigger]);
+
+  const handleProfileSaved = async () => {
+    const data = await getEmotionalProfilesAction();
+    setProfiles(data);
+  };
+
+  if (selectedProfile) {
+    return (
+      <div className="animate-fadeIn">
+        <EmotionalProfileView
+          profile={selectedProfile}
+          onBack={() => setSelectedProfile(null)}
+          onSave={handleProfileSaved}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="animate-fadeIn">
+      <div className="mb-4">
+        <h3 className="text-sm font-bold tracking-wider text-gray-300 uppercase">
+          Perfis Emocionais
+        </h3>
+        <p className="mt-1 text-xs text-gray-500">
+          Clique em um perfil para configurar seus gatilhos e padrões
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="py-8 text-center text-gray-500">Carregando...</div>
+      ) : error ? (
+        <div className="py-8 text-center">
+          <p className="text-gray-500">{error}</p>
+          <button
+            onClick={loadProfiles}
+            className="mt-3 rounded-lg bg-white/5 px-4 py-2 text-gray-300 transition-colors hover:bg-white/10"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {profiles.map((profile) => (
+            <EmotionalProfileCard
+              key={profile.id}
+              profile={profile}
+              onClick={() => setSelectedProfile(profile)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>("wizard");
@@ -197,9 +310,9 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
   const selectedMood = MOOD_OPTIONS.find((m) => m.value === moodTag);
 
   const TABS_OPTIONS = [
-    { value: "wizard", label: <>🎯 Resolver Agora</> },
-    { value: "diary", label: <>📊 Diário & Performance</> },
-    { value: "profiles", label: <>👤 Meus Perfis</> },
+    { value: "wizard", label: <>🧠 Análise do Momento</> },
+    { value: "diary", label: <>📊 Análise Psicológica</> },
+    { value: "profiles", label: <>👤 Perfis Emocionais</> },
   ];
 
   return (
@@ -229,21 +342,83 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                 )}
 
                 {/* Header with mood badge */}
-                <div className="pb-4 text-center">
+                <div className="pb-4">
+                  {/* Mood badge - centered */}
                   {selectedMood && currentStep > 0 && (
-                    <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-gray-700 bg-black/30 px-3 py-1 text-sm text-gray-300">
-                      <span>{selectedMood.emoji}</span>
-                      <span>{selectedMood.label}</span>
-                    </span>
+                    <div className="mb-3 text-center">
+                      <span className="inline-flex items-center gap-2 rounded-full border border-gray-700 bg-black/30 px-3 py-1 text-sm text-gray-300">
+                        <span>{selectedMood.emoji}</span>
+                        <span>{selectedMood.label}</span>
+                      </span>
+                    </div>
                   )}
-                  <h2 className="mb-1 text-2xl font-bold text-gray-100">
-                    {WIZARD_STEPS[currentStep].title}
-                  </h2>
-                  <p className="text-sm text-gray-400">{WIZARD_STEPS[currentStep].subtitle}</p>
+
+                  {/* Title row with arrows at edges */}
+                  <div className="flex items-center justify-between">
+                    {/* Back Arrow - Red (IconActionButton style) */}
+                    <button
+                      onClick={handleBack}
+                      disabled={currentStep === 0}
+                      className={`rounded-lg p-3 text-gray-400 transition-colors ${
+                        currentStep > 0 ? "hover:bg-red-500/10 hover:text-red-400" : "invisible"
+                      }`}
+                      title="Voltar"
+                      aria-label="Voltar"
+                    >
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+
+                    {/* Title */}
+                    <h2 className="text-2xl font-bold text-gray-100">
+                      {WIZARD_STEPS[currentStep].title}
+                    </h2>
+
+                    {/* Next Arrow - Green (IconActionButton style) */}
+                    <button
+                      onClick={handleNext}
+                      disabled={currentStep === 0 || currentStep >= 6 || !canProceed()}
+                      className={`rounded-lg p-3 text-gray-400 transition-colors ${
+                        currentStep > 0 && currentStep < 6 && canProceed()
+                          ? "hover:bg-green-500/10 hover:text-green-400"
+                          : currentStep > 0 && currentStep < 6
+                            ? "cursor-not-allowed text-gray-600"
+                            : "invisible"
+                      }`}
+                      title="Próximo"
+                      aria-label="Próximo"
+                    >
+                      <svg
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Subtitle */}
+                  <p className="mt-1 text-center text-sm text-gray-400">
+                    {WIZARD_STEPS[currentStep].subtitle}
+                  </p>
                 </div>
 
                 {/* Content */}
-                <div className="min-h-[280px]">
+                <div>
                   {/* Step 0: Mood Selection */}
                   {currentStep === 0 && (
                     <div className="grid grid-cols-2 gap-3">
@@ -281,13 +456,17 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                       <textarea
                         value={getCurrentValue()}
                         onChange={(e) => setCurrentValue(e.target.value)}
-                        placeholder={getPlaceholder(currentStep)}
+                        placeholder={getPlaceholder(currentStep, moodTag)}
                         className="focus:border-zorin-primary/50 focus:ring-zorin-primary/30 h-56 w-full resize-none rounded-xl border border-white/5 bg-black/20 p-4 text-gray-100 placeholder-gray-500 backdrop-blur-sm transition-all focus:ring-1 focus:outline-none"
                         autoFocus
                       />
-                      <p className="mt-2 text-center text-xs text-gray-500">
-                        {getHint(currentStep)}
-                      </p>
+                      {/* Hint centered + Step indicator right */}
+                      <div className="relative mt-3">
+                        <p className="text-center text-xs text-gray-500">{getHint(currentStep)}</p>
+                        <span className="absolute top-0 right-0 text-base font-medium text-gray-400">
+                          Passo {currentStep} de 5
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -335,50 +514,22 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
                   )}
                 </div>
 
-                {/* Navigation */}
-                <div className="mt-6 flex items-center justify-between border-t border-gray-800 pt-6">
-                  <div>
-                    {currentStep > 0 && (
-                      <button
-                        onClick={handleBack}
-                        className="px-6 py-2 text-gray-400 transition-colors hover:text-white"
-                      >
-                        ← Voltar
-                      </button>
-                    )}
+                {/* Save Button - Only on Step 6 */}
+                {currentStep === 6 && (
+                  <div className="mt-6 flex justify-center border-t border-gray-800 pt-6">
+                    <button
+                      onClick={handleSave}
+                      disabled={isSaving}
+                      className={`rounded-lg px-8 py-2 font-semibold transition-all duration-200 ${
+                        isSaving
+                          ? "cursor-not-allowed bg-gray-700 text-gray-500"
+                          : "bg-zorin-accent hover:bg-zorin-accent/90 text-black"
+                      }`}
+                    >
+                      {isSaving ? "Salvando..." : "✓ Salvar e Fechar"}
+                    </button>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    {currentStep > 0 && currentStep < 6 && <span>Passo {currentStep} de 5</span>}
-                  </div>
-                  <div>
-                    {currentStep > 0 && currentStep < 6 && (
-                      <button
-                        onClick={handleNext}
-                        disabled={!canProceed()}
-                        className={`rounded-lg px-6 py-2 font-semibold transition-all duration-200 ${
-                          canProceed()
-                            ? "bg-zorin-accent hover:bg-zorin-accent/90 text-black"
-                            : "cursor-not-allowed bg-gray-700 text-gray-500"
-                        }`}
-                      >
-                        Próximo →
-                      </button>
-                    )}
-                    {currentStep === 6 && (
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`rounded-lg px-8 py-2 font-semibold transition-all duration-200 ${
-                          isSaving
-                            ? "cursor-not-allowed bg-gray-700 text-gray-500"
-                            : "bg-zorin-accent hover:bg-zorin-accent/90 text-black"
-                        }`}
-                      >
-                        {isSaving ? "Salvando..." : "✓ Salvar e Fechar"}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -401,16 +552,8 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
               </div>
             )}
 
-            {/* Tab 3: Profiles (Placeholder) */}
-            {activeTab === "profiles" && (
-              <div className="animate-fadeIn py-16 text-center">
-                <div className="mb-4 text-6xl">🚧</div>
-                <h3 className="mb-2 text-xl font-bold text-gray-300">Em Construção</h3>
-                <p className="text-gray-500">
-                  Configure seus perfis de emoções e gatilhos personalizados.
-                </p>
-              </div>
-            )}
+            {/* Tab 3: Profiles */}
+            {activeTab === "profiles" && <ProfilesTab refreshTrigger={refreshTrigger} />}
           </div>
         </div>
       </div>
@@ -419,21 +562,71 @@ export function MentalModal({ isOpen, onClose, onSave }: MentalModalProps) {
 }
 
 // Helper functions
-function getPlaceholder(step: number): string {
-  switch (step) {
-    case 1:
-      return "Descreva o que está sentindo agora. O que você quer fazer? Seja honesto consigo mesmo...";
-    case 2:
-      return "Por que faz sentido você estar sentindo isso? Valide seu sentimento...";
-    case 3:
-      return "Onde está o erro nessa lógica? O que você está ignorando?";
-    case 4:
-      return "Qual é a verdade lógica? O que você deveria fazer de diferente?";
-    case 5:
-      return "Por que essa correção está certa? Reforce a nova lógica...";
-    default:
-      return "";
+function getPlaceholder(step: number, mood: MoodTag | null): string {
+  const examples: Record<MoodTag, Record<number, string>> = {
+    fear: {
+      1: "Ex: Estou com medo de entrar no trade porque posso perder dinheiro...",
+      2: "Ex: Faz sentido ter medo porque já perdi antes e ainda estou me recuperando...",
+      3: "Ex: Estou ignorando que o setup está alinhado e que segui meu plano...",
+      4: "Ex: Seguir o plano é o que importa. Um loss não define minha competência...",
+      5: "Ex: Porque estatisticamente trades bem executados geram lucro consistente...",
+    },
+    greed: {
+      1: "Ex: Quero aumentar a posição porque está dando muito certo...",
+      2: "Ex: Faz sentido querer mais, afinal estou ganhando e parece fácil...",
+      3: "Ex: Estou ignorando que ganância já me fez devolver lucros antes...",
+      4: "Ex: Respeitar meus alvos e stops é o que protege meu capital...",
+      5: "Ex: Porque disciplina consistente gera resultados melhores que ganância...",
+    },
+    fomo: {
+      1: "Ex: Estou vendo o mercado subir e sinto que preciso entrar agora...",
+      2: "Ex: Faz sentido ter FOMO, ninguém quer perder oportunidades...",
+      3: "Ex: Estou ignorando que entrar sem setup é apostar, não operar...",
+      4: "Ex: Sempre haverá novas oportunidades. Paciência é minha vantagem...",
+      5: "Ex: Porque operar apenas setups do meu plano me protege de erros...",
+    },
+    tilt: {
+      1: "Ex: Estou com raiva porque perdi um trade que não deveria ter perdido...",
+      2: "Ex: Faz sentido estar irritado, me dediquei e não deu certo...",
+      3: "Ex: Estou ignorando que operar irritado só piora a situação...",
+      4: "Ex: Preciso pausar e recuperar meu equilíbrio antes de operar...",
+      5: "Ex: Porque decisões tomadas com raiva são sempre ruins no trading...",
+    },
+    revenge: {
+      1: "Ex: Preciso recuperar o que perdi AGORA, vou aumentar a mão...",
+      2: "Ex: Faz sentido querer recuperar, foi uma perda injusta...",
+      3: "Ex: Estou ignorando que revenge trading é a causa de quebras...",
+      4: "Ex: Aceitar losses faz parte. Recupero com disciplina, não com pressa...",
+      5: "Ex: Porque a pressa para recuperar sempre gera mais perdas...",
+    },
+    hesitation: {
+      1: "Ex: O setup apareceu mas não consegui clicar, fiquei paralisado...",
+      2: "Ex: Faz sentido hesitar, errar dói e quero ter certeza...",
+      3: "Ex: Estou ignorando que hesitação me faz perder bons trades...",
+      4: "Ex: Confiar no processo e executar. A análise já foi feita...",
+      5: "Ex: Porque executar o plano é meu trabalho, não prever o futuro...",
+    },
+    overconfidence: {
+      1: "Ex: Estou me sentindo invencível, tudo que faço dá certo...",
+      2: "Ex: Faz sentido estar confiante, afinal estou ganhando...",
+      3: "Ex: Estou ignorando que excesso de confiança precede grandes quedas...",
+      4: "Ex: Manter a humildade e seguir o processo independente dos resultados...",
+      5: "Ex: Porque o mercado não respeita egos, apenas disciplina...",
+    },
+    other: {
+      1: "Ex: Descreva o que está sentindo neste momento...",
+      2: "Ex: Explique por que faz sentido você se sentir assim...",
+      3: "Ex: Onde está o erro no seu raciocínio atual?",
+      4: "Ex: Qual seria a forma mais racional de pensar sobre isso?",
+      5: "Ex: Por que essa nova perspectiva é mais correta?",
+    },
+  };
+
+  if (!mood || !examples[mood] || !examples[mood][step]) {
+    return "Descreva seus pensamentos aqui...";
   }
+
+  return examples[mood][step];
 }
 
 function getHint(step: number): string {

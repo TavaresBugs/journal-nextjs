@@ -53,3 +53,10 @@ export {
 } from "./MentorRepository";
 export { prismaShareRepo, PrismaShareRepository, type SharedJournal } from "./ShareRepository";
 export { prismaSettingsRepo, PrismaSettingsRepository } from "./SettingsRepository";
+export {
+  prismaEmotionalProfileRepo,
+  PrismaEmotionalProfileRepository,
+  type EmotionalProfile,
+  type EmotionType,
+  EMOTION_TYPES,
+} from "./EmotionalProfileRepository";

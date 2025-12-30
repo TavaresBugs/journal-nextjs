@@ -12,7 +12,6 @@ import {
   SettingsModal,
 } from "@/components/modals/DynamicModals";
 import { AccountSelectionSkeleton } from "@/components/accounts/AccountSelectionSkeleton";
-import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 import {
   Card,
   CardHeader,
@@ -425,11 +424,6 @@ export default function HomePage() {
       />
 
       <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
-
-      {/* Preload DashboardSkeleton so it's cached and appears instantly on navigation */}
-      <div className="hidden" aria-hidden="true">
-        <DashboardSkeleton />
-      </div>
     </div>
   );
 }

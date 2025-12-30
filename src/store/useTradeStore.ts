@@ -72,6 +72,7 @@ interface TradeStore {
   loadTrades: (accountId: string) => Promise<void>;
   loadAllHistory: (accountId: string) => Promise<void>; // NEW action
   setAllHistory: (history: TradeLite[]) => void; // NEW action
+  mergeHistory: (history: TradeLite[]) => void; // NEW action for incremental loading
   setAdvancedMetrics: (metrics: TradeStore["serverAdvancedMetrics"]) => void; // Fixed missing action
   loadPage: (accountId: string, page: number) => Promise<void>;
   setSortDirection: (accountId: string, direction: "asc" | "desc") => Promise<void>; // NEW action
@@ -170,6 +171,25 @@ export const useTradeStore = create<TradeStore>()((set, get) => ({
 
   setAllHistory: (history: TradeLite[]) => {
     set({ allHistory: history });
+  },
+
+  mergeHistory: (newHistory: TradeLite[]) => {
+    set((state) => {
+      // Create a map of existing history for O(1) lookup
+      const existingIds = new Set(state.allHistory.map((t) => t.id));
+
+      // Filter out duplicates from new history
+      const uniqueNewTrades = newHistory.filter((t) => !existingIds.has(t.id));
+
+      if (uniqueNewTrades.length === 0) return state;
+
+      // Merge and sort
+      const merged = [...state.allHistory, ...uniqueNewTrades].sort(
+        (a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()
+      );
+
+      return { allHistory: merged };
+    });
   },
 
   setAdvancedMetrics: (metrics) => {

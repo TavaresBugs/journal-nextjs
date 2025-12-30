@@ -1,0 +1,2701 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.15 [39m[90m/home/jhontavares/Documents/Programacao/Journal-NextJs[39m
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts
+[22m[39m[dotenv@17.2.3] injecting env (7) from .env.local -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests
+[22m[39m✅ Supabase client initialized for production tests
+
+[90mstderr[2m | src/hooks/__tests__/useMentalHub.test.tsx[2m > [22m[2museMentalHub[2m > [22m[2mshould handle loading errors
+[22m[39mError loading mental profiles: Error: Failed
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/hooks/__tests__/useMentalHub.test.tsx:48:39
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mQuery Performance[2m > [22m[2mshould query 100 trades in less than 2000ms
+[22m[39m✅ Query took 371.82ms (0 trades)
+
+[90mstderr[2m | src/hooks/__tests__/useMentalHub.test.tsx[2m > [22m[2museMentalHub[2m > [22m[2mshould handle save entry error
+[22m[39mError saving mental entry: Error: Validation
+    at Object.saveEntry [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/hooks/useMentalHub.ts:129:17[90m)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/hooks/__tests__/useMentalHub.test.tsx:82:23
+
+ [32m✓[39m src/__tests__/components/journal/form/LinkTradeModal.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 393[2mms[22m[39m
+     [33m[2m✓[22m[39m calls onClose when close button is clicked [33m 305[2mms[22m[39m
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+ [32m✓[39m src/hooks/__tests__/useMentalHub.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 382[2mms[22m[39m
+ [31m❯[39m src/__tests__/hooks/HooksAndUtils.test.tsx [2m([22m[2m7 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 433[2mms[22m[39m
+[31m       [31m×[31m should lock body scroll when open[39m[32m 36[2mms[22m[39m
+       [32m✓[39m should not lock if not open[32m 3[2mms[22m[39m
+[31m       [31m×[31m should handle nested locks[39m[32m 4[2mms[22m[39m
+       [32m✓[39m should render with correct variant icon and title[32m 261[2mms[22m[39m
+       [32m✓[39m should support custom title[32m 6[2mms[22m[39m
+       [32m✓[39m should support sizes[32m 57[2mms[22m[39m
+       [32m✓[39m should call onClick[32m 63[2mms[22m[39m
+[90mstderr[2m | src/__tests__/components/ui/VisualComponents.test.tsx[2m > [22m[2mUI Components Part 2[2m > [22m[2mAssetIcon[2m > [22m[2mshould render single icon for non-pair
+[22m[39mReceived `true` for a non-boolean attribute `fill`.
+
+If you want to write it to the DOM, pass a string instead: fill="true" or fill={value.toString()}.
+Received `true` for a non-boolean attribute `unoptimized`.
+
+If you want to write it to the DOM, pass a string instead: unoptimized="true" or unoptimized={value.toString()}.
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mQuery Performance[2m > [22m[2mshould query trades by date range efficiently
+[22m[39m✅ Date range query took 259.44ms (0 trades)
+
+ [32m✓[39m src/components/ui/__tests__/ui-components.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 324[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/ui/VisualComponents.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 519[2mms[22m[39m
+       [33m[2m✓[22m[39m should render single icon for non-pair [33m 309[2mms[22m[39m
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mQuery Performance[2m > [22m[2mshould query journal entries efficiently
+[22m[39m✅ Journal entries query took 190.88ms (0 entries)
+
+ [32m✓[39m src/__tests__/components/ui/UIComponents.test.tsx [2m([22m[2m12 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[33m 537[2mms[22m[39m
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mQuery Performance[2m > [22m[2mshould query junction table efficiently
+[22m[39m✅ Junction table query took 247.23ms (0 rows)
+
+ [31m❯[39m src/__tests__/components/laboratory/RecapFormModal.test.tsx [2m([22m[2m5 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 292[2mms[22m[39m
+     [32m✓[39m should render in create mode[32m 126[2mms[22m[39m
+     [32m✓[39m should toggle review type[32m 59[2mms[22m[39m
+     [32m✓[39m should handle form submission[32m 37[2mms[22m[39m
+[31m     [31m×[31m should search and select a record[39m[32m 42[2mms[22m[39m
+     [32m✓[39m should populate data in edit mode[32m 25[2mms[22m[39m
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mIndex Verification[2m > [22m[2mshould verify indexes exist via information_schema
+[22m[39m✅ Index verification query took 219.50ms
+
+ [32m✓[39m src/__tests__/components/ui/WeekPicker.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 684[2mms[22m[39m
+       [33m[2m✓[22m[39m should navigate months [33m 422[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/DashboardHeader.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 236[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/playbook/PlaybookFormModal.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 1354[2mms[22m[39m
+     [33m[2m✓[22m[39m shows emoji selection grid [33m 602[2mms[22m[39m
+[90mstdout[2m | src/__tests__/hooks/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould initialize dashboard data successfully
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould initialize dashboard data successfully
+[22m[39m🏁 [Batch] Total init: 9ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould redirect if account not found (via batch)
+[22m[39m🚀 Dashboard init started
+
+[90mstderr[2m | src/__tests__/hooks/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould redirect if account not found (via batch)
+[22m[39mAccount not found: invalid-acc
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mData Transfer Optimization[2m > [22m[2mshould return minimal data with specific select
+[22m[39m⚠️ No trades found, skipping data transfer test
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould handle initialization error
+[22m[39m🚀 Dashboard init started
+
+ [32m✓[39m src/__tests__/hooks/useUserPermissions.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 279[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useDashboardInit.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 220[2mms[22m[39m
+ [32m✓[39m src/components/trades/__tests__/ConfluenceTags.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 644[2mms[22m[39m
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould redirect if account is not found
+[22m[39m🚀 Dashboard init started
+
+[90mstderr[2m | src/__tests__/hooks/useImageUpload.test.ts[2m > [22m[2museImageUpload[2m > [22m[2mshould handle paste image event with compression
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/__tests__/hooks/useImageUpload.test.ts[2m > [22m[2museImageUpload[2m > [22m[2mshould handle paste image event with compression
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/__tests__/hooks/useImageUpload.test.ts[2m > [22m[2museImageUpload[2m > [22m[2mshould handle paste image event with compression
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/__tests__/hooks/useAuth.test.tsx[2m > [22m[2museAuth Hook[2m > [22m[2mshould throw error on signInWithEmail failure
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstderr[2m | src/__tests__/hooks/useImageUpload.test.ts[2m > [22m[2museImageUpload[2m > [22m[2mshould handle file select
+[22m[39mAn update to TestComponent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould load data successfully for valid account and respect caching
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould load data successfully for valid account and respect caching
+[22m[39m🏁 [Batch] Total init: 3ms
+
+[90mstdout[2m | src/__tests__/hooks/useAuth.test.tsx[2m > [22m[2museAuth Hook[2m > [22m[2mshould handle signOut correctly
+[22m[39mIniciando logout...
+
+[90mstdout[2m | src/__tests__/hooks/useAuth.test.tsx[2m > [22m[2museAuth Hook[2m > [22m[2mshould handle signOut correctly
+[22m[39mLogout bem-sucedido ou timeout alcançado
+Limpando estado e redirecionando...
+
+ [32m✓[39m src/__tests__/hooks/useAuth.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 180[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useImageUpload.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 161[2mms[22m[39m
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould update account balance if calculated PnL differs
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould update account balance if calculated PnL differs
+[22m[39m🏁 [Batch] Total init: 3ms
+
+[90mstdout[2m | src/lib/__tests__/production-smoke.test.ts[2m > [22m[2mProduction Performance Tests[2m > [22m[2mConcurrent Operations[2m > [22m[2mshould handle multiple concurrent queries
+[22m[39m✅ 5 concurrent queries took 510.27ms
+
+ [32m✓[39m src/lib/__tests__/production-smoke.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2228[2mms[22m[39m
+       [33m[2m✓[22m[39m should query 100 trades in less than 2000ms [33m 379[2mms[22m[39m
+       [33m[2m✓[22m[39m should return minimal data with specific select [33m 387[2mms[22m[39m
+       [33m[2m✓[22m[39m should handle multiple concurrent queries [33m 523[2mms[22m[39m
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould calculate streak metrics correctly
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould calculate streak metrics correctly
+[22m[39m🏁 [Batch] Total init: 3ms
+
+ [32m✓[39m src/components/trades/__tests__/TradeResultBadge.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[32m 186[2mms[22m[39m
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould load admin and mentor permissions
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould load admin and mentor permissions
+[22m[39m🏁 [Batch] Total init: 2ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould break streak counting on gap
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+
+[90mstdout[2m | src/__tests__/hooks/useDashboardData.test.tsx[2m > [22m[2museDashboardData[2m > [22m[2mshould break streak counting on gap
+[22m[39m🏁 [Batch] Total init: 2ms
+
+ [32m✓[39m src/__tests__/hooks/useDashboardData.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 414[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useTradeForm.extended.test.ts [2m([22m[2m40 tests[22m[2m)[22m[32m 145[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useImageCache.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 132[2mms[22m[39m
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould initialize dashboard with remote data (Slow Path)
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+🚀 Dashboard init started
+🏁 [Batch] Total init: 8ms
+
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould initialize dashboard with remote data (Slow Path)
+[22m[39m🚀 Dashboard init started
+
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould use cached account if available (Fast Path)
+[22m[39m🚀 Dashboard init started
+✅ Account (cached): 0ms
+🚀 Dashboard init started
+🏁 [Batch] Total init: 2ms
+
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould use cached account if available (Fast Path)
+[22m[39m🚀 Dashboard init started
+
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould handle initialization errors gracefuly
+[22m[39m🚀 Dashboard init started
+
+[90mstderr[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould handle initialization errors gracefuly
+[22m[39mError initializing dashboard: Error: Network fail
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/hooks/__tests__/useDashboardInit.test.tsx:159:37
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+
+[90mstdout[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould handle initialization errors gracefuly
+[22m[39m🚀 Dashboard init started
+
+[90mstderr[2m | src/hooks/__tests__/useDashboardInit.test.tsx[2m > [22m[2museDashboardInit[2m > [22m[2mshould handle initialization errors gracefuly
+[22m[39mError initializing dashboard: Error: Network fail
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/hooks/__tests__/useDashboardInit.test.tsx:159:37
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+
+ [32m✓[39m src/hooks/__tests__/useDashboardInit.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/ratelimit.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 77[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useBlockBodyScroll.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 140[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/ui/LayoutComponents.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+ [32m✓[39m src/components/trades/__tests__/SelectValueWithIcon.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/journal/form/TradeLinker.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 195[2mms[22m[39m
+[90mstderr[2m | src/components/journal/__tests__/DayDetailModal.state.test.tsx[2m > [22m[2mDayDetailModal - State Logic[2m > [22m[2mshould derive selectedEntryForEdit from store using ID
+[22m[39m[getCurrentUserId] Unexpected error: {
+  error: Error: `cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context
+      at throwForMissingRequestStore [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mnext[24m/dist/server/app-render/work-unit-async-storage.external.js:63:33[90m)[39m
+      at cookies [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mnext[24m/dist/server/request/cookies.js:112:67[90m)[39m
+      at createClient [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/supabase/server.ts:9:29[90m)[39m
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/auth.ts:49:28
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact[24m/cjs/react.development.js:919:19
+      at getMyMentorsAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/mentor.ts:114:26[90m)[39m
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/components/journal/DayDetailModal.tsx:84:7
+      at Object.react_stack_bottom_frame [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:25989:20[90m)[39m
+      at runWithFiberInDEV [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:874:13[90m)[39m
+      at commitHookEffectListMount [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:13249:29[90m)[39m,
+  message: [32m'`cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'[39m
+}
+
+[90mstderr[2m | src/components/journal/__tests__/DayDetailModal.state.test.tsx[2m > [22m[2mDayDetailModal - State Logic[2m > [22m[2mshould react to store updates efficiently
+[22m[39m[getCurrentUserId] Unexpected error: {
+  error: Error: `cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context
+      at throwForMissingRequestStore [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mnext[24m/dist/server/app-render/work-unit-async-storage.external.js:63:33[90m)[39m
+      at cookies [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mnext[24m/dist/server/request/cookies.js:112:67[90m)[39m
+      at createClient [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/supabase/server.ts:9:29[90m)[39m
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/auth.ts:49:28
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact[24m/cjs/react.development.js:919:19
+      at getMyMentorsAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/mentor.ts:114:26[90m)[39m
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/components/journal/DayDetailModal.tsx:84:7
+      at Object.react_stack_bottom_frame [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:25989:20[90m)[39m
+      at runWithFiberInDEV [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:874:13[90m)[39m
+      at commitHookEffectListMount [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom-client.development.js:13249:29[90m)[39m,
+  message: [32m'`cookies` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context'[39m
+}
+
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+ [32m✓[39m src/components/journal/__tests__/DayDetailModal.state.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 206[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetSentInvites[2m > [22m[2mshould return sent invites
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching sent invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.729Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'm-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetSentInvites[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching sent invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.747Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'm-1'[39m
+}
+
+ [32m✓[39m src/components/trades/__tests__/RiskRewardCards.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 146[2mms[22m[39m
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetSentInvites[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch sent invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.748Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:29:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetReceivedInvites[2m > [22m[2mshould return received invites
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching received invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.774Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  menteeEmail: [32m'test@test.com'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetReceivedInvites[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching received invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.777Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  menteeEmail: [32m'test@test.com'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetReceivedInvites[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch received invites'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.778Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:45:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMyMentors[2m > [22m[2mshould return accepted mentors
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching my mentors'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.782Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  menteeId: [32m'mentee-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMyMentors[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching my mentors'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.783Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  menteeId: [32m'mentee-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMyMentors[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch my mentors'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.783Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:59:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMentees[2m > [22m[2mshould return accepted mentees
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching mentees'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.789Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'mentor-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMentees[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching mentees'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.792Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'mentor-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMentees[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch mentees'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.793Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:73:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMenteesOverview[2m > [22m[2mshould return overview with stats
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching mentees overview'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.796Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'mentor-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMenteesOverview[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching mentees overview'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.799Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'mentor-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetMenteesOverview[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch mentees overview'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.799Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:121:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mcreateInvite[2m > [22m[2mshould create a new invitation
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Creating invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.801Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'm-1'[39m,
+  menteeEmail: [32m't@e.com'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mcreateInvite[2m > [22m[2mshould return existing invite
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Creating invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.802Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'm-1'[39m,
+  menteeEmail: [32m't@e.com'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mcreateInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Creating invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.805Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  mentorId: [32m'm-1'[39m,
+  menteeEmail: [32m't@e.com'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mcreateInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to create invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.805Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:147:61
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2macceptInvite[2m > [22m[2mshould accept invite
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Accepting invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.808Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  token: [32m'token'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2macceptInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Accepting invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.809Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  token: [32m'token'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2macceptInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to accept invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.810Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:161:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrejectInvite[2m > [22m[2mshould reject invite
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Rejecting invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.812Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrejectInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Rejecting invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.814Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrejectInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to reject invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.814Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:175:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrevokeInvite[2m > [22m[2mshould revoke invite
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Revoking invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.816Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrevokeInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Revoking invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.817Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mrevokeInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to revoke invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.817Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:189:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mupdateInvite[2m > [22m[2mshould update invite permission
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Updating invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.819Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m,
+  data: { permission: [32m'full'[39m }
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mupdateInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Updating invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.821Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m,
+  data: { permission: [32m'full'[39m }
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mupdateInvite[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to update invite'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.822Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:203:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetAccountPermissions[2m > [22m[2mshould return permissions
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching account permissions'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.824Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetAccountPermissions[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching account permissions'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.826Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetAccountPermissions[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch account permissions'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.826Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:217:72
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2msetAccountPermission[2m > [22m[2mshould update permissions for an account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Setting account permission'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.827Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m,
+  accountId: [32m'acc-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mremoveAccountPermission[2m > [22m[2mshould remove permission
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Removing account permission'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.833Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m,
+  accountId: [32m'acc-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mremoveAccountPermission[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Removing account permission'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.834Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  inviteId: [32m'inv-1'[39m,
+  accountId: [32m'acc-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mremoveAccountPermission[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to remove account permission'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.834Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:241:70
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetTradeComments[2m > [22m[2mshould return comments
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching trade comments'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.835Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetTradeComments[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Fetching trade comments'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.838Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mgetTradeComments[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to fetch trade comments'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.839Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:255:60
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2maddTradeComment[2m > [22m[2mshould add a comment to a trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Adding trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.840Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't-1'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2maddTradeComment[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Adding trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.841Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m't-1'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2maddTradeComment[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to add trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.842Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:269:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mdeleteTradeComment[2m > [22m[2mshould delete comment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Deleting trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.844Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  commentId: [32m'c-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mdeleteTradeComment[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Deleting trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.845Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  commentId: [32m'c-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentorRepository.test.ts[2m > [22m[2mPrismaMentorRepository Unit Tests[2m > [22m[2mdeleteTradeComment[2m > [22m[2mshould return error on failure
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentorRepository'[39m,
+  message: [32m'Failed to delete trade comment'[39m,
+  timestamp: [32m'2025-12-30T16:52:00.845Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Err
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentorRepository.test.ts:283:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/MentorRepository.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 129[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/journal/form/JournalAnalysis.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 92[2mms[22m[39m
+ [32m✓[39m src/components/trades/__tests__/useTradeValidation.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 118[2mms[22m[39m
+[90mstderr[2m | src/__tests__/components/journal/form/JournalEntryForm.test.tsx[2m > [22m[2mJournalEntryForm[2m > [22m[2mopens link trade modal
+[22m[39mAn update to JournalEntryForm inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ [32m✓[39m src/__tests__/components/journal/form/JournalEntryForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 142[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/journal/form/EntryHeader.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/journal/form/JournalReview.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 124[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useJournalForm.extended.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/importService.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 80[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/importServiceFull.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useError.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/tradovateParser.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/importParsers.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould return trades for an account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching trades by account ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.072Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m,
+  userId: [32m'user-123'[39m,
+  symbol: [90mundefined[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould return trades for an account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trades fetched in 8ms'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.079Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  count: [33m2[39m,
+  accountId: [32m'account-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould handle errors
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching trades by account ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.094Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m,
+  userId: [32m'user-123'[39m,
+  symbol: [90mundefined[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould handle errors
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Failed to fetch trades by account'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.095Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: DB Error
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/TradeRepository.test.ts:41:52
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m,
+  accountId: [32m'account-123'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcountByAccountId[2m > [22m[2mshould handle error
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Failed to count trades'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.116Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Error
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/TradeRepository.test.ts:56:49
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m,
+  accountId: [32m'acc'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetMany[2m > [22m[2mshould return trades by ids
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching many trades'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.119Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  options: { where: { id: [36m[Object][39m } }
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcreate[2m > [22m[2mshould create a new trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Creating trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.122Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  symbol: [32m'EURUSD'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcreate[2m > [22m[2mshould create a new trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trade created successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.122Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcreateMany[2m > [22m[2mshould create multiple trades
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Creating multiple trades'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.124Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  count: [33m1[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcreateMany[2m > [22m[2mshould create multiple trades
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trades batch created successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.126Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  count: [33m5[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mcreateWithJournal[2m > [22m[2mshould create trade and link to journal in transaction
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Creating trade with journal association'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.127Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mupdate[2m > [22m[2mshould update a trade if owned by user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Updating trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.130Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mdelete[2m > [22m[2mshould delete a trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Deleting trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.131Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mdelete[2m > [22m[2mshould delete a trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trade deleted successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.132Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mdelete[2m > [22m[2mshould return error if not found
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Deleting trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.132Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mdeleteByAccountId[2m > [22m[2mshould delete trades
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Deleting trades by account'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.137Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'acc-1'[39m,
+  userId: [32m'user-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mdeleteByAccountId[2m > [22m[2mshould delete trades
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trades deleted successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.138Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  count: [33m10[39m,
+  accountId: [32m'acc-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetByJournalId[2m > [22m[2mshould return trades for journal
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching trades by journal ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.139Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'j-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetDashboardMetrics[2m > [22m[2mshould aggregate trade metrics
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Dashboard metrics fetched in 0ms'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.140Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m,
+  totalTrades: [33m10[39m,
+  wins: [33m6[39m,
+  losses: [33m4[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/TradeRepository.test.ts[2m > [22m[2mPrismaTradeRepository Unit Tests[2m > [22m[2mgetHistoryLite[2m > [22m[2mshould return lightweight trade history
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching trade history lite'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.141Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m,
+  userId: [32m'user-123'[39m,
+  dateRange: [90mundefined[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/TradeRepository.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/utils/imageCompression.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 69[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useAccountValidation.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 65[2mms[22m[39m
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mloadExperiments[2m > [22m[2mshould handle error
+[22m[39mError loading experiments: Error: Err
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:87:58
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2maddExperiment[2m > [22m[2mshould handle error during creation
+[22m[39mError adding experiment: Error: Create failed
+    at Object.addExperiment [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:352:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:126:7
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2maddExperiment[2m > [22m[2mshould throw if user not authenticated
+[22m[39mError adding experiment: Error: User not authenticated
+    at Object.addExperiment [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:339:26[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:134:7
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mupdateExperiment[2m > [22m[2mshould handle error during update
+[22m[39mError updating experiment: Error: Update failed
+    at Object.updateExperiment [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:417:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:173:7
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mremoveExperiment[2m > [22m[2mshould handle error during removal
+[22m[39mError removing experiment: Error: Delete failed
+    at Object.removeExperiment [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:477:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mpromoteToPlaybook[2m > [22m[2mshould fail if not validated
+[22m[39mError promoting experiment: Error: Only validated experiments can be promoted to Playbook
+    at Object.promoteToPlaybook [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:500:15[90m)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:254:50
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mpromoteToPlaybook[2m > [22m[2mshould handle promotion error
+[22m[39mError promoting experiment: { message: [32m'DB Error'[39m }
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2maddRecap[2m > [22m[2mshould handle error during recap creation
+[22m[39mError adding recap: Error: Create failed
+    at Object.addRecap [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:598:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:300:7
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mupdateRecap[2m > [22m[2mshould handle error during recap update
+[22m[39mError updating recap: Error: Update failed
+    at Object.updateRecap [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:642:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/__tests__/store/useLaboratoryStore.test.ts:331:7
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstderr[2m | src/__tests__/store/useLaboratoryStore.test.ts[2m > [22m[2museLaboratoryStore[2m > [22m[2mremoveRecap[2m > [22m[2mshould handle error during recap removal
+[22m[39mError removing recap: Error: Delete failed
+    at Object.removeRecap [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/store/useLaboratoryStore.ts:663:15[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+
+ [32m✓[39m src/__tests__/store/useLaboratoryStore.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+[90mstdout[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould trigger calendar workflow successfully
+[22m[39m[triggerGithubSyncAction] Triggering sync-calendar.yml...
+
+[90mstderr[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould trigger calendar workflow successfully
+[22m[39m[logActionAction] Unexpected error: TypeError: Cannot read properties of undefined (reading 'error')
+    at logActionAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:446:16[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at Module.triggerGithubSyncAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:580:5[90m)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/__tests__/admin_sync.test.ts:63:22
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould trigger history workflow successfully
+[22m[39m[triggerGithubSyncAction] Triggering sync-history.yml...
+
+[90mstderr[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould trigger history workflow successfully
+[22m[39m[logActionAction] Unexpected error: TypeError: Cannot read properties of undefined (reading 'error')
+    at logActionAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:446:16[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at Module.triggerGithubSyncAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:580:5[90m)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/__tests__/admin_sync.test.ts:85:22
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+[90mstdout[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould handle GitHub API errors
+[22m[39m[triggerGithubSyncAction] Triggering sync-monthly.yml...
+
+[90mstderr[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mtriggerGithubSyncAction[2m > [22m[2mshould handle GitHub API errors
+[22m[39m[triggerGithubSyncAction] GitHub API Error 404: Not Found
+
+[90mstderr[2m | src/app/actions/__tests__/admin_sync.test.ts[2m > [22m[2mAdmin Sync Actions[2m > [22m[2mdeleteWeeklyEventsAction[2m > [22m[2mshould delete events successfully
+[22m[39m[logActionAction] Unexpected error: TypeError: Cannot read properties of undefined (reading 'error')
+    at logActionAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:446:16[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at Module.deleteWeeklyEventsAction [90m(/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/admin.ts:615:5[90m)[39m
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/app/actions/__tests__/admin_sync.test.ts:122:22
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:20
+
+ [32m✓[39m src/app/actions/__tests__/admin_sync.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useTradeMetrics.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate accounts correctly
+[22m[39m🚀 Starting migration to Supabase...
+Found 1 accounts to migrate.
+
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate accounts correctly
+[22m[39mFound 0 trades to migrate.
+Found 0 journal entries to migrate.
+Found 0 daily routines to migrate.
+✅ Migration completed successfully!
+
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate trades correctly
+[22m[39m🚀 Starting migration to Supabase...
+Found 0 accounts to migrate.
+Found 1 trades to migrate.
+
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate trades correctly
+[22m[39mFound 0 journal entries to migrate.
+Found 0 daily routines to migrate.
+✅ Migration completed successfully!
+
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate journal entries with images
+[22m[39m🚀 Starting migration to Supabase...
+Found 0 accounts to migrate.
+Found 0 trades to migrate.
+Found 1 journal entries to migrate.
+Migrating images for entry entry-1...
+
+[90mstdout[2m | src/__tests__/services/admin/migration.test.ts[2m > [22m[2mMigration Service[2m > [22m[2mshould migrate journal entries with images
+[22m[39mFound 0 daily routines to migrate.
+✅ Migration completed successfully!
+
+ [32m✓[39m src/__tests__/services/admin/migration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useJournalForm.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetProfiles[2m > [22m[2mshould return profiles for user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental profiles'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.957Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetProfiles[2m > [22m[2mshould return empty array for user with no profiles
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental profiles'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.969Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-empty'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetProfiles[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental profiles'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.970Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetProfiles[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Failed to fetch profiles'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.971Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: DB Error
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentalRepository.test.ts:59:61
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetEntries[2m > [22m[2mshould return entries for user with limit
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental entries'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.980Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  limit: [33m10[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetEntries[2m > [22m[2mshould use default limit of 50
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental entries'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.983Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  limit: [33m50[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mcreateEntry[2m > [22m[2mshould create a new entry
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Creating mental entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.985Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mcreateEntry[2m > [22m[2mshould handle creation errors
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Creating mental entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.986Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mcreateEntry[2m > [22m[2mshould handle creation errors
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Failed to create entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.987Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Creation failed
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentalRepository.test.ts:120:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mdeleteEntry[2m > [22m[2mshould delete an entry
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Deleting mental entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.989Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  entryId: [32m'entry-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mdeleteEntry[2m > [22m[2mshould handle deletion errors
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Deleting mental entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.991Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  entryId: [32m'invalid'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mdeleteEntry[2m > [22m[2mshould handle deletion errors
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Failed to delete entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.991Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Not found
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/MentalRepository.test.ts:144:58
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mcreateProfiles[2m > [22m[2mshould insert profiles for a user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Creating mental profiles'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.993Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  count: [33m1[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mcreateLog[2m > [22m[2mshould create a mental log entry
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Creating mental log'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.997Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  moodTag: [32m'green'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/MentalRepository.test.ts[2m > [22m[2mPrismaMentalRepository Unit Tests[2m > [22m[2mgetLogs[2m > [22m[2mshould return logs for user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaMentalRepository'[39m,
+  message: [32m'Fetching mental logs'[39m,
+  timestamp: [32m'2025-12-30T16:52:02.999Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  limit: [33m10[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/MentalRepository.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mgetUserExtended[2m > [22m[2mshould return user extended info
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching user extended'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.025Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mgetUserExtended[2m > [22m[2mshould return error for non-existent user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching user extended'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.038Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'non-existent'[39m
+}
+
+ [32m✓[39m src/__tests__/lib/calculations.test.ts [2m([22m[2m43 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mupdateLastLogin[2m > [22m[2mshould update last login timestamp
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Updating last login'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.041Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mupdateUserStatus[2m > [22m[2mshould update user status
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Updating user status'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.044Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  status: [32m'approved'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mupdateUserStatus[2m > [22m[2mshould set approved_at when approving
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Updating user status'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.046Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  status: [32m'approved'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mupdateUserRole[2m > [22m[2mshould update user role
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Updating user role'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.048Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  role: [32m'admin'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mgetAdminStats[2m > [22m[2mshould return admin statistics
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching admin stats'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.050Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mlogAction[2m > [22m[2mshould create an audit log entry
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Creating audit log'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.052Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  action: [32m'login'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mgetAuditLogs[2m > [22m[2mshould return audit logs with filters
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching audit logs'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.053Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  limit: [33m50[39m,
+  offset: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mgetAuditLogs[2m > [22m[2mshould filter by user ID
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching audit logs'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.056Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mError Handling[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Fetching user extended'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.058Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/AdminRepository.test.ts[2m > [22m[2mPrismaAdminRepository Unit Tests[2m > [22m[2mError Handling[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaAdminRepository'[39m,
+  message: [32m'Failed to fetch user extended'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.059Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Connection failed
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/AdminRepository.test.ts:196:62
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/AdminRepository.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/errorMetrics.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mgetExperiments[2m > [22m[2mshould return experiments for user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching experiments'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.308Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mgetExperiments[2m > [22m[2mshould return empty array for user with no experiments
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching experiments'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.323Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-empty'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mgetExperimentById[2m > [22m[2mshould return experiment by ID
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching experiment'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.326Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  experimentId: [32m'exp-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mgetMyLeaderboardStatus[2m > [22m[2mshould return status if exists
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Fetching leaderboard status'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.322Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mgetExperimentById[2m > [22m[2mshould return error if experiment not found
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching experiment'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.329Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  experimentId: [32m'invalid'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mgetMyLeaderboardStatus[2m > [22m[2mshould return null if not found
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Fetching leaderboard status'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.329Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mcreateExperiment[2m > [22m[2mshould create a new experiment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Creating experiment'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.332Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  title: [32m'New Strategy'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mjoinLeaderboard[2m > [22m[2mshould join leaderboard
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Joining leaderboard'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.331Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  displayName: [32m'Trader One'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mupdateExperiment[2m > [22m[2mshould update an experiment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Updating experiment'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.334Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  experimentId: [32m'exp-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2mdeleteExperiment[2m > [22m[2mshould delete an experiment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Deleting experiment'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.337Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  experimentId: [32m'exp-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mleaveLeaderboard[2m > [22m[2mshould leave leaderboard
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Leaving leaderboard'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.338Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mEXPERIMENTS[2m > [22m[2maddExperimentImages[2m > [22m[2mshould add images to an experiment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Adding experiment images'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.339Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  experimentId: [32m'exp-123'[39m,
+  count: [33m1[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mupdateLeaderboardPreferences[2m > [22m[2mshould update preferences
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Updating leaderboard preferences'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.340Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mRECAPS[2m > [22m[2mgetRecaps[2m > [22m[2mshould return recaps for user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching recaps'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.342Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mgetLeaderboardOptIns[2m > [22m[2mshould return all opt-ins
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Fetching leaderboard opt-ins'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.342Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2msharePlaybook[2m > [22m[2mshould share a playbook (create)
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Sharing playbook'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.344Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  playbookId: [32m'pb-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mRECAPS[2m > [22m[2mcreateRecap[2m > [22m[2mshould create a new recap
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Creating recap'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.344Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m,
+  title: [32m'New Recap'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mRECAPS[2m > [22m[2mdeleteRecap[2m > [22m[2mshould delete a recap
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Deleting recap'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.346Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  recapId: [32m'recap-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2msharePlaybook[2m > [22m[2mshould update if already shared
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Sharing playbook'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.346Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m,
+  playbookId: [32m'pb-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2munsharePlaybook[2m > [22m[2mshould unshare a playbook (set is_public false)
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Unsharing playbook'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.347Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  playbookId: [32m'pb-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mError Handling[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Fetching experiments'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.349Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mgetPublicPlaybooks[2m > [22m[2mshould return public playbooks with stats
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Fetching public playbooks'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.349Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  limit: [33m20[39m,
+  offset: [33m0[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mgetMySharedPlaybooks[2m > [22m[2mshould return shares
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Fetching user shared playbooks'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.351Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'u-1'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mtogglePlaybookStar[2m > [22m[2mshould add star if not starred
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Toggling playbook star'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.353Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  sharedPlaybookId: [32m'shared-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mtogglePlaybookStar[2m > [22m[2mshould remove star if already starred
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Toggling playbook star'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.354Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  sharedPlaybookId: [32m'shared-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/CommunityRepository.test.ts[2m > [22m[2mPrismaCommunityRepository Unit Tests[2m > [22m[2mincrementPlaybookDownloads[2m > [22m[2mshould increment
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaCommunityRepository'[39m,
+  message: [32m'Incrementing playbook downloads'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.355Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  sharedPlaybookId: [32m's-1'[39m
+}
+
+[90mstderr[2m | src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts[2m > [22m[2mPrismaLaboratoryRepository Unit Tests[2m > [22m[2mError Handling[2m > [22m[2mshould handle database errors gracefully
+[22m[39m{
+  level: [32m'ERROR'[39m,
+  context: [32m'PrismaLaboratoryRepository'[39m,
+  message: [32m'Failed to fetch experiments'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.349Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  error: Error: Connection failed
+      at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/lib/database/repositories/__tests__/LaboratoryRepository.test.ts:225:68
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+      at new Promise (<anonymous>)
+      at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+      at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+      at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+      at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+      at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/CommunityRepository.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m src/lib/database/repositories/__tests__/LaboratoryRepository.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/utils/playbook.test.ts [2m([22m[2m34 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/tradovateParserFull.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/AccountRepository.test.ts[2m > [22m[2mPrismaAccountRepository Unit Tests[2m > [22m[2mgetByUserId[2m > [22m[2mshould return accounts for a user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAccountRepository'[39m,
+  message: [32m'Fetching accounts by user'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.794Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AccountRepository.test.ts[2m > [22m[2mPrismaAccountRepository Unit Tests[2m > [22m[2mgetById[2m > [22m[2mshould return account if owned by user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAccountRepository'[39m,
+  message: [32m'Fetching account by ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.805Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'acc-1'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AccountRepository.test.ts[2m > [22m[2mPrismaAccountRepository Unit Tests[2m > [22m[2mgetById[2m > [22m[2mshould return not found if not owned by user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAccountRepository'[39m,
+  message: [32m'Fetching account by ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.808Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'acc-1'[39m,
+  userId: [32m'other-user'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AccountRepository.test.ts[2m > [22m[2mPrismaAccountRepository Unit Tests[2m > [22m[2mcreate[2m > [22m[2mshould create a new account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAccountRepository'[39m,
+  message: [32m'Creating account'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.810Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  name: [32m'New Account'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/AccountRepository.test.ts[2m > [22m[2mPrismaAccountRepository Unit Tests[2m > [22m[2mupdateBalance[2m > [22m[2mshould update balance if owned by user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaAccountRepository'[39m,
+  message: [32m'Updating account balance'[39m,
+  timestamp: [32m'2025-12-30T16:52:03.815Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'acc-1'[39m,
+  userId: [32m'user-123'[39m,
+  newBalance: [33m750[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/AccountRepository.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/usePlaybookMetrics.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+[90mstdout[2m | src/services/journal/__tests__/imageUpload.test.ts[2m > [22m[2mImage Upload Service[2m > [22m[2muploadJournalImages[2m > [22m[2mshould cleanup orphaned images
+[22m[39m[uploadJournalImages] Deleting orphaned images: [ [32m'path/to/old_image.webp'[39m ]
+
+[90mstderr[2m | src/services/journal/__tests__/imageUpload.test.ts[2m > [22m[2mImage Upload Service[2m > [22m[2muploadJournalImages[2m > [22m[2mshould handle upload errors gracefully
+[22m[39m[uploadJournalImages] Upload failed for M5-0: Error: Upload Failed
+    at [90m/home/jhontavares/Documents/Programacao/Journal-NextJs/[39msrc/services/journal/__tests__/imageUpload.test.ts:148:61
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:145:11
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:915:26
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1240:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1206:10[90m)[39m
+    at [90mfile:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:37
+    at Traces.$ [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.U4xDYhzZ.js:115:27[90m)[39m
+    at trace [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4mvitest[24m/dist/chunks/test.BT8LKgU9.js:239:21[90m)[39m
+    at runTest [90m(file:///home/jhontavares/Documents/Programacao/Journal-NextJs/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:1650:12[90m)[39m
+
+ [32m✓[39m src/services/journal/__tests__/imageUpload.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useDashboardActions.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/RoutineRepository.test.ts[2m > [22m[2mPrismaRoutineRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould return routines for an account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaRoutineRepository'[39m,
+  message: [32m'Fetching daily routines by account'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.210Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/RoutineRepository.test.ts[2m > [22m[2mPrismaRoutineRepository Unit Tests[2m > [22m[2mgetByDate[2m > [22m[2mshould return routine by date
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaRoutineRepository'[39m,
+  message: [32m'Fetching daily routine by date'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.221Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m,
+  date: [32m'2024-12-20'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/RoutineRepository.test.ts[2m > [22m[2mPrismaRoutineRepository Unit Tests[2m > [22m[2msave[2m > [22m[2mshould upsert a routine
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaRoutineRepository'[39m,
+  message: [32m'Saving daily routine'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.227Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  id: [90mundefined[39m,
+  date: [32m'2024-12-20'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/RoutineRepository.test.ts[2m > [22m[2mPrismaRoutineRepository Unit Tests[2m > [22m[2mdelete[2m > [22m[2mshould delete a routine
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaRoutineRepository'[39m,
+  message: [32m'Deleting daily routine'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.232Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  id: [32m'routine-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/RoutineRepository.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+[90mstdout[2m | src/app/actions/__tests__/app_accounts.test.ts[2m > [22m[2mApp Account Actions[2m > [22m[2mgetAccountsAction[2m > [22m[2mshould fetch accounts
+[22m[39m[getAccountsAction] Loading accounts for userId: user-123
+
+[90mstdout[2m | src/app/actions/__tests__/app_accounts.test.ts[2m > [22m[2mApp Account Actions[2m > [22m[2mgetAccountsAction[2m > [22m[2mshould fetch accounts
+[22m[39m[getAccountsAction] Successfully loaded accounts: [33m1[39m
+
+[90mstderr[2m | src/app/actions/__tests__/app_accounts.test.ts[2m > [22m[2mApp Account Actions[2m > [22m[2mgetAccountsAction[2m > [22m[2mshould return empty if not authenticated
+[22m[39m[getAccountsAction] No userId - user not authenticated
+[getAccountsAction] Environment check: { hasSupabaseUrl: [33mfalse[39m, hasAnonKey: [33mfalse[39m }
+
+ [32m✓[39m src/app/actions/__tests__/app_accounts.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+[90mstdout[2m | src/app/actions/__tests__/journal.test.ts[2m > [22m[2mJournal Actions[2m > [22m[2mdeleteJournalEntryAction[2m > [22m[2mshould delete entry and images
+[22m[39m[deleteJournalEntryAction] Deleting 1 images from storage
+
+ [32m✓[39m src/app/actions/__tests__/journal.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/lib/database/repositories/__tests__/SettingsRepository.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/exportService.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mcreateShareLink[2m > [22m[2mshould create a new share link
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Creating share link'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.708Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'entry-123'[39m,
+  journalEntryId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mcreateShareLink[2m > [22m[2mshould return existing valid link
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Creating share link'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.717Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'entry-123'[39m,
+  journalEntryId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mgetByToken[2m > [22m[2mshould return share for valid token
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Fetching shared journal by token'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.719Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mgetByToken[2m > [22m[2mshould return error for expired token
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Fetching shared journal by token'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.722Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mgetUserSharedJournals[2m > [22m[2mshould return shares for a user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Fetching user shared journals'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.724Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/ShareRepository.test.ts[2m > [22m[2mPrismaShareRepository Unit Tests[2m > [22m[2mdeleteShareLink[2m > [22m[2mshould delete a share link
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaShareRepository'[39m,
+  message: [32m'Deleting share link'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.728Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  shareId: [32m'share-123'[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/ShareRepository.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2mgetByAccountId[2m > [22m[2mshould return journal entries for an account
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaJournalRepository'[39m,
+  message: [32m'Fetching journal entries by account'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.756Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'account-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2msave[2m > [22m[2mshould create a new journal entry
+[22m[39m[JournalRepository] Saving entry: {
+  "accountId": "account-123",
+  "userId": "user-123",
+  "title": "Test Entry",
+  "content": "Testing",
+  "date": "2024-12-20"
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2msave[2m > [22m[2mshould update an existing journal entry and handle trade links
+[22m[39m[JournalRepository] Saving entry: {
+  "id": "journal-123",
+  "accountId": "account-123",
+  "userId": "user-123",
+  "title": "Updated Entry",
+  "tradeIds": [
+    "trade-1",
+    "trade-2"
+  ]
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2msave[2m > [22m[2mshould update an existing journal entry and handle trade links
+[22m[39m[JournalRepository] Linking trades: [ [32m'trade-1'[39m, [32m'trade-2'[39m ]
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2mdelete[2m > [22m[2mshould delete a journal entry
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaJournalRepository'[39m,
+  message: [32m'Deleting journal entry'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.776Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  id: [32m'journal-123'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2mlinkTrade[2m > [22m[2mshould link a trade
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaJournalRepository'[39m,
+  message: [32m'Linking trade to journal'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.778Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m,
+  tradeId: [32m'trade-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/JournalRepository.test.ts[2m > [22m[2mPrismaJournalRepository Unit Tests[2m > [22m[2maddImage[2m > [22m[2mshould add an image
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaJournalRepository'[39m,
+  message: [32m'Adding image to journal'[39m,
+  timestamp: [32m'2025-12-30T16:52:04.780Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  journalId: [32m'journal-123'[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/JournalRepository.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/tagAnalyticsService.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+[90mstderr[2m | src/app/actions/__tests__/mental.test.ts[2m > [22m[2mMental Actions[2m > [22m[2mgetMentalProfilesAction[2m > [22m[2mshould return empty on repo error
+[22m[39m[getMentalProfilesAction] Error: { message: [32m'Err'[39m }
+
+[90mstderr[2m | src/app/actions/__tests__/mental.test.ts[2m > [22m[2mMental Actions[2m > [22m[2msaveMentalEntryAction[2m > [22m[2mshould fail on repo error
+[22m[39m[saveMentalEntryAction] Error: { message: [32m'Err'[39m }
+
+ [32m✓[39m src/app/actions/__tests__/mental.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/ninjaTraderParser.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/validation/tradeValidation.test.ts [2m([22m[2m43 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Creating trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.320Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  symbol: [32m'EURUSD'[39m
+}
+
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trade created successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.328Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-1'[39m
+}
+
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Dashboard metrics fetched in 0ms'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.339Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  accountId: [32m'acc-1'[39m,
+  totalTrades: [33m1[39m,
+  wins: [33m1[39m,
+  losses: [33m0[39m
+}
+
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Fetching trade by ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.341Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-1'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Deleting trade'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.342Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-1'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/__tests__/integration/trade-flow.test.ts[2m > [22m[2mIntegration: Trade Lifecycle Flow[2m > [22m[2mshould complete the full create -> metrics -> delete flow
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaTradeRepository'[39m,
+  message: [32m'Trade deleted successfully'[39m,
+  timestamp: [32m'2025-12-30T16:52:05.343Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  tradeId: [32m'trade-1'[39m
+}
+
+ [32m✓[39m src/__tests__/integration/trade-flow.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 39[2mms[22m[39m
+[90mstderr[2m | src/app/actions/__tests__/reviews.test.ts[2m > [22m[2mReview Actions[2m > [22m[2mGetters[2m > [22m[2mshould return empty if error for mentee
+[22m[39m[getReviewsForMenteeAction] Error: { message: [32m'Err'[39m }
+
+ [32m✓[39m src/app/actions/__tests__/reviews.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/analytics/report.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+[90mstderr[2m | src/app/actions/__tests__/routines.test.ts[2m > [22m[2mRoutine Actions[2m > [22m[2mgetDailyRoutinesAction[2m > [22m[2mshould return empty if repo error
+[22m[39m[getDailyRoutinesAction] Error: { message: [32m'Error'[39m }
+
+[90mstderr[2m | src/app/actions/__tests__/routines.test.ts[2m > [22m[2mRoutine Actions[2m > [22m[2msaveDailyRoutineAction[2m > [22m[2mshould fail if repo error
+[22m[39m[saveDailyRoutineAction] Error: { message: [32m'Error'[39m }
+
+ [32m✓[39m src/app/actions/__tests__/routines.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/utils/general.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/app/actions/__tests__/mentor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/errorHandler.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/app/actions/__tests__/playbooks.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+[90mstderr[2m | src/app/actions/__tests__/laboratory.test.ts[2m > [22m[2mLaboratory Actions[2m > [22m[2mupdateExperimentAction[2m > [22m[2mshould fail if repo error
+[22m[39m[updateExperimentAction] Error: { message: [32m'Err'[39m }
+
+ [32m✓[39m src/app/actions/__tests__/laboratory.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/timeframeUtils.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/lib/database/__tests__/security.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+[90mstdout[2m | src/lib/database/repositories/__tests__/PlaybookRepository.test.ts[2m > [22m[2mPrismaPlaybookRepository Unit Tests[2m > [22m[2mgetByUserId[2m > [22m[2mshould return playbooks for a user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaPlaybookRepository'[39m,
+  message: [32m'Fetching playbooks by user'[39m,
+  timestamp: [32m'2025-12-30T16:52:06.284Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  userId: [32m'user-123'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/PlaybookRepository.test.ts[2m > [22m[2mPrismaPlaybookRepository Unit Tests[2m > [22m[2mcreate[2m > [22m[2mshould create a new playbook
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaPlaybookRepository'[39m,
+  message: [32m'Creating playbook'[39m,
+  timestamp: [32m'2025-12-30T16:52:06.293Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  name: [32m'New Strategy'[39m
+}
+
+[90mstdout[2m | src/lib/database/repositories/__tests__/PlaybookRepository.test.ts[2m > [22m[2mPrismaPlaybookRepository Unit Tests[2m > [22m[2mgetById[2m > [22m[2mshould return playbook if owned by user
+[22m[39m{
+  level: [32m'INFO'[39m,
+  context: [32m'PrismaPlaybookRepository'[39m,
+  message: [32m'Fetching playbook by ID'[39m,
+  timestamp: [32m'2025-12-30T16:52:06.304Z'[39m,
+  userAgent: [32m'Mozilla/5.0 (linux) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/27.3.0'[39m,
+  id: [32m'pb-1'[39m,
+  userId: [32m'user-123'[39m
+}
+
+ [32m✓[39m src/lib/database/repositories/__tests__/PlaybookRepository.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/app/actions/__tests__/trades.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/database/repositories/__tests__/ReviewRepository.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+[90mstdout[2m | src/app/actions/__tests__/admin.test.ts[2m > [22m[2mAdmin Actions[2m > [22m[2mcreateUserProfileAction[2m > [22m[2mshould create profile if not exists
+[22m[39m[createUserProfileAction] Profile created for: user-123
+
+[90mstdout[2m | src/app/actions/__tests__/admin.test.ts[2m > [22m[2mAdmin Actions[2m > [22m[2mcreateUserProfileAction[2m > [22m[2mshould return success if profile already exists
+[22m[39m[createUserProfileAction] Profile already exists for: user-123
+
+ [32m✓[39m src/app/actions/__tests__/admin.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/taxService.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m src/app/actions/__tests__/community.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/tradeHelpers.test.ts [2m([22m[2m35 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/__tests__/schemas/schemas.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/trade.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/calculations.advanced.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/password-validator.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/mockBuilders.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/__tests__/middleware-logic.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/laboratory/recap-journal-link.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/errors.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/analytics/tagAnalytics.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/__tests__/lib/wolfScore.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/app/actions/__tests__/share.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/database/__tests__/integration.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/validation/__tests__/uuid.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/__tests__/proxy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/mentor/types.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/hooks/HooksAndUtils.test.tsx[2m > [22mHooks and UI Utils[2m > [22museBlockBodyScroll[2m > [22mshould lock body scroll when open
+[31m[1mAssertionError[22m: expected '' to be 'hidden' // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- hidden[39m
+
+[36m [2m❯[22m src/__tests__/hooks/HooksAndUtils.test.tsx:[2m37:44[22m[39m
+    [90m 35| [39m      [35mconst[39m { unmount } [33m=[39m [34mrender[39m([33m<[39m[33mTestComponent[39m [33mopen[39m[33m=[39m[33m{[39m[35mtrue[39m[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m 36| [39m
+    [90m 37| [39m      [34mexpect[39m(document[33m.[39mbody[33m.[39mstyle[33m.[39moverflow)[33m.[39m[34mtoBe[39m([32m"hidden"[39m)[33m;[39m
+    [90m   | [39m                                           [31m^[39m
+    [90m 38| [39m      [34mexpect[39m(document[33m.[39mbody[33m.[39mstyle[33m.[39mposition)[33m.[39m[34mtoBe[39m([32m"fixed"[39m)[33m;[39m
+    [90m 39| [39m      [34mexpect[39m(document[33m.[39mbody[33m.[39mstyle[33m.[39mtop)[33m.[39m[34mtoBe[39m([32m"-100px"[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/hooks/HooksAndUtils.test.tsx[2m > [22mHooks and UI Utils[2m > [22museBlockBodyScroll[2m > [22mshould handle nested locks
+[31m[1mAssertionError[22m: expected '' to be 'hidden' // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- hidden[39m
+
+[36m [2m❯[22m src/__tests__/hooks/HooksAndUtils.test.tsx:[2m66:44[22m[39m
+    [90m 64| [39m      [90m// Render first modal[39m
+    [90m 65| [39m      const { unmount: unmount1 } = render(<TestComponent open={true} …
+    [90m 66| [39m      [34mexpect[39m(document[33m.[39mbody[33m.[39mstyle[33m.[39moverflow)[33m.[39m[34mtoBe[39m([32m"hidden"[39m)[33m;[39m
+    [90m   | [39m                                           [31m^[39m
+    [90m 67| [39m
+    [90m 68| [39m      [90m// Render second modal[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/components/laboratory/RecapFormModal.test.tsx[2m > [22mRecapFormModal[2m > [22mshould search and select a record
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the placeholder text of: Buscar por ativo, data ou diário...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"modal"[39m
+    [36m>[39m
+      [36m<h1>[39m
+        [0m📝 Novo Recap[0m
+      [36m</h1>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"space-y-6"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"toggle-daily"[39m
+          [36m>[39m
+            [0m📅 Review Diário[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mdata-testid[39m=[32m"toggle-weekly"[39m
+          [36m>[39m
+            [0m📊 Review Semanal[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"mb-2 block text-sm font-medium text-gray-300"[39m
+          [36m>[39m
+            [0mTítulo do Recap[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"w-full rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"[39m
+            [33mplaceholder[39m=[32m"Ex: Análise do trade EURUSD 11/12"[39m
+            [33mrequired[39m=[32m""[39m
+            [33mtype[39m=[32m"text"[39m
+            [33mvalue[39m=[32m""[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"mb-2 flex items-center justify-between"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-sm font-medium text-gray-300"[39m
+            [36m>[39m
+              [0mVincular a um registro (opcional)[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"w-full rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3 pr-10 text-white placeholder-gray-500 transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"[39m
+              [33mplaceholder[39m=[32m"Ex: NQ, ES, 2024-12-15 ou título do diário"[39m
+              [33mtype[39m=[32m"text"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-2"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"mb-2 block text-sm font-medium text-green-400"[39m
+            [36m>[39m
+              [0m✓ O que funcionou[0m
+            [36m</label>[39m
+            [36m<textarea[39m
+              [33mclass[39m=[32m"w-full resize-none rounded-xl border border-green-700/30 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-green-500 focus:ring-1 focus:ring-green-500"[39m
+              [33mplaceholder[39m=[32m"Pontos positivos do trade..."[39m
+              [33mrows[39m=[32m"5"[39m
+            [36m/>[39m
+          [36m</div>[39m
+          [36m<div>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"mb-2 block text-sm font-medium text-red-400"[39m
+            [36m>[39m
+              [0m✗ O que falhou[0m
+            [36m</label>[39m
+            [36m<textarea[39m
+              [33mclass[39m=[32m"w-full resize-none rounded-xl border border-red-700/30 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-red-500 focus:ring-1 focus:ring-red-500"[39m
+              [33mplaceholder[39m=[32m"O que poderia melhorar..."[39m
+              [33mrows[39m=[32m"5"[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"mb-2 block text-sm font-medium text-cyan-400"[39m
+          [36m>[39m
+            [0m💡 Lições Aprendidas[0m
+          [36m</label>[39m
+          [36m<textarea[39m
+            [33mclass[39m=[32m"w-full resize-none rounded-xl border border-cyan-700/30 bg-gray-800/50 px-4 py-3 text-white placeholder-gray-500 transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"[39m
+            [33mplaceholder[39m=[32m"O que você aprendeu com este trade..."[39m
+            [33mrows[39m=[32m"6"[39m
+          [36m/>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"mb-2 block text-sm font-medium text-gray-300"[39m
+          [36m>[39m
+            [0mEstado Emocional[0m
+          [36m</label>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m💪[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mConfiante[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m🎯[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mDisciplinado[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m😐[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mNeutro[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m😰[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mAnsioso[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m🔥[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mFOMO[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m🚀[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mEufórico[0m
+              [36m</span>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-gray-600"[39m
+              [33mtype[39m=[32m"button"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0m😤[0m
+              [36m</span>[39m
+              [36m<span>[39m
+                [0mFrustrado[0m
+              [36m</span>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"mb-2 block text-sm font-medium text-gray-300"[39m
+          [36m>[39m
+            [0mScreenshots[0m
+          [36m</label>[39m
+          [36m<input[39m
+            [33maccept[39m=[32m"image/*"[39m
+            [33mclass[39m=[32m"hidden"[39m
+            [33mmultiple[39m=[32m""[39m
+            [33mtype[39m=[32m"file"[39m
+          [36m/>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"group relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-700 bg-gray-900/50 transition-all outline-none hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30"[39m
+            [33mtabindex[39m=[32m"0"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"absolute inset-0 flex flex-col items-center justify-center"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33mclass[39m=[32m"mb-3 h-10 w-10 text-gray-600 group-hover:text-gray-500"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"1.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"mb-1 text-sm text-gray-500"[39m
+              [36m>[39m
+                [0mClique ou cole uma imagem[0m
+              [36m</p>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"absolute bottom-3 flex w-full items-end justify-between px-3 opacity-0 transition-opacity group-hover:opacity-100 group-focus:opacity-100"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"rounded bg-cyan-500/20 px-2 py-1 text-[10px] font-bold text-cyan-400"[39m
+                [36m>[39m
+                  [0mCTRL+V[0m
+                [36m</span>[39m
+                [36m<button[39m
+                  [33mdata-testid[39m=[32m"icon-btn-add"[39m
+                [36m/>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div>[39m
+          [36m<button>[39m
+            [0mCancelar[0m
+          [36m</button>[39m
+          [36m<button>[39m
+            [0mSalvar[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</form>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m76:38[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m52:17[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/__tests__/components/laboratory/RecapFormModal.test.tsx:[2m124:32[22m[39m
+    [90m122| [39m    [34mrender[39m([33m<[39m[33mRecapFormModal[39m [33m{[39m[33m...[39mdefaultProps[33m}[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m123| [39m
+    [90m124| [39m    const searchInput = screen.getByPlaceholderText("Buscar por ativo,…
+    [90m   | [39m                               [31m^[39m
+    [90m125| [39m    fireEvent[33m.[39m[34mchange[39m(searchInput[33m,[39m { target[33m:[39m { value[33m:[39m [32m"EUR"[39m } })[33m;[39m
+    [90m126| [39m    fireEvent[33m.[39m[34mfocus[39m(searchInput)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m102 passed[39m[22m[90m (104)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m1117 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (1121)[39m
+[2m   Start at [22m 13:51:55
+[2m   Duration [22m 12.29s[2m (transform 10.26s, setup 13.39s, import 31.88s, tests 13.81s, environment 91.07s)[22m
+

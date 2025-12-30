@@ -2,6 +2,10 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable experimental CSS optimization for smaller bundles
+  experimental: {
+    optimizeCss: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -18,6 +22,27 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Immutable assets (hashed filenames) - cache for 1 year
+      {
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      // Static files in public folder - cache for 1 month, revalidate
+      {
+        source: "/(.*)\\.(ico|png|jpg|jpeg|gif|webp|svg|woff|woff2|ttf|eot)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=2592000, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      // Security and general headers for all routes
       {
         source: "/(.*)",
         headers: [

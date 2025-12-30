@@ -371,6 +371,49 @@ class PrismaMentalRepository {
   }
 
   /**
+   * Get mental logs filtered by mood tag.
+   */
+  async getLogsByMood(
+    userId: string,
+    moodTag: string,
+    limit = 10
+  ): Promise<Result<MentalLog[], AppError>> {
+    this.logger.info("Fetching mental logs by mood", { userId, moodTag, limit });
+
+    try {
+      // DEBUG: Verifying mood tag content
+      console.log(`[Repo] Querying logs for mood_tag: '${moodTag}'`);
+
+      const logs = await prisma.mental_logs.findMany({
+        where: {
+          user_id: userId,
+          mood_tag: {
+            equals: moodTag,
+            mode: "insensitive", // Handle case mismatches (Fear vs fear)
+          },
+        },
+        orderBy: { created_at: "desc" },
+        take: limit,
+      });
+
+      console.log(`[Repo] Logs found for '${moodTag}': ${logs.length}`);
+      if (logs.length === 0) {
+        // Checking if ANY log exists for this user to rule out other issues
+        const anyLog = await prisma.mental_logs.findFirst({ where: { user_id: userId } });
+        console.log(`[Repo] Any log exists for user?: ${!!anyLog} (tag: ${anyLog?.mood_tag})`);
+      }
+
+      return { data: logs.map(mapLogFromPrisma), error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch logs by mood", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch logs by mood", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
    * Create a mental log (from Wizard).
    * Also creates a synced entry in mental_entries.
    */
@@ -475,9 +518,9 @@ class PrismaMentalRepository {
       }
 
       const zoneValues: Record<string, number> = {
-        "A-Game": 1,
-        "B-Game": 0,
-        "C-Game": -1,
+        "A-Game": 0,
+        "B-Game": -1,
+        "C-Game": 1,
       };
 
       const sum = entries.reduce((acc, e) => {

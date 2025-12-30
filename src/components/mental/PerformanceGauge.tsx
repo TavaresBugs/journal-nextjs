@@ -31,8 +31,8 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
     loadData();
   }, [refreshTrigger]);
 
-  // Convert position (-1 to 1) to x coordinate on curve (50 to 350)
-  const pointerX = 200 + position * 150;
+  // Convert position (-1 to 1) to x coordinate on curve (100 to 300)
+  const pointerX = 200 + position * 100;
 
   // Calculate y position on bell curve
   const getYOnCurve = (x: number) => {
@@ -85,8 +85,8 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
         <rect x="0" y="0" width="400" height="220" fill="transparent" />
 
         {/* Zone labels at top */}
-        <text x="70" y="25" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">
-          C-GAME
+        <text x="70" y="25" fill="#f97316" fontSize="11" fontWeight="bold" textAnchor="middle">
+          B-GAME
         </text>
         <text x="200" y="25" fill="#00c853" fontSize="11" fontWeight="bold" textAnchor="middle">
           A-GAME
@@ -175,16 +175,16 @@ export function PerformanceGauge({ refreshTrigger }: PerformanceGaugeProps) {
       {/* Stats Row */}
       <div className="mt-3 flex justify-around text-xs">
         <div className="text-center">
-          <div className="font-bold text-red-400">{percentC}%</div>
-          <div className="text-gray-500">C-Game</div>
-        </div>
-        <div className="text-center">
           <div className="font-bold text-orange-400">{percentB}%</div>
           <div className="text-gray-500">B-Game</div>
         </div>
         <div className="text-center">
           <div className="font-bold text-green-400">{percentA}%</div>
           <div className="text-gray-500">A-Game</div>
+        </div>
+        <div className="text-center">
+          <div className="font-bold text-red-400">{percentC}%</div>
+          <div className="text-gray-500">C-Game</div>
         </div>
       </div>
     </div>
