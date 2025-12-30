@@ -137,7 +137,7 @@ describe("UI Components", () => {
     // Skip: Testing portal interactions with jsdom is complex
     // The Select uses createPortal which renders outside the normal component tree
     // This functionality works correctly in the browser
-    it.skip("should call onValueChange when item clicked", async () => {
+    it("should call onValueChange when item clicked", async () => {
       const handleChange = vi.fn();
       render(
         <Select value="" onValueChange={handleChange}>
@@ -158,15 +158,12 @@ describe("UI Components", () => {
         expect(document.body.querySelector("[data-select-content]")).toBeInTheDocument();
       });
 
-      // Click an option (find the SelectItem div that contains the text)
-      const selectContent = document.body.querySelector("[data-select-content]");
-      const optionItems = selectContent?.querySelectorAll("div > div");
-      const option = Array.from(optionItems || []).find((el) =>
-        el.textContent?.includes("Selected Option")
-      );
-      if (option) {
-        fireEvent.click(option);
-      }
+      // Click the option
+      // Since it's in a portal, regular screen queries should find it if it's in the document.
+      // We use getByText which will find the text inside the Item.
+      // Clicking the text should bubble up to the Item's onClick handler.
+      const option = screen.getByText("Selected Option");
+      fireEvent.click(option);
 
       // Callback should be called with the value
       expect(handleChange).toHaveBeenCalledWith("selected");
