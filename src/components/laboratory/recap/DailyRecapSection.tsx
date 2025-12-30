@@ -4,7 +4,7 @@ import React, { memo, useMemo, useRef, useEffect, useState } from "react";
 import type { TradeLite, JournalEntryLite, RecapLinkedType, Account } from "@/types";
 import { format, parseISO } from "date-fns";
 import { AssetIcon } from "@/components/shared/AssetIcon";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui";
 
 interface SearchRecord {
   type: RecapLinkedType;
@@ -179,8 +179,12 @@ export const DailyRecapSection = memo(function DailyRecapSection({
         {/* Account Filter */}
         {accounts.length > 1 && (
           <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-            <SelectTrigger className="h-7 w-[140px] rounded-lg border-gray-700 bg-gray-800/50 px-2 text-xs text-white">
-              <SelectValue placeholder="Todas as contas" />
+            <SelectTrigger className="flex h-7 w-[140px] items-center justify-between rounded-lg border border-gray-700 bg-gray-800/50 px-2 text-xs text-white">
+              <span className="truncate">
+                {selectedAccountId === "all"
+                  ? "Todas as contas"
+                  : accounts.find((a) => a.id === selectedAccountId)?.name || "Selecione"}
+              </span>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas as contas</SelectItem>

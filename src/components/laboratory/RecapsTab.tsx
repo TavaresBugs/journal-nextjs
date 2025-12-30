@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Button,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui";
+import { Button, Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui";
 import { RecapCard } from "./RecapCard";
 import type { LaboratoryRecap, EmotionalState, RecapLinkedType, Account } from "@/types";
 
@@ -126,22 +119,37 @@ export function RecapsTab({
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         {/* Search */}
-        <div className="flex flex-1 gap-2">
+        <div className="flex flex-1 items-center gap-3">
           {/* Account Filter Dropdown */}
           {accounts.length > 1 && (
-            <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-              <SelectTrigger className="w-[180px] rounded-xl border-gray-700 bg-gray-800/50 text-white">
-                <SelectValue placeholder="Todas as contas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as contas</SelectItem>
-                {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
-                    {acc.name}
+            <div className="w-[180px] shrink-0">
+              <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+                <SelectTrigger className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-700 bg-[#232b32] px-3 text-sm text-gray-100 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                  <span className="truncate">
+                    {selectedAccountId === "all"
+                      ? "Todas as contas"
+                      : accounts.find((a) => a.id === selectedAccountId)?.name || "Selecione"}
+                  </span>
+                </SelectTrigger>
+                <SelectContent className="border-gray-700 bg-[#232b32]">
+                  <SelectItem
+                    value="all"
+                    className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                  >
+                    Todas as contas
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  {accounts.map((acc) => (
+                    <SelectItem
+                      key={acc.id}
+                      value={acc.id}
+                      className="cursor-pointer py-2.5 text-gray-100 hover:bg-gray-700 focus:bg-gray-700"
+                    >
+                      {acc.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
 
           <input
@@ -149,7 +157,7 @@ export function RecapsTab({
             placeholder="Buscar recaps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-2.5 text-white placeholder-gray-500 transition-colors focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+            className="h-10 w-full rounded-lg border border-gray-700 bg-[#232b32] px-4 text-sm text-gray-100 placeholder-gray-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none"
           />
         </div>
 
