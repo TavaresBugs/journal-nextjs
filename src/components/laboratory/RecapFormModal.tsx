@@ -8,6 +8,7 @@ import type {
   JournalEntryLite,
   RecapLinkedType,
   LaboratoryRecap,
+  Account,
 } from "@/types";
 import { CreateRecapData, UpdateRecapData } from "@/store/useLaboratoryStore";
 import { startOfWeek, endOfWeek, format } from "date-fns";
@@ -35,6 +36,7 @@ interface RecapFormModalProps {
   onSubmit: (data: CreateRecapData | UpdateRecapData, files: File[]) => Promise<void>;
   trades: TradeLite[];
   journalEntries?: JournalEntryLite[];
+  accounts?: Account[];
   isLoading?: boolean;
 }
 
@@ -46,6 +48,7 @@ export function RecapFormModal({
   onSubmit,
   trades,
   journalEntries = [],
+  accounts = [],
   isLoading = false,
 }: RecapFormModalProps) {
   const isEditMode = mode === "edit";
@@ -308,6 +311,7 @@ export function RecapFormModal({
             showRecordDropdown={showRecordDropdown}
             linkedType={linkedType}
             linkedId={linkedId}
+            accounts={accounts}
             onRecordSearchChange={setRecordSearch}
             onShowDropdownChange={setShowRecordDropdown}
             onSelectRecord={handleSelectRecord}

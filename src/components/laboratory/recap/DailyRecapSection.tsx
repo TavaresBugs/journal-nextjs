@@ -1,7 +1,7 @@
 "use client";
 
-import React, { memo, useMemo, useRef, useEffect } from "react";
-import type { TradeLite, JournalEntryLite, RecapLinkedType } from "@/types";
+import React, { memo, useMemo, useRef, useEffect, useState } from "react";
+import type { TradeLite, JournalEntryLite, RecapLinkedType, Account } from "@/types";
 import { format, parseISO } from "date-fns";
 import { AssetIcon } from "@/components/shared/AssetIcon";
 
@@ -22,6 +22,7 @@ interface DailyRecapSectionProps {
   showRecordDropdown: boolean;
   linkedType: RecapLinkedType | undefined;
   linkedId: string;
+  accounts?: Account[];
   onRecordSearchChange: (value: string) => void;
   onShowDropdownChange: (value: boolean) => void;
   onSelectRecord: (type: RecapLinkedType, id: string, label: string) => void;
@@ -35,12 +36,14 @@ export const DailyRecapSection = memo(function DailyRecapSection({
   showRecordDropdown,
   linkedType,
   linkedId,
+  accounts = [],
   onRecordSearchChange,
   onShowDropdownChange,
   onSelectRecord,
   onClearRecord,
 }: DailyRecapSectionProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("all");
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -81,13 +84,19 @@ export const DailyRecapSection = memo(function DailyRecapSection({
     return null;
   }, [linkedType, linkedId, trades, journalEntries]);
 
+  // Filter trades by account
+  const filteredTrades = useMemo(() => {
+    if (selectedAccountId === "all") return trades;
+    return trades.filter((t) => t.accountId === selectedAccountId);
+  }, [trades, selectedAccountId]);
+
   // Get recent records (last 30 days)
   const recentRecords = useMemo((): SearchRecord[] => {
     const oneMonthAgo = new Date();
     oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
     const oneMonthAgoStr = oneMonthAgo.toISOString().split("T")[0];
 
-    const recentTrades: SearchRecord[] = trades
+    const recentTrades: SearchRecord[] = filteredTrades
       .filter((t) => t.entryDate >= oneMonthAgoStr)
       .slice(0, 10)
       .map((t) => ({
@@ -113,7 +122,7 @@ export const DailyRecapSection = memo(function DailyRecapSection({
     return [...recentJournals, ...recentTrades]
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 8);
-  }, [trades, journalEntries]);
+  }, [filteredTrades, journalEntries]);
 
   // Search results
   const searchResults = useMemo((): SearchRecord[] => {
@@ -124,7 +133,7 @@ export const DailyRecapSection = memo(function DailyRecapSection({
 
     const query = recordSearch.toLowerCase();
 
-    const matchingTrades: SearchRecord[] = trades
+    const matchingTrades: SearchRecord[] = filteredTrades
       .filter((t) => t.symbol.toLowerCase().includes(query) || t.entryDate.includes(query))
       .slice(0, 5)
       .map((t) => ({
@@ -153,7 +162,7 @@ export const DailyRecapSection = memo(function DailyRecapSection({
       }));
 
     return [...matchingJournals, ...matchingTrades];
-  }, [recordSearch, trades, journalEntries, showRecordDropdown, recentRecords]);
+  }, [recordSearch, filteredTrades, journalEntries, showRecordDropdown, recentRecords]);
 
   const handleSelectRecord = (record: SearchRecord) => {
     onSelectRecord(record.type, record.id, record.label);
@@ -162,9 +171,26 @@ export const DailyRecapSection = memo(function DailyRecapSection({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="mb-2 block text-sm font-medium text-gray-300">
-        Vincular a um registro (opcional)
-      </label>
+      <div className="mb-2 flex items-center justify-between">
+        <label className="text-sm font-medium text-gray-300">
+          Vincular a um registro (opcional)
+        </label>
+        {/* Account Filter */}
+        {accounts.length > 1 && (
+          <select
+            value={selectedAccountId}
+            onChange={(e) => setSelectedAccountId(e.target.value)}
+            className="rounded-lg border border-gray-700 bg-gray-800/50 px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
+          >
+            <option value="all">Todas as contas</option>
+            {accounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
       <div className="relative">
         {linkedType && linkedId && linkedRecordDetails ? (
           <div className="flex items-center gap-3 rounded-xl border border-gray-700 bg-gray-800/50 px-4 py-3">
