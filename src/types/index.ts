@@ -572,6 +572,7 @@ export interface JournalEntryLite {
   date: string;
   title?: string;
   asset?: string;
+  accountId?: string;
 }
 
 /** Type of record linked to a recap */

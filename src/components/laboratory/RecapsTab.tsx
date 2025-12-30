@@ -1,12 +1,20 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui";
+import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui";
 import { RecapCard } from "./RecapCard";
-import type { LaboratoryRecap, EmotionalState, RecapLinkedType } from "@/types";
+import type { LaboratoryRecap, EmotionalState, RecapLinkedType, Account } from "@/types";
 
 interface RecapsTabProps {
   recaps: LaboratoryRecap[];
+  accounts?: Account[];
   onCreateNew: () => void;
   onView: (recap: LaboratoryRecap) => void;
   onEdit: (recap: LaboratoryRecap) => void;
@@ -39,18 +47,37 @@ function getRecapLinkType(recap: LaboratoryRecap): RecapLinkedType | "none" {
 
 export function RecapsTab({
   recaps,
+  accounts = [],
   onCreateNew,
   onView,
   onEdit,
   onDelete,
   isLoading = false,
 }: RecapsTabProps) {
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("all");
   const [emotionFilter, setEmotionFilter] = useState<EmotionalState | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [linkFilter, setLinkFilter] = useState<LinkFilter>("all");
 
   // Filter recaps
   const filteredRecaps = recaps.filter((recap) => {
+    // Account filter
+    if (selectedAccountId !== "all") {
+      let matchesAccount = false;
+
+      // Check trade
+      if (recap.trade && recap.trade.accountId === selectedAccountId) {
+        matchesAccount = true;
+      }
+
+      // Check journal
+      if (recap.journal && recap.journal.accountId === selectedAccountId) {
+        matchesAccount = true;
+      }
+
+      if (!matchesAccount) return false;
+    }
+
     // Emotion filter
     if (emotionFilter !== "all" && recap.emotionalState !== emotionFilter) return false;
 
@@ -99,7 +126,24 @@ export function RecapsTab({
       {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row">
         {/* Search */}
-        <div className="flex-1">
+        <div className="flex flex-1 gap-2">
+          {/* Account Filter Dropdown */}
+          {accounts.length > 1 && (
+            <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+              <SelectTrigger className="w-[180px] rounded-xl border-gray-700 bg-gray-800/50 text-white">
+                <SelectValue placeholder="Todas as contas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as contas</SelectItem>
+                {accounts.map((acc) => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
           <input
             type="text"
             placeholder="Buscar recaps..."

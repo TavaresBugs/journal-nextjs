@@ -4,6 +4,7 @@ import React, { memo, useMemo, useRef, useEffect, useState } from "react";
 import type { TradeLite, JournalEntryLite, RecapLinkedType, Account } from "@/types";
 import { format, parseISO } from "date-fns";
 import { AssetIcon } from "@/components/shared/AssetIcon";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 
 interface SearchRecord {
   type: RecapLinkedType;
@@ -177,18 +178,19 @@ export const DailyRecapSection = memo(function DailyRecapSection({
         </label>
         {/* Account Filter */}
         {accounts.length > 1 && (
-          <select
-            value={selectedAccountId}
-            onChange={(e) => setSelectedAccountId(e.target.value)}
-            className="rounded-lg border border-gray-700 bg-gray-800/50 px-2 py-1 text-xs text-white focus:border-cyan-500 focus:outline-none"
-          >
-            <option value="all">Todas as contas</option>
-            {accounts.map((acc) => (
-              <option key={acc.id} value={acc.id}>
-                {acc.name}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
+            <SelectTrigger className="h-7 w-[140px] rounded-lg border-gray-700 bg-gray-800/50 px-2 text-xs text-white">
+              <SelectValue placeholder="Todas as contas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as contas</SelectItem>
+              {accounts.map((acc) => (
+                <SelectItem key={acc.id} value={acc.id}>
+                  {acc.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
       </div>
       <div className="relative">

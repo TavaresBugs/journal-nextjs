@@ -89,6 +89,7 @@ export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryPr
         date: e.date,
         title: e.title,
         asset: e.asset,
+        accountId: e.accountId,
       })),
     [journalEntries]
   );
@@ -225,6 +226,7 @@ export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryPr
           <TabPanel value="recaps" activeTab={activeTab}>
             <RecapsTab
               recaps={recaps}
+              accounts={accounts}
               onCreateNew={handleOpenCreateRecap}
               onView={handleViewRecap}
               onEdit={handleEditRecap}
