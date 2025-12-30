@@ -4,6 +4,7 @@ import { memo, useState } from "react";
 import { Modal, IconActionButton, AssetBadge } from "@/components/ui";
 import type { Trade, JournalEntry } from "@/types";
 import { JournalEntryContent } from "./JournalEntryContent";
+import { TradeArgumentsPanel } from "../trade-arguments";
 
 interface JournalEntryPreviewProps {
   entry: JournalEntry;
@@ -36,6 +37,7 @@ const JournalEntryPreviewComponent = ({
   onDelete,
 }: JournalEntryPreviewProps) => {
   const [showComments, setShowComments] = useState(false);
+  const [showPdArray, setShowPdArray] = useState(false);
 
   // Get asset from linked trades or entry
   const asset = linkedTrades[0]?.symbol || entry.asset || "";
@@ -49,11 +51,25 @@ const JournalEntryPreviewComponent = ({
 
   const HeaderActions = (
     <>
+      {/* PDArray Analysis Button */}
+      <IconActionButton
+        variant="pdarray"
+        size="md"
+        onClick={() => {
+          setShowPdArray(!showPdArray);
+          if (!showPdArray) setShowComments(false);
+        }}
+        className="[&_svg]:h-6 [&_svg]:w-6"
+      />
+
       <div className="relative">
         <IconActionButton
           variant="comments"
           size="md"
-          onClick={() => setShowComments(!showComments)}
+          onClick={() => {
+            setShowComments(!showComments);
+            if (!showComments) setShowPdArray(false);
+          }}
           title={showComments ? "Esconder comentários" : "Ver comentários"}
           className="[&_svg]:h-6 [&_svg]:w-6"
         />
@@ -101,11 +117,19 @@ const JournalEntryPreviewComponent = ({
       noBackdrop={noBackdrop}
     >
       <div className="space-y-6">
+        {/* Main Content */}
         <JournalEntryContent
           entry={entry}
           linkedTrades={linkedTrades}
           showComments={showComments}
         />
+
+        {/* PDArray Panel - Opens BELOW the content */}
+        {showPdArray && entry.id && (
+          <div className="animate-in slide-in-from-bottom-4 fade-in border-t border-gray-800 pt-6 duration-300">
+            <TradeArgumentsPanel journalEntryId={entry.id} />
+          </div>
+        )}
       </div>
     </Modal>
   );

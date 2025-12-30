@@ -120,6 +120,15 @@ export interface JournalImage {
   createdAt: string;
 }
 
+export interface TradeArgument {
+  id: string;
+  journalEntryId: string;
+  type: "pro" | "contra";
+  argument: string;
+  weight: number;
+  createdAt: string;
+}
+
 export interface JournalEntry {
   id: string;
   userId: string; // User ID from Supabase Auth
