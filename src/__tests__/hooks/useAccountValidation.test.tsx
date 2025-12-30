@@ -1,17 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useAccountValidation } from "@/hooks/useAccountValidation";
-import { useRouter } from "next/navigation";
-
-vi.mock("next/navigation");
 
 describe("useAccountValidation", () => {
-  const mockRouter = { push: vi.fn() };
-
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
   });
 
   it("should return isValidAccount true for valid UUID", () => {
@@ -19,7 +12,6 @@ describe("useAccountValidation", () => {
     const { result } = renderHook(() => useAccountValidation(validUUID));
 
     expect(result.current.isValidAccount).toBe(true);
-    expect(mockRouter.push).not.toHaveBeenCalled();
   });
 
   it("should return isValidAccount false for invalid UUID", () => {
@@ -27,15 +19,6 @@ describe("useAccountValidation", () => {
     const { result } = renderHook(() => useAccountValidation(invalidUUID));
 
     expect(result.current.isValidAccount).toBe(false);
-  });
-
-  it("should redirect to home for invalid UUID", async () => {
-    const invalidUUID = "not-a-uuid";
-    renderHook(() => useAccountValidation(invalidUUID));
-
-    await waitFor(() => {
-      expect(mockRouter.push).toHaveBeenCalledWith("/");
-    });
   });
 
   it("should accept uppercase UUIDs", () => {

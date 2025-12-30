@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
@@ -78,7 +77,6 @@ export function useDashboardInit(
   isValidAccount: boolean,
   initialData?: DashboardInitResult
 ): DashboardInitData & DashboardInitActions {
-  const router = useRouter();
   const { showToast } = useToast();
 
   // Stratified Loading
@@ -162,12 +160,8 @@ export function useDashboardInit(
     }
 
     const init = async () => {
-      const perfStart = performance.now();
-      console.log("🚀 Dashboard init started");
-
       // RESET: Clear previous init state when switching accounts
       if (isInitRef.current && isInitRef.current !== accountId) {
-        console.log("🔄 Switching accounts, resetting init state");
         isInitRef.current = null;
         setServerMetrics(null); // Clear old metrics
         setIsTradesLoading(true);
@@ -183,8 +177,6 @@ export function useDashboardInit(
       isInitRef.current = accountId;
 
       try {
-        const perfT1 = performance.now();
-
         // Check if we have cached account data first (fallback if no initialData)
         let account = useAccountStore.getState().accounts.find((acc) => acc.id === accountId);
 
@@ -192,7 +184,6 @@ export function useDashboardInit(
           // Fast path: Account cached
           useAccountStore.getState().setCurrentAccount(accountId);
           setIsAccountReady(true);
-          console.log(`✅ Account (cached): ${(performance.now() - perfT1).toFixed(0)}ms`);
 
           // Still need to fetch fresh metrics and trades
           try {
@@ -222,10 +213,10 @@ export function useDashboardInit(
           }
 
           if (!batchResult.account) {
-            console.error("Account not found:", accountId);
+            // Account not found - show error state instead of redirecting
+            // (middleware handles auth redirects server-side)
             setIsAccountFound(false);
             showToast("Conta não encontrada.", "error");
-            router.push("/");
             return;
           }
 
@@ -253,8 +244,6 @@ export function useDashboardInit(
             });
           }
         }
-
-        console.log(`🏁 [Batch] Total init: ${(performance.now() - perfStart).toFixed(0)}ms`);
       } catch (error) {
         console.error("Error initializing dashboard:", error);
         showToast("Erro ao carregar dados do dashboard", "error");

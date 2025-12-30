@@ -10,7 +10,6 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { isAdminAction } from "@/app/actions/admin";
 import { isMentorAction } from "@/app/actions/mentor";
 import { useToast } from "@/providers/ToastProvider";
-import { useRouter } from "next/navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
@@ -23,7 +22,9 @@ vi.mock("@/store/useSettingsStore");
 vi.mock("@/app/actions/admin");
 vi.mock("@/app/actions/mentor");
 vi.mock("@/providers/ToastProvider");
-vi.mock("next/navigation"); // Already mocked in setup, but fine to override or rely on global
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 vi.mock("@/app/actions/_batch/dashboardInit", () => ({
   batchDashboardInitAction: vi.fn().mockImplementation(async (accountId) => {
     // Return null account if using the specific "unmatched" ID from the test
@@ -73,7 +74,6 @@ const createWrapper = () => {
 
 describe("useDashboardData", () => {
   // Setup generic spies
-  const mockRouter = { push: vi.fn() };
   const mockShowToast = vi.fn();
 
   // Store spies
@@ -100,9 +100,6 @@ describe("useDashboardData", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Router
-    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
 
     // Toast
     vi.mocked(useToast).mockReturnValue({ showToast: mockShowToast } as any);
@@ -174,13 +171,16 @@ describe("useDashboardData", () => {
     vi.mocked(isMentorAction).mockResolvedValue(false);
   });
 
-  it("should redirect if accountId is invalid format", () => {
-    renderHook(() => useDashboardData("invalid-id"), { wrapper: createWrapper() });
-    expect(mockRouter.push).toHaveBeenCalledWith("/");
+  it("should return isValidAccount false for invalid UUID format", () => {
+    // Note: Server component handles redirect with notFound()
+    // Client hook just returns validation state
+    const { result } = renderHook(() => useDashboardData("invalid-id"), {
+      wrapper: createWrapper(),
+    });
+    expect(result.current.isValidAccount).toBe(false);
   });
 
-  it("should redirect if account is not found", async () => {
-    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+  it("should show error state if account is not found", async () => {
     // Setup empty accounts initially or just trigger the check
     (useAccountStore as any).getState.mockReturnValue({
       accounts: [mockAccount],
@@ -190,13 +190,14 @@ describe("useDashboardData", () => {
     // Use a valid UUID but one that doesn't match our mockAccount
     const validUnmatchedId = "987e4567-e89b-12d3-a456-426614174999";
 
-    renderHook(() => useDashboardData(validUnmatchedId), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useDashboardData(validUnmatchedId), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
-      expect(mockRouter.push).toHaveBeenCalledWith("/");
-      expect(consoleSpy).toHaveBeenCalledWith("Account not found:", validUnmatchedId);
+      // Account not found shows error state (middleware handles auth redirects server-side)
+      expect(result.current.isAccountReady).toBe(false);
     });
-    consoleSpy.mockRestore();
   });
 
   it("should load data successfully for valid account and respect caching", async () => {

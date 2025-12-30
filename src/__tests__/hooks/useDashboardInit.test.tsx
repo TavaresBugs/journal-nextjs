@@ -7,7 +7,6 @@ import { useTradeStore } from "@/store/useTradeStore";
 import { useJournalStore } from "@/store/useJournalStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useToast } from "@/providers/ToastProvider";
-import { useRouter } from "next/navigation";
 import { batchDashboardInitAction } from "@/app/actions/_batch/dashboardInit";
 
 // Mocks
@@ -16,7 +15,6 @@ vi.mock("@/store/useTradeStore");
 vi.mock("@/store/useJournalStore");
 vi.mock("@/store/usePlaybookStore");
 vi.mock("@/providers/ToastProvider");
-vi.mock("next/navigation");
 vi.mock("@/app/actions/_batch/dashboardInit");
 vi.mock("@/hooks/useStratifiedLoading", () => ({
   useStratifiedLoading: vi.fn(() => ({
@@ -30,7 +28,6 @@ vi.mock("@/hooks/useStratifiedLoading", () => ({
 
 describe("useDashboardInit", () => {
   const accountId = "acc-123";
-  const mockRouter = { push: vi.fn() };
   const mockShowToast = vi.fn();
 
   const mockLoadAccounts = vi.fn();
@@ -42,7 +39,6 @@ describe("useDashboardInit", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(useRouter).mockReturnValue(mockRouter as any);
     vi.mocked(useToast).mockReturnValue({ showToast: mockShowToast } as any);
 
     vi.mocked(useAccountStore).mockReturnValue({
@@ -148,7 +144,7 @@ describe("useDashboardInit", () => {
     expect(result.current.serverMetrics).not.toBeNull();
   });
 
-  it("should redirect if account not found (via batch)", async () => {
+  it("should show error state if account not found (via batch)", async () => {
     const invalidId = "invalid-acc";
     // Setup accounts to NOT include invalidId
     (useAccountStore as any).getState.mockReturnValue({
@@ -160,9 +156,10 @@ describe("useDashboardInit", () => {
     const { result } = renderHook(() => useDashboardInit(invalidId, true));
 
     await waitFor(() => {
-      // In batch flow, if account returns null, we redirect
-      expect(mockRouter.push).toHaveBeenCalledWith("/");
+      // In batch flow, if account returns null, we show error state
+      // (middleware handles auth redirects server-side)
       expect(result.current.isAccountFound).toBe(false);
+      expect(mockShowToast).toHaveBeenCalledWith("Conta não encontrada.", "error");
     });
   });
 
