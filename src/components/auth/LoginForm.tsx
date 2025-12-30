@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { resetPassword } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/utils/general";
-import { validatePassword, getStrengthColor, getStrengthLabel } from "@/lib/password-validator";
+import { validatePassword, getStrengthColor, getStrengthLabel } from "@/lib/security";
 
 export function LoginForm() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithGithub, loading } =

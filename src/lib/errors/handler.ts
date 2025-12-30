@@ -1,6 +1,6 @@
 "use client";
 
-import { errorMetrics } from "./errorMetrics";
+import { errorMetrics } from "./metrics";
 
 /**
  * Error severity levels for different handling strategies

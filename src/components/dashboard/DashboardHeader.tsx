@@ -15,7 +15,7 @@ const NotificationBell = dynamic(
   }
 );
 
-const MentalButton = dynamic(() => import("@/components/mental").then((mod) => mod.MentalButton), {
+const MentalButton = dynamic(() => import("@/features/mental").then((mod) => mod.MentalButton), {
   ssr: false,
   loading: () => <div className="h-12 w-12 rounded-xl bg-gray-800/50" />,
 });

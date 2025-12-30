@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+coverage-summary.json
+test_results.txt
 
 # next.js
 /.next/

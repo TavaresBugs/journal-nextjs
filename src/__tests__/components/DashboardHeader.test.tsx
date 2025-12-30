@@ -17,7 +17,7 @@ vi.mock("@/components/notifications", () => ({
   NotificationBell: () => <div data-testid="notification-bell" />,
 }));
 
-vi.mock("@/components/mental", () => ({
+vi.mock("@/features/mental", () => ({
   MentalButton: () => <div data-testid="mental-button" />,
 }));
 

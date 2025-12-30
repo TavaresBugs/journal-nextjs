@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updatePassword } from "@/lib/auth";
 import { getErrorMessage } from "@/lib/utils/general";
-import { validatePassword, getStrengthColor, getStrengthLabel } from "@/lib/password-validator";
+import { validatePassword, getStrengthColor, getStrengthLabel } from "@/lib/security";
 
 export default function ResetPasswordPage() {
   const router = useRouter();

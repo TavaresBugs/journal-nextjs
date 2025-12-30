@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils/general";
-import { getAssetIconConfig } from "@/constants/assetIcons";
+import { getAssetIconConfig } from "@/features/trades";
 
 // ============================================
 // TYPES

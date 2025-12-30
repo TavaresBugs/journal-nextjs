@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { handleServiceError, registerToastHandler, safeAsync } from "@/lib/errorHandler";
-import { errorMetrics } from "@/lib/errorMetrics";
+import { handleServiceError, registerToastHandler, safeAsync } from "@/lib/errors";
+import { errorMetrics } from "@/lib/errors/metrics";
 
-// Mock errorMetris to avoid side effects and verify calls
-vi.mock("@/lib/errorMetrics", () => ({
+// Mock errorMetrics to avoid side effects and verify calls
+vi.mock("@/lib/errors/metrics", () => ({
   errorMetrics: {
     increment: vi.fn(),
   },

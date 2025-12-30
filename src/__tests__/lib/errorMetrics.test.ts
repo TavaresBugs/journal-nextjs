@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { errorMetrics } from "@/lib/errorMetrics";
+import { errorMetrics } from "@/lib/errors";
 
 describe("errorMetrics", () => {
   beforeEach(() => {

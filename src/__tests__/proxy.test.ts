@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import middleware, { config } from "@/proxy";
+import middleware, { config } from "@/lib/proxy";
 
 describe("Middleware Configuration", () => {
   it("should export default middleware function", () => {

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Toast, ToastType } from "@/components/ui/Toast";
-import { registerToastHandler } from "@/lib/errorHandler";
+import { registerToastHandler } from "@/lib/errors";
 
 interface ToastContextType {
   showToast: (message: string, type?: ToastType, duration?: number) => void;

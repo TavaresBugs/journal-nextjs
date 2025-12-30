@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 import { useToast } from "@/providers/ToastProvider";
 import { calculateTradePnL, determineTradeOutcome } from "@/lib/calculations";
 import { calculateRMultiple } from "@/lib/timeframeUtils";
-import { handleServiceError } from "@/lib/errorHandler";
+import { handleServiceError } from "@/lib/errors";
 import type { Trade, Playbook } from "@/types";
 import {
   mapEntryQualityToDb,
