@@ -11,14 +11,13 @@ import {
   getExperimentTradesAction,
 } from "@/app/actions/laboratory";
 import type { ExperimentLinkedTrade } from "@/lib/database/repositories";
-import type { TradeLite, Account } from "@/types";
+import type { TradeLite } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import dayjs from "dayjs";
 
 interface ExperimentTradesSectionProps {
   experimentId: string;
   availableTrades: TradeLite[];
-  accounts?: Account[];
   onRefreshNeeded?: () => void;
 }
 
@@ -29,12 +28,10 @@ interface ExperimentTradesSectionProps {
 export function ExperimentTradesSection({
   experimentId,
   availableTrades,
-  accounts = [],
   onRefreshNeeded,
 }: ExperimentTradesSectionProps) {
   const [linkedTrades, setLinkedTrades] = useState<ExperimentLinkedTrade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedAccountId, setSelectedAccountId] = useState<string>("all");
 
   // Load linked trades on mount
   useEffect(() => {
@@ -56,18 +53,12 @@ export function ExperimentTradesSection({
   // Filter already-linked trades
   const linkedTradeIds = useMemo(() => new Set(linkedTrades.map((t) => t.tradeId)), [linkedTrades]);
 
-  // Filter by account
-  const filteredByAccount = useMemo(() => {
-    if (selectedAccountId === "all") return availableTrades;
-    return availableTrades.filter((t) => t.accountId === selectedAccountId);
-  }, [availableTrades, selectedAccountId]);
-
   const filterAvailableTrades = useCallback(
     (query: string) => {
       if (!query) return [];
       const lowerQuery = query.toLowerCase();
 
-      return filteredByAccount.filter((trade) => {
+      return availableTrades.filter((trade) => {
         if (linkedTradeIds.has(trade.id)) return false;
 
         // Search by symbol
@@ -88,7 +79,7 @@ export function ExperimentTradesSection({
         return false;
       });
     },
-    [filteredByAccount, linkedTradeIds]
+    [availableTrades, linkedTradeIds]
   );
 
   // Link trade handler
@@ -169,25 +160,6 @@ export function ExperimentTradesSection({
 
   return (
     <div className="animate-fadeIn space-y-6">
-      {/* Account Filter */}
-      {accounts.length > 1 && (
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">Filtrar por conta:</span>
-          <select
-            value={selectedAccountId}
-            onChange={(e) => setSelectedAccountId(e.target.value)}
-            className="rounded-lg border border-gray-700 bg-gray-800/50 px-3 py-1.5 text-sm text-white focus:border-cyan-500 focus:outline-none"
-          >
-            <option value="all">Todas as contas</option>
-            {accounts.map((acc) => (
-              <option key={acc.id} value={acc.id}>
-                {acc.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Prós Column */}
         <div className="flex h-full flex-col rounded-xl border border-emerald-500/20 bg-emerald-900/10 p-4">
