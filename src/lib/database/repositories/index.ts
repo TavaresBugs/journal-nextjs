@@ -28,6 +28,7 @@ export {
   type LaboratoryExperiment,
   type LaboratoryRecap,
   type LaboratoryImage,
+  type ExperimentLinkedTrade,
 } from "./LaboratoryRepository";
 export {
   prismaAdminRepo,

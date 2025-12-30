@@ -28,6 +28,7 @@ import { useJournalStore } from "@/store/useJournalStore";
 import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite } from "@/types";
 
 interface DashboardLaboratoryProps {
+  accountId: string;
   trades: TradeLite[];
 }
 
@@ -36,7 +37,7 @@ const LABORATORY_TABS_OPTIONS = [
   { value: "recaps", label: <>📝 Recaps</> },
 ];
 
-export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
+export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryProps) {
   const [activeTab, setActiveTab] = useState("experiments");
 
   // Experiment Modals state
@@ -70,7 +71,11 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
   } = useLaboratoryStore();
 
   // Journal Store - for linking recaps to journal entries
-  const { entries: journalEntries } = useJournalStore();
+  const {
+    entries: journalEntries,
+    loadEntries,
+    currentAccountId: journalAccountId,
+  } = useJournalStore();
 
   // Map journal entries to lightweight format for the modal
   const journalEntriesLite: JournalEntryLite[] = useMemo(
@@ -92,7 +97,18 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
     if (!recapsLoaded) {
       loadRecaps();
     }
-  }, [loadExperiments, loadRecaps, experimentsLoaded, recapsLoaded]);
+    if (journalAccountId !== accountId) {
+      loadEntries(accountId);
+    }
+  }, [
+    loadExperiments,
+    loadRecaps,
+    loadEntries,
+    experimentsLoaded,
+    recapsLoaded,
+    journalAccountId,
+    accountId,
+  ]);
 
   // Experiment handlers
   const handleOpenCreateExperiment = () => {
@@ -237,6 +253,7 @@ export function DashboardLaboratory({ trades }: DashboardLaboratoryProps) {
         experiment={selectedExperiment}
         onEdit={handleEditExperiment}
         onPromote={handlePromoteExperiment}
+        availableTrades={trades}
       />
 
       {/* Unified Recap Form Modal (Create & Edit) */}

@@ -531,6 +531,7 @@ export interface Notification {
 // ============================================
 
 export type ExperimentStatus = "em_aberto" | "testando" | "validado" | "descartado";
+export type ExperimentType = "contexto" | "entrada";
 
 export type EmotionalState =
   | "confiante"
@@ -554,6 +555,7 @@ export interface LaboratoryExperiment {
   userId: string;
   title: string;
   description?: string;
+  experimentType?: ExperimentType;
   status: ExperimentStatus;
   category?: string;
   expectedWinRate?: number;

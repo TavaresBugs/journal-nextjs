@@ -25,6 +25,19 @@ import { AppError, ErrorCode } from "@/lib/errors";
 import { Logger } from "@/lib/logging/Logger";
 
 // Domain types
+export interface ExperimentLinkedTrade {
+  id: string;
+  tradeId: string;
+  symbol: string;
+  type: "Long" | "Short";
+  pnl: number;
+  outcome: "win" | "loss" | "breakeven" | "pending";
+  category: "pro" | "contra";
+  entryDate: string;
+  entryTime: string | null;
+}
+
+// Domain types
 export interface LaboratoryImage {
   id: string;
   experimentId: string;
@@ -38,6 +51,7 @@ export interface LaboratoryExperiment {
   userId: string;
   title: string;
   description: string | null;
+  experimentType: string | null;
   status: "em_aberto" | "em_teste" | "validado" | "invalidado";
   category: string | null;
   expectedWinRate: number | null;
@@ -95,6 +109,7 @@ function mapExperimentFromPrisma(
     userId: exp.user_id,
     title: exp.title,
     description: exp.description,
+    experimentType: exp.experiment_type,
     status: exp.status as LaboratoryExperiment["status"],
     category: exp.category,
     expectedWinRate: exp.expected_win_rate ? Number(exp.expected_win_rate) : null,
@@ -213,6 +228,7 @@ class PrismaLaboratoryRepository {
     data: {
       title: string;
       description?: string;
+      experimentType?: string;
       status?: string;
       category?: string;
       expectedWinRate?: number;
@@ -227,6 +243,7 @@ class PrismaLaboratoryRepository {
           user_id: userId,
           title: data.title,
           description: data.description || null,
+          experiment_type: data.experimentType || null,
           status: data.status || "em_aberto",
           category: data.category || null,
           expected_win_rate: data.expectedWinRate || null,
@@ -254,6 +271,7 @@ class PrismaLaboratoryRepository {
     data: Partial<{
       title: string;
       description: string;
+      experimentType: string;
       status: string;
       category: string;
       expectedWinRate: number;
@@ -269,6 +287,7 @@ class PrismaLaboratoryRepository {
         data: {
           title: data.title,
           description: data.description,
+          experiment_type: data.experimentType,
           status: data.status,
           category: data.category,
           expected_win_rate: data.expectedWinRate,
@@ -355,6 +374,186 @@ class PrismaLaboratoryRepository {
       return {
         data: null,
         error: new AppError("Failed to delete images", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  // ========================================
+  // EXPERIMENT TRADES (Pros/Contras Linking)
+  // ========================================
+
+  /**
+   * Link a trade to an experiment for hypothesis validation.
+   */
+  async linkTradeToExperiment(
+    experimentId: string,
+    tradeId: string,
+    userId: string,
+    category: "pro" | "contra" = "pro"
+  ): Promise<Result<ExperimentLinkedTrade, AppError>> {
+    this.logger.info("Linking trade to experiment", { experimentId, tradeId, category });
+
+    try {
+      // Verify user owns the experiment
+      const experiment = await prisma.laboratory_experiments.findFirst({
+        where: { id: experimentId, user_id: userId },
+      });
+
+      if (!experiment) {
+        return {
+          data: null,
+          error: new AppError("Experiment not found", ErrorCode.DB_NOT_FOUND, 404),
+        };
+      }
+
+      // Create the link and fetch trade data
+      const result = await prisma.$transaction(async (tx) => {
+        const link = await tx.laboratory_experiment_trades.create({
+          data: {
+            experiment_id: experimentId,
+            trade_id: tradeId,
+            category,
+          },
+        });
+
+        const trade = await tx.trades.findUnique({
+          where: { id: tradeId },
+        });
+
+        return { link, trade };
+      });
+
+      if (!result.trade) {
+        return {
+          data: null,
+          error: new AppError("Trade not found", ErrorCode.DB_NOT_FOUND, 404),
+        };
+      }
+
+      const linkedTrade: ExperimentLinkedTrade = {
+        id: result.link.id,
+        tradeId: result.trade.id,
+        symbol: result.trade.symbol,
+        type: result.trade.type as "Long" | "Short",
+        pnl: Number(result.trade.pnl) || 0,
+        outcome: (result.trade.outcome as ExperimentLinkedTrade["outcome"]) || "pending",
+        category: category,
+        entryDate: result.trade.entry_date?.toISOString().split("T")[0] || "",
+        entryTime: result.trade.entry_time,
+      };
+
+      return { data: linkedTrade, error: null };
+    } catch (error) {
+      // Handle unique constraint violation (already linked)
+      if ((error as { code?: string }).code === "P2002") {
+        return {
+          data: null,
+          error: new AppError(
+            "Trade already linked to this experiment",
+            ErrorCode.DB_CONSTRAINT_VIOLATION,
+            400
+          ),
+        };
+      }
+      this.logger.error("Failed to link trade", { error });
+      console.error("[DEBUG] Full error object:", error);
+      console.error("[DEBUG] Error message:", (error as Error).message);
+      console.error("[DEBUG] Error stack:", (error as Error).stack);
+      return {
+        data: null,
+        error: new AppError("Failed to link trade", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Unlink a trade from an experiment.
+   */
+  async unlinkTradeFromExperiment(
+    experimentId: string,
+    tradeId: string,
+    userId: string
+  ): Promise<Result<boolean, AppError>> {
+    this.logger.info("Unlinking trade from experiment", { experimentId, tradeId });
+
+    try {
+      // Verify user owns the experiment
+      const experiment = await prisma.laboratory_experiments.findFirst({
+        where: { id: experimentId, user_id: userId },
+      });
+
+      if (!experiment) {
+        return {
+          data: null,
+          error: new AppError("Experiment not found", ErrorCode.DB_NOT_FOUND, 404),
+        };
+      }
+
+      await prisma.laboratory_experiment_trades.deleteMany({
+        where: {
+          experiment_id: experimentId,
+          trade_id: tradeId,
+        },
+      });
+
+      return { data: true, error: null };
+    } catch (error) {
+      this.logger.error("Failed to unlink trade", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to unlink trade", ErrorCode.DB_QUERY_FAILED, 500),
+      };
+    }
+  }
+
+  /**
+   * Get all trades linked to an experiment with their outcome data.
+   */
+  async getExperimentTrades(
+    experimentId: string,
+    userId: string
+  ): Promise<Result<ExperimentLinkedTrade[], AppError>> {
+    this.logger.info("Fetching experiment trades", { experimentId });
+
+    try {
+      // Verify user owns the experiment
+      const experiment = await prisma.laboratory_experiments.findFirst({
+        where: { id: experimentId, user_id: userId },
+      });
+
+      if (!experiment) {
+        return {
+          data: null,
+          error: new AppError("Experiment not found", ErrorCode.DB_NOT_FOUND, 404),
+        };
+      }
+
+      const links = await prisma.laboratory_experiment_trades.findMany({
+        where: { experiment_id: experimentId },
+        include: { trades: true },
+        orderBy: { created_at: "desc" },
+      });
+
+      const linkedTrades: ExperimentLinkedTrade[] = links
+        .filter((link) => link.trades)
+        .map((link) => ({
+          id: link.id,
+          tradeId: link.trades!.id,
+          symbol: link.trades!.symbol,
+          type: link.trades!.type as "Long" | "Short",
+          pnl: Number(link.trades!.pnl) || 0,
+          outcome: (link.trades!.outcome as ExperimentLinkedTrade["outcome"]) || "pending",
+          category: (link.category as "pro" | "contra") || "pro",
+          entryDate: link.trades!.entry_date?.toISOString().split("T")[0] || "",
+          entryTime: link.trades!.entry_time,
+        }));
+
+      return { data: linkedTrades, error: null };
+    } catch (error) {
+      this.logger.error("Failed to fetch experiment trades", { error });
+      return {
+        data: null,
+        error: new AppError("Failed to fetch experiment trades", ErrorCode.DB_QUERY_FAILED, 500),
       };
     }
   }
@@ -478,6 +677,8 @@ class PrismaLaboratoryRepository {
     userId: string,
     data: Partial<{
       title: string;
+      linkedType: string;
+      linkedId: string;
       whatWorked: string;
       whatFailed: string;
       emotionalState: string;
@@ -495,6 +696,8 @@ class PrismaLaboratoryRepository {
           where: { id: recapId, user_id: userId },
           data: {
             title: data.title,
+            linked_type: data.linkedType,
+            linked_id: data.linkedId,
             what_worked: data.whatWorked,
             what_failed: data.whatFailed,
             emotional_state: data.emotionalState,

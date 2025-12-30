@@ -32,6 +32,27 @@ export const RecapImageUploader = memo(function RecapImageUploader({
     [onAddFiles]
   );
 
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const imageFiles: File[] = [];
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+
+      if (imageFiles.length > 0) {
+        e.preventDefault();
+        onAddFiles(imageFiles);
+      }
+    },
+    [onAddFiles]
+  );
+
   const handlePrevious = () => {
     onCarouselIndexChange(carouselIndex > 0 ? carouselIndex - 1 : previews.length - 1);
   };
@@ -57,6 +78,7 @@ export const RecapImageUploader = memo(function RecapImageUploader({
         ref={uploadZoneRef}
         tabIndex={0}
         onClick={() => uploadZoneRef.current?.focus()}
+        onPaste={handlePaste}
         className="group relative aspect-video w-full cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-700 bg-gray-900/50 transition-all outline-none hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30"
       >
         {previews.length > 0 ? (

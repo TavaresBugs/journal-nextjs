@@ -92,25 +92,31 @@ export function ViewRecapModal({ isOpen, onClose, recap, onEdit }: ViewRecapModa
         title={`📝 ${recap.title}`}
         maxWidth="3xl"
         headerActions={
-          <IconActionButton
-            variant="edit"
-            size="md"
-            onClick={() => onEdit(recap)}
-            className="[&_svg]:h-6 [&_svg]:w-6"
-          />
+          <div className="flex items-center gap-2">
+            {/* Review Type Badge */}
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                recap.type === "weekly" ? "bg-purple-500 text-white" : "bg-teal-500 text-white"
+              }`}
+            >
+              {recap.type === "weekly" ? "Semanal" : "Diário"}
+            </span>
+            {/* Emotion Badge */}
+            {emotionConfig && (
+              <span className="rounded-full bg-gray-700 px-3 py-1 text-xs font-medium text-gray-200">
+                {emotionConfig.emoji} {emotionConfig.label}
+              </span>
+            )}
+            <IconActionButton
+              variant="edit"
+              size="md"
+              onClick={() => onEdit(recap)}
+              className="[&_svg]:h-6 [&_svg]:w-6"
+            />
+          </div>
         }
       >
         <div className="space-y-4">
-          {/* Emotion badge - only show if set */}
-          {emotionConfig && (
-            <span
-              className={`inline-flex rounded-full px-3 py-1.5 text-sm font-medium ${emotionConfig.bgColor} ${emotionConfig.color} items-center gap-1`}
-            >
-              <span>{emotionConfig.emoji}</span>
-              <span>{emotionConfig.label}</span>
-            </span>
-          )}
-
           {/* Linked Trade */}
           {recap.trade && (
             <div className="rounded-xl bg-gray-800/50 p-3">

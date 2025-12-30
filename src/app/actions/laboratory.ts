@@ -21,6 +21,7 @@ import {
   LaboratoryExperiment,
   LaboratoryRecap,
   LaboratoryImage,
+  ExperimentLinkedTrade,
 } from "@/lib/database/repositories";
 import { getCurrentUserId } from "@/lib/database/auth";
 
@@ -82,6 +83,7 @@ export async function getExperimentAction(
 export async function createExperimentAction(data: {
   title: string;
   description?: string;
+  experimentType?: string;
   status?: string;
   category?: string;
   expectedWinRate?: number;
@@ -115,6 +117,7 @@ export async function updateExperimentAction(
   data: Partial<{
     title: string;
     description: string;
+    experimentType: string;
     status: string;
     category: string;
     expectedWinRate: number;
@@ -228,6 +231,98 @@ export async function deleteExperimentImagesAction(
 }
 
 // ========================================
+// EXPERIMENT TRADES (Pros/Contras Linking)
+// ========================================
+
+/**
+ * Link a trade to an experiment for hypothesis validation.
+ */
+export async function linkTradeToExperimentAction(
+  experimentId: string,
+  tradeId: string,
+  category: "pro" | "contra" = "pro"
+): Promise<{ success: boolean; trade?: ExperimentLinkedTrade; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const result = await prismaLaboratoryRepo.linkTradeToExperiment(
+      experimentId,
+      tradeId,
+      userId,
+      category
+    );
+
+    if (result.error) {
+      console.error("[linkTradeToExperimentAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true, trade: result.data || undefined };
+  } catch (error) {
+    console.error("[linkTradeToExperimentAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Unlink a trade from an experiment.
+ */
+export async function unlinkTradeFromExperimentAction(
+  experimentId: string,
+  tradeId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    const result = await prismaLaboratoryRepo.unlinkTradeFromExperiment(
+      experimentId,
+      tradeId,
+      userId
+    );
+
+    if (result.error) {
+      console.error("[unlinkTradeFromExperimentAction] Error:", result.error);
+      return { success: false, error: result.error.message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[unlinkTradeFromExperimentAction] Unexpected error:", error);
+    return { success: false, error: "Unexpected error occurred" };
+  }
+}
+
+/**
+ * Get all trades linked to an experiment.
+ */
+export async function getExperimentTradesAction(
+  experimentId: string
+): Promise<ExperimentLinkedTrade[]> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const result = await prismaLaboratoryRepo.getExperimentTrades(experimentId, userId);
+
+    if (result.error) {
+      console.error("[getExperimentTradesAction] Error:", result.error);
+      return [];
+    }
+
+    return result.data || [];
+  } catch (error) {
+    console.error("[getExperimentTradesAction] Unexpected error:", error);
+    return [];
+  }
+}
+
+// ========================================
 // RECAPS
 // ========================================
 
@@ -298,6 +393,8 @@ export async function updateRecapAction(
   recapId: string,
   data: Partial<{
     title: string;
+    linkedType: string;
+    linkedId: string;
     whatWorked: string;
     whatFailed: string;
     emotionalState: string;

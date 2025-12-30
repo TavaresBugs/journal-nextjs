@@ -330,23 +330,27 @@ export function DashboardClient({ accountId, initialData, queryDate }: Dashboard
 
               <TabPanel value="laboratorio" activeTab={activeTab}>
                 <DashboardLaboratory
-                  trades={data.allHistory.map((t) => ({
-                    id: t.id,
-                    symbol: t.symbol,
-                    type: t.type,
-                    entryDate: t.entryDate,
-                    entryTime: t.entryTime,
-                    exitDate: t.exitDate,
-                    exitTime: t.exitTime,
-                    pnl: t.pnl,
-                    outcome: t.outcome,
-                    entryPrice: t.entryPrice,
-                    exitPrice: t.exitPrice,
-                    stopLoss: t.stopLoss,
-                    takeProfit: t.takeProfit,
-                    lot: t.lot,
-                    accountId: t.accountId,
-                  }))}
+                  accountId={accountId}
+                  trades={
+                    // Use allHistory if available, otherwise fallback to paginated trades
+                    (data.allHistory.length > 0 ? data.allHistory : data.trades).map((t) => ({
+                      id: t.id,
+                      symbol: t.symbol,
+                      type: t.type,
+                      entryDate: t.entryDate,
+                      entryTime: t.entryTime,
+                      exitDate: t.exitDate,
+                      exitTime: t.exitTime,
+                      pnl: t.pnl,
+                      outcome: t.outcome,
+                      entryPrice: t.entryPrice,
+                      exitPrice: t.exitPrice,
+                      stopLoss: t.stopLoss,
+                      takeProfit: t.takeProfit,
+                      lot: t.lot,
+                      accountId: t.accountId,
+                    }))
+                  }
                 />
               </TabPanel>
 

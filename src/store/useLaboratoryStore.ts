@@ -16,7 +16,7 @@ import type {
   LaboratoryExperiment as RepoExperiment,
   LaboratoryRecap as RepoRecap,
 } from "@/lib/database/repositories/LaboratoryRepository";
-import type { ExperimentStatus, EmotionalState, RecapLinkedType } from "@/types";
+import type { ExperimentStatus, ExperimentType, EmotionalState, RecapLinkedType } from "@/types";
 
 /**
  * useLaboratoryStore - Zustand Store
@@ -125,6 +125,7 @@ function mapRecap(recap: RepoRecap): LaboratoryRecap {
 export interface CreateExperimentData {
   title: string;
   description?: string;
+  experimentType?: ExperimentType;
   status?: ExperimentStatus;
   category?: string;
   expectedWinRate?: number;
@@ -340,6 +341,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
       const result = await createExperimentAction({
         title: data.title,
         description: data.description,
+        experimentType: data.experimentType,
         status: data.status || "em_aberto",
         category: data.category,
         expectedWinRate: data.expectedWinRate,
@@ -403,6 +405,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
       const result = await updateExperimentAction(data.id, {
         title: data.title,
         description: data.description,
+        experimentType: data.experimentType,
         status: data.status,
         category: data.category,
         expectedWinRate: data.expectedWinRate,
@@ -442,6 +445,7 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
               ...exp,
               title: data.title,
               description: data.description,
+              experimentType: data.experimentType,
               status: data.status || exp.status,
               category: data.category,
               expectedWinRate: data.expectedWinRate,
@@ -624,6 +628,8 @@ export const useLaboratoryStore = create<LaboratoryStore>((set, get) => ({
 
       const result = await updateRecapAction(data.id, {
         title: data.title,
+        linkedType: data.linkedType,
+        linkedId: data.linkedId,
         whatWorked: data.whatWorked,
         whatFailed: data.whatFailed,
         emotionalState: data.emotionalState,

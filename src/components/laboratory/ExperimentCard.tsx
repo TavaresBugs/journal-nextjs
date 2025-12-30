@@ -2,7 +2,7 @@
 
 import React from "react";
 import { GlassCard, IconActionButton } from "@/components/ui";
-import type { LaboratoryExperiment, ExperimentStatus } from "@/types";
+import type { LaboratoryExperiment, ExperimentStatus, ExperimentType } from "@/types";
 
 interface ExperimentCardProps {
   experiment: LaboratoryExperiment;
@@ -27,6 +27,11 @@ const TAG_COLORS = [
   { bg: "bg-pink-500/20", text: "text-pink-300", border: "border-pink-500/30" },
 ];
 
+const TIPO_CONFIG: Record<ExperimentType, { label: string; color: string; bgColor: string }> = {
+  contexto: { label: "Contexto", color: "text-purple-400", bgColor: "bg-purple-500/20" },
+  entrada: { label: "Entrada", color: "text-cyan-400", bgColor: "bg-cyan-500/20" },
+};
+
 const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
 
 export function ExperimentCard({
@@ -37,6 +42,7 @@ export function ExperimentCard({
   onPromote,
 }: ExperimentCardProps) {
   const statusConfig = STATUS_CONFIG[experiment.status];
+  const tipoConfig = experiment.experimentType ? TIPO_CONFIG[experiment.experimentType] : null;
   const firstImage = experiment.images?.[0]?.imageUrl;
 
   const formatDate = (dateStr: string) => {
@@ -68,11 +74,20 @@ export function ExperimentCard({
       {/* Header */}
       <div className="mb-3 flex items-start justify-between gap-2">
         <h3 className="line-clamp-2 flex-1 text-lg font-semibold text-white">{experiment.title}</h3>
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color} whitespace-nowrap`}
-        >
-          {statusConfig.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`rounded-full px-2 py-1 text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color} whitespace-nowrap`}
+          >
+            {statusConfig.label}
+          </span>
+          {tipoConfig && (
+            <span
+              className={`rounded-full px-2 py-1 text-xs font-medium ${tipoConfig.bgColor} ${tipoConfig.color} whitespace-nowrap`}
+            >
+              {tipoConfig.label}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Description */}
@@ -113,7 +128,22 @@ export function ExperimentCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-gray-700/50 pt-3">
-        <span className="text-xs text-gray-500">{formatDate(experiment.createdAt)}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500">{formatDate(experiment.createdAt)}</span>
+          {experiment.images.length > 0 && (
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              {experiment.images.length} imagem(ns)
+            </span>
+          )}
+        </div>
 
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
           <IconActionButton variant="edit" onClick={() => onEdit(experiment)} />

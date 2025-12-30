@@ -17,7 +17,6 @@ interface ExperimentsTabProps {
 
 const STATUS_FILTERS: { value: ExperimentStatus | "all"; label: string }[] = [
   { value: "all", label: "Todos" },
-  { value: "em_aberto", label: "Em Aberto" },
   { value: "testando", label: "Testando" },
   { value: "validado", label: "Validado" },
   { value: "descartado", label: "Descartado" },

@@ -3,9 +3,17 @@ import React from "react";
 interface ProbabilityChartProps {
   bullishPct: number;
   bearishPct: number;
+  /** Custom labels for positive/negative sides (defaults to Bullish/Bearish) */
+  positiveLabel?: string;
+  negativeLabel?: string;
 }
 
-export function ProbabilityChart({ bullishPct, bearishPct }: ProbabilityChartProps) {
+export function ProbabilityChart({
+  bullishPct,
+  bearishPct,
+  positiveLabel = "Bullish",
+  negativeLabel = "Bearish",
+}: ProbabilityChartProps) {
   const radius = 50;
   const strokeWidth = 10;
   const normalizedRadius = radius - strokeWidth * 0.5;
@@ -75,7 +83,7 @@ export function ProbabilityChart({ bullishPct, bearishPct }: ProbabilityChartPro
                 {bullishPct.toFixed(1)}%
               </span>
               <span className="mt-1 text-xs tracking-wide text-gray-400 uppercase">
-                {bullishPct >= 50 ? "Bullish" : "Bearish"}
+                {bullishPct >= 50 ? positiveLabel : negativeLabel}
               </span>
             </>
           )}
@@ -90,11 +98,15 @@ export function ProbabilityChart({ bullishPct, bearishPct }: ProbabilityChartPro
         >
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-emerald-500" />
-            <span className="text-sm text-gray-300">Bullish ({bullishPct.toFixed(1)}%)</span>
+            <span className="text-sm text-gray-300">
+              {positiveLabel} ({bullishPct.toFixed(1)}%)
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-red-500" />
-            <span className="text-sm text-gray-300">Bearish ({bearishPct.toFixed(1)}%)</span>
+            <span className="text-sm text-gray-300">
+              {negativeLabel} ({bearishPct.toFixed(1)}%)
+            </span>
           </div>
         </div>
       )}

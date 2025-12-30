@@ -10,7 +10,7 @@ import {
   SelectItem,
   ModalFooterActions,
 } from "@/components/ui";
-import type { ExperimentStatus, LaboratoryExperiment } from "@/types";
+import type { ExperimentStatus, ExperimentType, LaboratoryExperiment } from "@/types";
 import { CreateExperimentData, UpdateExperimentData } from "@/store/useLaboratoryStore";
 import { RecapImageUploader } from "./recap";
 
@@ -61,7 +61,7 @@ export function ExperimentFormModal({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [experimentType, setExperimentType] = useState("");
+  const [experimentType, setExperimentType] = useState<ExperimentType | "">("");
   const [status, setStatus] = useState<ExperimentStatus>("testando");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -89,6 +89,7 @@ export function ExperimentFormModal({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(initialData.title);
       setDescription(initialData.description || "");
+      setExperimentType(initialData.experimentType || "");
       setStatus(initialData.status);
       setTags(initialData.category ? initialData.category.split(", ").map((t) => t.trim()) : []);
       setPreviews(initialData.images?.map((img) => img.imageUrl) || []);
@@ -153,6 +154,7 @@ export function ExperimentFormModal({
         id: initialData.id,
         title: title.trim(),
         description: description.trim() || undefined,
+        experimentType: experimentType || undefined,
         status,
         category: tags.length > 0 ? tags.join(", ") : undefined,
       };
@@ -161,6 +163,7 @@ export function ExperimentFormModal({
       const createData: CreateExperimentData = {
         title: title.trim(),
         description: description.trim() || undefined,
+        experimentType: experimentType || undefined,
         status,
         category: tags.length > 0 ? tags.join(", ") : undefined,
       };
@@ -212,7 +215,10 @@ export function ExperimentFormModal({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-gray-300">Tipo</label>
-            <Select value={experimentType} onValueChange={setExperimentType}>
+            <Select
+              value={experimentType}
+              onValueChange={(v) => setExperimentType(v as ExperimentType)}
+            >
               <SelectTrigger className="flex h-12 w-full items-center justify-between rounded-xl border border-gray-700 bg-gray-800/50 px-4 text-white focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500">
                 <span>{experimentType ? getTipoLabel(experimentType) : "Selecione..."}</span>
               </SelectTrigger>
