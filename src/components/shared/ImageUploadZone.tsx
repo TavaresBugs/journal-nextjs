@@ -1,14 +1,14 @@
 "use client";
 
-import React, { memo, useRef } from "react";
+import React, { memo, useRef, useCallback } from "react";
 
 interface ImageUploadZoneProps {
   timeframe: { key: string; label: string };
   images: string[];
-  onPaste: (e: React.ClipboardEvent<HTMLDivElement>) => void;
-  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onRemove: () => void;
-  onAddMore?: () => void;
+  onPaste: (e: React.ClipboardEvent<HTMLDivElement>, timeframeKey: string) => void;
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>, timeframeKey: string) => void;
+  onRemove: (timeframeKey: string) => void;
+  onAddMore?: (timeframeKey: string) => void;
 }
 
 /**
@@ -26,23 +26,40 @@ const ImageUploadZoneComponent = ({
 }: ImageUploadZoneProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const triggerFileInput = () => {
-    document.getElementById(`file-input-${timeframe.key}`)?.click();
-  };
+  // Stable callback references using currying with useCallback
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      e.stopPropagation();
+      onPaste(e, timeframe.key);
+    },
+    [onPaste, timeframe.key]
+  );
 
-  const handleContainerClick = () => {
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFileSelect(e, timeframe.key);
+    },
+    [onFileSelect, timeframe.key]
+  );
+
+  const handleRemove = useCallback(() => {
+    onRemove(timeframe.key);
+  }, [onRemove, timeframe.key]);
+
+  const triggerFileInput = useCallback(() => {
+    document.getElementById(`file-input-${timeframe.key}`)?.click();
+  }, [timeframe.key]);
+
+  const handleContainerClick = useCallback(() => {
     // Give focus to the container so paste works
     containerRef.current?.focus();
-  };
+  }, []);
 
   return (
     <div
       ref={containerRef}
       className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border-2 border-dashed border-gray-700 bg-gray-900/50 transition-all duration-200 hover:border-cyan-500/50 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500"
-      onPaste={(e) => {
-        e.stopPropagation();
-        onPaste(e);
-      }}
+      onPaste={handlePaste}
       onClick={handleContainerClick}
       tabIndex={0}
     >
@@ -51,7 +68,7 @@ const ImageUploadZoneComponent = ({
         id={`file-input-${timeframe.key}`}
         className="hidden"
         accept="image/*"
-        onChange={onFileSelect}
+        onChange={handleFileSelect}
       />
 
       <div className="absolute top-2 left-2 z-10 rounded bg-black/60 px-2 py-0.5 text-[10px] font-medium text-cyan-400">
@@ -71,7 +88,7 @@ const ImageUploadZoneComponent = ({
           {/* Delete Button - Removes last image */}
           <button
             type="button"
-            onClick={onRemove}
+            onClick={handleRemove}
             className="absolute top-2 right-2 z-20 rounded bg-red-500/80 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
             title="Remover última imagem"
           >

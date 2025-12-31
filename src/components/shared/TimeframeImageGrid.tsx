@@ -35,12 +35,9 @@ const TimeframeImageGridComponent = ({
           key={tf.key}
           timeframe={tf}
           images={images[tf.key] || []}
-          onPaste={(e) => onPaste(e, tf.key)}
-          onFileSelect={(e) => onFileSelect(e, tf.key)}
-          onRemove={() => onRemoveImage(tf.key)}
-          onAddMore={() => {
-            document.getElementById(`file-input-${tf.key}`)?.click();
-          }}
+          onPaste={onPaste}
+          onFileSelect={onFileSelect}
+          onRemove={onRemoveImage}
         />
       ))}
     </div>
