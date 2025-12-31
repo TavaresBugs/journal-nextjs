@@ -156,7 +156,7 @@ export function LoginForm() {
 
   if (loading) {
     return (
-      <div className="flex h-[400px] w-full items-center justify-center rounded-3xl border border-gray-700 bg-[#353b3e] p-8 shadow-2xl">
+      <div className="flex min-h-[400px] w-full items-center justify-center rounded-3xl border border-gray-700 bg-[#353b3e] p-8 shadow-2xl">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#4DB6AC] border-t-transparent"></div>
           <p className="text-gray-400">Verificando autenticação...</p>

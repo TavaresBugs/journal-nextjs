@@ -25,7 +25,7 @@ export default function LoginPage() {
 
 function LoginFormSkeleton() {
   return (
-    <div className="rounded-3xl border border-gray-700 bg-[#353b3e] p-8 shadow-2xl">
+    <div className="min-h-[400px] rounded-3xl border border-gray-700 bg-[#353b3e] p-8 shadow-2xl">
       <div className="mb-8 flex animate-pulse gap-4">
         <div className="h-12 flex-1 rounded bg-gray-700"></div>
         <div className="h-12 flex-1 rounded bg-gray-700"></div>

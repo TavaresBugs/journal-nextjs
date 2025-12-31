@@ -27,12 +27,15 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Preconnect to third-party origins for faster resource loading */}
-        <link rel="preconnect" href="https://va.vercel-scripts.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://va.vercel-scripts.com" />
-        <link rel="preconnect" href="https://vercel.live" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://vercel.live" />
-        {/* Preconnect to Supabase if using authentication */}
+        {/* Preload LCP background image for faster first paint */}
+        <link
+          rel="preload"
+          href="/background-landscape-blurred.webp"
+          as="image"
+          type="image/webp"
+          fetchPriority="high"
+        />
+        {/* Preconnect to Supabase for faster auth/data loading */}
         <link rel="preconnect" href="https://supabase.co" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://supabase.co" />
       </head>
