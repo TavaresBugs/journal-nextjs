@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Prefetch Hook for Calendar Data
  *

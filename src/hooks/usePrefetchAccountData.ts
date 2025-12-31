@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Prefetch Hook for Account Data
  *
