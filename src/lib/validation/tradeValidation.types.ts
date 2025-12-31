@@ -79,6 +79,7 @@ export const REQUIRED_FIELDS: (keyof TradeValidationInput)[] = [
   "entryPrice",
   "lot",
   "entryDate",
+  "entryTime",
 ];
 
 /**

@@ -5,6 +5,7 @@ import type { Trade } from "@/types";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { usePlaybookStore } from "@/store/usePlaybookStore";
 import { useToast } from "@/providers/ToastProvider";
+import { validateClosedTrade } from "@/lib/validation/tradeValidation";
 
 // Import hooks
 import {
@@ -81,13 +82,28 @@ export function TradeForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     clearAllErrors();
-    const result = validateForm(buildValidationInput());
+
+    // Use contextual validation: closed trades require exit fields
+    const input = buildValidationInput();
+    const result = isTradeOpen ? validateForm(input) : validateClosedTrade(input);
+
     if (!result.isValid) {
       const errorCount = result.errors.length;
       showToast(
         `Corrija ${errorCount} erro${errorCount !== 1 ? "s" : ""} antes de salvar`,
         "error"
       );
+      // Update field errors from the validation result
+      result.errors.forEach((err) => {
+        if (err.field) {
+          // The hook's validateForm already sets errors, but for validateClosedTrade we need to set them
+          validateSingleField(
+            err.field as keyof typeof input,
+            input[err.field as keyof typeof input] || "",
+            input
+          );
+        }
+      });
       return;
     }
     submitHandler(e, state, computed);

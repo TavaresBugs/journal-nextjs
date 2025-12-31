@@ -63,6 +63,7 @@ export const TradeDateTimeSection = React.memo(function TradeDateTimeSection({
           onChange={setEntryDate}
           onBlur={() => onFieldBlur("entryDate")}
           error={getError("entryDate")}
+          required
         />
         <TimePickerInput
           label="Hora Entrada"
@@ -70,6 +71,7 @@ export const TradeDateTimeSection = React.memo(function TradeDateTimeSection({
           onChange={setEntryTime}
           onBlur={() => onFieldBlur("entryTime")}
           error={getError("entryTime")}
+          required
         />
       </FormRow>
 
@@ -97,6 +99,7 @@ export const TradeDateTimeSection = React.memo(function TradeDateTimeSection({
             onChange={setExitDate}
             onBlur={() => onFieldBlur("exitDate")}
             error={getError("exitDate")}
+            required={!isTradeOpen}
           />
           <TimePickerInput
             label="Hora Saída"
@@ -104,6 +107,7 @@ export const TradeDateTimeSection = React.memo(function TradeDateTimeSection({
             onChange={setExitTime}
             onBlur={() => onFieldBlur("exitTime")}
             error={getError("exitTime")}
+            required={!isTradeOpen}
           />
         </FormRow>
       )}

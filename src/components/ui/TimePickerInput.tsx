@@ -212,6 +212,7 @@ export function TimePickerInput({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label="Abrir seletor de horário"
           className="absolute top-1/2 right-2 -translate-y-1/2 p-1 text-gray-400 transition-colors hover:text-cyan-400"
         >
           <svg

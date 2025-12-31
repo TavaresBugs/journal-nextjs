@@ -39,7 +39,7 @@ export function ImageGalleryClient({ images }: ImageGalleryClientProps) {
   return (
     <>
       <div className="mb-8">
-        <h2 className="mb-4 text-xl font-semibold text-gray-200">📸 Análises</h2>
+        <h3 className="mb-4 text-xl font-semibold text-gray-200">📸 Análises</h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {images.map((img) => (
             <div

@@ -497,6 +497,58 @@ export function validateTrade(
   };
 }
 
+// ============================================
+// Closed Trade Validation
+// ============================================
+
+/**
+ * Additional fields required when closing a trade
+ */
+export const CLOSED_TRADE_REQUIRED_FIELDS: (keyof TradeValidationInput)[] = [
+  "exitPrice",
+  "exitDate",
+  "exitTime",
+];
+
+/**
+ * Valida um trade fechado (inclui campos de saída)
+ *
+ * Combina validação base + campos obrigatórios de saída
+ */
+export function validateClosedTrade(
+  input: TradeValidationInput,
+  config: ValidationConfig = DEFAULT_CONFIG
+): ValidationResult {
+  // Run base validation
+  const baseResult = validateTrade(input, config);
+  const additionalErrors: ValidationError[] = [];
+
+  // Validate exit fields are present
+  for (const field of CLOSED_TRADE_REQUIRED_FIELDS) {
+    const value = input[field];
+    if (!value || (typeof value === "string" && value.trim() === "")) {
+      additionalErrors.push({
+        field,
+        message: ERROR_MESSAGES.REQUIRED(FIELD_LABELS[field]),
+        code: "REQUIRED",
+      });
+    }
+  }
+
+  // Remove duplicates (in case base validation already caught some)
+  const allErrors = [...baseResult.errors, ...additionalErrors];
+  const uniqueErrors = allErrors.filter(
+    (error, index, self) =>
+      index === self.findIndex((e) => e.field === error.field && e.code === error.code)
+  );
+
+  return {
+    isValid: uniqueErrors.length === 0,
+    errors: uniqueErrors,
+    warnings: baseResult.warnings,
+  };
+}
+
 // Re-export types for convenience
 export type {
   ValidationError,
