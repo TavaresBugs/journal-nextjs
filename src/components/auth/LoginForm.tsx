@@ -355,20 +355,22 @@ export function LoginForm() {
             </div>
           )}
 
-          {/* Reserved space for messages to prevent CLS */}
-          <div className="min-h-12 space-y-2">
-            {error && (
-              <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-red-500/50 bg-red-500/20 px-4 py-2 text-sm text-red-200 duration-200">
-                {error}
-              </div>
-            )}
+          {/* Messages container - only takes space when there's a message */}
+          {(error || success) && (
+            <div className="space-y-2">
+              {error && (
+                <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-red-500/50 bg-red-500/20 px-4 py-2 text-sm text-red-200 duration-200">
+                  {error}
+                </div>
+              )}
 
-            {success && (
-              <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-green-500/50 bg-green-500/20 px-4 py-2 text-sm text-green-200 duration-200">
-                {success}
-              </div>
-            )}
-          </div>
+              {success && (
+                <div className="animate-in fade-in slide-in-from-top-2 rounded-xl border border-green-500/50 bg-green-500/20 px-4 py-2 text-sm text-green-200 duration-200">
+                  {success}
+                </div>
+              )}
+            </div>
+          )}
 
           {mode === "login" && (
             <button
