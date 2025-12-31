@@ -97,9 +97,9 @@ export function Button({
     purple:
       "bg-purple-500/10 text-purple-500 border border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] font-black",
 
-    // Zorin Glass - Neon Green Primary Action
+    // Zorin Glass - Neon Green Primary Action (WCAG AA compliant)
     "zorin-primary":
-      "bg-[#00c853] hover:bg-[#00e05a] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
+      "bg-[#008f3e] hover:bg-[#00a347] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
 
     // Zorin Glass - Outline variant
     "zorin-outline":
