@@ -30,7 +30,11 @@ interface DashboardJournalProps {
   onFilterChange: (accountId: string, asset: string) => Promise<void>;
 }
 
-export function DashboardJournal({
+// Memoize to prevent re-renders when switching tabs if props didn't change
+export const DashboardJournal = React.memo(DashboardJournalContent);
+DashboardJournalContent.displayName = "DashboardJournal";
+
+function DashboardJournalContent({
   trades,
   currency,
   totalCount,

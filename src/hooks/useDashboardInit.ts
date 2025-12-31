@@ -154,8 +154,8 @@ export function useDashboardInit(
       return;
     }
 
-    // Skip if we already have initialData for this account
-    if (initialData?.account && initialData.account.id === accountId) {
+    // Skip if we already have FULL initialData (Account + Trades) for this account
+    if (initialData?.account && initialData.trades && initialData.account.id === accountId) {
       return;
     }
 
@@ -331,7 +331,7 @@ export function useDashboardInit(
     currentPage,
     entries,
     playbooks,
-    serverMetrics,
+    serverMetrics: serverMetrics || null,
     playbookStats,
 
     // State

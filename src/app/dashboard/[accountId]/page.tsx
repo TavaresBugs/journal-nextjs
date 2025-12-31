@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { isValidUUID } from "@/lib/validation/uuid";
-import { batchDashboardInitAction } from "@/app/actions/_batch/dashboardInit";
+import { getDashboardAccountAction, DashboardInitResult } from "@/app/actions/_batch/dashboardInit";
 import { DashboardClient } from "./DashboardClient";
 
 /**
@@ -24,16 +24,24 @@ export default async function DashboardPage({
     notFound();
   }
 
-  // Fetch ALL dashboard data on server for instant LCP
-  // This includes Account, Metrics, and First Page of Trades
-  const initData = await batchDashboardInitAction(accountId);
+  // Fetch ONLY account data on server for instant LCP (Fast)
+  // The rest (Metrics, Trades) will be fetched by the client (Lazy)
+  // This solves the 31s LCP issue by unblocking the initial HTML response.
+  const accountData = await getDashboardAccountAction(accountId);
 
-  if (!initData || !initData.account) {
+  if (!accountData) {
     notFound();
   }
 
   const { date: queryDate } = await searchParams;
 
-  // Pass full initial data to client component for immediate rendering
-  return <DashboardClient accountId={accountId} initialData={initData} queryDate={queryDate} />;
+  // Pass only account data, let client fetch the rest
+  const initialData: DashboardInitResult = {
+    account: accountData,
+    metrics: null,
+    trades: undefined,
+    // metrics and trades are undefined, triggering client-side fetch
+  };
+
+  return <DashboardClient accountId={accountId} initialData={initialData} queryDate={queryDate} />;
 }

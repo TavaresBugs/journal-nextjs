@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Button, GlassCard, Input } from "@/components/ui";
 import type { Trade } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
@@ -32,7 +32,10 @@ interface TradeListProps {
   isLoading?: boolean;
 }
 
-export function TradeList({
+export const TradeList = React.memo(TradeListContent);
+TradeListContent.displayName = "TradeList";
+
+function TradeListContent({
   trades,
   currency,
   onEditTrade,

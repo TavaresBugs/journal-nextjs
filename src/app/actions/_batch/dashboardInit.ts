@@ -19,7 +19,7 @@ import type { Trade, Account } from "@/types";
 
 export interface DashboardInitResult {
   account: Account | null;
-  metrics: {
+  metrics?: {
     totalTrades: number;
     wins: number;
     losses: number;
@@ -27,7 +27,7 @@ export interface DashboardInitResult {
     winRate: number;
     totalPnl: number;
   } | null;
-  trades: {
+  trades?: {
     data: Trade[];
     count: number;
   };
@@ -144,4 +144,16 @@ export async function batchDashboardRefreshAction(
     console.error("[batchDashboardRefreshAction] Unexpected error:", error);
     return null;
   }
+}
+
+/**
+ * Super lightweight action for LCP optimization.
+ * Fetches ONLY the account data to allow immediate First Paint of the header.
+ */
+export async function getDashboardAccountAction(accountId: string): Promise<Account | null> {
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+
+  const result = await prismaAccountRepo.getById(accountId, userId);
+  return result.data;
 }
