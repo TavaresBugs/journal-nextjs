@@ -13,6 +13,7 @@ interface ViewExperimentModalProps {
   onEdit: (experiment: LaboratoryExperiment) => void;
   onPromote: (id: string) => void;
   availableTrades?: TradeLite[];
+  onViewJournal?: (tradeId: string) => void;
 }
 
 const STATUS_CONFIG: Record<ExperimentStatus, { label: string; color: string; bgColor: string }> = {
@@ -44,6 +45,7 @@ export function ViewExperimentModal({
   onEdit,
   onPromote,
   availableTrades = [],
+  onViewJournal,
 }: ViewExperimentModalProps) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
 
@@ -83,7 +85,7 @@ export function ViewExperimentModal({
         isOpen={isOpen}
         onClose={onClose}
         title={`🧪 ${experiment.title}`}
-        maxWidth="3xl"
+        maxWidth="5xl"
         headerActions={
           <div className="flex items-center gap-2">
             {/* Status Badge */}
@@ -175,7 +177,11 @@ export function ViewExperimentModal({
           )}
 
           {/* Trades Section - Prós/Contras */}
-          <ExperimentTradesSection experimentId={experiment.id} availableTrades={availableTrades} />
+          <ExperimentTradesSection
+            experimentId={experiment.id}
+            availableTrades={availableTrades}
+            onViewJournal={onViewJournal}
+          />
 
           {/* Promoted Status */}
           {experiment.promotedToPlaybook && (

@@ -19,6 +19,7 @@ interface ExperimentTradesSectionProps {
   experimentId: string;
   availableTrades: TradeLite[];
   onRefreshNeeded?: () => void;
+  onViewJournal?: (tradeId: string) => void;
 }
 
 /**
@@ -29,6 +30,7 @@ export function ExperimentTradesSection({
   experimentId,
   availableTrades,
   onRefreshNeeded,
+  onViewJournal,
 }: ExperimentTradesSectionProps) {
   const [linkedTrades, setLinkedTrades] = useState<ExperimentLinkedTrade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,7 +186,7 @@ export function ExperimentTradesSection({
               >
                 <div className="flex items-center gap-2 text-sm text-gray-200">
                   <span className="text-xs text-gray-500">
-                    {dayjs(trade.entryDate).format("DD/MM")}
+                    {dayjs(trade.entryDate).format("DD/MM/YY")}
                   </span>
                   <AssetIcon symbol={trade.symbol} size="sm" />
                   <span className="font-medium">{trade.symbol}</span>
@@ -205,12 +207,22 @@ export function ExperimentTradesSection({
                     {formatCurrency(trade.pnl)}
                   </span>
                 </div>
-                <IconActionButton
-                  variant="delete"
-                  size="sm"
-                  onClick={() => handleUnlinkTrade(trade.tradeId)}
-                  title="Remover"
-                />
+                <div className="flex items-center gap-1">
+                  {onViewJournal && (
+                    <IconActionButton
+                      variant="view"
+                      size="sm"
+                      onClick={() => onViewJournal(trade.tradeId)}
+                      title="Ver diário"
+                    />
+                  )}
+                  <IconActionButton
+                    variant="delete"
+                    size="sm"
+                    onClick={() => handleUnlinkTrade(trade.tradeId)}
+                    title="Remover"
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -246,7 +258,7 @@ export function ExperimentTradesSection({
               >
                 <div className="flex items-center gap-2 text-sm text-gray-200">
                   <span className="text-xs text-gray-500">
-                    {dayjs(trade.entryDate).format("DD/MM")}
+                    {dayjs(trade.entryDate).format("DD/MM/YY")}
                   </span>
                   <AssetIcon symbol={trade.symbol} size="sm" />
                   <span className="font-medium">{trade.symbol}</span>
@@ -267,12 +279,22 @@ export function ExperimentTradesSection({
                     {formatCurrency(trade.pnl)}
                   </span>
                 </div>
-                <IconActionButton
-                  variant="delete"
-                  size="sm"
-                  onClick={() => handleUnlinkTrade(trade.tradeId)}
-                  title="Remover"
-                />
+                <div className="flex items-center gap-1">
+                  {onViewJournal && (
+                    <IconActionButton
+                      variant="view"
+                      size="sm"
+                      onClick={() => onViewJournal(trade.tradeId)}
+                      title="Ver diário"
+                    />
+                  )}
+                  <IconActionButton
+                    variant="delete"
+                    size="sm"
+                    onClick={() => handleUnlinkTrade(trade.tradeId)}
+                    title="Remover"
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -436,7 +458,7 @@ function TradeSearchInput({ variant, onSelect, searchTrades }: TradeSearchInputP
             >
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">
-                  {dayjs(trade.entryDate).format("DD/MM")}
+                  {dayjs(trade.entryDate).format("DD/MM/YY")}
                 </span>
                 <AssetIcon symbol={trade.symbol} size="sm" />
                 <span className="font-medium text-gray-300">{trade.symbol}</span>

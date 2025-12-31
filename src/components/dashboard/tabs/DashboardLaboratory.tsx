@@ -31,6 +31,7 @@ import type { LaboratoryExperiment, LaboratoryRecap, TradeLite, JournalEntryLite
 interface DashboardLaboratoryProps {
   accountId: string;
   trades: TradeLite[];
+  onViewJournal?: (tradeId: string) => void;
 }
 
 const LABORATORY_TABS_OPTIONS = [
@@ -38,7 +39,11 @@ const LABORATORY_TABS_OPTIONS = [
   { value: "recaps", label: <>📝 Recaps</> },
 ];
 
-export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryProps) {
+export function DashboardLaboratory({
+  accountId,
+  trades,
+  onViewJournal,
+}: DashboardLaboratoryProps) {
   const [activeTab, setActiveTab] = useState("experiments");
 
   // Experiment Modals state
@@ -260,6 +265,7 @@ export function DashboardLaboratory({ accountId, trades }: DashboardLaboratoryPr
         onEdit={handleEditExperiment}
         onPromote={handlePromoteExperiment}
         availableTrades={trades}
+        onViewJournal={onViewJournal}
       />
 
       {/* Unified Recap Form Modal (Create & Edit) */}

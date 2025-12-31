@@ -371,6 +371,15 @@ export function DashboardClient({ accountId, initialData, queryDate }: Dashboard
                       accountId: t.accountId,
                     }))
                   }
+                  onViewJournal={(tradeId) => {
+                    // Find the full Trade object and open journal modal
+                    const trade =
+                      data.trades.find((t) => t.id === tradeId) ||
+                      (data.allHistory as unknown as Trade[]).find((t) => t.id === tradeId);
+                    if (trade) {
+                      handleJournalClick(trade as Trade, false);
+                    }
+                  }}
                 />
               </TabPanel>
 
