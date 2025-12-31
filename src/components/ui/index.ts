@@ -35,3 +35,5 @@ export { Switch } from "./switch";
 export { SegmentedToggle } from "./SegmentedToggle";
 export { AssetBadge } from "./AssetBadge";
 export * from "./ModalFooterActions";
+export { DebouncedInput } from "./DebouncedInput";
+export { DebouncedTextarea } from "./DebouncedTextarea";

@@ -1,8 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { Input } from "@/components/ui";
-import { DebouncedTextarea } from "@/components/ui/DebouncedTextarea";
+import { DebouncedInput, DebouncedTextarea } from "@/components/ui";
 import { TimeframeImageGrid } from "@/components/shared";
 import type { ClipboardEvent, ChangeEvent } from "react";
 
@@ -54,9 +53,9 @@ const JournalAnalysisComponent = ({
         <label className="flex items-center gap-2 text-sm text-gray-400">
           <span>🧠</span> Estado Emocional
         </label>
-        <Input
+        <DebouncedInput
           value={emotion}
-          onChange={(e) => setEmotion(e.target.value)}
+          onDebouncedChange={setEmotion}
           placeholder="Ex: Calmo, Ansioso, Focado, Vingativo..."
           className=""
         />

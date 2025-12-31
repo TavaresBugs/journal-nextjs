@@ -1,7 +1,7 @@
 "use client";
 
 import { memo } from "react";
-import { Input } from "@/components/ui";
+import { DebouncedInput } from "@/components/ui";
 import { DatePickerInput } from "@/components/ui/DateTimePicker";
 import { AssetCombobox } from "@/components/shared";
 
@@ -25,10 +25,10 @@ const EntryHeaderComponent = ({
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div className="md:col-span-1">
-        <Input
+        <DebouncedInput
           label="Título / Resumo do Dia"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onDebouncedChange={setTitle}
           placeholder="Ex: Diário - 02/12/2025"
           required
         />
