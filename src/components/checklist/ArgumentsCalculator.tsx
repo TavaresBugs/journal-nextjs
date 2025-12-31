@@ -1,7 +1,87 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { Button } from "@/components/ui/Button";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Button, IconActionButton } from "@/components/ui";
 import { ProbabilityChart } from "./ProbabilityChart";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
+// Argument with unique ID for DnD
+interface ArgumentItem {
+  id: string;
+  text: string;
+}
+
+// Generate unique ID
+const generateId = () => Math.random().toString(36).substr(2, 9);
+
+// Convert string[] to ArgumentItem[]
+const stringsToItems = (strings: string[]): ArgumentItem[] =>
+  strings.map((text) => ({ id: generateId(), text }));
+
+// --- Sortable Argument Item Component ---
+interface SortableArgumentItemProps {
+  item: ArgumentItem;
+  onRemove: () => void;
+  color: "green" | "red";
+}
+
+function SortableArgumentItem({ item, onRemove, color }: SortableArgumentItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const borderClass =
+    color === "green"
+      ? "border-emerald-500/30 bg-emerald-500/10"
+      : "border-red-500/30 bg-red-500/10";
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center gap-2 rounded-lg border ${borderClass} p-3 ${isDragging ? "shadow-lg" : ""}`}
+    >
+      {/* Drag Handle */}
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-move touch-none p-1 text-gray-500 hover:text-gray-300"
+      >
+        ☰
+      </div>
+      <span className="flex-1 text-sm break-words text-gray-200">{item.text}</span>
+      <IconActionButton
+        variant="delete"
+        size="sm"
+        onClick={onRemove}
+        className="opacity-0 transition-opacity group-hover:opacity-100"
+      />
+    </div>
+  );
+}
+
+// --- Main Component ---
 interface ArgumentsCalculatorProps {
   initialBullishArgs?: string[];
   initialBearishArgs?: string[];
@@ -19,15 +99,27 @@ export function ArgumentsCalculator({
   initialBearishArgs = [],
   onComplete,
 }: ArgumentsCalculatorProps) {
-  // State now holds the actual list of argument strings
-  const [bullishArgs, setBullishArgs] = useState<string[]>(initialBullishArgs);
-  const [bearishArgs, setBearishArgs] = useState<string[]>(initialBearishArgs);
+  // State with objects containing IDs
+  const [bullishArgs, setBullishArgs] = useState<ArgumentItem[]>(() =>
+    stringsToItems(initialBullishArgs)
+  );
+  const [bearishArgs, setBearishArgs] = useState<ArgumentItem[]>(() =>
+    stringsToItems(initialBearishArgs)
+  );
 
-  // Input states for new arguments
+  // Input states
   const [newBullish, setNewBullish] = useState("");
   const [newBearish, setNewBearish] = useState("");
 
-  // Calculations based on array length
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Calculations
   const bullishCount = bullishArgs.length;
   const bearishCount = bearishArgs.length;
   const totalPoints = bullishCount + bearishCount;
@@ -57,26 +149,50 @@ export function ArgumentsCalculator({
     }
   }, [bullishCount, bearishCount, bullishPct, bearishPct, label, onComplete]);
 
-  // Handlers
-  const addBullish = () => {
+  // Add handlers
+  const addBullish = useCallback(() => {
     if (!newBullish.trim()) return;
-    setBullishArgs([...bullishArgs, newBullish.trim()]);
+    setBullishArgs((prev) => [...prev, { id: generateId(), text: newBullish.trim() }]);
     setNewBullish("");
-  };
+  }, [newBullish]);
 
-  const removeBullish = (index: number) => {
-    setBullishArgs(bullishArgs.filter((_, i) => i !== index));
-  };
-
-  const addBearish = () => {
+  const addBearish = useCallback(() => {
     if (!newBearish.trim()) return;
-    setBearishArgs([...bearishArgs, newBearish.trim()]);
+    setBearishArgs((prev) => [...prev, { id: generateId(), text: newBearish.trim() }]);
     setNewBearish("");
-  };
+  }, [newBearish]);
 
-  const removeBearish = (index: number) => {
-    setBearishArgs(bearishArgs.filter((_, i) => i !== index));
-  };
+  // Remove handlers
+  const removeBullish = useCallback((id: string) => {
+    setBullishArgs((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  const removeBearish = useCallback((id: string) => {
+    setBearishArgs((prev) => prev.filter((item) => item.id !== id));
+  }, []);
+
+  // DnD handlers
+  const handleBullishDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setBullishArgs((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }, []);
+
+  const handleBearishDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setBearishArgs((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }, []);
 
   const handleKeyDown = (e: React.KeyboardEvent, type: "bullish" | "bearish") => {
     if (e.key === "Enter") {
@@ -98,28 +214,32 @@ export function ArgumentsCalculator({
             </span>
           </h3>
 
-          {/* List */}
+          {/* List with Drag and Drop */}
           <div className="custom-scrollbar mb-4 max-h-60 flex-1 space-y-2 overflow-y-auto">
             {bullishArgs.length === 0 && (
               <p className="py-4 text-center text-sm text-gray-500 italic">
                 Nenhum argumento adicionado.
               </p>
             )}
-            {bullishArgs.map((arg, idx) => (
-              <div
-                key={`bull-${idx}`}
-                className="group flex items-center justify-between gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3"
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleBullishDragEnd}
+            >
+              <SortableContext
+                items={bullishArgs.map((a) => a.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <span className="text-sm break-words text-gray-200">{arg}</span>
-                <button
-                  onClick={() => removeBullish(idx)}
-                  className="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
-                  title="Remover"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+                {bullishArgs.map((item) => (
+                  <SortableArgumentItem
+                    key={item.id}
+                    item={item}
+                    onRemove={() => removeBullish(item.id)}
+                    color="green"
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Input */}
@@ -153,28 +273,32 @@ export function ArgumentsCalculator({
             </span>
           </h3>
 
-          {/* List */}
+          {/* List with Drag and Drop */}
           <div className="custom-scrollbar mb-4 max-h-60 flex-1 space-y-2 overflow-y-auto">
             {bearishArgs.length === 0 && (
               <p className="py-4 text-center text-sm text-gray-500 italic">
                 Nenhum argumento adicionado.
               </p>
             )}
-            {bearishArgs.map((arg, idx) => (
-              <div
-                key={`bear-${idx}`}
-                className="group flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3"
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleBearishDragEnd}
+            >
+              <SortableContext
+                items={bearishArgs.map((a) => a.id)}
+                strategy={verticalListSortingStrategy}
               >
-                <span className="text-sm break-words text-gray-200">{arg}</span>
-                <button
-                  onClick={() => removeBearish(idx)}
-                  className="text-gray-500 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
-                  title="Remover"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+                {bearishArgs.map((item) => (
+                  <SortableArgumentItem
+                    key={item.id}
+                    item={item}
+                    onRemove={() => removeBearish(item.id)}
+                    color="red"
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Input */}
@@ -204,7 +328,7 @@ export function ArgumentsCalculator({
       <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-6">
         <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
           {/* Chart Side */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <ProbabilityChart bullishPct={bullishPct} bearishPct={bearishPct} />
           </div>
 
