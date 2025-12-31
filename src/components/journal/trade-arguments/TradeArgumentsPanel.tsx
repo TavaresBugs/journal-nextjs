@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import type { TradeArgument } from "@/types";
 import { useToast } from "@/providers/ToastProvider";
-import { Button, IconActionButton } from "@/components/ui";
+import { IconActionButton } from "@/components/ui";
+import { ArgumentInput } from "./ArgumentInput";
 import { ProbabilityChart } from "@/components/checklist/ProbabilityChart";
 import {
   getTradeArgumentsAction,
@@ -35,7 +36,11 @@ interface SortableArgumentItemProps {
   color: "green" | "red";
 }
 
-function SortableArgumentItem({ argument, onRemove, color }: SortableArgumentItemProps) {
+const SortableArgumentItem = React.memo(function SortableArgumentItem({
+  argument,
+  onRemove,
+  color,
+}: SortableArgumentItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: argument.id,
   });
@@ -66,7 +71,7 @@ function SortableArgumentItem({ argument, onRemove, color }: SortableArgumentIte
       >
         ☰
       </div>
-      <span className="flex-1 text-sm break-words text-gray-200">{argument.argument}</span>
+      <span className="flex-1 text-sm break-all text-gray-200">{argument.argument}</span>
       <IconActionButton
         variant="delete"
         size="sm"
@@ -75,7 +80,7 @@ function SortableArgumentItem({ argument, onRemove, color }: SortableArgumentIte
       />
     </div>
   );
-}
+});
 
 interface TradeArgumentsPanelProps {
   journalEntryId: string;
@@ -99,9 +104,7 @@ export function TradeArgumentsPanel({
     initialArguments.filter((a) => a.type === "contra")
   );
 
-  // Input states
-  const [newPro, setNewPro] = useState("");
-  const [newContra, setNewContra] = useState("");
+  // Input states removed - handled by child component
 
   // Drag and Drop sensors
   const sensors = useSensors(
@@ -155,67 +158,65 @@ export function TradeArgumentsPanel({
   }, [journalEntryId]);
 
   // Handlers
-  const addPro = useCallback(async () => {
-    if (!newPro.trim()) return;
-    const argument = newPro.trim();
-    setNewPro("");
+  const addPro = useCallback(
+    async (argument: string) => {
+      // Optimistic update
+      const tempId = crypto.randomUUID();
+      const optimisticArg: TradeArgument = {
+        id: tempId,
+        journalEntryId,
+        type: "pro",
+        argument,
+        weight: 1,
+        createdAt: new Date().toISOString(),
+      };
+      setProArgs((prev) => [...prev, optimisticArg]);
 
-    // Optimistic update
-    const tempId = crypto.randomUUID();
-    const optimisticArg: TradeArgument = {
-      id: tempId,
-      journalEntryId,
-      type: "pro",
-      argument,
-      weight: 1,
-      createdAt: new Date().toISOString(),
-    };
-    setProArgs((prev) => [...prev, optimisticArg]);
+      // Call server action
+      const result = await addTradeArgumentAction(journalEntryId, "pro", argument);
 
-    // Call server action
-    const result = await addTradeArgumentAction(journalEntryId, "pro", argument);
+      if (!result.success) {
+        setProArgs((prev) => prev.filter((a) => a.id !== tempId));
+        showToast(result.error || "Erro ao adicionar", "error");
+        return;
+      }
 
-    if (!result.success) {
-      setProArgs((prev) => prev.filter((a) => a.id !== tempId));
-      showToast(result.error || "Erro ao adicionar", "error");
-      return;
-    }
+      if (result.data) {
+        setProArgs((prev) => prev.map((a) => (a.id === tempId ? result.data! : a)));
+      }
+    },
+    [journalEntryId, showToast]
+  );
 
-    if (result.data) {
-      setProArgs((prev) => prev.map((a) => (a.id === tempId ? result.data! : a)));
-    }
-  }, [journalEntryId, newPro, showToast]);
+  const addContra = useCallback(
+    async (argument: string) => {
+      // Optimistic update
+      const tempId = crypto.randomUUID();
+      const optimisticArg: TradeArgument = {
+        id: tempId,
+        journalEntryId,
+        type: "contra",
+        argument,
+        weight: 1,
+        createdAt: new Date().toISOString(),
+      };
+      setContraArgs((prev) => [...prev, optimisticArg]);
 
-  const addContra = useCallback(async () => {
-    if (!newContra.trim()) return;
-    const argument = newContra.trim();
-    setNewContra("");
+      // Call server action
+      const result = await addTradeArgumentAction(journalEntryId, "contra", argument);
 
-    // Optimistic update
-    const tempId = crypto.randomUUID();
-    const optimisticArg: TradeArgument = {
-      id: tempId,
-      journalEntryId,
-      type: "contra",
-      argument,
-      weight: 1,
-      createdAt: new Date().toISOString(),
-    };
-    setContraArgs((prev) => [...prev, optimisticArg]);
+      if (!result.success) {
+        setContraArgs((prev) => prev.filter((a) => a.id !== tempId));
+        showToast(result.error || "Erro ao adicionar", "error");
+        return;
+      }
 
-    // Call server action
-    const result = await addTradeArgumentAction(journalEntryId, "contra", argument);
-
-    if (!result.success) {
-      setContraArgs((prev) => prev.filter((a) => a.id !== tempId));
-      showToast(result.error || "Erro ao adicionar", "error");
-      return;
-    }
-
-    if (result.data) {
-      setContraArgs((prev) => prev.map((a) => (a.id === tempId ? result.data! : a)));
-    }
-  }, [journalEntryId, newContra, showToast]);
+      if (result.data) {
+        setContraArgs((prev) => prev.map((a) => (a.id === tempId ? result.data! : a)));
+      }
+    },
+    [journalEntryId, showToast]
+  );
 
   const removePro = useCallback(
     async (argumentId: string) => {
@@ -245,13 +246,7 @@ export function TradeArgumentsPanel({
     [contraArgs, showToast]
   );
 
-  const handleKeyDown = (e: React.KeyboardEvent, type: "pro" | "contra") => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (type === "pro") addPro();
-      else addContra();
-    }
-  };
+  // handleKeyDown removed - handled by child component
 
   // Drag and Drop handlers
   const handleProDragEnd = useCallback((event: DragEndEvent) => {
@@ -339,26 +334,7 @@ export function TradeArgumentsPanel({
           </div>
 
           {/* Input */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newPro}
-              onChange={(e) => setNewPro(e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, "pro")}
-              placeholder="Adicionar pró..."
-              maxLength={500}
-              className="flex-1 rounded-lg border border-emerald-500/30 bg-black/20 px-3 py-2 text-sm text-white transition-colors placeholder:text-gray-600 focus:border-emerald-500 focus:outline-none"
-            />
-            <Button
-              variant="gradient-success"
-              size="sm"
-              onClick={addPro}
-              disabled={!newPro.trim()}
-              className="px-3"
-            >
-              +
-            </Button>
-          </div>
+          <ArgumentInput onAdd={addPro} placeholder="Adicionar pró..." color="emerald" />
         </div>
 
         {/* Bearish (Contra) Column */}
@@ -399,26 +375,7 @@ export function TradeArgumentsPanel({
           </div>
 
           {/* Input */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={newContra}
-              onChange={(e) => setNewContra(e.target.value)}
-              onKeyDown={(e) => handleKeyDown(e, "contra")}
-              placeholder="Adicionar contra..."
-              maxLength={500}
-              className="flex-1 rounded-lg border border-red-500/30 bg-black/20 px-3 py-2 text-sm text-white transition-colors placeholder:text-gray-600 focus:border-red-500 focus:outline-none"
-            />
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={addContra}
-              disabled={!newContra.trim()}
-              className="border-none bg-red-500 px-3 text-white hover:bg-red-600"
-            >
-              +
-            </Button>
-          </div>
+          <ArgumentInput onAdd={addContra} placeholder="Adicionar contra..." color="red" />
         </div>
       </div>
 
@@ -426,7 +383,7 @@ export function TradeArgumentsPanel({
       <div className="rounded-xl border border-gray-700 bg-gray-800/50 p-6">
         <div className="flex flex-col items-center justify-center gap-8 md:flex-row">
           {/* Chart Side */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <ProbabilityChart bullishPct={proPct} bearishPct={contraPct} />
           </div>
 

@@ -25,6 +25,17 @@ vi.mock("@/components/ui", () => ({
   ),
 }));
 
+vi.mock("@/components/ui/DebouncedTextarea", () => ({
+  DebouncedTextarea: ({ value, onDebouncedChange, ...props }: any) => (
+    <textarea
+      data-testid="analysis-textarea"
+      value={value}
+      onChange={(e) => onDebouncedChange(e.target.value)}
+      {...props}
+    />
+  ),
+}));
+
 vi.mock("@/components/shared", () => ({
   TimeframeImageGrid: () => <div data-testid="timeframe-image-grid">Timeframe Grid</div>,
 }));

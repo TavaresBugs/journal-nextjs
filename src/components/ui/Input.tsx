@@ -44,7 +44,7 @@ export function Input({ label, error, warning, className = "", ...props }: Input
               : "border-gray-700",
           // Number input fixes
           "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
-          "[color-scheme:dark]",
+          "scheme-dark",
           "[&::-webkit-calendar-picker-indicator]:filter-invert [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100",
           className
         )}
@@ -61,33 +61,37 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
   error?: string;
 }
 
-export function Textarea({ label, error, className = "", ...props }: TextareaProps) {
-  const generatedId = useId();
-  const textareaId = props.id || generatedId;
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ label, error, className = "", ...props }, ref) => {
+    const generatedId = useId();
+    const textareaId = props.id || generatedId;
 
-  return (
-    <div className="w-full">
-      {label && (
-        <label htmlFor={textareaId} className="mb-2 block text-sm font-medium text-gray-300">
-          {label}
-        </label>
-      )}
-      <textarea
-        id={textareaId}
-        className={cn(
-          // Glass base - Specific user requested color
-          "w-full rounded-lg border bg-[#232b32] px-4 py-2.5",
-          // Text
-          "text-gray-100 placeholder-gray-500",
-          // Focus - Cyan focus to match DatePicker
-          "resize-vertical transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none",
-          // Error state
-          error ? "border-red-500" : "border-gray-700",
-          className
+    return (
+      <div className="w-full">
+        {label && (
+          <label htmlFor={textareaId} className="mb-2 block text-sm font-medium text-gray-300">
+            {label}
+          </label>
         )}
-        {...props}
-      />
-      {error && <p className="mt-1.5 text-sm text-red-400">{error}</p>}
-    </div>
-  );
-}
+        <textarea
+          ref={ref}
+          id={textareaId}
+          className={cn(
+            // Glass base - Specific user requested color
+            "w-full rounded-lg border bg-[#232b32] px-4 py-2.5",
+            // Text
+            "text-gray-100 placeholder-gray-500",
+            // Focus - Cyan focus to match DatePicker
+            "resize-vertical transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-cyan-500 focus:outline-none",
+            // Error state
+            error ? "border-red-500" : "border-gray-700",
+            className
+          )}
+          {...props}
+        />
+        {error && <p className="mt-1.5 text-sm text-red-400">{error}</p>}
+      </div>
+    );
+  }
+);
+Textarea.displayName = "Textarea";

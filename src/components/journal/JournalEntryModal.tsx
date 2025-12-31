@@ -9,7 +9,7 @@ import { useImageCache } from "@/hooks/useImageCache";
 import { JournalEntryPreview } from "./preview";
 import { JournalEntryForm, type FormSubmissionData } from "./form";
 import { getTradesByIdsAction } from "@/app/actions/trades";
-import { ensureFreshImageUrl } from "@/lib/utils/general";
+import { getCachedImageUrl } from "@/lib/utils/general";
 import dayjs from "dayjs";
 
 interface JournalEntryModalProps {
@@ -287,8 +287,8 @@ export function JournalEntryModal({
       );
       sortedImages.forEach((img) => {
         if (!images[img.timeframe]) images[img.timeframe] = [];
-        // Ensure URL is complete with Supabase storage base and cache buster
-        images[img.timeframe].push(ensureFreshImageUrl(img.url));
+        // Ensure URL is complete with Supabase storage base and cache buster (using TTL cache to avoid reload)
+        images[img.timeframe].push(getCachedImageUrl(img.url));
       });
     }
 

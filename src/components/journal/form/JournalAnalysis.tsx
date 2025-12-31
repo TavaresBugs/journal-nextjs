@@ -1,6 +1,7 @@
 "use client";
 
-import { Input, Textarea } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { DebouncedTextarea } from "@/components/ui/DebouncedTextarea";
 import { TimeframeImageGrid } from "@/components/shared";
 import type { ClipboardEvent, ChangeEvent } from "react";
 
@@ -65,9 +66,9 @@ export function JournalAnalysis({
         <label className="flex items-center gap-2 text-sm text-gray-400">
           <span>🔍</span> Leitura do Ativo Operado
         </label>
-        <Textarea
+        <DebouncedTextarea
           value={analysis}
-          onChange={(e) => setAnalysis(e.target.value)}
+          onDebouncedChange={setAnalysis}
           placeholder="Descreva sua análise do ativo em cada timeframe..."
           className="h-48 border-white/5 font-mono text-sm"
         />

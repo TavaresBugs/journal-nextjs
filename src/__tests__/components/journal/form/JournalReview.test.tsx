@@ -13,6 +13,17 @@ vi.mock("@/components/ui", () => ({
   ),
 }));
 
+vi.mock("@/components/ui/DebouncedTextarea", () => ({
+  DebouncedTextarea: ({ value, onDebouncedChange, ...props }: any) => (
+    <textarea
+      data-testid="review-textarea"
+      value={value}
+      onChange={(e) => onDebouncedChange(e.target.value)}
+      {...props}
+    />
+  ),
+}));
+
 describe("JournalReview", () => {
   const defaultProps = {
     technicalWins: "Win 1",

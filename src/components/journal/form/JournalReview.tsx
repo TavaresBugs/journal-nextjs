@@ -1,6 +1,7 @@
 "use client";
 
-import { GlassCard, Textarea } from "@/components/ui";
+import { GlassCard } from "@/components/ui";
+import { DebouncedTextarea } from "@/components/ui/DebouncedTextarea";
 
 interface JournalReviewProps {
   technicalWins: string;
@@ -29,9 +30,9 @@ export function JournalReview({
         <label className="text-zorin-accent flex items-center gap-2 text-sm">
           ✅ Acertos técnicos:
         </label>
-        <Textarea
+        <DebouncedTextarea
           value={technicalWins}
-          onChange={(e) => setTechnicalWins(e.target.value)}
+          onDebouncedChange={setTechnicalWins}
           className="h-20 border-white/5"
         />
       </div>
@@ -40,9 +41,9 @@ export function JournalReview({
         <label className="flex items-center gap-2 text-sm text-yellow-400">
           ⚠️ Pontos a melhorar:
         </label>
-        <Textarea
+        <DebouncedTextarea
           value={improvements}
-          onChange={(e) => setImprovements(e.target.value)}
+          onDebouncedChange={setImprovements}
           className="h-20 border-white/5"
         />
       </div>
@@ -51,9 +52,9 @@ export function JournalReview({
         <label className="flex items-center gap-2 text-sm text-red-400">
           ❌ Erros/Indisciplina:
         </label>
-        <Textarea
+        <DebouncedTextarea
           value={errors}
-          onChange={(e) => setErrors(e.target.value)}
+          onDebouncedChange={setErrors}
           className="h-20 border-white/5"
         />
       </div>
