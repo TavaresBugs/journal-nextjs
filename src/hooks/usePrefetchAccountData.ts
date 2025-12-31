@@ -20,10 +20,6 @@
 
 import { useCallback } from "react";
 
-// Server actions for prefetching
-import { getAccountById } from "@/app/actions/accounts";
-import { getTradeDashboardMetricsAction } from "@/app/actions/trades";
-
 /**
  * Hook to prefetch account data on hover.
  * Silently fetches data in the background to populate cache.
@@ -37,7 +33,8 @@ export function usePrefetchAccountData() {
     if (!accountId) return;
 
     try {
-      // These calls will populate the unstable_cache
+      // Dynamic import to avoid Turbopack module resolution issues
+      const { getAccountById } = await import("@/app/actions/accounts");
       await getAccountById(accountId);
     } catch {
       // Silently fail - prefetch is optional optimization
@@ -52,7 +49,9 @@ export function usePrefetchAccountData() {
     if (!accountId) return;
 
     try {
-      // Parallel prefetch of critical dashboard data
+      // Dynamic import to avoid Turbopack module resolution issues
+      const { getAccountById } = await import("@/app/actions/accounts");
+      const { getTradeDashboardMetricsAction } = await import("@/app/actions/trades");
       await Promise.all([getAccountById(accountId), getTradeDashboardMetricsAction(accountId)]);
     } catch {
       // Silently fail - prefetch is optional optimization

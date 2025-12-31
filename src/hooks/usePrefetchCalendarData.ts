@@ -17,7 +17,6 @@
  */
 
 import { useCallback, useRef, useState } from "react";
-import { getJournalEntriesAction } from "@/app/actions/journal";
 import type { JournalEntry, DailyRoutine } from "@/types";
 
 interface DayDataCache {
@@ -86,6 +85,8 @@ export function usePrefetchCalendarData(accountId: string): PrefetchCalendarData
       try {
         // Fetch journal entries for this date
         // NOTE: Routines are loaded separately via store, but we cache entries here
+        // Using dynamic import to avoid Turbopack module resolution issues
+        const { getJournalEntriesAction } = await import("@/app/actions/journal");
         const entries = await getJournalEntriesAction(accountId);
         const dayEntries = entries.filter((e) => e.date === date);
 
