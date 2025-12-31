@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import type { Trade, JournalEntry } from "@/types";
 import { groupTradesByDay, formatCurrency } from "@/lib/calculations";
 import { useJournalStore } from "@/store/useJournalStore";
-import { usePrefetchCalendarData } from "@/hooks/usePrefetchCalendarData";
+// import { usePrefetchCalendarData } from "@/hooks/usePrefetchCalendarData";
 import { GlassCard } from "@/components/ui";
 import dayjs from "dayjs";
 
@@ -46,7 +46,8 @@ export function TradeCalendar({
   }, [propEntries, storeAccountId, accountId, storeEntries]);
 
   // Prefetch hook for lazy loading
-  const { prefetchDayData, prefetchNearbyDays } = usePrefetchCalendarData(accountId || "");
+  // DISABLED TEMPORARILY due to Next.js 16/Turbopack issues with Server Actions in Client/Hooks
+  // const { prefetchDayData, prefetchNearbyDays } = usePrefetchCalendarData(accountId || "");
   const hoverCancelRef = useRef<(() => void) | null>(null);
   const hasPrefetchedNearby = useRef(false);
 
@@ -54,11 +55,11 @@ export function TradeCalendar({
   useEffect(() => {
     if (accountId && !hasPrefetchedNearby.current) {
       hasPrefetchedNearby.current = true;
-      const today = dayjs().format("YYYY-MM-DD");
+      // const today = dayjs().format("YYYY-MM-DD");
       // Delay to not block initial render
-      setTimeout(() => prefetchNearbyDays(today), 500);
+      // setTimeout(() => prefetchNearbyDays(today), 500);
     }
-  }, [accountId, prefetchNearbyDays]);
+  }, [accountId]);
 
   const currentMonth = currentDate.month();
   const currentYear = currentDate.year();
@@ -334,9 +335,9 @@ export function TradeCalendar({
                 // Cancel any previous hover
                 hoverCancelRef.current?.();
                 // Start prefetch with 150ms delay
-                const { start, cancel } = prefetchDayData(dateStr, 150);
-                hoverCancelRef.current = cancel;
-                start();
+                // const { start, cancel } = prefetchDayData(dateStr, 150);
+                // hoverCancelRef.current = cancel;
+                // start();
               }}
               onMouseLeave={() => {
                 // Cancel prefetch if mouse leaves before delay
