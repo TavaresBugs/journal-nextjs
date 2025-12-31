@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { GlassCard } from "@/components/ui";
 import { DebouncedTextarea } from "@/components/ui/DebouncedTextarea";
 
@@ -12,14 +13,14 @@ interface JournalReviewProps {
   setErrors: (value: string) => void;
 }
 
-export function JournalReview({
+const JournalReviewComponent = ({
   technicalWins,
   setTechnicalWins,
   improvements,
   setImprovements,
   errors,
   setErrors,
-}: JournalReviewProps) {
+}: JournalReviewProps) => {
   return (
     <GlassCard className="bg-zorin-bg/30 space-y-4 border-white/5 p-4">
       <label className="flex items-center gap-2 text-sm font-medium text-gray-400">
@@ -60,4 +61,6 @@ export function JournalReview({
       </div>
     </GlassCard>
   );
-}
+};
+
+export const JournalReview = memo(JournalReviewComponent);

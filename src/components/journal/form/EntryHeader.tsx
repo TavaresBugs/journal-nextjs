@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Input } from "@/components/ui";
 import { DatePickerInput } from "@/components/ui/DateTimePicker";
 import { AssetCombobox } from "@/components/shared";
@@ -13,7 +14,14 @@ interface EntryHeaderProps {
   setDate: (value: string) => void;
 }
 
-export function EntryHeader({ title, setTitle, asset, setAsset, date, setDate }: EntryHeaderProps) {
+const EntryHeaderComponent = ({
+  title,
+  setTitle,
+  asset,
+  setAsset,
+  date,
+  setDate,
+}: EntryHeaderProps) => {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div className="md:col-span-1">
@@ -48,4 +56,6 @@ export function EntryHeader({ title, setTitle, asset, setAsset, date, setDate }:
       </div>
     </div>
   );
-}
+};
+
+export const EntryHeader = memo(EntryHeaderComponent);

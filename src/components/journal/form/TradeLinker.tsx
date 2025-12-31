@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { GlassCard, Button } from "@/components/ui";
 import { formatCurrency } from "@/lib/calculations";
 import type { Trade } from "@/types";
@@ -11,7 +12,7 @@ interface TradeLinkerProps {
   onRemoveTrade: (tradeId: string) => void;
 }
 
-export function TradeLinker({ trades, onLinkTradeOpen, onRemoveTrade }: TradeLinkerProps) {
+const TradeLinkerComponent = ({ trades, onLinkTradeOpen, onRemoveTrade }: TradeLinkerProps) => {
   return (
     <GlassCard className="border-zorin-accent/50 border bg-[#1b292b]/60 p-4 shadow-[0_0_15px_rgba(0,200,83,0.15)] backdrop-blur-md transition-shadow duration-300 hover:shadow-[0_0_20px_rgba(0,200,83,0.2)]">
       <div className="mb-2 flex items-center justify-between">
@@ -133,4 +134,6 @@ export function TradeLinker({ trades, onLinkTradeOpen, onRemoveTrade }: TradeLin
       )}
     </GlassCard>
   );
-}
+};
+
+export const TradeLinker = memo(TradeLinkerComponent);

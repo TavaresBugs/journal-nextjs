@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Input } from "@/components/ui";
 import { DebouncedTextarea } from "@/components/ui/DebouncedTextarea";
 import { TimeframeImageGrid } from "@/components/shared";
@@ -17,7 +18,7 @@ interface JournalAnalysisProps {
   timeframes: ReadonlyArray<{ key: string; label: string }>;
 }
 
-export function JournalAnalysis({
+const JournalAnalysisComponent = ({
   emotion,
   setEmotion,
   analysis,
@@ -27,7 +28,7 @@ export function JournalAnalysis({
   onFileSelect,
   onRemoveImage,
   timeframes,
-}: JournalAnalysisProps) {
+}: JournalAnalysisProps) => {
   return (
     <>
       {/* Análise Multi-Timeframe (Imagens) */}
@@ -75,4 +76,6 @@ export function JournalAnalysis({
       </div>
     </>
   );
-}
+};
+
+export const JournalAnalysis = memo(JournalAnalysisComponent);
