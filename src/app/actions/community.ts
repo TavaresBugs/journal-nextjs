@@ -184,9 +184,12 @@ export async function getCurrentUserDisplayNameAction(): Promise<string | null> 
 // Helper to ensure the view definition is correct (self-healing)
 async function ensureLeaderboardView() {
   // Define view to aggregate ALL trades per user (All-Time) with simple stats
+  // NOTE: PostgreSQL cannot modify columns with CREATE OR REPLACE VIEW
+  // so we must DROP first, then CREATE
   try {
+    await prisma.$executeRaw`DROP VIEW IF EXISTS public.leaderboard_view`;
     await prisma.$executeRaw`
-      CREATE OR REPLACE VIEW public.leaderboard_view AS
+      CREATE VIEW public.leaderboard_view AS
       WITH user_stats AS (
         SELECT
           t.user_id,
@@ -219,8 +222,10 @@ async function ensureLeaderboardView() {
       FROM
         public.leaderboard_opt_in lo
       LEFT JOIN
-        user_stats us ON lo.user_id = us.user_id;
+        user_stats us ON lo.user_id = us.user_id
     `;
+    // Re-grant permissions after recreating the view
+    await prisma.$executeRaw`GRANT SELECT ON public.leaderboard_view TO authenticated`;
   } catch (e) {
     console.error("Failed to ensure leaderboard view", e);
   }
