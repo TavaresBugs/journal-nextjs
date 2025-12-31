@@ -281,13 +281,10 @@ export function useDashboardInit(
       useTradeStore.setState({ isLoadingHistory: true, currentAccountId: currentAccountId });
 
       import("@/app/actions/trades").then(({ getTradeHistoryLiteAction }) => {
-        // Calculate date range for last 12 months for performance
-        const now = new Date();
-        const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        const dateFrom = oneYearAgo.toISOString().split("T")[0];
-        const dateTo = now.toISOString().split("T")[0];
-
-        getTradeHistoryLiteAction(currentAccountId, { dateFrom, dateTo })
+        // Load ALL trades without date filter
+        // Previously limited to 12 months but this caused issues with experiments
+        // needing to link older trades (e.g., backtests)
+        getTradeHistoryLiteAction(currentAccountId)
           .then((history) => {
             // Only set if still on same account (user didn't navigate away)
             if (
@@ -299,9 +296,7 @@ export function useDashboardInit(
                 currentAccountId: currentAccountId,
                 isLoadingHistory: false,
               });
-              console.log(
-                `✅ Background history loaded: ${history.length} trades (last 12 months)`
-              );
+              console.log(`✅ Background history loaded: ${history.length} trades (all history)`);
             } else {
               useTradeStore.setState({ isLoadingHistory: false });
             }
