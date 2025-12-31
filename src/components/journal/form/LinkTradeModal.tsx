@@ -27,7 +27,11 @@ export function LinkTradeModal({
           <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-400">
             🔗 Vincular Trade
           </h3>
-          <button onClick={onClose} className="text-gray-400 transition-colors hover:text-white">
+          <button
+            onClick={onClose}
+            aria-label="Fechar"
+            className="text-gray-400 transition-colors hover:text-white"
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"

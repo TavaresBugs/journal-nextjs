@@ -78,7 +78,7 @@ export function AssetIcon({ symbol, size = "md", className, showBorder = false }
         >
           <Image
             src={getImageSrc(1)}
-            alt={symbol.substring(3, 6)}
+            alt={`Ícone do ativo ${symbol.substring(3, 6)}`}
             fill
             className="object-cover"
             onError={() => handleImageError(1)}
@@ -88,7 +88,7 @@ export function AssetIcon({ symbol, size = "md", className, showBorder = false }
 
         {/* Flag 2 (front) - BOTTOM LEFT with background-colored ring */}
         <div
-          className="absolute bottom-0 left-0 overflow-hidden rounded-full ring-[2px] ring-slate-800"
+          className="absolute bottom-0 left-0 overflow-hidden rounded-full ring-2 ring-slate-800"
           style={{
             width: sizeConfig.icon,
             height: sizeConfig.icon,
@@ -97,7 +97,7 @@ export function AssetIcon({ symbol, size = "md", className, showBorder = false }
         >
           <Image
             src={getImageSrc(0)}
-            alt={symbol.substring(0, 3)}
+            alt={`Ícone do ativo ${symbol.substring(0, 3)}`}
             fill
             className="object-cover"
             onError={() => handleImageError(0)}
@@ -131,7 +131,7 @@ export function AssetIcon({ symbol, size = "md", className, showBorder = false }
       >
         <Image
           src={getImageSrc(0)}
-          alt={symbol}
+          alt={`Ícone do ativo ${symbol}`}
           fill
           className="object-cover"
           onError={() => handleImageError(0)}
