@@ -36,7 +36,7 @@ const getWinRateColor = (winRate: number) => {
   return "#ef4444";
 };
 
-// Reusable metric card row
+// Reusable metric card row - MOBILE FIRST
 function MetricCardContent({
   totalTrades,
   wins,
@@ -54,38 +54,41 @@ function MetricCardContent({
   currency: string;
 }) {
   return (
-    <>
-      <div className="grid flex-1 grid-cols-4 items-center gap-4">
+    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+      {/* Stats Grid - 2x2 no mobile, inline no desktop */}
+      <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-1 sm:items-center sm:gap-4">
         <div className="text-center">
-          <div className="text-xs text-gray-500 uppercase">Trades</div>
-          <div className="text-lg font-medium text-gray-200">{totalTrades}</div>
+          <div className="text-[10px] text-gray-500 uppercase sm:text-xs">Trades</div>
+          <div className="text-base font-medium text-gray-200 sm:text-lg">{totalTrades}</div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-gray-500 uppercase">Win / Loss</div>
-          <div className="text-lg font-medium">
-            <span className="text-[#00c853]">{wins}</span> <span className="text-gray-500">/</span>{" "}
+          <div className="text-[10px] text-gray-500 uppercase sm:text-xs">W / L</div>
+          <div className="text-base font-medium sm:text-lg">
+            <span className="text-[#00c853]">{wins}</span>
+            <span className="text-gray-500"> / </span>
             <span className="text-[#ef4444]">{losses}</span>
           </div>
         </div>
         <div className="text-center">
-          <div className="text-xs text-gray-500 uppercase">Financeiro</div>
+          <div className="text-[10px] text-gray-500 uppercase sm:text-xs">P&L</div>
           <div
-            className={`text-base font-bold whitespace-nowrap ${pnl >= 0 ? "text-[#04df73]" : "text-[#ff6467]"}`}
+            className={`text-sm font-bold whitespace-nowrap sm:text-base ${pnl >= 0 ? "text-[#04df73]" : "text-[#ff6467]"}`}
           >
             {formatCurrency(pnl, currency)}
           </div>
         </div>
-        <div className="flex justify-end">
-          <CircularProgress
-            percentage={winRate}
-            size={50}
-            strokeWidth={5}
-            color={getWinRateColor(winRate)}
-            backgroundColor="#374151"
-          />
-        </div>
       </div>
-    </>
+      {/* Win Rate Circle - inline no mobile */}
+      <div className="flex shrink-0 justify-center sm:justify-end">
+        <CircularProgress
+          percentage={winRate}
+          size={44}
+          strokeWidth={4}
+          color={getWinRateColor(winRate)}
+          backgroundColor="#374151"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -236,8 +239,8 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 onClick={() => setDrillPath({ htf })}
                 className="bg-zorin-bg/30 hover:border-zorin-accent/50 group cursor-pointer border-white/5 transition-all"
               >
-                <div className="flex items-center gap-6">
-                  <span className="rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-4 py-2 text-sm font-bold whitespace-nowrap text-indigo-300">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <span className="self-start rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-3 py-1.5 text-sm font-bold whitespace-nowrap text-indigo-300 sm:self-auto sm:px-4 sm:py-2">
                     🕐 {htf.htf}
                   </span>
                   <MetricCardContent {...htf} currency={currency} />
@@ -267,8 +270,8 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 onClick={() => setDrillPath({ ...drillPath, condition: cond })}
                 className="bg-zorin-bg/30 hover:border-zorin-accent/50 group cursor-pointer border-white/5 transition-all"
               >
-                <div className="flex items-center gap-6">
-                  <span className="rounded-lg border border-amber-500/30 bg-amber-500/20 px-4 py-2 text-sm font-bold whitespace-nowrap text-amber-300">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <span className="self-start rounded-lg border border-amber-500/30 bg-amber-500/20 px-3 py-1.5 text-sm font-bold whitespace-nowrap text-amber-300 sm:self-auto sm:px-4 sm:py-2">
                     {cond.icon} {getConditionLabel(cond.condition)}
                   </span>
                   <MetricCardContent {...cond} currency={currency} />
@@ -298,8 +301,8 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 onClick={() => setDrillPath({ ...drillPath, pdArray: pd })}
                 className="bg-zorin-bg/30 hover:border-zorin-accent/50 group cursor-pointer border-white/5 transition-all"
               >
-                <div className="flex items-center gap-6">
-                  <span className="rounded-lg border border-orange-500/30 bg-orange-500/20 px-4 py-2 text-sm font-bold whitespace-nowrap text-orange-300">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <span className="self-start rounded-lg border border-orange-500/30 bg-orange-500/20 px-3 py-1.5 text-sm font-bold whitespace-nowrap text-orange-300 sm:self-auto sm:px-4 sm:py-2">
                     {pd.icon} {getPdArrayLabel(pd.pdArray)}
                   </span>
                   <MetricCardContent {...pd} currency={currency} />
@@ -327,8 +330,8 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 onClick={() => setDrillPath({ ...drillPath, session: sess })}
                 className="bg-zorin-bg/30 hover:border-zorin-accent/50 group cursor-pointer border-white/5 transition-all"
               >
-                <div className="flex items-center gap-6">
-                  <span className="rounded-lg border border-emerald-500/30 bg-emerald-500/20 px-4 py-2 text-sm font-bold whitespace-nowrap text-emerald-300">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <span className="self-start rounded-lg border border-emerald-500/30 bg-emerald-500/20 px-3 py-1.5 text-sm font-bold whitespace-nowrap text-emerald-300 sm:self-auto sm:px-4 sm:py-2">
                     {sess.icon} {sess.session}
                   </span>
                   <MetricCardContent {...sess} currency={currency} />
@@ -358,8 +361,8 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 onClick={() => setDrillPath({ ...drillPath, ltf })}
                 className="bg-zorin-bg/30 hover:border-zorin-accent/50 group cursor-pointer border-white/5 transition-all"
               >
-                <div className="flex items-center gap-6">
-                  <span className="rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-4 py-2 text-sm font-bold whitespace-nowrap text-cyan-300">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+                  <span className="self-start rounded-lg border border-cyan-500/30 bg-cyan-500/20 px-3 py-1.5 text-sm font-bold whitespace-nowrap text-cyan-300 sm:self-auto sm:px-4 sm:py-2">
                     📈 {ltf.ltf}
                   </span>
                   <MetricCardContent {...ltf} currency={currency} />
@@ -388,12 +391,12 @@ export function HtfView({ hierarchicalMetrics, drillPath, setDrillPath, currency
                 key={tag.tagCombo}
                 className="bg-zorin-bg/30 cursor-default border-white/5"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex max-w-[300px] flex-wrap gap-2">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                  <div className="flex flex-wrap gap-2">
                     {tag.tagCombo.split(" + ").map((t, i) => (
                       <span
                         key={i}
-                        className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300"
+                        className="rounded-lg border border-purple-500/30 bg-purple-500/20 px-2 py-1 text-xs font-medium text-purple-300 sm:px-3 sm:py-1.5"
                       >
                         🏷️ {t}
                       </span>

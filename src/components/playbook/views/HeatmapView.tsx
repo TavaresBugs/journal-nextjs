@@ -17,44 +17,95 @@ const getWinRateColor = (winRate: number) => {
 
 export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
   const allLtfs = new Set<string>();
-  const rows: {
-    label: string;
-    htf: string;
-    pdArray?: string;
-    tagCombo: string;
-    cells: Map<string, { winRate: number; avgRR: number | null; totalTrades: number; pnl: number }>;
-  }[] = [];
+
+  // Agrupar por HTF + PDArray (não por tagCombo)
+  const groupedRows = new Map<
+    string,
+    {
+      htf: string;
+      pdArray: string;
+      cells: Map<
+        string,
+        {
+          winRate: number;
+          avgRR: number | null;
+          totalTrades: number;
+          pnl: number;
+          wins: number;
+          losses: number;
+        }
+      >;
+    }
+  >();
 
   nestedMetrics.forEach((htfData) => {
     htfData.tagBreakdown.forEach((tagData) => {
-      const cells = new Map<
-        string,
-        { winRate: number; avgRR: number | null; totalTrades: number; pnl: number }
-      >();
+      const pdArray = tagData.pdArray || "Sem PD Array";
+      const key = `${htfData.htf}::${pdArray}`;
+
+      // Criar ou obter grupo existente
+      if (!groupedRows.has(key)) {
+        groupedRows.set(key, {
+          htf: htfData.htf,
+          pdArray,
+          cells: new Map(),
+        });
+      }
+
+      const group = groupedRows.get(key)!;
+
+      // Agregar dados de cada LTF
       tagData.ltfBreakdown.forEach((ltf) => {
         allLtfs.add(ltf.ltf);
-        cells.set(ltf.ltf, {
-          winRate: ltf.winRate,
-          avgRR: ltf.avgRR,
-          totalTrades: ltf.totalTrades,
-          pnl: ltf.pnl,
-        });
-      });
-      // Build label with pdArray if available
-      const pdArrayPart = tagData.pdArray
-        ? ` · ${getPdArrayIcon(tagData.pdArray)} ${tagData.pdArray}`
-        : "";
-      rows.push({
-        label: `${htfData.htf}${pdArrayPart} → ${tagData.tagCombo}`,
-        htf: htfData.htf,
-        pdArray: tagData.pdArray,
-        tagCombo: tagData.tagCombo,
-        cells,
+
+        const existingCell = group.cells.get(ltf.ltf);
+        if (existingCell) {
+          // Somar stats
+          const newWins = existingCell.wins + ltf.wins;
+          const newLosses = existingCell.losses + ltf.losses;
+          const newTotal = newWins + newLosses;
+          const newPnl = existingCell.pnl + ltf.pnl;
+
+          // Recalcular métricas agregadas
+          const newWinRate = newTotal > 0 ? (newWins / newTotal) * 100 : 0;
+
+          // Média ponderada do R-múltiplo
+          const oldAvgRR = existingCell.avgRR || 0;
+          const newAvgRR = ltf.avgRR || 0;
+          const totalOldTrades = existingCell.totalTrades;
+          const combinedAvgRR =
+            totalOldTrades + ltf.totalTrades > 0
+              ? (oldAvgRR * totalOldTrades + newAvgRR * ltf.totalTrades) /
+                (totalOldTrades + ltf.totalTrades)
+              : null;
+
+          group.cells.set(ltf.ltf, {
+            wins: newWins,
+            losses: newLosses,
+            winRate: newWinRate,
+            avgRR: combinedAvgRR,
+            totalTrades: newTotal,
+            pnl: newPnl,
+          });
+        } else {
+          // Primeira entrada para este LTF
+          group.cells.set(ltf.ltf, {
+            wins: ltf.wins,
+            losses: ltf.losses,
+            winRate: ltf.winRate,
+            avgRR: ltf.avgRR,
+            totalTrades: ltf.totalTrades,
+            pnl: ltf.pnl,
+          });
+        }
       });
     });
   });
 
-  rows.sort((a, b) => getTimeframePriority(b.htf) - getTimeframePriority(a.htf));
+  // Converter Map para array e ordenar
+  const rows = Array.from(groupedRows.values()).sort(
+    (a, b) => getTimeframePriority(b.htf) - getTimeframePriority(a.htf)
+  );
   const sortedLtfs = Array.from(allLtfs).sort(
     (a, b) => getTimeframePriority(a) - getTimeframePriority(b)
   );
@@ -86,7 +137,7 @@ export function HeatmapView({ nestedMetrics }: HeatmapViewProps) {
                 <td className="sticky left-0 z-10 bg-gray-900/90 px-3 py-2">
                   <div className="flex flex-col gap-0.5">
                     <span className="text-xs font-medium text-indigo-300">{row.htf}</span>
-                    {row.pdArray && row.pdArray !== "N/A" ? (
+                    {row.pdArray !== "Sem PD Array" && row.pdArray !== "N/A" ? (
                       <span className="flex items-center gap-1 text-xs text-orange-300">
                         {getPdArrayIcon(row.pdArray)} {row.pdArray}
                       </span>
