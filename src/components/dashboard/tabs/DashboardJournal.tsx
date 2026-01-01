@@ -69,20 +69,21 @@ function DashboardJournalContent({
 
   return (
     <Card>
-      <CardHeader className="flex flex-col items-start justify-between gap-4 py-4 md:flex-row md:items-center">
-        {/* Filtro à esquerda (onde estava o título) */}
-        <div className="w-full md:w-64">
-          <AssetCombobox
-            value={filterAsset}
-            onChange={(asset) => onFilterChange(accountId, asset)}
-            placeholder="Filtrar por ativo..."
-            showAllOption={true}
-            className="h-10 border-gray-700 bg-gray-900/50 hover:bg-gray-800"
-          />
-        </div>
+      <CardHeader className="flex flex-row flex-nowrap items-center gap-3 py-4">
+        {/* Select à esquerda */}
+        <AssetCombobox
+          value={filterAsset}
+          onChange={(asset) => onFilterChange(accountId, asset)}
+          placeholder="Filtrar..."
+          showAllOption={true}
+          className="h-10 w-[160px] shrink-0 border-gray-700 bg-gray-900/50 hover:bg-gray-800"
+        />
 
-        {/* Ações à direita */}
-        <div className="flex w-full justify-end gap-2 md:w-auto">
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Botões à direita */}
+        <div className="flex shrink-0 items-center gap-2">
           <IconActionButton variant="import" onClick={onImportClick} title="Importar Trades" />
           <IconActionButton variant="delete" onClick={handleDeleteAll} title="Limpar Histórico" />
         </div>

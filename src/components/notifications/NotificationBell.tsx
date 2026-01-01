@@ -176,14 +176,14 @@ export function NotificationBell({ accountId }: { accountId?: string }) {
         {/* Bell Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative flex h-12 w-12 items-center justify-center rounded-xl border border-gray-700 bg-gray-800/80 text-gray-400 backdrop-blur-sm transition-all duration-200 hover:border-cyan-500/50 hover:bg-gray-800 hover:text-cyan-400"
+          className="relative flex h-10 w-10 touch-manipulation items-center justify-center rounded-xl border border-gray-700 bg-gray-800/80 text-gray-400 backdrop-blur-sm transition-all duration-200 hover:border-cyan-500/50 hover:bg-gray-800 hover:text-cyan-400 sm:h-12 sm:w-12"
           title="Notificações"
           aria-label="Notificações"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width="18"
+            height="18"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

@@ -15,13 +15,13 @@ export function MentalButton() {
         size="icon"
         onClick={() => setIsModalOpen(true)}
         title="Mindset Debugger"
-        className="h-12 w-12 rounded-xl"
+        className="h-10 w-10 rounded-xl sm:h-12 sm:w-12"
       >
         {/* Brain Circuit Icon */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
+          width="18"
+          height="18"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

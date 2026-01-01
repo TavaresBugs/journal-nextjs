@@ -58,11 +58,12 @@ interface FormRowProps {
   gap?: 2 | 3 | 4;
 }
 
+// Mobile: 1 coluna, Desktop (md+): colunas especificadas
 const colClasses: Record<number, string> = {
   1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
-  4: "grid-cols-4",
+  2: "grid-cols-1 md:grid-cols-2",
+  3: "grid-cols-1 md:grid-cols-3",
+  4: "grid-cols-1 sm:grid-cols-2 md:grid-cols-4",
 };
 
 const gapClasses: Record<number, string> = {
@@ -74,6 +75,7 @@ const gapClasses: Record<number, string> = {
 /**
  * Form row for horizontal field layout.
  * Creates a responsive grid for form fields.
+ * Mobile: stacked (1 column), Desktop: grid (cols specified)
  *
  * @example
  * <FormRow cols={3}>

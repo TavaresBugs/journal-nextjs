@@ -26,7 +26,9 @@
     "@prisma/adapter-pg": "^7.2.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-switch": "^1.2.6",
     "@sentry/nextjs": "^10.32.1",
     "@supabase/ssr": "^0.8.0",
@@ -57,6 +59,7 @@
     "read-excel-file": "^6.0.1",
     "recharts": "^3.5.1",
     "tailwind-merge": "^3.4.0",
+    "vaul": "^1.1.2",
     "zod": "^3.23.8",
     "zustand": "^5.0.9"
   },

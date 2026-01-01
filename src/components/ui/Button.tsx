@@ -128,7 +128,7 @@ export function Button({
     sm: "px-3 py-1.5 text-xs",
     md: "px-4 py-2 text-sm",
     lg: "px-6 py-3 text-base",
-    icon: "w-10 h-10 p-2 flex items-center justify-center", // Standard icon size
+    icon: "h-10 w-10 sm:h-12 sm:w-12 p-2 flex items-center justify-center", // Responsive icon size
   };
 
   // Special handling for the "Settings" style icon button which is slightly larger

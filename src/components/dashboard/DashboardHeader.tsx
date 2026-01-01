@@ -162,24 +162,38 @@ export function DashboardHeader({
   ];
 
   return (
-    <div className="mb-6 flex flex-col gap-3">
-      {/* Row 1: Back + Title + Icons */}
-      <div className="flex items-center justify-between">
-        <div className="flex min-w-0 items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push("/")} leftIcon={<BackIcon />}>
+    <div className="mb-6">
+      {/* Single Row: Back + Title + Icons (scroll horizontal no mobile) */}
+      <div className="flex items-center justify-between gap-2">
+        {/* Left: Back + Title */}
+        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => router.push("/")}
+            leftIcon={<BackIcon />}
+            className="hidden sm:flex"
+          >
             Voltar
           </Button>
-          <div className="hidden h-6 w-px bg-gray-700 sm:block"></div>
+          <button
+            onClick={() => router.push("/")}
+            className="touch-manipulation p-2 text-gray-400 hover:text-gray-200 sm:hidden"
+            aria-label="Voltar"
+          >
+            <BackIcon />
+          </button>
           <div className="min-w-0">
-            <h1 className="truncate text-xl font-bold text-gray-100 sm:text-2xl">{account.name}</h1>
-            <p className="text-sm text-gray-400">
+            <h1 className="truncate text-base font-bold text-gray-100 sm:text-xl md:text-2xl">
+              {account.name}
+            </h1>
+            <p className="text-xs text-gray-400 sm:text-sm">
               {account.currency} • {account.leverage}
             </p>
           </div>
         </div>
 
-        {/* Icons - desktop only (md+) */}
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Right: Icons - sempre em linha, mesmo padrão do MentalButton */}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           {iconButtons.map(
             ({ show, href, prefetch, title, Icon }) =>
               show && (
@@ -190,9 +204,9 @@ export function DashboardHeader({
                       size="icon"
                       title={title}
                       aria-label={title}
-                      className="h-12 w-12 shrink-0 rounded-xl"
+                      className="h-10 w-10 rounded-xl sm:h-12 sm:w-12"
                     >
-                      <Icon size={24} />
+                      <Icon size={20} />
                     </Button>
                   </div>
                 </Link>
@@ -206,45 +220,11 @@ export function DashboardHeader({
             onClick={onSettingsClick}
             title="Configurações"
             aria-label="Configurações"
-            className="h-12 w-12 shrink-0 rounded-xl"
+            className="h-10 w-10 rounded-xl sm:h-12 sm:w-12"
           >
-            <SettingsIcon size={24} />
+            <SettingsIcon size={20} />
           </Button>
         </div>
-      </div>
-
-      {/* Row 2: Icons - mobile only (< md) */}
-      <div className="-mx-2 flex items-center gap-2 overflow-x-auto px-2 pb-1 md:hidden">
-        {iconButtons.map(
-          ({ show, href, prefetch, title, Icon }) =>
-            show && (
-              <Link key={href} href={href} prefetch>
-                <div onMouseEnter={prefetch}>
-                  <Button
-                    variant="primary"
-                    size="icon"
-                    title={title}
-                    aria-label={title}
-                    className="h-11 w-11 shrink-0 rounded-xl"
-                  >
-                    <Icon size={22} />
-                  </Button>
-                </div>
-              </Link>
-            )
-        )}
-        <NotificationBell />
-        <MentalButton />
-        <Button
-          variant="primary"
-          size="icon"
-          onClick={onSettingsClick}
-          title="Configurações"
-          aria-label="Configurações"
-          className="h-11 w-11 shrink-0 rounded-xl"
-        >
-          <SettingsIcon size={22} />
-        </Button>
       </div>
     </div>
   );

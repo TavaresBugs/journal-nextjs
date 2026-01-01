@@ -43,8 +43,8 @@ const JournalEntryPreviewComponent = ({
   const asset = linkedTrades[0]?.symbol || entry.asset || "";
 
   const CustomTitle = (
-    <div className="flex items-center gap-3">
-      <h2 className="text-zorin-ice text-xl font-bold">{entry.title}</h2>
+    <div className="flex min-w-0 items-center gap-2 md:gap-3">
+      <h2 className="text-zorin-ice truncate text-base font-bold md:text-xl">{entry.title}</h2>
       {asset && <AssetBadge symbol={asset} />}
     </div>
   );
