@@ -69,16 +69,28 @@ export function JournalEntryForm({
   const {} = useSettingsStore();
 
   // Form state
-  const [date, setDate] = useState(initialData?.date || dayjs().format("YYYY-MM-DD"));
-  const [title, setTitle] = useState(
+  const [date, setDateState] = useState(initialData?.date || dayjs().format("YYYY-MM-DD"));
+  const [title, setTitleState] = useState(
     initialData?.title || `Diário - ${dayjs().format("DD/MM/YYYY")}`
   );
-  const [asset, setAsset] = useState(initialData?.asset || initialLinkedTrades[0]?.symbol || "");
-  const [emotion, setEmotion] = useState(initialData?.emotion || "");
-  const [analysis, setAnalysis] = useState(initialData?.analysis || "");
-  const [technicalWins, setTechnicalWins] = useState(initialData?.technicalWins || "");
-  const [improvements, setImprovements] = useState(initialData?.improvements || "");
-  const [errors, setErrors] = useState(initialData?.errors || "");
+  const [asset, setAssetState] = useState(
+    initialData?.asset || initialLinkedTrades[0]?.symbol || ""
+  );
+  const [emotion, setEmotionState] = useState(initialData?.emotion || "");
+  const [analysis, setAnalysisState] = useState(initialData?.analysis || "");
+  const [technicalWins, setTechnicalWinsState] = useState(initialData?.technicalWins || "");
+  const [improvements, setImprovementsState] = useState(initialData?.improvements || "");
+  const [errors, setErrorsState] = useState(initialData?.errors || "");
+
+  // Stable callback wrappers for setters - prevents memo from breaking
+  const setDate = useCallback((v: string) => setDateState(v), []);
+  const setTitle = useCallback((v: string) => setTitleState(v), []);
+  const setAsset = useCallback((v: string) => setAssetState(v), []);
+  const setEmotion = useCallback((v: string) => setEmotionState(v), []);
+  const setAnalysis = useCallback((v: string) => setAnalysisState(v), []);
+  const setTechnicalWins = useCallback((v: string) => setTechnicalWinsState(v), []);
+  const setImprovements = useCallback((v: string) => setImprovementsState(v), []);
+  const setErrors = useCallback((v: string) => setErrorsState(v), []);
 
   // Trade management - support multiple trades
   const [trades, setTrades] = useState<Trade[]>(initialLinkedTrades);
@@ -146,7 +158,7 @@ export function JournalEntryForm({
       }
       setIsLinkTradeModalOpen(false);
     },
-    [trades, asset]
+    [trades, asset, setAsset]
   );
 
   const handleRemoveTrade = useCallback((tradeId: string) => {

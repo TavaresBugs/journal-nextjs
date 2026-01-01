@@ -13,6 +13,16 @@ vi.mock("@/components/ui", () => ({
       <input data-testid="title-input" value={value} onChange={onChange} />
     </div>
   ),
+  DebouncedInput: ({ label, value, onDebouncedChange }: any) => (
+    <div>
+      <label>{label}</label>
+      <input
+        data-testid="title-input"
+        value={value}
+        onChange={(e) => onDebouncedChange(e.target.value)}
+      />
+    </div>
+  ),
 }));
 
 vi.mock("@/components/shared", () => ({

@@ -23,9 +23,14 @@ vi.mock("@/components/ui", () => ({
       placeholder={placeholder}
     />
   ),
-}));
-
-vi.mock("@/components/ui/DebouncedTextarea", () => ({
+  DebouncedInput: ({ value, onDebouncedChange, placeholder }: any) => (
+    <input
+      data-testid="emotion-input"
+      value={value}
+      onChange={(e) => onDebouncedChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  ),
   DebouncedTextarea: ({ value, onDebouncedChange, ...props }: any) => (
     <textarea
       data-testid="analysis-textarea"
