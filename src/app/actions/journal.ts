@@ -21,6 +21,7 @@ import { getCurrentUserId } from "@/lib/database/auth";
 import { createClient } from "@/lib/supabase/server";
 import { JournalEntry, JournalImage } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { withAuthRead, withAuthMutation } from "./_helpers/actionHelpers";
 
 /**
  * Get all journal entries for an account.
@@ -62,24 +63,16 @@ export async function getJournalEntriesAction(accountId: string): Promise<Journa
  * Get a single journal entry by ID.
  */
 export async function getJournalEntryAction(entryId: string): Promise<JournalEntry | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getJournalEntryAction", async (userId) => {
     const result = await prismaJournalRepo.getById(entryId, userId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getJournalEntryAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getJournalEntryAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -332,24 +325,14 @@ export async function addJournalImageAction(
 export async function removeJournalImageAction(
   imageId: string
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
+  return withAuthMutation("removeJournalImageAction", async () => {
     const result = await prismaJournalRepo.removeImage(imageId);
-
     if (result.error) {
       console.error("[removeJournalImageAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
-
     return { success: true };
-  } catch (error) {
-    console.error("[removeJournalImageAction] Unexpected error:", error);
-    return { success: false, error: "Unexpected error occurred" };
-  }
+  });
 }
 
 /**

@@ -18,6 +18,7 @@ import { prisma } from "@/lib/database"; // Direct access for journal link check
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Trade, TradeLite } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { withAuthRead, withAuthMutation } from "./_helpers/actionHelpers";
 
 /**
  * Get all trades for an account.
@@ -45,24 +46,16 @@ export async function getTradesAction(accountId: string): Promise<Trade[]> {
  * Get a single trade by ID.
  */
 export async function getTradeAction(tradeId: string): Promise<Trade | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getTradeAction", async (userId) => {
     const result = await prismaTradeRepo.getById(tradeId, userId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getTradeAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getTradeAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -256,36 +249,22 @@ export async function saveTradesBatchAction(
 export async function deleteTradeAction(
   tradeId: string
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
-    // Get trade info first to know the accountId for sync
+  return withAuthMutation("deleteTradeAction", async (userId) => {
     const tradeCheck = await prismaTradeRepo.getById(tradeId, userId);
     const accountId = tradeCheck.data?.accountId;
 
     const result = await prismaTradeRepo.delete(tradeId, userId);
-
     if (result.error) {
       console.error("[deleteTradeAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
 
     if (accountId) {
-      // NOTE: Balance sync is handled by SQL trigger
-      // Invalidate cached metrics and history
       revalidateTag(`trades:${accountId}`, "max");
-      // Revalidate to reflect changes
       revalidatePath(`/dashboard/${accountId}`, "page");
     }
-
     return { success: true };
-  } catch (error) {
-    console.error("[deleteTradeAction] Unexpected error:", error);
-    return { success: false, error: "Unexpected error occurred" };
-  }
+  });
 }
 
 /**
