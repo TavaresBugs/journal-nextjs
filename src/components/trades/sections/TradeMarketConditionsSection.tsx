@@ -24,7 +24,7 @@ import {
   getStrategyLabel,
   getPDArrayIcon,
   getPDArrayLabel,
-} from "@/lib/tradeHelpers";
+} from "@/lib/utils/trading";
 import type { Playbook } from "@/types";
 
 interface TradeMarketConditionsSectionProps {

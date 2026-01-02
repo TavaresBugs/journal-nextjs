@@ -7,7 +7,7 @@ import {
   calculateRMultiple,
   formatRMultiple,
   ensureUTC,
-} from "@/lib/timeframeUtils";
+} from "@/lib/utils/trading";
 
 describe("timeframeUtils", () => {
   describe("detectSession", () => {

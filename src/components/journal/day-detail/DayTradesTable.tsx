@@ -3,7 +3,7 @@
 import { memo, useState, useEffect } from "react";
 import type { Trade, JournalEntry } from "@/types";
 import { Button, GlassCard, IconActionButton, AssetBadge } from "@/components/ui";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { getCachedImageUrl } from "@/lib/utils/general";
 import dayjs from "dayjs";
 

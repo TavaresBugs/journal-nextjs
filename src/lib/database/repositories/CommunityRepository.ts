@@ -14,7 +14,7 @@ import {
 import { Result } from "../types";
 import { AppError } from "@/lib/errors";
 import { BaseRepository } from "./BaseRepository";
-import { formatTimeMinutes } from "@/lib/calculations";
+import { formatTimeMinutes } from "@/lib/utils/trading";
 
 // Domain types
 export interface LeaderboardOptIn {

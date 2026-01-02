@@ -2,7 +2,7 @@ import React from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { IconActionButton, AssetBadge } from "@/components/ui";
 import type { Trade, JournalEntry } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 
 interface TradeRowProps {
   trade: Trade;

@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 
 interface DashboardMetricsProps {
   currentBalance: number;

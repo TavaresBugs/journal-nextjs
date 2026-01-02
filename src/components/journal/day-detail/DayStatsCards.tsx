@@ -3,7 +3,7 @@
 import { memo } from "react";
 import type { Trade } from "@/types";
 import { GlassCard } from "@/components/ui";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 
 interface DayStatsCardsProps {
   trades: Trade[];

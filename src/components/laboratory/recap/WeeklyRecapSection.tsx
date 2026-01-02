@@ -4,7 +4,7 @@ import React, { memo, useMemo } from "react";
 import { GlassCard, WeekPicker } from "@/components/ui";
 import { CustomCheckbox } from "@/components/checklist/CustomCheckbox";
 import type { TradeLite } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { startOfWeek, endOfWeek, format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 

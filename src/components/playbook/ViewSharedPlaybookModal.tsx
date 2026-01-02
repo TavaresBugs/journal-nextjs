@@ -1,6 +1,6 @@
 import { SharedPlaybook } from "@/types";
 import { Modal, IconActionButton } from "@/components/ui";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { useToast } from "@/providers/ToastProvider";
 import { clonePlaybookAction } from "@/app/actions/playbooks";
 import { useState } from "react";

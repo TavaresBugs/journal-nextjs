@@ -6,7 +6,7 @@ import { GlassCard } from "@/components/ui";
 import type { Trade } from "@/types";
 import dayjs from "dayjs";
 import { AreaSeries, LineSeries, LineStyle, IChartApi, ISeriesApi } from "lightweight-charts";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 
 interface EquityCurveLightweightProps {
   trades: Trade[];

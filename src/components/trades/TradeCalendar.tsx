@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback, TouchEvent } from "react";
 import type { Trade, JournalEntry } from "@/types";
-import { groupTradesByDay, formatCurrency } from "@/lib/calculations";
+import { groupTradesByDay, formatCurrency } from "@/lib/utils/trading";
 import { useJournalStore } from "@/store/useJournalStore";
 import { GlassCard } from "@/components/ui";
 import { ChevronLeft, ChevronRight, CalendarDays, List } from "lucide-react";

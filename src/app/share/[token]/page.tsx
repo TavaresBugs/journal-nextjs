@@ -5,7 +5,7 @@ import {
   MarketConditionsCard,
   type MarketConditionsCardProps,
 } from "@/components/shared/MarketConditionsCard";
-import { mapMarketConditionFromDb, mapEntryQualityFromDb } from "@/lib/trade-mappings";
+import { mapMarketConditionFromDb, mapEntryQualityFromDb } from "@/lib/utils/trading";
 import { ImageGalleryClient } from "@/components/share/ImageGalleryClient";
 import type { JournalEntry, JournalImage } from "@/types";
 import { AssetBadge } from "@/components/ui/AssetBadge";

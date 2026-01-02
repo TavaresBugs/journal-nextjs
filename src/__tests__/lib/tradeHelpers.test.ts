@@ -4,7 +4,7 @@ import {
   getStrategyLabel,
   getPDArrayIcon,
   getPDArrayLabel,
-} from "@/lib/tradeHelpers";
+} from "@/lib/utils/trading";
 
 describe("Trade Helpers", () => {
   describe("getStrategyIcon", () => {

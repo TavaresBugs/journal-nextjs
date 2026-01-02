@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { getTimeframeAlignment } from "@/lib/timeframeUtils";
+import { getTimeframeAlignment } from "@/lib/utils/trading";
 import { getPdArrayIcon, getPdArrayLabel } from "@/lib/utils/playbook";
 
 /**

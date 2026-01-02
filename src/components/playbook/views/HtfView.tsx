@@ -2,7 +2,7 @@
 
 import { GlassCard } from "@/components/ui";
 import { CircularProgress } from "@/components/ui/CircularProgress";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { getConditionLabel, getPdArrayLabel } from "@/lib/utils/playbook";
 import type {
   HtfExpandedMetric,

@@ -3,8 +3,8 @@
 import { useState, useCallback } from "react";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useToast } from "@/providers/ToastProvider";
-import { calculateTradePnL, determineTradeOutcome } from "@/lib/calculations";
-import { calculateRMultiple } from "@/lib/timeframeUtils";
+import { calculateTradePnL, determineTradeOutcome } from "@/lib/utils/trading";
+import { calculateRMultiple } from "@/lib/utils/trading";
 import { handleServiceError } from "@/lib/errors";
 import type { Trade, Playbook } from "@/types";
 import {

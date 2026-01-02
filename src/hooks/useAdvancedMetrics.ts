@@ -7,7 +7,7 @@ import {
   calculateCalmarRatio,
   calculateAverageHoldTime,
   calculateConsecutiveStreaks,
-} from "@/lib/calculations";
+} from "@/lib/utils/trading";
 
 export interface StreakMetrics {
   daysAccessed: number;

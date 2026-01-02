@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { getPdArrayIcon, getConditionIcon, getConditionLabel } from "@/lib/utils/playbook";
 import type { HtfNestedMetric } from "@/types/playbookTypes";
 

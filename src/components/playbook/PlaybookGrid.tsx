@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Playbook, PlaybookStats } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { CircularProgress, GlassCard, IconActionButton } from "@/components/ui";
 
 interface PlaybookGridProps {
