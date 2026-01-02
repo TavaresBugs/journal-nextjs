@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { formatCurrency } from "@/lib/utils/trading";
 
 interface DashboardMetricsProps {
@@ -110,7 +111,7 @@ const FireIcon = () => (
  * - Gap responsivo: gap-2 sm:gap-3
  * - Ícones menores em mobile (20px vs 24px)
  */
-export function DashboardMetrics({
+export const DashboardMetrics = memo(function DashboardMetrics({
   currentBalance,
   currency,
   pnl,
@@ -205,4 +206,4 @@ export function DashboardMetrics({
       </div>
     </div>
   );
-}
+});

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui";
 import dynamic from "next/dynamic";
 import type { Account } from "@/types";
@@ -128,7 +128,7 @@ const BackIcon = () => (
  * Dashboard header component with navigation icons.
  * Handles responsive layout for desktop/mobile.
  */
-export function DashboardHeader({
+export const DashboardHeader = memo(function DashboardHeader({
   account,
   isAdminUser,
   isMentorUser,
@@ -354,4 +354,4 @@ export function DashboardHeader({
       </div>
     </div>
   );
-}
+});
