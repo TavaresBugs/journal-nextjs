@@ -159,7 +159,7 @@ const SelectTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="h-4 w-4 shrink-0 text-gray-400" />
     </button>
   );
 });
@@ -176,43 +176,51 @@ const SelectContent = React.forwardRef<
   );
 
   React.useEffect(() => {
-    if (context?.open && context.triggerRef.current) {
-      let rafId: number;
-      let debounceTimer: ReturnType<typeof setTimeout>;
+    if (!context?.open || !context.triggerRef.current) return;
 
-      const updatePosition = () => {
-        if (context.triggerRef.current) {
-          const rect = context.triggerRef.current.getBoundingClientRect();
-          setCoords({
-            top: rect.bottom + 4,
-            left: rect.left,
-            width: rect.width,
-          });
-        }
-      };
+    const { triggerRef, setOpen } = context;
+    let rafId: number;
 
-      // Deferred initial position calculation for faster response
+    const updatePosition = () => {
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setCoords({
+          top: rect.bottom + 4,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    // Initial position calculation
+    rafId = requestAnimationFrame(updatePosition);
+
+    // Close on scroll (standard behavior like Radix-UI)
+    // This prevents the visual bug where dropdown tries to follow scroll
+    const handleScroll = (event: Event) => {
+      // Ignore scroll events from inside the dropdown content itself
+      const selectContent = document.querySelector("[data-select-content]");
+      if (selectContent?.contains(event.target as Node)) {
+        return;
+      }
+      // Close the dropdown when user scrolls the page
+      setOpen(false);
+    };
+
+    // Update position on resize only
+    const handleResize = () => {
       rafId = requestAnimationFrame(updatePosition);
+    };
 
-      // Debounced handler for scroll/resize events
-      const debouncedUpdate = () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          rafId = requestAnimationFrame(updatePosition);
-        }, 16); // ~60fps
-      };
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, true);
 
-      window.addEventListener("resize", debouncedUpdate);
-      window.addEventListener("scroll", debouncedUpdate, true);
-
-      return () => {
-        cancelAnimationFrame(rafId);
-        clearTimeout(debounceTimer);
-        window.removeEventListener("resize", debouncedUpdate);
-        window.removeEventListener("scroll", debouncedUpdate, true);
-      };
-    }
-  }, [context?.open, context?.triggerRef]);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [context]);
 
   if (!context?.open || !coords) return null;
 
@@ -270,7 +278,7 @@ const SelectItem = React.forwardRef<
       {...props}
     >
       <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-        {isSelected && <Check className="h-4 w-4" />}
+        {isSelected && <Check className="h-4 w-4 text-cyan-500" />}
       </span>
       <span className="flex w-full items-center truncate text-left">{children}</span>
     </div>

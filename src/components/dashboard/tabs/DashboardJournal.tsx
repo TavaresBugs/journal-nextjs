@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui";
 import { IconActionButton } from "@/components/ui/IconActionButton";
-import { AssetCombobox } from "@/components/shared/AssetCombobox";
+import { AssetSelect } from "@/components/shared/AssetSelect";
 import { TradeList } from "@/components/trades/TradeList";
 import { Trade } from "@/types";
 import { useToast } from "@/providers/ToastProvider";
@@ -69,14 +69,14 @@ function DashboardJournalContent({
 
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-nowrap items-center gap-3 py-4">
-        {/* Select à esquerda */}
-        <AssetCombobox
+      <CardHeader className="flex flex-row flex-nowrap items-center gap-3 pt-2 pb-4">
+        {/* Select de Ativos */}
+        <AssetSelect
           value={filterAsset}
           onChange={(asset) => onFilterChange(accountId, asset)}
           placeholder="Filtrar..."
           showAllOption={true}
-          className="h-10 w-[160px] shrink-0 border-gray-700 bg-gray-900/50 hover:bg-gray-800"
+          className="w-[180px] shrink-0"
         />
 
         {/* Spacer */}
