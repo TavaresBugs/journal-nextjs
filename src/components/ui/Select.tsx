@@ -236,7 +236,7 @@ const SelectContent = React.forwardRef<
         zIndex: 9999,
       }}
       className={cn(
-        "animate-in fade-in-0 zoom-in-95 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-slate-200 bg-white text-slate-950 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50",
+        "animate-in fade-in-0 zoom-in-95 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-slate-200 bg-white text-slate-950 shadow-md dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50",
         className
       )}
       {...props}

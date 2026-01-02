@@ -162,12 +162,22 @@ export function JournalEntryModal({
     if (!existingEntry?.id) return;
     setIsSharingLoading(true);
     try {
-      const { createShareLink, copyToClipboard } = await import("@/lib/shareUtils");
-      const shareUrl = await createShareLink(existingEntry.id);
-      if (shareUrl && (await copyToClipboard(shareUrl))) {
-        showToast("🔗 Link copiado! Válido por 3 dias", "success");
+      // Use Server Action for reliable link creation (bypasses RLS issues)
+      const { createShareLinkAction } = await import("@/app/actions/share");
+      const { copyToClipboard } = await import("@/lib/shareUtils");
+
+      const result = await createShareLinkAction(existingEntry.id);
+
+      if (result.success && result.shareToken) {
+        const shareUrl = `${window.location.origin}/share/${result.shareToken}`;
+        if (await copyToClipboard(shareUrl)) {
+          showToast("🔗 Link copiado! Válido por 3 dias", "success");
+        } else {
+          showToast("Erro ao copiar para área de transferência", "error");
+        }
       } else {
-        showToast("Erro ao gerar link de compartilhamento", "error");
+        console.error("Share action failed:", result.error);
+        showToast("Erro ao gerar link: " + (result.error || "Desconhecido"), "error");
       }
     } catch (error) {
       console.error("Error sharing:", error);
