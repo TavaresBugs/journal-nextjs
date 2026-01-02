@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Button, GlassCard, Input } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import type { Trade } from "@/types";
 import { useJournalStore } from "@/store/useJournalStore";
 import { JournalEntryModal } from "@/components/journal/JournalEntryModal";
-import { TradeRow } from "./TradeRow";
+import { TradeCard } from "./TradeCard";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -18,23 +18,28 @@ interface TradeListProps {
   onDeleteTrade?: (tradeId: string) => void;
   onViewDay?: (date: string) => void;
   onJournalClick?: (trade: Trade, startEditing?: boolean) => void;
-  // Server-side pagination props (optional)
   totalCount?: number;
   currentPage?: number;
   itemsPerPage?: number;
   onPageChange?: (page: number) => void;
-  // External filter control
   filterAsset?: string;
   hideHeader?: boolean;
-  // External sort control
   sortDirection?: "asc" | "desc";
   onSortChange?: (direction: "asc" | "desc") => void;
   isLoading?: boolean;
 }
 
-export const TradeList = React.memo(TradeListContent);
-TradeListContent.displayName = "TradeList";
-
+/**
+ * TradeList - REFATORADO para Mobile-First
+ *
+ * MUDANÇAS PRINCIPAIS:
+ * 1. Versão CARD para mobile (< md) - empilhamento vertical
+ * 2. Versão básica para desktop (md+) - apenas cards em grid
+ * 3. Cards mostram informações prioritárias: Data, Ativo, P/L, Status
+ * 4. Informações secundárias (Entrada, Saída, Lote) em linha menor no card
+ * 5. Paginação responsiva com botões maiores em mobile
+ * 6. Filter input full-width em mobile
+ */
 function TradeListContent({
   trades,
   currency,
@@ -53,97 +58,74 @@ function TradeListContent({
   isLoading = false,
 }: TradeListProps) {
   const [internalFilterAsset, setInternalFilterAsset] = useState<string>("TODOS OS ATIVOS");
-
-  // Use external filter if provided, otherwise internal
-  const filterAsset = externalFilterAsset !== undefined ? externalFilterAsset : internalFilterAsset;
-
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-
-  // Local Pagination State (fallback)
   const [localPage, setLocalPage] = useState(1);
-
-  // Reset local pagination when filter changes (if controlled externally)
-  useEffect(() => {
-    if (externalFilterAsset !== undefined && localPage !== 1) {
-      // eslint-disable-next-line
-      setLocalPage(1);
-    }
-  }, [externalFilterAsset, localPage]);
-
-  // Determine mode
-  const isServerSide = typeof totalCount === "number" && typeof onPageChange === "function";
-  const currentPage = isServerSide ? controlledPage || 1 : localPage;
-
-  // Journal Modal State (Legacy - keeping mostly for safe removal or if needed later, but button now triggers viewDay)
-  const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false);
+  const [selectedTradeForJournal, setSelectedTradeForJournal] = useState<Trade | null>(null);
+
   const { entries } = useJournalStore();
 
-  // Get unique assets for filter
+  const filterAsset = externalFilterAsset ?? internalFilterAsset;
+  const isServerSide = typeof controlledPage === "number" && typeof onPageChange === "function";
+  const currentPage = isServerSide ? controlledPage : localPage;
+
   const uniqueAssets = useMemo(() => {
-    return Array.from(new Set(trades.map((t) => t.symbol))).sort();
+    const assets = new Set(trades.map((t) => t.symbol.toUpperCase()));
+    return Array.from(assets).sort();
   }, [trades]);
 
-  // ... filtering logic omitted for brevity as it's unchanged ...
-
   const filteredTrades = useMemo(() => {
-    return filterAsset === "TODOS OS ATIVOS"
-      ? trades
-      : trades.filter((t) => t.symbol === filterAsset);
+    if (filterAsset === "TODOS OS ATIVOS" || !filterAsset) return trades;
+    return trades.filter((t) => t.symbol.toUpperCase().includes(filterAsset.toUpperCase()));
   }, [trades, filterAsset]);
 
-  // Sort trades by date AND time
   const sortedTrades = useMemo(() => {
-    // If server-side, explicit trades prop is already sorted by backend
-    if (isServerSide) return trades;
-
+    const dir = externalSortDirection ?? sortDirection;
     return [...filteredTrades].sort((a, b) => {
-      const dateTimeA = new Date(`${a.entryDate}T${a.entryTime || "00:00:00"}`).getTime();
-      const dateTimeB = new Date(`${b.entryDate}T${b.entryTime || "00:00:00"}`).getTime();
-      return sortDirection === "desc" ? dateTimeB - dateTimeA : dateTimeA - dateTimeB;
+      const dateA = new Date(a.entryDate).getTime();
+      const dateB = new Date(b.entryDate).getTime();
+      return dir === "desc" ? dateB - dateA : dateA - dateB;
     });
-  }, [filteredTrades, sortDirection, isServerSide, trades]);
+  }, [filteredTrades, sortDirection, externalSortDirection]);
 
-  const count = isServerSide ? totalCount || 0 : filteredTrades.length;
-  const totalPages = Math.ceil(count / itemsPerPage);
+  const totalItems = isServerSide ? (totalCount ?? trades.length) : filteredTrades.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const currentTrades = useMemo(() => {
     if (isServerSide) return sortedTrades;
+    const start = (localPage - 1) * itemsPerPage;
+    return sortedTrades.slice(start, start + itemsPerPage);
+  }, [sortedTrades, localPage, itemsPerPage, isServerSide]);
 
-    const startIndex = (localPage - 1) * itemsPerPage;
-    return sortedTrades.slice(startIndex, startIndex + itemsPerPage);
-  }, [sortedTrades, isServerSide, localPage, itemsPerPage]);
+  useEffect(() => {
+    // Reset to page 1 when filter changes - intentional
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!isServerSide) setLocalPage(1);
+  }, [filterAsset, isServerSide]);
 
-  // Generate pagination numbers
   const getPageNumbers = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+    const pages: (number | string)[] = [];
+    const maxVisible = 5;
 
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-        range.push(i);
-      }
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push("...");
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (currentPage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
     }
-
-    let l;
-    for (const i of range) {
-      if (l) {
-        if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l !== 1) {
-          rangeWithDots.push("...");
-        }
-      }
-      rangeWithDots.push(i);
-      l = i;
-    }
-
-    return rangeWithDots;
+    return pages;
   };
 
   const handlePageChange = (p: number) => {
-    if (isServerSide && onPageChange) {
+    if (onPageChange) {
       onPageChange(p);
     } else {
       setLocalPage(p);
@@ -152,10 +134,12 @@ function TradeListContent({
 
   if (trades.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <div className="mb-4 text-6xl">📊</div>
-        <h3 className="mb-2 text-xl font-semibold text-gray-300">Nenhum trade registrado</h3>
-        <p className="text-gray-500">Crie seu primeiro trade para começar</p>
+      <div className="px-4 py-12 text-center sm:py-16">
+        <div className="mb-3 text-5xl sm:mb-4 sm:text-6xl">📊</div>
+        <h3 className="mb-2 text-lg font-semibold text-gray-300 sm:text-xl">
+          Nenhum trade registrado
+        </h3>
+        <p className="text-sm text-gray-500 sm:text-base">Crie seu primeiro trade para começar</p>
       </div>
     );
   }
@@ -164,21 +148,31 @@ function TradeListContent({
     return entries.find((e) => e.tradeIds?.includes(tradeId));
   };
 
+  const handleSortToggle = () => {
+    if (isLoading) return;
+    const newDirection = (externalSortDirection || sortDirection) === "asc" ? "desc" : "asc";
+    if (onSortChange) {
+      onSortChange(newDirection);
+    } else {
+      setSortDirection(newDirection);
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      {/* Filtro de Ativos com Datalist - Only show if header is NOT hidden */}
+    <div className="space-y-3 sm:space-y-4">
+      {/* Filtro de Ativos - RESPONSIVO */}
       {!hideHeader && (
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-3">
           <Input
             list="assets-filter-list"
             label="Filtrar Ativo"
             value={internalFilterAsset}
             onChange={(e) => {
               setInternalFilterAsset(e.target.value);
-              handlePageChange(1); // Reset pagination on filter change
+              handlePageChange(1);
             }}
             placeholder="TODOS OS ATIVOS"
-            className="uppercase"
+            className="w-full uppercase sm:w-auto sm:min-w-[200px]"
           />
           <datalist id="assets-filter-list">
             <option value="TODOS OS ATIVOS" />
@@ -186,142 +180,105 @@ function TradeListContent({
               <option key={asset} value={asset} />
             ))}
           </datalist>
+
+          {/* Sort button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSortToggle}
+            disabled={isLoading}
+            className="h-11 min-h-[44px] px-4"
+          >
+            Ordenar por Data {(externalSortDirection || sortDirection) === "desc" ? "↓" : "↑"}
+          </Button>
         </div>
       )}
 
-      {/* Tabela */}
-      <GlassCard
-        className={`bg-zorin-bg/30 overflow-hidden border-white/5 p-0 ${isLoading ? "cursor-wait" : ""}`}
+      {/* VERSÃO CARDS - Funciona em todas as telas */}
+      <div
+        className={`grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 ${isLoading ? "pointer-events-none opacity-50" : ""}`}
       >
-        <div className={`overflow-x-auto ${isLoading ? "pointer-events-none opacity-50" : ""}`}>
-          <table className="w-full">
-            <thead>
-              <tr className="border-b-2 border-gray-700">
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  DIÁRIO
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  AÇÕES
-                </th>
-                <th
-                  className={`px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase transition-colors ${
-                    isLoading ? "" : "cursor-pointer hover:text-cyan-400"
-                  }`}
-                  onClick={() => {
-                    if (isLoading) return; // Prevent click while loading
-                    const newDirection =
-                      (externalSortDirection || sortDirection) === "asc" ? "desc" : "asc";
-                    if (onSortChange) {
-                      onSortChange(newDirection);
-                    } else {
-                      setSortDirection(newDirection);
-                    }
-                  }}
-                >
-                  DATA {(externalSortDirection || sortDirection) === "desc" ? "↓" : "↑"}
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  ATIVO
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  TIPO
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  P/L
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  ENTRADA
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  SAÍDA
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  LOTE
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  R:R
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  TAGS
-                </th>
-                <th className="px-3 py-3 text-center text-xs font-semibold tracking-wider text-gray-400 uppercase">
-                  STATUS
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5">
-              {currentTrades.map((trade) => (
-                <TradeRow
-                  key={trade.id}
-                  trade={trade}
-                  currency={currency}
-                  journalEntry={getJournalEntry(trade.id)}
-                  onEditTrade={onEditTrade}
-                  onDeleteTrade={onDeleteTrade}
-                  onJournalClick={onJournalClick}
-                  onViewDay={onViewDay}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {currentTrades.map((trade) => (
+          <TradeCard
+            key={trade.id}
+            trade={trade}
+            currency={currency}
+            journalEntry={getJournalEntry(trade.id)}
+            onEditTrade={onEditTrade}
+            onDeleteTrade={onDeleteTrade}
+            onJournalClick={onJournalClick}
+            onViewDay={onViewDay}
+          />
+        ))}
+      </div>
 
-        {/* Paginação */}
-        {totalPages > 1 && (
-          <div className="bg-zorin-surface/30 flex items-center justify-between border-t border-white/5 px-4 py-3">
-            <div className="text-sm text-gray-400">
-              {isServerSide ? (
-                // For server side, calculation is slightly different as we don't have all items
-                <>
-                  Página {currentPage} de {totalPages}
-                </>
-              ) : (
-                <>
-                  Mostrando {(localPage - 1) * itemsPerPage + 1} a{" "}
-                  {Math.min(localPage * itemsPerPage, filteredTrades.length)} de{" "}
-                  {filteredTrades.length} trades
-                </>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="zorin-ghost"
-                size="sm"
-                onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-                disabled={currentPage === 1}
-                className="px-3 py-1 font-semibold"
-              >
-                Anterior
-              </Button>
-              <div className="flex items-center gap-1">
-                {getPageNumbers().map((page, index) => (
-                  <Button
-                    key={index}
-                    variant={currentPage === page ? "zorin-primary" : "zorin-ghost"}
-                    size="sm"
-                    onClick={() => typeof page === "number" && handlePageChange(page)}
-                    disabled={typeof page !== "number"}
-                    className={`flex h-8 w-8 items-center justify-center p-0 font-bold ${
-                      typeof page !== "number" ? "cursor-default opacity-50" : ""
-                    }`}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="zorin-ghost"
-                size="sm"
-                onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 font-semibold"
-              >
-                Próxima
-              </Button>
-            </div>
+      {/* PAGINAÇÃO RESPONSIVA */}
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center justify-between gap-3 rounded-xl border border-white/5 bg-gray-900/30 px-3 py-3 sm:flex-row sm:px-4">
+          {/* Info de páginas */}
+          <div className="text-center text-xs text-gray-400 sm:text-left sm:text-sm">
+            {isServerSide ? (
+              <>
+                Página {currentPage} de {totalPages}
+              </>
+            ) : (
+              <>
+                Mostrando {(localPage - 1) * itemsPerPage + 1} a{" "}
+                {Math.min(localPage * itemsPerPage, filteredTrades.length)} de{" "}
+                {filteredTrades.length} trades
+              </>
+            )}
           </div>
-        )}
-      </GlassCard>
+
+          {/* Controles de paginação */}
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+              disabled={currentPage === 1 || isLoading}
+              className="h-10 min-h-[44px] px-3 text-xs font-semibold sm:px-4 sm:text-sm"
+            >
+              <span className="hidden sm:inline">Anterior</span>
+              <span className="sm:hidden">←</span>
+            </Button>
+
+            {/* Números de página */}
+            <div className="xs:flex hidden items-center gap-1">
+              {getPageNumbers().map((page, index) => (
+                <Button
+                  key={index}
+                  variant={currentPage === page ? "primary" : "ghost"}
+                  size="sm"
+                  onClick={() => typeof page === "number" && handlePageChange(page)}
+                  disabled={typeof page !== "number" || isLoading}
+                  className={`h-9 min-h-[36px] w-9 min-w-[36px] p-0 text-xs font-bold sm:h-10 sm:w-10 sm:text-sm ${
+                    typeof page !== "number" ? "cursor-default opacity-50" : ""
+                  }`}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            {/* Indicador simplificado para mobile */}
+            <span className="xs:hidden px-2 text-sm text-gray-400">
+              {currentPage}/{totalPages}
+            </span>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+              disabled={currentPage === totalPages || isLoading}
+              className="h-10 min-h-[44px] px-3 text-xs font-semibold sm:px-4 sm:text-sm"
+            >
+              <span className="hidden sm:inline">Próxima</span>
+              <span className="sm:hidden">→</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       {selectedTradeForJournal && (
@@ -339,3 +296,6 @@ function TradeListContent({
     </div>
   );
 }
+
+export const TradeList = React.memo(TradeListContent);
+TradeListContent.displayName = "TradeList";

@@ -15,7 +15,7 @@ import {
   groupAssetsByType,
   findAssetBySymbol,
   type AssetOption,
-} from "@/features/trades";
+} from "@/constants/assetComboboxData";
 import { cn } from "@/lib/utils/general";
 
 // ============================================

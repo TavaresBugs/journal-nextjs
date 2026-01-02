@@ -1,5 +1,4 @@
 // Trades Feature - Main barrel export
 export * from "@/hooks/useTradeMetrics";
 
-// Constants
-export * from "./constants";
+// Constants are now at @/constants/ (consolidated)
