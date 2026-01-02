@@ -243,6 +243,8 @@ export function DashboardHeader({
                     onClick={() => {
                       setIsAccountDropdownOpen(false);
                       if (acc.id !== account.id) {
+                        // IMPORTANT: Call setCurrentAccount to clear journal/trade stores before navigation
+                        useAccountStore.getState().setCurrentAccount(acc.id);
                         router.push(`/dashboard/${acc.id}`);
                       }
                     }}
