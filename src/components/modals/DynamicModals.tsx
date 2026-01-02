@@ -11,10 +11,10 @@ function ModalSkeleton() {
   return null; // Don't show skeleton - modal handles visibility
 }
 
-// Trade Modals
+// Trade Modals (unified in TradeModal.tsx with legacy exports for compatibility)
 export const CreateTradeModal = dynamic(
   () =>
-    import("@/components/trades/CreateTradeModal").then((mod) => ({
+    import("@/components/trades/TradeModal").then((mod) => ({
       default: mod.CreateTradeModal,
     })),
   {
@@ -24,8 +24,16 @@ export const CreateTradeModal = dynamic(
 );
 
 export const EditTradeModal = dynamic(
-  () =>
-    import("@/components/trades/EditTradeModal").then((mod) => ({ default: mod.EditTradeModal })),
+  () => import("@/components/trades/TradeModal").then((mod) => ({ default: mod.EditTradeModal })),
+  {
+    loading: () => <ModalSkeleton />,
+    ssr: false,
+  }
+);
+
+// New unified TradeModal (recommended for new code)
+export const TradeModal = dynamic(
+  () => import("@/components/trades/TradeModal").then((mod) => ({ default: mod.TradeModal })),
   {
     loading: () => <ModalSkeleton />,
     ssr: false,
