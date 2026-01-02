@@ -1,6 +1,7 @@
 "use client";
 
 import { IconActionButton } from "@/components/ui/IconActionButton";
+import { StatusBadge, PermissionBadge } from "@/components/ui";
 import Image from "next/image";
 import { MentorTableSkeleton } from "./MentorTableSkeleton";
 import type { MenteeOverview } from "@/types";
@@ -135,34 +136,20 @@ export function MentoradosTable({
                   </div>
                 </td>
                 <td className="px-4 py-4 text-center">
-                  <span
-                    className={`inline-block w-24 rounded px-2 py-1 text-center text-xs font-medium ${
-                      isPending
-                        ? "border border-yellow-500/30 bg-yellow-500/10 text-yellow-400"
-                        : "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400"
-                    }`}
-                  >
-                    {isPending ? "Pendente" : "Ativo"}
-                  </span>
+                  <StatusBadge status={isPending ? "pending" : "active"} className="w-24" />
                 </td>
                 <td className="px-4 py-4 text-center">
-                  <button
+                  <PermissionBadge
+                    permission={mentee.permission}
+                    clickable={!!onUpdatePermission && !!mentee.inviteId}
                     onClick={() => {
                       if (onUpdatePermission && mentee.inviteId) {
                         const newPerm = mentee.permission === "comment" ? "view" : "comment";
                         onUpdatePermission(mentee.inviteId, newPerm);
                       }
                     }}
-                    disabled={!onUpdatePermission || !mentee.inviteId}
-                    className={`inline-flex w-24 items-center justify-center gap-1 rounded px-2 py-1 text-xs font-medium transition-colors ${
-                      mentee.permission === "comment"
-                        ? "border border-purple-500/30 bg-purple-500/20 text-purple-400 hover:bg-purple-500/30"
-                        : "border border-cyan-500/30 bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30"
-                    } ${!onUpdatePermission || !mentee.inviteId ? "cursor-default opacity-80" : "cursor-pointer"}`}
-                    title="Clique para alterar permissão"
-                  >
-                    {mentee.permission === "comment" ? "Comentar" : "Visualizar"}
-                  </button>
+                    className="w-24"
+                  />
                 </td>
                 {/* Stats - Show placeholders if pending */}
                 <td className="px-4 py-4 text-center text-gray-300">

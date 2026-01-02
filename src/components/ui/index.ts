@@ -37,3 +37,5 @@ export { AssetBadge } from "./AssetBadge";
 export * from "./ModalFooterActions";
 export { DebouncedInput } from "./DebouncedInput";
 export { DebouncedTextarea } from "./DebouncedTextarea";
+export { StatusBadge } from "./StatusBadge";
+export { PermissionBadge } from "./PermissionBadge";
