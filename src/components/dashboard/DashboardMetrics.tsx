@@ -125,9 +125,9 @@ export function DashboardMetrics({
     "bg-gradient-to-br from-gray-800/80 to-gray-800/40 rounded-xl p-3 sm:p-4 border border-gray-700/50 backdrop-blur-sm flex flex-col items-center justify-center text-center group hover:border-gray-600/50 transition-colors min-h-[100px] sm:min-h-[120px]";
 
   return (
-    <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:grid-cols-3 sm:gap-3 md:grid-cols-4 lg:grid-cols-5">
-      {/* Balance - sempre visível, importante */}
-      <div className={cardBaseClass}>
+    <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:grid-cols-6 sm:gap-3 lg:grid-cols-5">
+      {/* Balance */}
+      <div className={`${cardBaseClass} sm:col-span-2 lg:col-span-1`}>
         <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-emerald-400 sm:mb-2">
           <WalletIcon />
         </div>
@@ -139,8 +139,8 @@ export function DashboardMetrics({
         </div>
       </div>
 
-      {/* P&L - sempre visível, importante */}
-      <div className={cardBaseClass}>
+      {/* P&L */}
+      <div className={`${cardBaseClass} sm:col-span-2 lg:col-span-1`}>
         <div
           className={`mb-1.5 transition-colors sm:mb-2 ${
             isProfit
@@ -169,8 +169,8 @@ export function DashboardMetrics({
         </div>
       </div>
 
-      {/* Win Rate - importante */}
-      <div className={cardBaseClass}>
+      {/* Win Rate */}
+      <div className={`${cardBaseClass} sm:col-span-2 lg:col-span-1`}>
         <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-cyan-400 sm:mb-2">
           <CheckIcon />
         </div>
@@ -182,8 +182,8 @@ export function DashboardMetrics({
         </div>
       </div>
 
-      {/* Total Trades - secundário em mobile */}
-      <div className={cardBaseClass}>
+      {/* Total Trades - spans 3 cols on sm (50% of 6-col grid) */}
+      <div className={`${cardBaseClass} sm:col-span-3 lg:col-span-1`}>
         <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-indigo-400 sm:mb-2">
           <ChartIcon />
         </div>
@@ -193,8 +193,8 @@ export function DashboardMetrics({
         <div className="text-sm font-bold text-gray-100 sm:text-base md:text-lg">{totalTrades}</div>
       </div>
 
-      {/* Streak - secundário, ocupa 2 colunas em grid de 2 para centralizar */}
-      <div className={`${cardBaseClass} col-span-2 sm:col-span-1`}>
+      {/* Streak - spans 2 cols on mobile, 3 cols on sm (50% of 6-col grid) */}
+      <div className={`${cardBaseClass} col-span-2 sm:col-span-3 lg:col-span-1`}>
         <div className="mb-1.5 text-orange-500/80 transition-colors group-hover:text-orange-400 sm:mb-2">
           <FireIcon />
         </div>

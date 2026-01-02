@@ -212,20 +212,24 @@ export default function HomePage() {
             <div className="mb-6 flex items-center justify-between">
               {/* Left: Avatar + User info */}
               <div className="flex items-center gap-3 md:gap-4">
-                {/* User Avatar - Priority: userProfile > OAuth > initials */}
-                {userProfile?.avatarUrl || user?.avatar ? (
-                  <Image
-                    src={userProfile?.avatarUrl || user?.avatar || ""}
-                    alt="Avatar"
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 shrink-0 rounded-full border-2 border-gray-600 object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-700 text-lg font-bold text-white shadow-lg">
-                    {user?.email?.charAt(0).toUpperCase() || "U"}
-                  </div>
-                )}
+                {/* User Avatar with connected indicator */}
+                <div className="relative">
+                  {userProfile?.avatarUrl || user?.avatar ? (
+                    <Image
+                      src={userProfile?.avatarUrl || user?.avatar || ""}
+                      alt="Avatar"
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 shrink-0 rounded-full border-2 border-gray-600 object-cover shadow-lg"
+                    />
+                  ) : (
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gray-700 text-lg font-bold text-white shadow-lg">
+                      {user?.email?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                  )}
+                  {/* Green connected indicator */}
+                  <div className="absolute right-0 bottom-0 h-3 w-3 rounded-full border-2 border-gray-900 bg-green-500" />
+                </div>
                 {user && (
                   <div className="flex flex-col">
                     {/* Name - Priority: userProfile > OAuth */}
@@ -294,9 +298,9 @@ export default function HomePage() {
             </div>
 
             {/* Summary Cards - Dashboard-style gradient cards */}
-            <div className="grid grid-cols-2 gap-3">
-              {/* Saldo Total - Takes full width on first row */}
-              <div className="group col-span-2 flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+              {/* Saldo Total - Takes full width on mobile, 1 col on desktop */}
+              <div className="group col-span-2 flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50 md:col-span-1">
                 <div className="mb-1.5 text-green-500 transition-colors group-hover:text-green-400">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -412,7 +416,7 @@ export default function HomePage() {
               return (
                 <div
                   key={account.id}
-                  className="group relative cursor-pointer rounded-2xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 backdrop-blur-sm transition-all hover:border-gray-600/50"
+                  className="group relative cursor-pointer rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-3 backdrop-blur-sm transition-all hover:border-gray-600/50"
                   onClick={() => handleSelectAccount(account.id)}
                   onMouseEnter={() => {
                     const { start } = prefetchWithDelay(account.id, 150);
@@ -420,8 +424,8 @@ export default function HomePage() {
                   }}
                 >
                   {/* Header: Title + Actions Toggle */}
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-gray-100">{account.name}</h3>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-base font-bold text-gray-100">{account.name}</h3>
                     <div className="flex items-center gap-1">
                       {/* Action buttons - visible only when expanded */}
                       <div
@@ -470,12 +474,12 @@ export default function HomePage() {
                   </div>
 
                   {/* Balance Section */}
-                  <div className="mb-3">
-                    <p className="mb-1 text-xs tracking-wide text-gray-500 uppercase">
+                  <div className="mb-2">
+                    <p className="mb-0.5 text-[10px] tracking-wide text-gray-500 uppercase">
                       Saldo Atual
                     </p>
-                    <div className="flex items-center gap-3">
-                      <p className="text-2xl font-bold text-gray-100">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xl font-bold text-gray-100">
                         {formatCurrency(account.currentBalance, account.currency)}
                       </p>
                       {/* P&L Badge */}
@@ -508,10 +512,10 @@ export default function HomePage() {
                   </div>
 
                   {/* P&L Value */}
-                  <div className="mb-4">
-                    <p className="text-xs tracking-wide text-gray-500 uppercase">P&L Total</p>
+                  <div className="mb-2">
+                    <p className="text-[10px] tracking-wide text-gray-500 uppercase">P&L Total</p>
                     <p
-                      className={`text-lg font-semibold ${isProfit ? "text-green-400" : "text-red-400"}`}
+                      className={`text-base font-semibold ${isProfit ? "text-green-400" : "text-red-400"}`}
                     >
                       {isProfit ? "+" : ""}
                       {formatCurrency(pnl, account.currency)}
@@ -519,7 +523,7 @@ export default function HomePage() {
                   </div>
 
                   {/* Footer: Leverage & Max DD */}
-                  <div className="grid grid-cols-2 gap-4 border-t border-gray-700/50 pt-3 text-sm">
+                  <div className="grid grid-cols-2 gap-3 border-t border-gray-700/50 pt-2 text-xs">
                     <div>
                       <p className="text-xs tracking-wide text-gray-500 uppercase">Alavancagem</p>
                       <p className="font-medium text-gray-300">{account.leverage}</p>
@@ -537,14 +541,14 @@ export default function HomePage() {
             <Button
               variant="outline"
               onClick={() => setIsCreateModalOpen(true)}
-              className="group h-full min-h-[300px] w-full rounded-2xl border-2 border-dashed border-gray-800 bg-gray-900/20 p-0 transition-all duration-300 hover:border-cyan-500/50 hover:bg-gray-900/40"
+              className="group h-full w-full rounded-xl border-2 border-dashed border-gray-800 bg-gray-900/20 p-3 transition-all duration-300 hover:border-cyan-500/50 hover:bg-gray-900/40"
             >
-              <div className="flex flex-col items-center justify-center">
-                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-800 transition-colors group-hover:bg-cyan-500/20">
+              <div className="flex h-full flex-col items-center justify-center py-4">
+                <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-gray-800 transition-colors group-hover:bg-cyan-500/20">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="32"
-                    height="32"
+                    width="24"
+                    height="24"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -557,7 +561,7 @@ export default function HomePage() {
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                 </div>
-                <span className="text-lg font-medium text-gray-400 transition-colors group-hover:text-cyan-400">
+                <span className="text-sm font-medium text-gray-400 transition-colors group-hover:text-cyan-400">
                   Nova Carteira
                 </span>
               </div>
