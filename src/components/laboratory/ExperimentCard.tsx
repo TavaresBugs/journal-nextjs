@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { GlassCard, IconActionButton } from "@/components/ui";
+import { BaseLabCard, type ActionConfig } from "./BaseLabCard";
 import type { LaboratoryExperiment, ExperimentStatus, ExperimentType } from "@/types";
 
 interface ExperimentCardProps {
@@ -19,6 +19,11 @@ const STATUS_CONFIG: Record<ExperimentStatus, { label: string; color: string; bg
   descartado: { label: "Descartado", color: "text-red-400", bgColor: "bg-red-500/20" },
 };
 
+const TIPO_CONFIG: Record<ExperimentType, { label: string; color: string; bgColor: string }> = {
+  contexto: { label: "Contexto", color: "text-purple-400", bgColor: "bg-purple-500/20" },
+  entrada: { label: "Entrada", color: "text-cyan-400", bgColor: "bg-cyan-500/20" },
+};
+
 const TAG_COLORS = [
   { bg: "bg-purple-500/20", text: "text-purple-300", border: "border-purple-500/30" },
   { bg: "bg-cyan-500/20", text: "text-cyan-300", border: "border-cyan-500/30" },
@@ -26,13 +31,6 @@ const TAG_COLORS = [
   { bg: "bg-orange-500/20", text: "text-orange-300", border: "border-orange-500/30" },
   { bg: "bg-pink-500/20", text: "text-pink-300", border: "border-pink-500/30" },
 ];
-
-const TIPO_CONFIG: Record<ExperimentType, { label: string; color: string; bgColor: string }> = {
-  contexto: { label: "Contexto", color: "text-purple-400", bgColor: "bg-purple-500/20" },
-  entrada: { label: "Entrada", color: "text-cyan-400", bgColor: "bg-cyan-500/20" },
-};
-
-const getTagColor = (index: number) => TAG_COLORS[index % TAG_COLORS.length];
 
 export function ExperimentCard({
   experiment,
@@ -43,53 +41,39 @@ export function ExperimentCard({
 }: ExperimentCardProps) {
   const statusConfig = STATUS_CONFIG[experiment.status];
   const tipoConfig = experiment.experimentType ? TIPO_CONFIG[experiment.experimentType] : null;
-  const firstImage = experiment.images?.[0]?.imageUrl;
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
+  const badges = [statusConfig];
+  if (tipoConfig) badges.push(tipoConfig);
+
+  const actions: ActionConfig[] = [{ variant: "edit", onClick: () => onEdit(experiment) }];
+
+  if (experiment.status === "validado" && !experiment.promotedToPlaybook) {
+    actions.push({
+      variant: "promote",
+      onClick: () => onPromote(experiment.id),
+      title: "Promover para Playbook",
     });
-  };
+  }
+
+  actions.push({ variant: "delete", onClick: () => onDelete(experiment.id) });
 
   return (
-    <GlassCard
-      className="group cursor-pointer transition-all duration-300 hover:border-cyan-500/50"
+    <BaseLabCard
+      title={experiment.title}
+      thumbnail={experiment.images?.[0]?.imageUrl}
+      badges={badges}
+      date={experiment.createdAt}
+      imageCount={experiment.images?.length}
+      actions={actions}
       onClick={() => onView(experiment)}
-    >
-      {/* Thumbnail */}
-      {firstImage && (
-        <div className="relative -mx-4 -mt-4 mb-4 h-32 overflow-hidden rounded-t-xl">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={firstImage}
-            alt={experiment.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-linear-to-t from-gray-900/80 to-transparent" />
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <h3 className="line-clamp-2 flex-1 text-lg font-semibold text-white">{experiment.title}</h3>
-        <div className="flex items-center gap-1.5">
-          <span
-            className={`rounded-full px-2 py-1 text-xs font-medium ${statusConfig.bgColor} ${statusConfig.color} whitespace-nowrap`}
-          >
-            {statusConfig.label}
+      footer={
+        experiment.promotedToPlaybook ? (
+          <span className="mr-2 rounded-full bg-green-500/20 px-2 py-1 text-xs text-green-400">
+            📕 No Playbook
           </span>
-          {tipoConfig && (
-            <span
-              className={`rounded-full px-2 py-1 text-xs font-medium ${tipoConfig.bgColor} ${tipoConfig.color} whitespace-nowrap`}
-            >
-              {tipoConfig.label}
-            </span>
-          )}
-        </div>
-      </div>
-
+        ) : undefined
+      }
+    >
       {/* Description */}
       {experiment.description && (
         <p className="mb-3 line-clamp-2 text-sm text-gray-400">{experiment.description}</p>
@@ -112,7 +96,7 @@ export function ExperimentCard({
         {experiment.category && (
           <div className="flex flex-wrap gap-1">
             {experiment.category.split(", ").map((tag, index) => {
-              const color = getTagColor(index);
+              const color = TAG_COLORS[index % TAG_COLORS.length];
               return (
                 <span
                   key={tag}
@@ -125,46 +109,6 @@ export function ExperimentCard({
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="flex items-center justify-between border-t border-gray-700/50 pt-3">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">{formatDate(experiment.createdAt)}</span>
-          {experiment.images.length > 0 && (
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-              {experiment.images.length} imagem(ns)
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <IconActionButton variant="edit" onClick={() => onEdit(experiment)} />
-
-          {experiment.status === "validado" && !experiment.promotedToPlaybook && (
-            <IconActionButton
-              variant="promote"
-              onClick={() => onPromote(experiment.id)}
-              title="Promover para Playbook"
-            />
-          )}
-
-          {experiment.promotedToPlaybook && (
-            <span className="rounded-full bg-green-500/20 px-2 py-1 text-xs text-green-400">
-              📕 No Playbook
-            </span>
-          )}
-
-          <IconActionButton variant="delete" onClick={() => onDelete(experiment.id)} />
-        </div>
-      </div>
-    </GlassCard>
+    </BaseLabCard>
   );
 }
