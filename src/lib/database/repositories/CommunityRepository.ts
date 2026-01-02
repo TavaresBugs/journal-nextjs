@@ -3,10 +3,7 @@
  *
  * Type-safe implementation of CommunityRepository using Prisma ORM.
  * Handles leaderboard and shared playbooks.
- *
- * @example
- * import { prismaCommunityRepo } from '@/lib/database/repositories';
- * const leaderboard = await prismaCommunityRepo.getLeaderboard();
+ * Extends BaseRepository for common logging and error handling.
  */
 
 import { prisma } from "@/lib/database";
@@ -15,8 +12,8 @@ import {
   shared_playbooks as PrismaSharedPlaybook,
 } from "@/generated/prisma";
 import { Result } from "../types";
-import { AppError, ErrorCode } from "@/lib/errors";
-import { Logger } from "@/lib/logging/Logger";
+import { AppError } from "@/lib/errors";
+import { BaseRepository } from "./BaseRepository";
 import { formatTimeMinutes } from "@/lib/calculations";
 
 // Domain types
@@ -54,13 +51,11 @@ export interface SharedPlaybook {
   downloads: number;
   createdAt: string;
   updatedAt: string;
-  // Populated fields
   playbookTitle?: string;
   authorName?: string;
   isStarredByMe?: boolean;
 }
 
-// Mappers
 function mapLeaderboardOptInFromPrisma(opt: PrismaLeaderboardOptIn): LeaderboardOptIn {
   return {
     userId: opt.user_id,
@@ -88,41 +83,21 @@ function mapSharedPlaybookFromPrisma(sp: PrismaSharedPlaybook): SharedPlaybook {
   };
 }
 
-class PrismaCommunityRepository {
-  private logger = new Logger("PrismaCommunityRepository");
+class PrismaCommunityRepository extends BaseRepository {
+  protected readonly repositoryName = "PrismaCommunityRepository";
 
-  // ========================================
   // LEADERBOARD
-  // ========================================
-
-  /**
-   * Get user's leaderboard status.
-   */
   async getMyLeaderboardStatus(userId: string): Promise<Result<LeaderboardOptIn | null, AppError>> {
-    this.logger.info("Fetching leaderboard status", { userId });
-
-    try {
-      const optIn = await prisma.leaderboard_opt_in.findUnique({
-        where: { user_id: userId },
-      });
-
-      if (!optIn) {
-        return { data: null, error: null };
-      }
-
-      return { data: mapLeaderboardOptInFromPrisma(optIn), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch leaderboard status", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch leaderboard status", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "getMyLeaderboardStatus",
+      async () => {
+        const optIn = await prisma.leaderboard_opt_in.findUnique({ where: { user_id: userId } });
+        return optIn ? mapLeaderboardOptInFromPrisma(optIn) : null;
+      },
+      { userId }
+    );
   }
 
-  /**
-   * Join leaderboard.
-   */
   async joinLeaderboard(
     userId: string,
     displayName: string,
@@ -133,54 +108,36 @@ class PrismaCommunityRepository {
       showPnl?: boolean;
     }
   ): Promise<Result<LeaderboardOptIn, AppError>> {
-    this.logger.info("Joining leaderboard", { userId, displayName });
-
-    try {
-      const created = await prisma.leaderboard_opt_in.create({
-        data: {
-          user_id: userId,
-          display_name: displayName,
-          show_win_rate: options?.showWinRate ?? true,
-          show_profit_factor: options?.showProfitFactor ?? true,
-          show_total_trades: options?.showTotalTrades ?? true,
-          show_pnl: options?.showPnl ?? false,
-        },
-      });
-
-      return { data: mapLeaderboardOptInFromPrisma(created), error: null };
-    } catch (error) {
-      this.logger.error("Failed to join leaderboard", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to join leaderboard", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "joinLeaderboard",
+      async () => {
+        const created = await prisma.leaderboard_opt_in.create({
+          data: {
+            user_id: userId,
+            display_name: displayName,
+            show_win_rate: options?.showWinRate ?? true,
+            show_profit_factor: options?.showProfitFactor ?? true,
+            show_total_trades: options?.showTotalTrades ?? true,
+            show_pnl: options?.showPnl ?? false,
+          },
+        });
+        return mapLeaderboardOptInFromPrisma(created);
+      },
+      { userId, displayName }
+    );
   }
 
-  /**
-   * Leave leaderboard.
-   */
   async leaveLeaderboard(userId: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Leaving leaderboard", { userId });
-
-    try {
-      await prisma.leaderboard_opt_in.delete({
-        where: { user_id: userId },
-      });
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to leave leaderboard", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to leave leaderboard", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "leaveLeaderboard",
+      async () => {
+        await prisma.leaderboard_opt_in.delete({ where: { user_id: userId } });
+        return true;
+      },
+      { userId }
+    );
   }
 
-  /**
-   * Update leaderboard preferences.
-   */
   async updateLeaderboardPreferences(
     userId: string,
     options: Partial<{
@@ -191,444 +148,328 @@ class PrismaCommunityRepository {
       showPnl: boolean;
     }>
   ): Promise<Result<LeaderboardOptIn, AppError>> {
-    this.logger.info("Updating leaderboard preferences", { userId });
-
-    try {
-      const updated = await prisma.leaderboard_opt_in.update({
-        where: { user_id: userId },
-        data: {
-          display_name: options.displayName,
-          show_win_rate: options.showWinRate,
-          show_profit_factor: options.showProfitFactor,
-          show_total_trades: options.showTotalTrades,
-          show_pnl: options.showPnl,
-          updated_at: new Date(),
-        },
-      });
-
-      return { data: mapLeaderboardOptInFromPrisma(updated), error: null };
-    } catch (error) {
-      this.logger.error("Failed to update leaderboard preferences", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to update preferences", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "updateLeaderboardPreferences",
+      async () => {
+        const updated = await prisma.leaderboard_opt_in.update({
+          where: { user_id: userId },
+          data: {
+            display_name: options.displayName,
+            show_win_rate: options.showWinRate,
+            show_profit_factor: options.showProfitFactor,
+            show_total_trades: options.showTotalTrades,
+            show_pnl: options.showPnl,
+            updated_at: new Date(),
+          },
+        });
+        return mapLeaderboardOptInFromPrisma(updated);
+      },
+      { userId }
+    );
   }
 
-  /**
-   * Get all leaderboard entries (with stats calculated).
-   * Note: Actual stats calculation requires joining with trades table.
-   */
   async getLeaderboardOptIns(): Promise<Result<LeaderboardOptIn[], AppError>> {
-    this.logger.info("Fetching leaderboard opt-ins");
-
-    try {
-      const optIns = await prisma.leaderboard_opt_in.findMany({
-        orderBy: { created_at: "asc" },
-      });
-
-      return { data: optIns.map(mapLeaderboardOptInFromPrisma), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch leaderboard opt-ins", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch leaderboard", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery("getLeaderboardOptIns", async () => {
+      const optIns = await prisma.leaderboard_opt_in.findMany({ orderBy: { created_at: "asc" } });
+      return optIns.map(mapLeaderboardOptInFromPrisma);
+    });
   }
 
-  // ========================================
   // SHARED PLAYBOOKS
-  // ========================================
-
-  /**
-   * Share a playbook.
-   */
   async sharePlaybook(
     userId: string,
     playbookId: string,
     description?: string
   ): Promise<Result<SharedPlaybook, AppError>> {
-    this.logger.info("Sharing playbook", { userId, playbookId });
-
-    try {
-      // Check if already shared
-      const existing = await prisma.shared_playbooks.findUnique({
-        where: { playbook_id: playbookId },
-      });
-
-      if (existing) {
-        // Update existing
-        const updated = await prisma.shared_playbooks.update({
+    return this.withQuery(
+      "sharePlaybook",
+      async () => {
+        const existing = await prisma.shared_playbooks.findUnique({
           where: { playbook_id: playbookId },
+        });
+
+        if (existing) {
+          const updated = await prisma.shared_playbooks.update({
+            where: { playbook_id: playbookId },
+            data: {
+              is_public: true,
+              description: description || existing.description,
+              updated_at: new Date(),
+            },
+          });
+          return mapSharedPlaybookFromPrisma(updated);
+        }
+
+        const created = await prisma.shared_playbooks.create({
           data: {
+            user_id: userId,
+            playbook_id: playbookId,
             is_public: true,
-            description: description || existing.description,
-            updated_at: new Date(),
+            description: description || null,
           },
         });
-        return { data: mapSharedPlaybookFromPrisma(updated), error: null };
-      }
-
-      // Create new
-      const created = await prisma.shared_playbooks.create({
-        data: {
-          user_id: userId,
-          playbook_id: playbookId,
-          is_public: true,
-          description: description || null,
-        },
-      });
-
-      return { data: mapSharedPlaybookFromPrisma(created), error: null };
-    } catch (error) {
-      this.logger.error("Failed to share playbook", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to share playbook", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapSharedPlaybookFromPrisma(created);
+      },
+      { userId, playbookId }
+    );
   }
 
-  /**
-   * Unshare a playbook.
-   */
   async unsharePlaybook(playbookId: string, userId: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Unsharing playbook", { playbookId });
-
-    try {
-      await prisma.shared_playbooks.update({
-        where: { playbook_id: playbookId, user_id: userId },
-        data: { is_public: false, updated_at: new Date() },
-      });
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to unshare playbook", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to unshare playbook", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "unsharePlaybook",
+      async () => {
+        await prisma.shared_playbooks.update({
+          where: { playbook_id: playbookId, user_id: userId },
+          data: { is_public: false, updated_at: new Date() },
+        });
+        return true;
+      },
+      { playbookId }
+    );
   }
 
-  /**
-   * Get public playbooks with related data and stats.
-   */
   async getPublicPlaybooks(limit = 20, offset = 0): Promise<Result<SharedPlaybook[], AppError>> {
-    this.logger.info("Fetching public playbooks", { limit, offset });
+    return this.withQuery(
+      "getPublicPlaybooks",
+      async () => {
+        const playbooks = await prisma.shared_playbooks.findMany({
+          where: { is_public: true },
+          orderBy: { stars: "desc" },
+          take: limit,
+          skip: offset,
+          include: { playbooks: true, users: { include: { profiles: true } } },
+        });
 
-    try {
-      const playbooks = await prisma.shared_playbooks.findMany({
-        where: { is_public: true },
-        orderBy: { stars: "desc" },
-        take: limit,
-        skip: offset,
-        include: {
-          playbooks: true,
-          users: {
-            include: {
-              profiles: true,
+        // Optimization: Batch fetch trades
+        const globalStrategiesToFetch: { userId: string; strategy: string }[] = [];
+        playbooks.forEach((sp) => {
+          if (sp.user_id && sp.playbooks?.name) {
+            globalStrategiesToFetch.push({ userId: sp.user_id, strategy: sp.playbooks.name });
+          }
+        });
+
+        let allTrades: Array<{
+          user_id: string | null;
+          strategy: string | null;
+          pnl: import("@/generated/prisma").Prisma.Decimal | null;
+          outcome: string | null;
+          r_multiple: import("@/generated/prisma").Prisma.Decimal | null;
+          symbol: string;
+          session: string | null;
+          entry_date: Date;
+          entry_time: string | null;
+          exit_date: Date | null;
+          exit_time: string | null;
+        }> = [];
+
+        if (globalStrategiesToFetch.length > 0) {
+          allTrades = await prisma.trades.findMany({
+            where: {
+              OR: globalStrategiesToFetch.map((item) => ({
+                user_id: item.userId,
+                strategy: item.strategy,
+              })),
             },
-          },
-        },
-      });
-
-      // Optimization: Fetch all trades for these playbooks in a single query
-      const globalStrategiesToFetch: { userId: string; strategy: string }[] = [];
-      playbooks.forEach((sp) => {
-        if (sp.user_id && sp.playbooks?.name) {
-          globalStrategiesToFetch.push({
-            userId: sp.user_id,
-            strategy: sp.playbooks.name,
+            select: {
+              user_id: true,
+              strategy: true,
+              pnl: true,
+              outcome: true,
+              r_multiple: true,
+              symbol: true,
+              session: true,
+              entry_date: true,
+              entry_time: true,
+              exit_date: true,
+              exit_time: true,
+            },
+            orderBy: { entry_date: "asc" },
           });
         }
-      });
 
-      let allTrades: Array<{
-        user_id: string | null;
-        strategy: string | null;
-        pnl: import("@/generated/prisma").Prisma.Decimal | null;
-        outcome: string | null;
-        r_multiple: import("@/generated/prisma").Prisma.Decimal | null;
-        symbol: string;
-        session: string | null;
-        entry_date: Date;
-        entry_time: string | null;
-        exit_date: Date | null;
-        exit_time: string | null;
-      }> = [];
-      if (globalStrategiesToFetch.length > 0) {
-        allTrades = await prisma.trades.findMany({
-          where: {
-            OR: globalStrategiesToFetch.map((item) => ({
-              user_id: item.userId,
-              strategy: item.strategy,
-            })),
-          },
-          select: {
-            user_id: true,
-            strategy: true,
-            pnl: true,
-            outcome: true,
-            r_multiple: true,
-            symbol: true,
-            session: true,
-            entry_date: true,
-            entry_time: true,
-            exit_date: true,
-            exit_time: true,
-          },
-          orderBy: { entry_date: "asc" },
-        });
-      }
-
-      // Group trades by "userId|strategy"
-      const tradesMap = new Map<string, typeof allTrades>();
-      allTrades.forEach((t) => {
-        if (t.user_id && t.strategy) {
-          const key = `${t.user_id}|${t.strategy}`;
-          if (!tradesMap.has(key)) {
-            tradesMap.set(key, []);
+        const tradesMap = new Map<string, typeof allTrades>();
+        allTrades.forEach((t) => {
+          if (t.user_id && t.strategy) {
+            const key = `${t.user_id}|${t.strategy}`;
+            if (!tradesMap.has(key)) tradesMap.set(key, []);
+            tradesMap.get(key)?.push(t);
           }
-          tradesMap.get(key)?.push(t);
-        }
-      });
+        });
 
-      // Map with related data and calculate stats
-      const mapped = playbooks.map((sp) => {
-        const profile = sp.users?.profiles;
-        const playbookName = sp.playbooks?.name;
+        return playbooks.map((sp) => {
+          const profile = sp.users?.profiles;
+          const playbookName = sp.playbooks?.name;
+          let authorStats = undefined;
 
-        // Calculate author stats using pre-fetched trades
-        let authorStats = undefined;
-        if (playbookName && sp.user_id) {
-          const key = `${sp.user_id}|${playbookName}`;
-          const trades = tradesMap.get(key) || [];
+          if (playbookName && sp.user_id) {
+            const trades = tradesMap.get(`${sp.user_id}|${playbookName}`) || [];
+            if (trades.length > 0) {
+              const wins = trades.filter((t) => t.outcome === "win").length;
+              const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
+              const avgRR =
+                trades.reduce((sum, t) => sum + (Number(t.r_multiple) || 0), 0) / trades.length;
 
-          if (trades.length > 0) {
-            const wins = trades.filter((t) => t.outcome === "win").length;
-            const totalPnl = trades.reduce((sum, t) => sum + (Number(t.pnl) || 0), 0);
-            const avgRR =
-              trades.reduce((sum, t) => sum + (Number(t.r_multiple) || 0), 0) / trades.length;
-
-            // Calculate max win streak
-            let maxStreak = 0;
-            let currentStreak = 0;
-            for (const t of trades) {
-              if (t.outcome === "win") {
-                currentStreak++;
-                maxStreak = Math.max(maxStreak, currentStreak);
-              } else {
+              let maxStreak = 0,
                 currentStreak = 0;
-              }
-            }
-
-            // Calculate Average Duration
-            let totalDurationMinutes = 0;
-            let validDurationCount = 0;
-
-            for (const t of trades) {
-              if (t.exit_date && t.exit_time && t.entry_date) {
-                try {
-                  const combineDateTime = (date: Date, timeStr: string) => {
-                    const dateStr = date.toISOString().split("T")[0];
-                    return new Date(`${dateStr}T${timeStr}:00`);
-                  };
-
-                  const entryTimeStr = t.entry_time || "00:00";
-                  const start = combineDateTime(t.entry_date, entryTimeStr);
-                  const end = combineDateTime(t.exit_date, t.exit_time);
-
-                  const diffMs = end.getTime() - start.getTime();
-                  const minutes = diffMs / 1000 / 60;
-
-                  if (minutes > 0 && minutes < 43200) {
-                    totalDurationMinutes += minutes;
-                    validDurationCount++;
-                  }
-                } catch {
-                  // Ignore
+              for (const t of trades) {
+                if (t.outcome === "win") {
+                  currentStreak++;
+                  maxStreak = Math.max(maxStreak, currentStreak);
+                } else {
+                  currentStreak = 0;
                 }
               }
-            }
 
-            // Calculate preferred symbol (most frequent)
-            const symbolCounts: Record<string, number> = {};
-            for (const t of trades) {
-              if (t.symbol) {
-                symbolCounts[t.symbol] = (symbolCounts[t.symbol] || 0) + 1;
+              let totalDurationMinutes = 0,
+                validDurationCount = 0;
+              for (const t of trades) {
+                if (t.exit_date && t.exit_time && t.entry_date) {
+                  try {
+                    const combineDateTime = (date: Date, timeStr: string) =>
+                      new Date(`${date.toISOString().split("T")[0]}T${timeStr}:00`);
+                    const start = combineDateTime(t.entry_date, t.entry_time || "00:00");
+                    const end = combineDateTime(t.exit_date, t.exit_time);
+                    const minutes = (end.getTime() - start.getTime()) / 1000 / 60;
+                    if (minutes > 0 && minutes < 43200) {
+                      totalDurationMinutes += minutes;
+                      validDurationCount++;
+                    }
+                  } catch {
+                    /* ignore */
+                  }
+                }
               }
-            }
-            const preferredSymbol = Object.entries(symbolCounts).sort(
-              (a, b) => b[1] - a[1]
-            )[0]?.[0];
 
-            // Calculate preferred session (most frequent)
-            const sessionCounts: Record<string, number> = {};
-            for (const t of trades) {
-              if (t.session) {
-                sessionCounts[t.session] = (sessionCounts[t.session] || 0) + 1;
-              }
-            }
-            const preferredSession = Object.entries(sessionCounts).sort(
-              (a, b) => b[1] - a[1]
-            )[0]?.[0];
+              const symbolCounts: Record<string, number> = {};
+              trades.forEach((t) => {
+                if (t.symbol) symbolCounts[t.symbol] = (symbolCounts[t.symbol] || 0) + 1;
+              });
+              const preferredSymbol = Object.entries(symbolCounts).sort(
+                (a, b) => b[1] - a[1]
+              )[0]?.[0];
 
-            authorStats = {
-              totalTrades: trades.length,
-              winRate: Math.round((wins / trades.length) * 100 * 10) / 10,
-              avgRR: Math.round(avgRR * 100) / 100,
-              netPnl: Math.round(totalPnl * 100) / 100,
-              maxWinStreak: maxStreak,
-              preferredSymbol,
-              preferredSession,
-              avgDuration:
-                validDurationCount > 0
-                  ? formatTimeMinutes(totalDurationMinutes / validDurationCount)
-                  : undefined,
-            };
+              const sessionCounts: Record<string, number> = {};
+              trades.forEach((t) => {
+                if (t.session) sessionCounts[t.session] = (sessionCounts[t.session] || 0) + 1;
+              });
+              const preferredSession = Object.entries(sessionCounts).sort(
+                (a, b) => b[1] - a[1]
+              )[0]?.[0];
+
+              authorStats = {
+                totalTrades: trades.length,
+                winRate: Math.round((wins / trades.length) * 100 * 10) / 10,
+                avgRR: Math.round(avgRR * 100) / 100,
+                netPnl: Math.round(totalPnl * 100) / 100,
+                maxWinStreak: maxStreak,
+                preferredSymbol,
+                preferredSession,
+                avgDuration:
+                  validDurationCount > 0
+                    ? formatTimeMinutes(totalDurationMinutes / validDurationCount)
+                    : undefined,
+              };
+            }
           }
-        }
 
-        return {
-          ...mapSharedPlaybookFromPrisma(sp),
-          playbook: sp.playbooks
-            ? {
-                id: sp.playbooks.id,
-                name: sp.playbooks.name,
-                icon: sp.playbooks.icon,
-                color: sp.playbooks.color,
-                description: sp.playbooks.description,
-                ruleGroups: sp.playbooks.rule_groups as
-                  | { id: string; name: string; rules: string[] }[]
-                  | undefined,
-              }
-            : undefined,
-          userName: profile?.display_name || "Trader Anônimo",
-          userAvatar: profile?.avatar_url || undefined,
-          authorStats,
-        };
-      });
-
-      return { data: mapped as SharedPlaybook[], error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch public playbooks", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch public playbooks", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+          return {
+            ...mapSharedPlaybookFromPrisma(sp),
+            playbook: sp.playbooks
+              ? {
+                  id: sp.playbooks.id,
+                  name: sp.playbooks.name,
+                  icon: sp.playbooks.icon,
+                  color: sp.playbooks.color,
+                  description: sp.playbooks.description,
+                  ruleGroups: sp.playbooks.rule_groups as
+                    | { id: string; name: string; rules: string[] }[]
+                    | undefined,
+                }
+              : undefined,
+            userName: profile?.display_name || "Trader Anônimo",
+            userAvatar: profile?.avatar_url || undefined,
+            authorStats,
+          };
+        }) as SharedPlaybook[];
+      },
+      { limit, offset }
+    );
   }
 
-  /**
-   * Get user's shared playbooks.
-   */
   async getMySharedPlaybooks(userId: string): Promise<Result<SharedPlaybook[], AppError>> {
-    this.logger.info("Fetching user shared playbooks", { userId });
-
-    try {
-      const playbooks = await prisma.shared_playbooks.findMany({
-        where: { user_id: userId },
-        orderBy: { created_at: "desc" },
-      });
-
-      return { data: playbooks.map(mapSharedPlaybookFromPrisma), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch user shared playbooks", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch shared playbooks", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "getMySharedPlaybooks",
+      async () => {
+        const playbooks = await prisma.shared_playbooks.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: "desc" },
+        });
+        return playbooks.map(mapSharedPlaybookFromPrisma);
+      },
+      { userId }
+    );
   }
 
-  /**
-   * Toggle star on a shared playbook.
-   */
   async togglePlaybookStar(
     sharedPlaybookId: string,
     userId: string
   ): Promise<Result<boolean, AppError>> {
-    this.logger.info("Toggling playbook star", { sharedPlaybookId, userId });
-
-    try {
-      // Check if already starred
-      const existing = await prisma.playbook_stars.findUnique({
-        where: {
-          shared_playbook_id_user_id: {
-            shared_playbook_id: sharedPlaybookId,
-            user_id: userId,
+    return this.withQuery(
+      "togglePlaybookStar",
+      async () => {
+        const existing = await prisma.playbook_stars.findUnique({
+          where: {
+            shared_playbook_id_user_id: { shared_playbook_id: sharedPlaybookId, user_id: userId },
           },
-        },
-      });
+        });
 
-      if (existing) {
-        // Remove star
-        await prisma.$transaction([
-          prisma.playbook_stars.delete({
-            where: {
-              shared_playbook_id_user_id: {
-                shared_playbook_id: sharedPlaybookId,
-                user_id: userId,
+        if (existing) {
+          await prisma.$transaction([
+            prisma.playbook_stars.delete({
+              where: {
+                shared_playbook_id_user_id: {
+                  shared_playbook_id: sharedPlaybookId,
+                  user_id: userId,
+                },
               },
-            },
-          }),
-          prisma.shared_playbooks.update({
-            where: { id: sharedPlaybookId },
-            data: { stars: { decrement: 1 } },
-          }),
-        ]);
-        return { data: false, error: null }; // Not starred
-      } else {
-        // Add star
-        await prisma.$transaction([
-          prisma.playbook_stars.create({
-            data: {
-              user_id: userId,
-              shared_playbook_id: sharedPlaybookId,
-            },
-          }),
-          prisma.shared_playbooks.update({
-            where: { id: sharedPlaybookId },
-            data: { stars: { increment: 1 } },
-          }),
-        ]);
-        return { data: true, error: null }; // Starred
-      }
-    } catch (error) {
-      this.logger.error("Failed to toggle playbook star", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to toggle star", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+            }),
+            prisma.shared_playbooks.update({
+              where: { id: sharedPlaybookId },
+              data: { stars: { decrement: 1 } },
+            }),
+          ]);
+          return false;
+        } else {
+          await prisma.$transaction([
+            prisma.playbook_stars.create({
+              data: { user_id: userId, shared_playbook_id: sharedPlaybookId },
+            }),
+            prisma.shared_playbooks.update({
+              where: { id: sharedPlaybookId },
+              data: { stars: { increment: 1 } },
+            }),
+          ]);
+          return true;
+        }
+      },
+      { sharedPlaybookId, userId }
+    );
   }
 
-  /**
-   * Increment playbook downloads.
-   */
   async incrementPlaybookDownloads(sharedPlaybookId: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Incrementing playbook downloads", { sharedPlaybookId });
-
-    try {
-      await prisma.shared_playbooks.update({
-        where: { id: sharedPlaybookId },
-        data: { downloads: { increment: 1 } },
-      });
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to increment downloads", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to increment downloads", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "incrementPlaybookDownloads",
+      async () => {
+        await prisma.shared_playbooks.update({
+          where: { id: sharedPlaybookId },
+          data: { downloads: { increment: 1 } },
+        });
+        return true;
+      },
+      { sharedPlaybookId }
+    );
   }
 }
 
-// Export singleton instance
 export const prismaCommunityRepo = new PrismaCommunityRepository();
 export { PrismaCommunityRepository };

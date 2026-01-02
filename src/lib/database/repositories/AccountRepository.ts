@@ -3,6 +3,7 @@
  *
  * Type-safe implementation of AccountRepository using Prisma ORM.
  * Handles trading accounts with balance management.
+ * Extends BaseRepository for common logging and error handling.
  *
  * @example
  * import { prismaAccountRepo } from '@/lib/database/repositories';
@@ -12,8 +13,8 @@
 import { prisma } from "@/lib/database";
 import { accounts as PrismaAccount } from "@/generated/prisma";
 import { Result } from "../types";
-import { AppError, ErrorCode } from "@/lib/errors";
-import { Logger } from "@/lib/logging/Logger";
+import { AppError } from "@/lib/errors";
+import { BaseRepository } from "./BaseRepository";
 import { Account } from "@/types";
 
 /**
@@ -34,92 +35,69 @@ function mapAccountFromPrisma(account: PrismaAccount): Account {
   };
 }
 
-class PrismaAccountRepository {
-  private logger = new Logger("PrismaAccountRepository");
+class PrismaAccountRepository extends BaseRepository {
+  protected readonly repositoryName = "PrismaAccountRepository";
 
   /**
    * Fetches all accounts for a user.
    */
   async getByUserId(userId: string): Promise<Result<Account[], AppError>> {
-    this.logger.info("Fetching accounts by user", { userId });
-
-    try {
-      const accounts = await prisma.accounts.findMany({
-        where: { user_id: userId },
-        orderBy: { created_at: "desc" },
-      });
-
-      return { data: accounts.map(mapAccountFromPrisma), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch accounts", { error, userId });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch accounts", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "getByUserId",
+      async () => {
+        const accounts = await prisma.accounts.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: "desc" },
+        });
+        return accounts.map(mapAccountFromPrisma);
+      },
+      { userId }
+    );
   }
 
   /**
    * Fetches a single account by ID with ownership verification.
-   * @param accountId - The account ID to fetch
-   * @param userId - The user ID for ownership verification (REQUIRED for security)
    */
   async getById(accountId: string, userId: string): Promise<Result<Account, AppError>> {
-    this.logger.info("Fetching account by ID", { accountId, userId });
+    return this.withQuery(
+      "getById",
+      async () => {
+        const account = await prisma.accounts.findFirst({
+          where: { id: accountId, user_id: userId },
+        });
 
-    try {
-      // Use compound where clause for security (prevents IDOR)
-      const account = await prisma.accounts.findFirst({
-        where: {
-          id: accountId,
-          user_id: userId,
-        },
-      });
+        if (!account) {
+          throw this.notFoundError("Account");
+        }
 
-      if (!account) {
-        return {
-          data: null,
-          error: new AppError("Account not found", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      return { data: mapAccountFromPrisma(account), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch account", { error, accountId });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch account", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapAccountFromPrisma(account);
+      },
+      { accountId, userId }
+    );
   }
 
   /**
    * Creates a new account.
    */
   async create(account: Partial<Account>): Promise<Result<Account, AppError>> {
-    this.logger.info("Creating account", { name: account.name });
-
-    try {
-      const created = await prisma.accounts.create({
-        data: {
-          users: account.userId ? { connect: { id: account.userId } } : undefined,
-          name: account.name!,
-          currency: account.currency || "USD",
-          initial_balance: account.initialBalance || 0,
-          current_balance: account.currentBalance || account.initialBalance || 0,
-          leverage: account.leverage || "1:100",
-          max_drawdown: account.maxDrawdown || 10,
-        },
-      });
-
-      return { data: mapAccountFromPrisma(created), error: null };
-    } catch (error) {
-      this.logger.error("Failed to create account", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to create account", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "create",
+      async () => {
+        const created = await prisma.accounts.create({
+          data: {
+            users: account.userId ? { connect: { id: account.userId } } : undefined,
+            name: account.name!,
+            currency: account.currency || "USD",
+            initial_balance: account.initialBalance || 0,
+            current_balance: account.currentBalance || account.initialBalance || 0,
+            leverage: account.leverage || "1:100",
+            max_drawdown: account.maxDrawdown || 10,
+          },
+        });
+        return mapAccountFromPrisma(created);
+      },
+      { name: account.name }
+    );
   }
 
   /**
@@ -130,135 +108,106 @@ class PrismaAccountRepository {
     userId: string,
     data: Partial<Account>
   ): Promise<Result<Account, AppError>> {
-    this.logger.info("Updating account", { accountId, userId });
+    return this.withQuery(
+      "update",
+      async () => {
+        // Verify ownership
+        const existing = await prisma.accounts.findUnique({
+          where: { id: accountId },
+          select: { user_id: true },
+        });
 
-    try {
-      // Verify ownership
-      const existing = await prisma.accounts.findUnique({
-        where: { id: accountId },
-        select: { user_id: true },
-      });
+        if (!existing || existing.user_id !== userId) {
+          throw this.unauthorizedError();
+        }
 
-      if (!existing || existing.user_id !== userId) {
-        return {
-          data: null,
-          error: new AppError("Account not found or unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
-        };
-      }
+        const updated = await prisma.accounts.update({
+          where: { id: accountId },
+          data: {
+            name: data.name,
+            currency: data.currency,
+            initial_balance: data.initialBalance,
+            current_balance: data.currentBalance,
+            leverage: data.leverage,
+            max_drawdown: data.maxDrawdown,
+            updated_at: new Date(),
+          },
+        });
 
-      const updated = await prisma.accounts.update({
-        where: { id: accountId },
-        data: {
-          name: data.name,
-          currency: data.currency,
-          initial_balance: data.initialBalance,
-          current_balance: data.currentBalance,
-          leverage: data.leverage,
-          max_drawdown: data.maxDrawdown,
-          updated_at: new Date(),
-        },
-      });
-
-      return { data: mapAccountFromPrisma(updated), error: null };
-    } catch (error) {
-      this.logger.error("Failed to update account", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to update account", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapAccountFromPrisma(updated);
+      },
+      { accountId, userId }
+    );
   }
 
   /**
    * Deletes an account with ownership verification.
    */
   async delete(accountId: string, userId: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Deleting account", { accountId, userId });
+    return this.withQuery(
+      "delete",
+      async () => {
+        const deleted = await prisma.accounts.deleteMany({
+          where: { id: accountId, user_id: userId },
+        });
 
-    try {
-      const deleted = await prisma.accounts.deleteMany({
-        where: { id: accountId, user_id: userId },
-      });
+        if (deleted.count === 0) {
+          throw this.notFoundError("Account");
+        }
 
-      if (deleted.count === 0) {
-        return {
-          data: null,
-          error: new AppError("Account not found or unauthorized", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to delete account", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to delete account", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return true;
+      },
+      { accountId, userId }
+    );
   }
 
   /**
    * Updates account balance with ownership verification.
-   * @param accountId - The account ID to update
-   * @param userId - The user ID for ownership verification (REQUIRED for security)
-   * @param newBalance - The new balance value
    */
   async updateBalance(
     accountId: string,
     userId: string,
     newBalance: number
   ): Promise<Result<Account, AppError>> {
-    this.logger.info("Updating account balance", { accountId, userId, newBalance });
+    return this.withQuery(
+      "updateBalance",
+      async () => {
+        const existing = await prisma.accounts.findFirst({
+          where: { id: accountId, user_id: userId },
+          select: { id: true },
+        });
 
-    try {
-      // Verify ownership first
-      const existing = await prisma.accounts.findFirst({
-        where: { id: accountId, user_id: userId },
-        select: { id: true },
-      });
+        if (!existing) {
+          throw this.unauthorizedError();
+        }
 
-      if (!existing) {
-        return {
-          data: null,
-          error: new AppError("Account not found or unauthorized", ErrorCode.AUTH_FORBIDDEN, 403),
-        };
-      }
+        const updated = await prisma.accounts.update({
+          where: { id: accountId },
+          data: {
+            current_balance: newBalance,
+            updated_at: new Date(),
+          },
+        });
 
-      const updated = await prisma.accounts.update({
-        where: { id: accountId },
-        data: {
-          current_balance: newBalance,
-          updated_at: new Date(),
-        },
-      });
-
-      return { data: mapAccountFromPrisma(updated), error: null };
-    } catch (error) {
-      this.logger.error("Failed to update balance", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to update balance", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapAccountFromPrisma(updated);
+      },
+      { accountId, userId, newBalance }
+    );
   }
 
   /**
    * Gets account count for a user.
    */
   async getCount(userId: string): Promise<Result<number, AppError>> {
-    try {
-      const count = await prisma.accounts.count({
-        where: { user_id: userId },
-      });
-
-      return { data: count, error: null };
-    } catch (error) {
-      this.logger.error("Failed to count accounts", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to count accounts", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "getCount",
+      async () => {
+        return prisma.accounts.count({
+          where: { user_id: userId },
+        });
+      },
+      { userId }
+    );
   }
 }
 

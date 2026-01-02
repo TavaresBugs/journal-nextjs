@@ -3,17 +3,14 @@
  *
  * Type-safe implementation of ShareRepository using Prisma ORM.
  * Handles shared journal links.
- *
- * @example
- * import { prismaShareRepo } from '@/lib/database/repositories';
- * const shareToken = await prismaShareRepo.createShareLink(userId, journalEntryId);
+ * Extends BaseRepository for common logging and error handling.
  */
 
 import { prisma } from "@/lib/database";
 import { shared_journals as PrismaSharedJournal } from "@/generated/prisma";
 import { Result } from "../types";
 import { AppError, ErrorCode } from "@/lib/errors";
-import { Logger } from "@/lib/logging/Logger";
+import { BaseRepository } from "./BaseRepository";
 
 // Domain types
 export interface SharedJournal {
@@ -39,8 +36,8 @@ function mapSharedJournalFromPrisma(sj: PrismaSharedJournal): SharedJournal {
   };
 }
 
-class PrismaShareRepository {
-  private logger = new Logger("PrismaShareRepository");
+class PrismaShareRepository extends BaseRepository {
+  protected readonly repositoryName = "PrismaShareRepository";
 
   /**
    * Create a share link for a journal entry.
@@ -51,141 +48,107 @@ class PrismaShareRepository {
     journalEntryId: string,
     expirationDays = 3
   ): Promise<Result<SharedJournal, AppError>> {
-    this.logger.info("Creating share link", { userId, journalEntryId });
+    return this.withQuery(
+      "createShareLink",
+      async () => {
+        // Check for existing valid link
+        const existing = await prisma.shared_journals.findFirst({
+          where: {
+            journal_entry_id: journalEntryId,
+            user_id: userId,
+            expires_at: { gt: new Date() },
+          },
+          orderBy: { created_at: "desc" },
+        });
 
-    try {
-      // Check for existing valid link
-      const existing = await prisma.shared_journals.findFirst({
-        where: {
-          journal_entry_id: journalEntryId,
-          user_id: userId,
-          expires_at: { gt: new Date() },
-        },
-        orderBy: { created_at: "desc" },
-      });
+        if (existing) {
+          return mapSharedJournalFromPrisma(existing);
+        }
 
-      if (existing) {
-        return { data: mapSharedJournalFromPrisma(existing), error: null };
-      }
+        // Create new link
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + expirationDays);
 
-      // Create new link
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + expirationDays);
+        const created = await prisma.shared_journals.create({
+          data: {
+            journal_entry_id: journalEntryId,
+            user_id: userId,
+            expires_at: expiresAt,
+          },
+        });
 
-      const created = await prisma.shared_journals.create({
-        data: {
-          journal_entry_id: journalEntryId,
-          user_id: userId,
-          expires_at: expiresAt,
-        },
-      });
-
-      return { data: mapSharedJournalFromPrisma(created), error: null };
-    } catch (error) {
-      this.logger.error("Failed to create share link", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to create share link", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapSharedJournalFromPrisma(created);
+      },
+      { userId, journalEntryId }
+    );
   }
 
   /**
    * Get a shared journal by token.
    */
   async getByToken(token: string): Promise<Result<SharedJournal | null, AppError>> {
-    this.logger.info("Fetching shared journal by token");
-
-    try {
+    return this.withQuery("getByToken", async () => {
       const shared = await prisma.shared_journals.findUnique({
         where: { share_token: token },
       });
 
       if (!shared) {
-        return { data: null, error: null };
+        return null;
       }
 
       // Check if expired
       if (new Date() > shared.expires_at) {
-        return {
-          data: null,
-          error: new AppError("Share link has expired", ErrorCode.VALIDATION_ERROR, 410),
-        };
+        throw new AppError("Share link has expired", ErrorCode.VALIDATION_ERROR, 410);
       }
 
-      return { data: mapSharedJournalFromPrisma(shared), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch shared journal", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch shared journal", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+      return mapSharedJournalFromPrisma(shared);
+    });
   }
 
   /**
    * Increment view count for a shared journal.
    */
   async incrementViewCount(token: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Incrementing view count");
-
-    try {
+    return this.withQuery("incrementViewCount", async () => {
       await prisma.shared_journals.update({
         where: { share_token: token },
         data: { view_count: { increment: 1 } },
       });
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to increment view count", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to increment view count", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+      return true;
+    });
   }
 
   /**
    * Delete a share link.
    */
   async deleteShareLink(shareId: string, userId: string): Promise<Result<boolean, AppError>> {
-    this.logger.info("Deleting share link", { shareId });
-
-    try {
-      await prisma.shared_journals.delete({
-        where: { id: shareId, user_id: userId },
-      });
-
-      return { data: true, error: null };
-    } catch (error) {
-      this.logger.error("Failed to delete share link", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to delete share link", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "deleteShareLink",
+      async () => {
+        await prisma.shared_journals.delete({
+          where: { id: shareId, user_id: userId },
+        });
+        return true;
+      },
+      { shareId }
+    );
   }
 
   /**
    * Get all shared journals for a user.
    */
   async getUserSharedJournals(userId: string): Promise<Result<SharedJournal[], AppError>> {
-    this.logger.info("Fetching user shared journals", { userId });
-
-    try {
-      const shares = await prisma.shared_journals.findMany({
-        where: { user_id: userId },
-        orderBy: { created_at: "desc" },
-      });
-
-      return { data: shares.map(mapSharedJournalFromPrisma), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch user shared journals", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch shared journals", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+    return this.withQuery(
+      "getUserSharedJournals",
+      async () => {
+        const shares = await prisma.shared_journals.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: "desc" },
+        });
+        return shares.map(mapSharedJournalFromPrisma);
+      },
+      { userId }
+    );
   }
 }
 

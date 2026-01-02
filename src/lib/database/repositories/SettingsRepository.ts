@@ -2,13 +2,14 @@
  * Prisma Settings Repository
  *
  * Handles settings for users and accounts using Prisma ORM.
+ * Extends BaseRepository for common logging and error handling.
  */
 
 import { prisma } from "@/lib/database";
 import { settings as PrismaSettings } from "@/generated/prisma";
 import { Result } from "../types";
-import { AppError, ErrorCode } from "@/lib/errors";
-import { Logger } from "@/lib/logging/Logger";
+import { AppError } from "@/lib/errors";
+import { BaseRepository } from "./BaseRepository";
 import { Settings, UserSettings } from "@/types";
 
 /**
@@ -51,108 +52,90 @@ function mapUserSettingsFromPrisma(s: PrismaSettings): UserSettings {
   };
 }
 
-class PrismaSettingsRepository {
-  private logger = new Logger("PrismaSettingsRepository");
+class PrismaSettingsRepository extends BaseRepository {
+  protected readonly repositoryName = "PrismaSettingsRepository";
 
   /**
    * Fetches settings for a user or a specific account.
    */
   async getSettings(userId: string, accountId?: string): Promise<Result<Settings, AppError>> {
-    this.logger.info("Fetching settings", { userId, accountId });
+    return this.withQuery(
+      "getSettings",
+      async () => {
+        const settings = await prisma.settings.findFirst({
+          where: {
+            user_id: userId,
+            account_id: accountId || null,
+          },
+        });
 
-    try {
-      const settings = await prisma.settings.findFirst({
-        where: {
-          user_id: userId,
-          account_id: accountId || null,
-        },
-      });
+        if (!settings) {
+          throw this.notFoundError("Settings");
+        }
 
-      if (!settings) {
-        return {
-          data: null,
-          error: new AppError("Settings not found", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      return { data: mapSettingsFromPrisma(settings), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch settings", { error, userId, accountId });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch settings", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapSettingsFromPrisma(settings);
+      },
+      { userId, accountId }
+    );
   }
 
   /**
    * Fetches global user settings.
    */
   async getUserSettings(userId: string): Promise<Result<UserSettings, AppError>> {
-    this.logger.info("Fetching user settings", { userId });
+    return this.withQuery(
+      "getUserSettings",
+      async () => {
+        const settings = await prisma.settings.findFirst({
+          where: {
+            user_id: userId,
+            account_id: null,
+          },
+        });
 
-    try {
-      const settings = await prisma.settings.findFirst({
-        where: {
-          user_id: userId,
-          account_id: null,
-        },
-      });
+        if (!settings) {
+          throw this.notFoundError("User settings");
+        }
 
-      if (!settings) {
-        return {
-          data: null,
-          error: new AppError("User settings not found", ErrorCode.DB_NOT_FOUND, 404),
-        };
-      }
-
-      return { data: mapUserSettingsFromPrisma(settings), error: null };
-    } catch (error) {
-      this.logger.error("Failed to fetch user settings", { error, userId });
-      return {
-        data: null,
-        error: new AppError("Failed to fetch user settings", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapUserSettingsFromPrisma(settings);
+      },
+      { userId }
+    );
   }
 
   /**
    * Upserts settings for a user or account.
    */
   async saveSettings(settings: Partial<Settings>): Promise<Result<Settings, AppError>> {
-    this.logger.info("Saving settings", { userId: settings.userId, accountId: settings.accountId });
+    return this.withQuery(
+      "saveSettings",
+      async () => {
+        const upserted = await prisma.settings.upsert({
+          where: settings.id ? { id: settings.id } : { user_id: settings.userId! },
+          create: {
+            user_id: settings.userId!,
+            account_id: settings.accountId || null,
+            currencies: settings.currencies || [],
+            leverages: settings.leverages || [],
+            assets: settings.assets || {},
+            strategies: settings.strategies || [],
+            setups: settings.setups || [],
+          },
+          update: {
+            account_id: settings.accountId,
+            currencies: settings.currencies,
+            leverages: settings.leverages,
+            assets: settings.assets,
+            strategies: settings.strategies,
+            setups: settings.setups,
+            updated_at: new Date(),
+          },
+        });
 
-    try {
-      const upserted = await prisma.settings.upsert({
-        where: settings.id ? { id: settings.id } : { user_id: settings.userId! },
-        create: {
-          user_id: settings.userId!,
-          account_id: settings.accountId || null,
-          currencies: settings.currencies || [],
-          leverages: settings.leverages || [],
-          assets: settings.assets || {},
-          strategies: settings.strategies || [],
-          setups: settings.setups || [],
-        },
-        update: {
-          account_id: settings.accountId,
-          currencies: settings.currencies,
-          leverages: settings.leverages,
-          assets: settings.assets,
-          strategies: settings.strategies,
-          setups: settings.setups,
-          updated_at: new Date(),
-        },
-      });
-
-      return { data: mapSettingsFromPrisma(upserted), error: null };
-    } catch (error) {
-      this.logger.error("Failed to save settings", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to save settings", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapSettingsFromPrisma(upserted);
+      },
+      { userId: settings.userId, accountId: settings.accountId }
+    );
   }
 
   /**
@@ -162,42 +145,38 @@ class PrismaSettingsRepository {
     userId: string,
     settings: Partial<UserSettings>
   ): Promise<Result<UserSettings, AppError>> {
-    this.logger.info("Saving user settings", { userId });
+    return this.withQuery(
+      "saveUserSettings",
+      async () => {
+        const upserted = await prisma.settings.upsert({
+          where: { user_id: userId },
+          create: {
+            user_id: userId,
+            account_id: null,
+            currencies: settings.currencies || [],
+            leverages: settings.leverages || [],
+            assets: settings.assets
+              ? Object.fromEntries(settings.assets.map((a) => [a.symbol, a.multiplier]))
+              : {},
+            strategies: settings.strategies || [],
+            setups: settings.setups || [],
+          },
+          update: {
+            currencies: settings.currencies,
+            leverages: settings.leverages,
+            assets: settings.assets
+              ? Object.fromEntries(settings.assets.map((a) => [a.symbol, a.multiplier]))
+              : undefined,
+            strategies: settings.strategies,
+            setups: settings.setups,
+            updated_at: new Date(),
+          },
+        });
 
-    try {
-      const upserted = await prisma.settings.upsert({
-        where: { user_id: userId },
-        create: {
-          user_id: userId,
-          account_id: null,
-          currencies: settings.currencies || [],
-          leverages: settings.leverages || [],
-          assets: settings.assets
-            ? Object.fromEntries(settings.assets.map((a) => [a.symbol, a.multiplier]))
-            : {},
-          strategies: settings.strategies || [],
-          setups: settings.setups || [],
-        },
-        update: {
-          currencies: settings.currencies,
-          leverages: settings.leverages,
-          assets: settings.assets
-            ? Object.fromEntries(settings.assets.map((a) => [a.symbol, a.multiplier]))
-            : undefined,
-          strategies: settings.strategies,
-          setups: settings.setups,
-          updated_at: new Date(),
-        },
-      });
-
-      return { data: mapUserSettingsFromPrisma(upserted), error: null };
-    } catch (error) {
-      this.logger.error("Failed to save user settings", { error });
-      return {
-        data: null,
-        error: new AppError("Failed to save user settings", ErrorCode.DB_QUERY_FAILED, 500),
-      };
-    }
+        return mapUserSettingsFromPrisma(upserted);
+      },
+      { userId }
+    );
   }
 }
 

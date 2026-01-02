@@ -9,6 +9,9 @@
  * const trades = await prismaTradeRepo.getByAccountId(accountId, userId);
  */
 
+// Base class for all repositories
+export { BaseRepository } from "./BaseRepository";
+
 export { prismaTradeRepo, PrismaTradeRepository } from "./TradeRepository";
 export { prismaJournalRepo, PrismaJournalRepository } from "./JournalRepository";
 export { prismaAccountRepo, PrismaAccountRepository } from "./AccountRepository";
