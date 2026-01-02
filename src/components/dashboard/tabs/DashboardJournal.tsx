@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui";
 import { IconActionButton } from "@/components/ui/IconActionButton";
@@ -99,7 +101,6 @@ function DashboardJournalContent({
           totalCount={totalCount}
           currentPage={currentPage}
           onPageChange={(p) => onLoadPage(accountId, p)}
-          // Props novas para controle externo
           filterAsset={filterAsset}
           hideHeader={true}
           sortDirection={sortDirection}

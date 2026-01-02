@@ -2,22 +2,25 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui";
 import dynamic from "next/dynamic";
 import type { Account } from "@/types";
+import { Menu, X, ChevronDown, ArrowLeft, Check } from "lucide-react";
+import { useAccountStore } from "@/store/useAccountStore";
 
 // Dynamic imports for non-critical header components
 const NotificationBell = dynamic(
   () => import("@/components/notifications").then((mod) => mod.NotificationBell),
   {
     ssr: false,
-    loading: () => <div className="h-12 w-12 rounded-xl bg-gray-800/50" />,
+    loading: () => <div className="h-10 w-10 rounded-xl bg-gray-800/50 sm:h-12 sm:w-12" />,
   }
 );
 
 const MentalButton = dynamic(() => import("@/features/mental").then((mod) => mod.MentalButton), {
   ssr: false,
-  loading: () => <div className="h-12 w-12 rounded-xl bg-gray-800/50" />,
+  loading: () => <div className="h-10 w-10 rounded-xl bg-gray-800/50 sm:h-12 sm:w-12" />,
 });
 
 interface DashboardHeaderProps {
@@ -135,6 +138,33 @@ export function DashboardHeader({
   onSettingsClick,
 }: DashboardHeaderProps) {
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+
+  // Get all accounts from store
+  const { accounts } = useAccountStore();
+
+  // Close account dropdown when clicking outside
+  useEffect(() => {
+    if (!isAccountDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Check if click is inside the account dropdown container
+      if (!target.closest("[data-account-dropdown]")) {
+        setIsAccountDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isAccountDropdownOpen]);
+
+  // Close account dropdown when opening mobile menu
+  const handleMobileMenuToggle = () => {
+    setIsAccountDropdownOpen(false);
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
 
   // Shared icon buttons config
   const iconButtons = [
@@ -163,25 +193,119 @@ export function DashboardHeader({
 
   return (
     <div className="mb-6">
-      {/* Single Row: Back + Title + Icons (scroll horizontal no mobile) */}
-      <div className="flex items-center justify-between gap-2">
+      {/* MOBILE LAYOUT: Menu | Account Centered | Notification */}
+      <div className="flex items-center justify-between gap-2 sm:hidden">
+        {/* Menu Button (esquerda) - mesmo estilo dos outros ícones */}
+        <button
+          onClick={handleMobileMenuToggle}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-800/80 text-gray-400 transition-colors hover:bg-gray-700 hover:text-white"
+          aria-label={isMobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+        >
+          {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+
+        {/* Account Selector (centralizado) */}
+        <div className="relative" data-account-dropdown>
+          <button
+            onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
+            className="flex items-center gap-2 rounded-full border border-gray-700 bg-gray-800/80 px-4 py-2 transition-colors hover:bg-gray-700"
+          >
+            <span className="max-w-[140px] truncate text-sm font-medium text-white">
+              {account.name}
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 text-gray-400 transition-transform ${isAccountDropdownOpen ? "rotate-180" : ""}`}
+            />
+          </button>
+
+          {/* Account Dropdown */}
+          {isAccountDropdownOpen && (
+            <div className="absolute top-full left-1/2 z-50 mt-2 w-56 -translate-x-1/2 rounded-lg border border-gray-700 bg-gray-900 py-1 shadow-xl">
+              {/* Voltar option */}
+              <button
+                onClick={() => {
+                  setIsAccountDropdownOpen(false);
+                  router.push("/");
+                }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm">Voltar para Home</span>
+              </button>
+
+              <div className="my-1 border-t border-gray-800" />
+
+              {/* Accounts list */}
+              <div className="max-h-48 overflow-y-auto">
+                {accounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    onClick={() => {
+                      setIsAccountDropdownOpen(false);
+                      if (acc.id !== account.id) {
+                        router.push(`/dashboard/${acc.id}`);
+                      }
+                    }}
+                    className={`flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-gray-800 ${
+                      acc.id === account.id ? "bg-gray-800/50 text-cyan-400" : "text-white"
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{acc.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {acc.currency} • {acc.leverage}
+                      </p>
+                    </div>
+                    {acc.id === account.id && <Check className="h-4 w-4 shrink-0 text-cyan-400" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Notification (direita) */}
+        <NotificationBell />
+      </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2 border-t border-gray-800 pt-3 sm:hidden">
+          {iconButtons.map(
+            ({ show, href, prefetch, title, Icon }) =>
+              show && (
+                <Link key={href} href={href} prefetch onClick={() => setIsMobileMenuOpen(false)}>
+                  <div onMouseEnter={prefetch}>
+                    <Button variant="primary" size="icon" title={title} className="h-10 w-10">
+                      <Icon size={18} />
+                    </Button>
+                  </div>
+                </Link>
+              )
+          )}
+          <MentalButton />
+          <Button
+            variant="primary"
+            size="icon"
+            onClick={() => {
+              onSettingsClick();
+              setIsMobileMenuOpen(false);
+            }}
+            title="Configurações"
+            className="h-10 w-10"
+          >
+            <SettingsIcon size={18} />
+          </Button>
+        </div>
+      )}
+
+      {/* DESKTOP LAYOUT: Original layout */}
+      <div className="hidden items-center justify-between gap-2 sm:flex">
         {/* Left: Back + Title */}
         <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => router.push("/")}
-            leftIcon={<BackIcon />}
-            className="hidden sm:flex"
-          >
+          <Button variant="ghost" onClick={() => router.push("/")} leftIcon={<BackIcon />}>
             Voltar
           </Button>
-          <button
-            onClick={() => router.push("/")}
-            className="touch-manipulation p-2 text-gray-400 hover:text-gray-200 sm:hidden"
-            aria-label="Voltar"
-          >
-            <BackIcon />
-          </button>
           <div className="min-w-0">
             <h1 className="truncate text-base font-bold text-gray-100 sm:text-xl md:text-2xl">
               {account.name}
@@ -192,7 +316,7 @@ export function DashboardHeader({
           </div>
         </div>
 
-        {/* Right: Icons - sempre em linha, mesmo padrão do MentalButton */}
+        {/* Right: Icons */}
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           {iconButtons.map(
             ({ show, href, prefetch, title, Icon }) =>

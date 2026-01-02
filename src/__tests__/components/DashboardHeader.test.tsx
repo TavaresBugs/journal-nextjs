@@ -21,6 +21,15 @@ vi.mock("@/features/mental", () => ({
   MentalButton: () => <div data-testid="mental-button" />,
 }));
 
+vi.mock("@/store/useAccountStore", () => ({
+  useAccountStore: () => ({
+    accounts: [
+      { id: "acc-1", name: "My Account", currency: "USD", leverage: "1:100" },
+      { id: "acc-2", name: "Other Account", currency: "EUR", leverage: "1:50" },
+    ],
+  }),
+}));
+
 describe("DashboardHeader", () => {
   const mockRouter = { push: vi.fn() };
   const mockProps = {
@@ -51,8 +60,9 @@ describe("DashboardHeader", () => {
 
   it("should render account info", () => {
     render(<DashboardHeader {...mockProps} />);
-    expect(screen.getByText("My Account")).toBeInTheDocument();
-    expect(screen.getByText("USD • 1:100")).toBeInTheDocument();
+    // Account name appears in both mobile and desktop layouts
+    expect(screen.getAllByText("My Account").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("USD • 1:100").length).toBeGreaterThanOrEqual(1);
   });
 
   it("should navigate back on back button click", () => {
