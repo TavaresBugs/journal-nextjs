@@ -10,28 +10,29 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     | "ghost"
     | "danger"
     | "success"
-    | "warning"
-    | "info"
-    | "ghost-success"
     | "gradient-success"
     | "gradient-danger"
     | "gradient-info"
     | "gold"
-    | "purple"
     | "zorin-primary"
-    | "zorin-outline"
     | "zorin-ghost"
-    | "zorin-success"
-    | "zorin-danger"
-    | "zorin-warning"
-    | "solid-danger"
-    | "solid-gray";
+    | "solid-danger";
   size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
+/**
+ * Button Component - Design System
+ *
+ * Variants consolidados (22 → 14):
+ * - REMOVIDOS (sem uso): warning, info, ghost-success, purple, zorin-outline,
+ *   zorin-success, zorin-danger, zorin-warning, solid-gray
+ * - MANTIDOS: primary, secondary, outline, outline-danger, ghost, danger,
+ *   success, gradient-success, gradient-danger, gradient-info, gold,
+ *   zorin-primary, zorin-ghost, solid-danger
+ */
 export function Button({
   children,
   className = "",
@@ -47,7 +48,7 @@ export function Button({
     "inline-flex items-center justify-center rounded-lg transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    // Standard "Neutral Dark" style with Cyan hover effect (requested by user)
+    // Standard "Neutral Dark" style with Cyan hover effect
     primary:
       "bg-gray-800/80 hover:bg-gray-800 border border-gray-700 hover:border-cyan-500/50 text-gray-400 hover:text-cyan-400 focus:ring-cyan-500/50 shadow-sm backdrop-blur-sm font-medium",
 
@@ -58,95 +59,52 @@ export function Button({
     outline:
       "border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white focus:ring-gray-600 font-medium",
 
-    // Outline Danger - Subtle red outline (matches visual weight of "outline" but with red accents)
+    // Outline Danger - Subtle red outline
     "outline-danger":
       "border border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500 focus:ring-red-500/50 font-medium",
 
     // Ghost (for "Voltar" etc)
     ghost: "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50 focus:ring-gray-600 font-medium",
 
-    // Glowing/Neon variants (Robust & Thicker) - Progressive Fill Effect
+    // Glowing/Neon variants - Progressive Fill Effect
     danger:
       "bg-red-500/10 text-red-500 border border-red-500 hover:shadow-[0_0_20px_rgba(239,68,68,0.6)] font-black",
     success:
       "bg-emerald-500/10 text-emerald-500 border border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] font-black",
-    warning:
-      "bg-orange-500/10 text-orange-500 border border-orange-500 hover:shadow-[0_0_20px_rgba(249,115,22,0.6)] font-black",
-    info: "bg-blue-500/10 text-blue-500 border border-blue-500 hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] font-black",
 
-    // Ghost with Success Hover (Neutral default, Green hover)
-    "ghost-success":
-      "bg-gray-800/30 text-gray-400 border border-gray-700 hover:text-emerald-500 hover:border-emerald-500 hover:shadow-[0_0_20px_rgba(16,185,129,0.6)] font-medium",
-
-    // Gradient Success (Solid Green Gradient) - NO font-weight here
+    // Gradient variants (Solid Gradients)
     "gradient-success":
       "bg-linear-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-lg shadow-green-500/30 border-none",
-
-    // Gradient Danger (Solid Red Gradient) - NO font-weight here
     "gradient-danger":
       "bg-linear-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white shadow-lg shadow-red-500/30 border-none",
-
-    // Gradient Info (Solid Blue Gradient) - NO font-weight here
     "gradient-info":
       "bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg shadow-blue-500/30 border-none",
 
     // Gold (for Edit buttons)
     gold: "bg-yellow-500/10 text-yellow-500 border border-yellow-500 hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] font-black",
 
-    // Purple (for Mentor interactions)
-    purple:
-      "bg-purple-500/10 text-purple-500 border border-purple-500 hover:shadow-[0_0_20px_rgba(168,85,247,0.6)] font-black",
-
-    // Zorin Glass - Neon Green Primary Action (WCAG AA compliant)
+    // Zorin Glass - Primary Action (WCAG AA compliant)
     "zorin-primary":
       "bg-[#008f3e] hover:bg-[#00a347] text-white font-bold shadow-lg shadow-green-500/20 hover:shadow-green-500/40 border-none",
-
-    // Zorin Glass - Outline variant
-    "zorin-outline":
-      "bg-transparent border border-[#00c853] text-[#00c853] hover:bg-[#00c853]/10 font-medium",
 
     // Zorin Glass - Ghost variant
     "zorin-ghost":
       "bg-transparent text-gray-400 hover:text-gray-200 hover:bg-white/5 focus:ring-gray-600 font-medium",
 
-    // Zorin Glass - Filled/Neon variants (Restoring visual weight)
-    "zorin-success":
-      "bg-[#00c853]/10 text-[#00c853] border border-[#00c853] hover:shadow-[0_0_20px_rgba(0,200,83,0.4)] font-bold",
-    "zorin-danger":
-      "bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] font-bold",
-    "zorin-warning":
-      "bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b] hover:shadow-[0_0_20px_rgba(245,158,11,0.4)] font-bold",
-
-    // New Standard Solid Variants (Bold + Solid Color)
+    // Solid Danger (Bold + Solid Color)
     "solid-danger":
       "bg-red-600 hover:bg-red-700 text-white border border-red-600 hover:border-red-700 focus:ring-red-500 font-bold shadow-lg shadow-red-500/20",
-    "solid-gray":
-      "bg-gray-700 hover:bg-gray-600 text-white border border-gray-600 hover:border-gray-500 focus:ring-gray-500 font-bold shadow-md",
   };
 
   const sizes = {
     sm: "px-3 py-1.5 text-xs",
     md: "px-4 py-2 text-sm",
     lg: "px-6 py-3 text-base",
-    icon: "h-10 w-10 sm:h-12 sm:w-12 p-2 flex items-center justify-center", // Responsive icon size
+    icon: "h-10 w-10 sm:h-12 sm:w-12 p-2 flex items-center justify-center",
   };
 
-  // Special handling for the "Settings" style icon button which is slightly larger
-  // If className contains w-12, we might want to respect that or override it.
-  // For now, let's trust the size prop or className overrides.
-
   // Determine if we should apply the progressive fill effect
-  const isProgressive =
-    variant === "danger" ||
-    variant === "success" ||
-    variant === "warning" ||
-    variant === "info" ||
-    variant === "ghost-success" ||
-    variant === "gold" ||
-    variant === "purple" ||
-    variant === "zorin-success" ||
-    variant === "zorin-danger" ||
-    variant === "zorin-warning";
+  const isProgressive = variant === "danger" || variant === "success" || variant === "gold";
 
   return (
     <button
@@ -166,21 +124,9 @@ export function Button({
           className={`absolute inset-0 w-0 opacity-30 transition-all duration-300 ease-out group-hover/btn:w-full ${
             variant === "danger"
               ? "bg-red-500"
-              : variant === "success" || variant === "ghost-success"
+              : variant === "success"
                 ? "bg-emerald-500"
-                : variant === "info"
-                  ? "bg-blue-500"
-                  : variant === "gold"
-                    ? "bg-yellow-500"
-                    : variant === "purple"
-                      ? "bg-purple-500"
-                      : variant === "zorin-success"
-                        ? "bg-zorin-accent"
-                        : variant === "zorin-danger"
-                          ? "bg-[#ef4444]"
-                          : variant === "zorin-warning"
-                            ? "bg-[#f59e0b]"
-                            : "bg-orange-500"
+                : "bg-yellow-500"
           }`}
         />
       )}
