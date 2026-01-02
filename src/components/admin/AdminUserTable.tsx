@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { IconActionButton } from "@/components/ui/IconActionButton";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { StatusBadge, RoleBadge } from "@/components/ui";
 import type { UserExtended, UserStatus, UserRole } from "@/types";
 
 interface AdminUserTableProps {
@@ -12,39 +13,6 @@ interface AdminUserTableProps {
   onDelete?: (id: string) => void;
   loading: boolean;
 }
-
-const getStatusBadge = (status: UserStatus) => {
-  const styles: Record<UserStatus, string> = {
-    pending: "border border-amber-500/30 bg-amber-500/10 text-amber-400",
-    approved: "border border-emerald-500/30 bg-emerald-500/20 text-emerald-400",
-    suspended: "border border-red-500/30 bg-red-500/20 text-red-400",
-    banned: "border border-red-700/30 bg-red-700/20 text-red-500",
-    rejected: "border border-gray-600/30 bg-gray-600/20 text-gray-400",
-  };
-  return (
-    <span
-      className={`inline-block w-24 rounded px-2 py-1 text-center text-xs font-medium ${styles[status]}`}
-    >
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
-};
-
-const getRoleBadge = (role: UserRole) => {
-  const styles: Record<UserRole, string> = {
-    admin: "border border-purple-500/30 bg-purple-500/20 text-purple-400",
-    mentor: "border border-cyan-500/30 bg-cyan-500/20 text-cyan-400",
-    user: "border border-gray-500/30 bg-gray-500/20 text-gray-400",
-    guest: "border border-gray-600/30 bg-gray-600/20 text-gray-400",
-  };
-  return (
-    <span
-      className={`inline-block w-24 rounded px-2 py-1 text-center text-xs font-medium ${styles[role]}`}
-    >
-      {role.charAt(0).toUpperCase() + role.slice(1)}
-    </span>
-  );
-};
 
 /**
  * Admin user table with status badges and action buttons.
@@ -113,8 +81,12 @@ export function AdminUserTable({
                   </div>
                 </div>
               </td>
-              <td className="px-4 py-4 text-center">{getStatusBadge(user.status)}</td>
-              <td className="px-4 py-4 text-center">{getRoleBadge(user.role)}</td>
+              <td className="px-4 py-4 text-center">
+                <StatusBadge status={user.status as UserStatus} className="w-24" />
+              </td>
+              <td className="px-4 py-4 text-center">
+                <RoleBadge role={user.role as UserRole} className="w-24" />
+              </td>
               <td className="px-4 py-4 text-center text-sm text-gray-400">
                 {new Date(user.createdAt).toLocaleDateString("pt-BR")}
               </td>

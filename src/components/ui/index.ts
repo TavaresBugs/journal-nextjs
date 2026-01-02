@@ -39,3 +39,4 @@ export { DebouncedInput } from "./DebouncedInput";
 export { DebouncedTextarea } from "./DebouncedTextarea";
 export { StatusBadge } from "./StatusBadge";
 export { PermissionBadge } from "./PermissionBadge";
+export { RoleBadge } from "./RoleBadge";
