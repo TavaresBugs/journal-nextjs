@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle, CheckCircle, Zap, AlertOctagon, ClipboardCheck } from "lucide-react";
 import { Modal, ModalFooterActions } from "@/components/ui";
+import { MentalStepSection } from "../MentalStepSection";
 import type { MentalLog } from "@/lib/database/repositories/MentalRepository";
 
 interface Props {
@@ -89,71 +90,74 @@ export function EditEntryModal({
     <Modal isOpen={isOpen} onClose={onClose} title={TitleComponent} maxWidth="2xl">
       <div className="space-y-6">
         {/* O Problema */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-red-400 uppercase">
-            <AlertTriangle size={16} />O PROBLEMA
-          </label>
+        <MentalStepSection
+          icon={<AlertTriangle size={16} />}
+          label="O PROBLEMA"
+          colorClass="text-red-400"
+        >
           <textarea
             value={formData.step1Problem}
             onChange={(e) => handleChange("step1Problem", e.target.value)}
             className="min-h-[100px] w-full resize-none rounded-lg border border-red-500/20 bg-[#232b32] px-4 py-3 text-gray-200 placeholder-gray-600 transition-all focus:border-red-500/50 focus:ring-1 focus:ring-red-500/50 focus:outline-none"
             placeholder="Descreva o problema..."
           />
-        </div>
+        </MentalStepSection>
 
         {/* A Falha Lógica */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-orange-400 uppercase">
-            <AlertOctagon size={16} />A FALHA LÓGICA
-          </label>
+        <MentalStepSection
+          icon={<AlertOctagon size={16} />}
+          label="A FALHA LÓGICA"
+          colorClass="text-orange-400"
+        >
           <textarea
             value={formData.step3Flaw}
             onChange={(e) => handleChange("step3Flaw", e.target.value)}
             className="min-h-[80px] w-full resize-none rounded-lg border border-orange-500/20 bg-[#232b32] px-4 py-3 text-gray-200 placeholder-gray-600 transition-all focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 focus:outline-none"
             placeholder="A falha no meu pensamento é..."
           />
-        </div>
+        </MentalStepSection>
 
         {/* A Correção */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-green-400 uppercase">
-            <CheckCircle size={16} />A CORREÇÃO
-          </label>
+        <MentalStepSection
+          icon={<CheckCircle size={16} />}
+          label="A CORREÇÃO"
+          colorClass="text-green-400"
+        >
           <textarea
             value={formData.step4Correction}
             onChange={(e) => handleChange("step4Correction", e.target.value)}
             className="min-h-[100px] w-full resize-none rounded-lg border border-green-500/20 bg-[#232b32] px-4 py-3 text-gray-200 placeholder-gray-600 transition-all focus:border-green-500/50 focus:ring-1 focus:ring-green-500/50 focus:outline-none"
             placeholder="A correção é..."
           />
-        </div>
+        </MentalStepSection>
 
         {/* Validação */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-gray-400 uppercase">
-            <ClipboardCheck size={16} />
-            VALIDAÇÃO
-          </label>
+        <MentalStepSection
+          icon={<ClipboardCheck size={16} />}
+          label="VALIDAÇÃO"
+          colorClass="text-gray-400"
+        >
           <textarea
             value={formData.step2Validation}
             onChange={(e) => handleChange("step2Validation", e.target.value)}
             className="min-h-[80px] w-full resize-none rounded-lg border border-gray-700/50 bg-[#232b32] px-4 py-3 text-gray-300 placeholder-gray-600 transition-all focus:border-gray-500 focus:outline-none"
             placeholder="Eu validei..."
           />
-        </div>
+        </MentalStepSection>
 
         {/* Reforço Lógico */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-blue-400 uppercase">
-            <Zap size={16} />
-            REFORÇO LÓGICO
-          </label>
+        <MentalStepSection
+          icon={<Zap size={16} />}
+          label="REFORÇO LÓGICO"
+          colorClass="text-blue-400"
+        >
           <textarea
             value={formData.step5Logic}
             onChange={(e) => handleChange("step5Logic", e.target.value)}
             className="min-h-[80px] w-full resize-none rounded-lg border border-blue-500/20 bg-[#232b32] px-4 py-3 text-blue-100/90 italic placeholder-gray-600 transition-all focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 focus:outline-none"
             placeholder="Lógica para reforçar..."
           />
-        </div>
+        </MentalStepSection>
 
         {/* Footer Actions */}
         <ModalFooterActions
