@@ -18,7 +18,7 @@ import type { Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import { usePrefetchAccountData } from "@/hooks/usePrefetchAccountData";
 import { getUserProfileAction, type UserProfile } from "@/app/actions/accounts";
-import { DollarIcon, TrendIcon, WalletIcon } from "@/components/ui/MetricIcons";
+import { MetricCard } from "@/components/ui/MetricCard";
 
 export default function HomePage() {
   const router = useRouter();
@@ -301,66 +301,40 @@ export default function HomePage() {
             {/* Summary Cards - Dashboard-style gradient cards */}
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {/* Saldo Total - Takes full width on mobile, 1 col on desktop */}
-              <div className="group col-span-2 flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50 md:col-span-1">
-                <div className="mb-1.5 text-gray-500 group-hover:text-green-500">
-                  <DollarIcon />
-                </div>
-                <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
-                  Saldo Total
-                </p>
-                <p className="max-w-full truncate text-lg font-bold text-gray-100 sm:text-xl md:text-2xl">
-                  {formatCurrency(accounts.reduce((acc, curr) => acc + curr.currentBalance, 0))}
-                </p>
-              </div>
+              <MetricCard
+                icon="dollar"
+                label="Saldo Total"
+                value={formatCurrency(accounts.reduce((acc, curr) => acc + curr.currentBalance, 0))}
+                colorVariant="green"
+                className="col-span-2 md:col-span-1"
+              />
 
               {/* P&L Total */}
-              <div className="group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50">
-                <div
-                  className={`mb-1.5 ${
-                    accounts.reduce(
-                      (acc, curr) => acc + (curr.currentBalance - curr.initialBalance),
-                      0
-                    ) >= 0
-                      ? "text-green-500 group-hover:text-green-400"
-                      : "text-red-500 group-hover:text-red-400"
-                  }`}
-                >
-                  <TrendIcon />
-                </div>
-                <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
-                  P&L Geral
-                </p>
-                <p
-                  className={`max-w-full truncate text-sm font-bold sm:text-base md:text-lg ${
-                    accounts.reduce(
-                      (acc, curr) => acc + (curr.currentBalance - curr.initialBalance),
-                      0
-                    ) >= 0
-                      ? "text-green-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {formatCurrency(
-                    accounts.reduce(
-                      (acc, curr) => acc + (curr.currentBalance - curr.initialBalance),
-                      0
-                    )
-                  )}
-                </p>
-              </div>
+              {(() => {
+                const totalPnL = accounts.reduce(
+                  (acc, curr) => acc + (curr.currentBalance - curr.initialBalance),
+                  0
+                );
+                const isProfit = totalPnL >= 0;
+                return (
+                  <MetricCard
+                    icon="trend"
+                    label="P&L Geral"
+                    value={formatCurrency(totalPnL)}
+                    colorVariant={isProfit ? "green" : "red"}
+                    colorBehavior="persistent"
+                    valueColorBehavior="colored"
+                  />
+                );
+              })()}
 
               {/* Carteiras Ativas */}
-              <div className="group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50">
-                <div className="mb-1.5 text-gray-500 group-hover:text-blue-500">
-                  <WalletIcon />
-                </div>
-                <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
-                  Carteiras Ativas
-                </p>
-                <p className="text-sm font-bold text-cyan-400 sm:text-base md:text-lg">
-                  {accounts.length}
-                </p>
-              </div>
+              <MetricCard
+                icon="wallet"
+                label="Carteiras Ativas"
+                value={accounts.length}
+                colorVariant="blue"
+              />
             </div>
           </div>
         </div>

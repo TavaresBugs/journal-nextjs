@@ -19,6 +19,10 @@ interface MetricCardProps {
   subValue?: string;
   /** Color variant for the icon and value */
   colorVariant?: "green" | "red" | "cyan" | "blue" | "orange" | "indigo" | "gray";
+  /** Whether the icon color depends on hover or is persistent */
+  colorBehavior?: "hover" | "persistent";
+  /** Whether the value text should be colored or white */
+  valueColorBehavior?: "default" | "colored";
   /** Additional className for the card container */
   className?: string;
 }
@@ -44,6 +48,17 @@ const hoverColorClasses: Record<string, string> = {
   gray: "text-gray-500",
 };
 
+// Persistent color classes - always colored (with slight lighten on hover)
+const persistentColorClasses: Record<string, string> = {
+  green: "text-green-500 group-hover:text-green-400",
+  red: "text-red-500 group-hover:text-red-400",
+  cyan: "text-cyan-500 group-hover:text-cyan-400",
+  blue: "text-blue-500 group-hover:text-blue-400",
+  orange: "text-orange-500 group-hover:text-orange-400",
+  indigo: "text-indigo-500 group-hover:text-indigo-400",
+  gray: "text-gray-500 group-hover:text-gray-400",
+};
+
 // Value color classes
 const valueColorClasses: Record<string, string> = {
   green: "text-green-400",
@@ -53,6 +68,17 @@ const valueColorClasses: Record<string, string> = {
   orange: "text-orange-400",
   indigo: "text-gray-100",
   gray: "text-gray-100",
+};
+
+// Sub-value color classes (70% opacity) - explicit for Tailwind JIT
+const subValueColorClasses: Record<string, string> = {
+  green: "text-green-400/70",
+  red: "text-red-400/70",
+  cyan: "text-cyan-400/70",
+  blue: "text-blue-400/70",
+  orange: "text-orange-400/70",
+  indigo: "text-gray-100/70",
+  gray: "text-gray-100/70",
 };
 
 /**
@@ -66,18 +92,27 @@ export function MetricCard({
   subValue,
   colorVariant = "gray",
   className,
+  colorBehavior = "hover",
+  valueColorBehavior = "default",
 }: MetricCardProps) {
   const IconComponent = iconComponents[icon];
 
   return (
     <div
       className={cn(
-        "group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-gradient-to-br from-gray-800/80 to-gray-800/40 p-3 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50 sm:min-h-[120px] sm:p-4",
+        "group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-3 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50 sm:min-h-[120px] sm:p-4",
         className
       )}
     >
       {/* Icon */}
-      <div className={cn("mb-1.5 transition-colors sm:mb-2", hoverColorClasses[colorVariant])}>
+      <div
+        className={cn(
+          "mb-1.5 transition-colors sm:mb-2",
+          colorBehavior === "hover"
+            ? hoverColorClasses[colorVariant]
+            : persistentColorClasses[colorVariant]
+        )}
+      >
         <IconComponent />
       </div>
 
@@ -90,7 +125,7 @@ export function MetricCard({
       <p
         className={cn(
           "max-w-full truncate text-sm font-bold sm:text-base md:text-lg",
-          valueColorClasses[colorVariant]
+          valueColorBehavior === "colored" ? valueColorClasses[colorVariant] : "text-gray-100"
         )}
       >
         {value}
@@ -98,7 +133,7 @@ export function MetricCard({
 
       {/* Sub-value (optional, like percentage) */}
       {subValue && (
-        <p className={cn("text-[10px] sm:text-xs", valueColorClasses[colorVariant] + "/70")}>
+        <p className={cn("text-[10px] sm:text-xs", subValueColorClasses[colorVariant])}>
           {subValue}
         </p>
       )}

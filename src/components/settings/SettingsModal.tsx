@@ -126,7 +126,7 @@ export function SettingsModal({ isOpen, onClose, accountId }: SettingsModalProps
             <>
               {/* Settings Cards */}
               <SettingsCard
-                icon="💰"
+                icon="🪙"
                 title="Moedas"
                 description="Configure as moedas disponíveis para suas carteiras"
                 count={currencies.length}
