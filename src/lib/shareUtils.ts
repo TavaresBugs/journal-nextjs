@@ -57,16 +57,49 @@ export async function createShareLink(journalEntryId: string): Promise<string | 
 }
 
 /**
- * Copies text to clipboard
+ * Copies text to clipboard with fallback for mobile devices
+ * Uses navigator.clipboard API when available, falls back to execCommand for mobile compatibility
  * @param text - The text to copy
  * @returns True if successful, false otherwise
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch (error) {
-    console.error("Error copying to clipboard:", error);
-    return false;
+  // Try modern Clipboard API first
+  if (navigator.clipboard && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fall through to fallback method
+    }
   }
+
+  // Fallback for mobile devices and older browsers
+  try {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // Prevent scrolling to bottom of page on iOS
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    textArea.style.opacity = "0";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    // For iOS Safari
+    textArea.setSelectionRange(0, text.length);
+
+    const success = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    if (success) {
+      return true;
+    }
+  } catch (error) {
+    console.error("Fallback copy failed:", error);
+  }
+
+  return false;
 }
