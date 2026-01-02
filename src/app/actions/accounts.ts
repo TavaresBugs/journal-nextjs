@@ -25,6 +25,45 @@ import { Account, Settings, UserSettings } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
 
 /**
+ * User profile data from users_extended table.
+ */
+export interface UserProfile {
+  name: string | null;
+  avatarUrl: string | null;
+}
+
+/**
+ * Get user's custom profile (display name, avatar) from profiles table.
+ * This is used to prioritize user-provided data over OAuth data.
+ * The profiles table stores custom data set by the user in ProfileSettingsModal.
+ * @returns UserProfile or null if not found.
+ */
+export async function getUserProfileAction(): Promise<UserProfile | null> {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+
+    const profile = await prisma.profiles.findUnique({
+      where: { id: userId },
+      select: {
+        display_name: true,
+        avatar_url: true,
+      },
+    });
+
+    if (!profile) return null;
+
+    return {
+      name: profile.display_name,
+      avatarUrl: profile.avatar_url,
+    };
+  } catch (error) {
+    console.error("[getUserProfileAction] Error:", error);
+    return null;
+  }
+}
+
+/**
  * Get all accounts for the current user.
  * CACHED: 5 minutes TTL, invalidated when accounts change.
  * @returns List of accounts or empty array if not authenticated.

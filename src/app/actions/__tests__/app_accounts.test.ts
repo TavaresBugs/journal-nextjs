@@ -12,6 +12,7 @@ import {
   checkAccountHasTradesAction,
   syncAllAccountsBalancesAction,
   getAccountById,
+  getUserProfileAction,
 } from "../accounts";
 import {
   prismaAccountRepo,
@@ -31,6 +32,9 @@ vi.mock("@/lib/database", () => ({
   prisma: {
     accounts: {
       findFirst: vi.fn(),
+    },
+    profiles: {
+      findUnique: vi.fn(),
     },
   },
 }));
@@ -67,6 +71,15 @@ describe("App Account Actions", () => {
       const result = await getAccountsAction();
       expect(result).toEqual([]);
     });
+
+    it("should return empty array on error", async () => {
+      (prismaAccountRepo.getByUserId as Mock).mockResolvedValue({
+        data: null,
+        error: { code: "DB_ERROR", message: "Error" },
+      });
+      const result = await getAccountsAction();
+      expect(result).toEqual([]);
+    });
   });
 
   describe("getAccountAction", () => {
@@ -74,6 +87,21 @@ describe("App Account Actions", () => {
       (prismaAccountRepo.getById as Mock).mockResolvedValue({ data: { id: "acc-1" }, error: null });
       const result = await getAccountAction("acc-1");
       expect(result).toEqual({ id: "acc-1" });
+    });
+
+    it("should return null if not authenticated", async () => {
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await getAccountAction("acc-1");
+      expect(result).toBeNull();
+    });
+
+    it("should return null on error", async () => {
+      (prismaAccountRepo.getById as Mock).mockResolvedValue({
+        data: null,
+        error: { code: "DB_ERROR", message: "Error" },
+      });
+      const result = await getAccountAction("acc-1");
+      expect(result).toBeNull();
     });
   });
 
@@ -100,6 +128,26 @@ describe("App Account Actions", () => {
       expect(prismaAccountRepo.update).toHaveBeenCalled();
       expect(result.success).toBe(true);
     });
+
+    it("should return error if not authenticated", async () => {
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await saveAccountAction({ name: "Test" });
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Not authenticated");
+    });
+
+    it("should create if id present but not found", async () => {
+      (prismaAccountRepo.getById as Mock).mockResolvedValue({ data: null, error: null });
+      (prismaAccountRepo.create as Mock).mockResolvedValue({
+        data: { id: "new-acc" },
+        error: null,
+      });
+
+      const result = await saveAccountAction({ id: "acc-1", name: "Test" });
+
+      expect(prismaAccountRepo.create).toHaveBeenCalled();
+      expect(result.success).toBe(true);
+    });
   });
 
   describe("deleteAccountAction", () => {
@@ -108,6 +156,13 @@ describe("App Account Actions", () => {
       const result = await deleteAccountAction("acc-1");
       expect(prismaAccountRepo.delete).toHaveBeenCalled();
       expect(result.success).toBe(true);
+    });
+
+    it("should return error if not authenticated", async () => {
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await deleteAccountAction("acc-1");
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Not authenticated");
     });
   });
 
@@ -120,6 +175,20 @@ describe("App Account Actions", () => {
 
       expect(prismaAccountRepo.updateBalance).toHaveBeenCalledWith("acc-1", mockUserId, 1000);
       expect(result.success).toBe(true);
+    });
+
+    it("should return error if not authenticated", async () => {
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+      const result = await updateAccountBalanceAction("acc-1", 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Not authenticated");
+    });
+
+    it("should return error if account not found", async () => {
+      (prismaAccountRepo.getById as Mock).mockResolvedValue({ data: null, error: null });
+      const result = await updateAccountBalanceAction("acc-1", 1000);
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Account not found or unauthorized");
     });
   });
 
@@ -207,6 +276,50 @@ describe("App Account Actions", () => {
     it("should return null if not found", async () => {
       (prisma.accounts.findFirst as Mock).mockResolvedValue(null);
       const result = await getAccountById("acc-1");
+      expect(result).toBeNull();
+    });
+  });
+
+  describe("getUserProfileAction", () => {
+    it("should return profile data when found", async () => {
+      (prisma.profiles.findUnique as Mock).mockResolvedValue({
+        display_name: "John Doe",
+        avatar_url: "https://example.com/avatar.jpg",
+      });
+
+      const result = await getUserProfileAction();
+
+      expect(prisma.profiles.findUnique).toHaveBeenCalledWith({
+        where: { id: mockUserId },
+        select: { display_name: true, avatar_url: true },
+      });
+      expect(result).toEqual({
+        name: "John Doe",
+        avatarUrl: "https://example.com/avatar.jpg",
+      });
+    });
+
+    it("should return null if not authenticated", async () => {
+      (getCurrentUserId as Mock).mockResolvedValue(null);
+
+      const result = await getUserProfileAction();
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null if profile not found", async () => {
+      (prisma.profiles.findUnique as Mock).mockResolvedValue(null);
+
+      const result = await getUserProfileAction();
+
+      expect(result).toBeNull();
+    });
+
+    it("should return null on error", async () => {
+      (prisma.profiles.findUnique as Mock).mockRejectedValue(new Error("DB Error"));
+
+      const result = await getUserProfileAction();
+
       expect(result).toBeNull();
     });
   });
