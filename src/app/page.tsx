@@ -18,6 +18,7 @@ import type { Account } from "@/types";
 import { formatCurrency } from "@/lib/calculations";
 import { usePrefetchAccountData } from "@/hooks/usePrefetchAccountData";
 import { getUserProfileAction, type UserProfile } from "@/app/actions/accounts";
+import { DollarIcon, TrendIcon, WalletIcon } from "@/components/ui/MetricIcons";
 
 export default function HomePage() {
   const router = useRouter();
@@ -301,21 +302,8 @@ export default function HomePage() {
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
               {/* Saldo Total - Takes full width on mobile, 1 col on desktop */}
               <div className="group col-span-2 flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50 md:col-span-1">
-                <div className="mb-1.5 text-green-500 transition-colors group-hover:text-green-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
+                <div className="mb-1.5 text-gray-500 group-hover:text-green-500">
+                  <DollarIcon />
                 </div>
                 <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
                   Saldo Total
@@ -328,7 +316,7 @@ export default function HomePage() {
               {/* P&L Total */}
               <div className="group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50">
                 <div
-                  className={`mb-1.5 transition-colors ${
+                  className={`mb-1.5 ${
                     accounts.reduce(
                       (acc, curr) => acc + (curr.currentBalance - curr.initialBalance),
                       0
@@ -337,20 +325,7 @@ export default function HomePage() {
                       : "text-red-500 group-hover:text-red-400"
                   }`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                    <polyline points="17 6 23 6 23 12" />
-                  </svg>
+                  <TrendIcon />
                 </div>
                 <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
                   P&L Geral
@@ -376,22 +351,8 @@ export default function HomePage() {
 
               {/* Carteiras Ativas */}
               <div className="group flex min-h-[100px] flex-col items-center justify-center rounded-xl border border-gray-700/50 bg-linear-to-br from-gray-800/80 to-gray-800/40 p-4 text-center backdrop-blur-sm transition-colors hover:border-gray-600/50">
-                <div className="mb-1.5 text-cyan-500 transition-colors group-hover:text-cyan-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-                    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-                    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-                  </svg>
+                <div className="mb-1.5 text-gray-500 group-hover:text-blue-500">
+                  <WalletIcon />
                 </div>
                 <p className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:text-xs">
                   Carteiras Ativas

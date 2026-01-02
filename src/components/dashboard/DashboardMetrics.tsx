@@ -1,6 +1,13 @@
 "use client";
 
 import { formatCurrency } from "@/lib/calculations";
+import {
+  DollarIcon,
+  TrendIcon,
+  CheckCircleIcon,
+  BarChartIcon,
+  FireIcon,
+} from "@/components/ui/MetricIcons";
 
 interface DashboardMetricsProps {
   currentBalance: number;
@@ -12,91 +19,6 @@ interface DashboardMetricsProps {
   totalTrades: number;
   streak: number;
 }
-
-// Metric card icons
-const WalletIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
-  </svg>
-);
-
-const TrendIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-    <polyline points="17 6 23 6 23 12" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-const ChartIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 20v-6M6 20V10M18 20V4" />
-  </svg>
-);
-
-const FireIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.1.2-2.2.5-3.3a9 9 0 0 0 3 3.3z"></path>
-  </svg>
-);
 
 /**
  * Dashboard summary metrics cards.
@@ -128,8 +50,8 @@ export function DashboardMetrics({
     <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:grid-cols-6 sm:gap-3 lg:grid-cols-5">
       {/* Balance */}
       <div className={`${cardBaseClass} sm:col-span-2 lg:col-span-1`}>
-        <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-emerald-400 sm:mb-2">
-          <WalletIcon />
+        <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-green-500 sm:mb-2">
+          <DollarIcon />
         </div>
         <div className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:mb-1 sm:text-xs">
           Saldo Atual
@@ -172,7 +94,7 @@ export function DashboardMetrics({
       {/* Win Rate */}
       <div className={`${cardBaseClass} sm:col-span-2 lg:col-span-1`}>
         <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-cyan-400 sm:mb-2">
-          <CheckIcon />
+          <CheckCircleIcon />
         </div>
         <div className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:mb-1 sm:text-xs">
           Win Rate
@@ -185,7 +107,7 @@ export function DashboardMetrics({
       {/* Total Trades - spans 3 cols on sm (50% of 6-col grid) */}
       <div className={`${cardBaseClass} sm:col-span-3 lg:col-span-1`}>
         <div className="mb-1.5 text-gray-500 transition-colors group-hover:text-indigo-400 sm:mb-2">
-          <ChartIcon />
+          <BarChartIcon />
         </div>
         <div className="mb-0.5 text-[10px] tracking-wide text-gray-400 uppercase sm:mb-1 sm:text-xs">
           Total Trades
