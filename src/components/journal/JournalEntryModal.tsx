@@ -164,16 +164,24 @@ export function JournalEntryModal({
     try {
       // Use Server Action for reliable link creation (bypasses RLS issues)
       const { createShareLinkAction } = await import("@/app/actions/share");
-      const { copyToClipboard } = await import("@/lib/shareUtils");
+      const { shareLink } = await import("@/lib/shareUtils");
 
       const result = await createShareLinkAction(existingEntry.id);
 
       if (result.success && result.shareToken) {
         const shareUrl = `${window.location.origin}/share/${result.shareToken}`;
-        if (await copyToClipboard(shareUrl)) {
-          showToast("🔗 Link copiado! Válido por 3 dias", "success");
+        const shareResult = await shareLink(shareUrl, existingEntry.title);
+
+        if (shareResult.success) {
+          if (shareResult.method === "share") {
+            showToast("📤 Link compartilhado!", "success");
+          } else {
+            showToast("🔗 Link copiado! Válido por 3 dias", "success");
+          }
         } else {
-          showToast("Erro ao copiar para área de transferência", "error");
+          // If all methods fail, show the link in a prompt for manual copy
+          window.prompt("Copie o link abaixo:", shareUrl);
+          showToast("Link gerado! Cole onde desejar", "success");
         }
       } else {
         console.error("Share action failed:", result.error);

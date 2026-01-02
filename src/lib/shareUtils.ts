@@ -62,6 +62,37 @@ export async function createShareLink(journalEntryId: string): Promise<string | 
  * @param text - The text to copy
  * @returns True if successful, false otherwise
  */
+/**
+ * Share a link using native share (mobile) or clipboard (desktop)
+ * @param url - The URL to share
+ * @param title - Optional title for the share
+ * @returns Object with success status and method used
+ */
+export async function shareLink(
+  url: string,
+  title?: string
+): Promise<{ success: boolean; method: "share" | "clipboard" | "failed" }> {
+  // Try native share API first (works great on mobile)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: title || "Journal Entry",
+        url: url,
+      });
+      return { success: true, method: "share" };
+    } catch (error) {
+      // User cancelled or share failed - try clipboard
+      if ((error as Error).name !== "AbortError") {
+        console.log("Share API failed, falling back to clipboard");
+      }
+    }
+  }
+
+  // Fallback to clipboard
+  const copied = await copyToClipboard(url);
+  return { success: copied, method: copied ? "clipboard" : "failed" };
+}
+
 export async function copyToClipboard(text: string): Promise<boolean> {
   // Try modern Clipboard API first
   if (navigator.clipboard && window.isSecureContext) {
