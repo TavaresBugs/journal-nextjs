@@ -23,6 +23,7 @@ import { prisma } from "@/lib/database";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Account, Settings, UserSettings } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { withAuthRead } from "./_helpers/actionHelpers";
 
 /**
  * User profile data from users_extended table.
@@ -122,25 +123,16 @@ export async function getAccountsAction(): Promise<Account[]> {
  * @returns The account or null if not found/unauthorized.
  */
 export async function getAccountAction(accountId: string): Promise<Account | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getAccountAction", async (userId) => {
     const result = await prismaAccountRepo.getById(accountId, userId);
-
     if (result.error) {
-      // Don't log NOT_FOUND as an error
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getAccountAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getAccountAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -265,24 +257,16 @@ export async function updateAccountBalanceAction(
  * @returns Settings or null.
  */
 export async function getSettingsAction(accountId?: string): Promise<Settings | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.getSettings(userId, accountId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getSettingsAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getSettingsAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -316,24 +300,16 @@ export async function saveSettingsAction(
  * @returns UserSettings or null.
  */
 export async function getUserSettingsAction(): Promise<UserSettings | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getUserSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.getUserSettings(userId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getUserSettingsAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getUserSettingsAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
