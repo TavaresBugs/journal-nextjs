@@ -90,6 +90,18 @@ export function usePrefetchCalendarData(accountId: string): PrefetchCalendarData
         const entries = await getJournalEntriesAction(accountId);
         const dayEntries = entries.filter((e) => e.date === date);
 
+        // Preload images for instant display when modal opens
+        dayEntries.forEach((entry) => {
+          if (entry.images && Array.isArray(entry.images)) {
+            entry.images.forEach((img) => {
+              if (img.url) {
+                const preloadImg = new Image();
+                preloadImg.src = img.url;
+              }
+            });
+          }
+        });
+
         setCache((prev) => ({
           ...prev,
           [date]: {
