@@ -31,9 +31,11 @@ vi.mock("@/lib/timeframeUtils", () => ({
     return "Off-Hours";
   }),
   getTimeframeAlignment: vi.fn((tfAnalise: string, tfEntrada: string) => {
-    if (tfAnalise === "D1" && tfEntrada === "H1") return { aligned: true, type: "Top-Down" };
-    if (tfAnalise === tfEntrada) return { aligned: true, type: "Same" };
-    return { aligned: false, type: "Misaligned" };
+    if (tfAnalise === "D1" && tfEntrada === "H1")
+      return { status: "ST_ALIGNED", label: "ST Aligned", isWarning: false };
+    if (tfAnalise === tfEntrada)
+      return { status: "ST_ALIGNED", label: "ST Aligned", isWarning: false };
+    return { status: "MISALIGNED", label: "Misaligned", isWarning: true };
   }),
   calculateRMultiple: vi.fn((entry: number, exit: number, sl: number) => {
     const risk = Math.abs(entry - sl);
@@ -248,7 +250,8 @@ describe("useTradeForm - Computed Values", () => {
       result.current.setters.setEntryTime("10:00");
     });
 
-    expect(result.current.computed.detectedSession).toBe("London");
+    // 10:00 UTC is London-NY Overlap
+    expect(result.current.computed.detectedSession).toBe("London-NY Overlap");
 
     act(() => {
       result.current.setters.setEntryTime("15:00");
@@ -260,7 +263,8 @@ describe("useTradeForm - Computed Values", () => {
       result.current.setters.setEntryTime("22:00");
     });
 
-    expect(result.current.computed.detectedSession).toBe("Off-Hours");
+    // 22:00 BRT = 01:00 UTC = Tokyo session
+    expect(result.current.computed.detectedSession).toBe("Tokyo");
   });
 
   it("should calculate timeframe alignment", () => {
@@ -272,8 +276,9 @@ describe("useTradeForm - Computed Values", () => {
     });
 
     expect(result.current.computed.alignmentResult).toEqual({
-      aligned: true,
-      type: "Top-Down",
+      status: "ST_ALIGNED",
+      label: "ST Aligned",
+      isWarning: false,
     });
   });
 

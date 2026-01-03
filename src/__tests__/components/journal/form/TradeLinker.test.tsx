@@ -19,7 +19,7 @@ vi.mock("@/components/ui", () => ({
   ),
 }));
 
-vi.mock("@/lib/calculations", () => ({
+vi.mock("@/lib/utils/trading", () => ({
   formatCurrency: (val: number) => `$${val}`,
 }));
 

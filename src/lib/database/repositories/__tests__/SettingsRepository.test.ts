@@ -117,7 +117,7 @@ describe("PrismaSettingsRepository Unit Tests", () => {
 
       expect(result.data).toBeNull();
       expect(result.error).toBeDefined();
-      expect(result.error?.message).toBe("Failed to fetch settings");
+      expect(result.error?.message).toBe("getSettings failed: DB Error");
       expect(result.error?.statusCode).toBe(500);
     });
   });
@@ -174,7 +174,7 @@ describe("PrismaSettingsRepository Unit Tests", () => {
       const result = await repository.getUserSettings("user-123");
 
       expect(result.data).toBeNull();
-      expect(result.error?.message).toBe("Failed to fetch user settings");
+      expect(result.error?.message).toBe("getUserSettings failed: DB Error");
     });
   });
 
@@ -246,7 +246,7 @@ describe("PrismaSettingsRepository Unit Tests", () => {
       });
 
       expect(result.data).toBeNull();
-      expect(result.error?.message).toBe("Failed to save settings");
+      expect(result.error?.message).toBe("saveSettings failed: DB Error");
       expect(result.error?.statusCode).toBe(500);
     });
   });
@@ -320,7 +320,7 @@ describe("PrismaSettingsRepository Unit Tests", () => {
       });
 
       expect(result.data).toBeNull();
-      expect(result.error?.message).toBe("Failed to save user settings");
+      expect(result.error?.message).toBe("saveUserSettings failed: DB Error");
       expect(result.error?.statusCode).toBe(500);
     });
   });

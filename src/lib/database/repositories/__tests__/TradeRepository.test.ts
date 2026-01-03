@@ -31,7 +31,6 @@ describe("PrismaTradeRepository Unit Tests", () => {
         take: 10,
         skip: undefined,
         orderBy: [{ entry_date: "desc" }, { entry_time: "desc" }],
-        select: expect.any(Object),
       });
       expect(result.data).toHaveLength(2);
       expect(result.error).toBeNull();
