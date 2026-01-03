@@ -186,10 +186,13 @@ async function ensureLeaderboardView() {
   // Define view to aggregate ALL trades per user (All-Time) with simple stats
   // NOTE: PostgreSQL cannot modify columns with CREATE OR REPLACE VIEW
   // so we must DROP first, then CREATE
+  // Using SECURITY INVOKER (default in PG15+, explicit here) to avoid Supabase warnings
   try {
     await prisma.$executeRaw`DROP VIEW IF EXISTS public.leaderboard_view`;
     await prisma.$executeRaw`
-      CREATE VIEW public.leaderboard_view AS
+      CREATE VIEW public.leaderboard_view
+      WITH (security_invoker = true)
+      AS
       WITH user_stats AS (
         SELECT
           t.user_id,
@@ -224,8 +227,9 @@ async function ensureLeaderboardView() {
       LEFT JOIN
         user_stats us ON lo.user_id = us.user_id
     `;
-    // Re-grant permissions after recreating the view
+    // Grant permissions for authenticated users to read the view
     await prisma.$executeRaw`GRANT SELECT ON public.leaderboard_view TO authenticated`;
+    await prisma.$executeRaw`GRANT SELECT ON public.leaderboard_view TO anon`;
   } catch (e) {
     console.error("Failed to ensure leaderboard view", e);
   }
