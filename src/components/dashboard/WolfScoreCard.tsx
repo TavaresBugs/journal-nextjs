@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from "recharts";
 import { GlassCard } from "@/components/ui";
-import { WolfScoreResult, getWolfScoreRadarData } from "@/lib/wolfScore";
+import { WolfScoreResult, getWolfScoreRadarData } from "@/lib/utils/trading";
 import { Info } from "lucide-react";
 
 interface WolfScoreCardProps {

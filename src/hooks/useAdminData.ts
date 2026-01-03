@@ -1,14 +1,6 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  getAllUsersAction,
-  getAdminStatsAction,
-  updateUserStatusAction,
-  updateUserRoleAction,
-  deleteUserAction,
-  getAuditLogsAction,
-} from "@/app/actions/admin";
 
 // Query Keys for cache management
 export const adminKeys = {
@@ -24,7 +16,10 @@ export const adminKeys = {
 export function useAdminStats() {
   return useQuery({
     queryKey: adminKeys.stats(),
-    queryFn: getAdminStatsAction,
+    queryFn: async () => {
+      const { getAdminStatsAction } = await import("@/app/actions/admin");
+      return getAdminStatsAction();
+    },
     staleTime: 1 * 60 * 1000, // 1 minute for admin data (needs fresher)
   });
 }
@@ -35,7 +30,10 @@ export function useAdminStats() {
 export function useAdminUsers() {
   return useQuery({
     queryKey: adminKeys.users(),
-    queryFn: getAllUsersAction,
+    queryFn: async () => {
+      const { getAllUsersAction } = await import("@/app/actions/admin");
+      return getAllUsersAction();
+    },
     staleTime: 1 * 60 * 1000,
   });
 }
@@ -46,7 +44,10 @@ export function useAdminUsers() {
 export function useAuditLogs(options?: { limit?: number }) {
   return useQuery({
     queryKey: adminKeys.logs(options),
-    queryFn: () => getAuditLogsAction(options),
+    queryFn: async () => {
+      const { getAuditLogsAction } = await import("@/app/actions/admin");
+      return getAuditLogsAction(options);
+    },
     staleTime: 30 * 1000, // 30 seconds for logs
     enabled: true,
   });
@@ -59,22 +60,26 @@ export function useAdminActions() {
   const queryClient = useQueryClient();
 
   const handleApprove = async (id: string) => {
+    const { updateUserStatusAction } = await import("@/app/actions/admin");
     await updateUserStatusAction(id, "approved");
     queryClient.invalidateQueries({ queryKey: adminKeys.all });
   };
 
   const handleSuspend = async (id: string) => {
+    const { updateUserStatusAction } = await import("@/app/actions/admin");
     await updateUserStatusAction(id, "suspended");
     queryClient.invalidateQueries({ queryKey: adminKeys.all });
   };
 
   const handleToggleMentor = async (id: string, makeMentor: boolean) => {
+    const { updateUserRoleAction } = await import("@/app/actions/admin");
     await updateUserRoleAction(id, makeMentor ? "mentor" : "user");
     queryClient.invalidateQueries({ queryKey: adminKeys.all });
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Tem certeza que deseja deletar este usuário?")) return;
+    const { deleteUserAction } = await import("@/app/actions/admin");
     const result = await deleteUserAction(id);
     if (result.success) {
       queryClient.invalidateQueries({ queryKey: adminKeys.all });
@@ -100,12 +105,18 @@ export function usePrefetchAdminData() {
   return () => {
     queryClient.prefetchQuery({
       queryKey: adminKeys.stats(),
-      queryFn: getAdminStatsAction,
+      queryFn: async () => {
+        const { getAdminStatsAction } = await import("@/app/actions/admin");
+        return getAdminStatsAction();
+      },
       staleTime: 1 * 60 * 1000,
     });
     queryClient.prefetchQuery({
       queryKey: adminKeys.users(),
-      queryFn: getAllUsersAction,
+      queryFn: async () => {
+        const { getAllUsersAction } = await import("@/app/actions/admin");
+        return getAllUsersAction();
+      },
       staleTime: 1 * 60 * 1000,
     });
   };

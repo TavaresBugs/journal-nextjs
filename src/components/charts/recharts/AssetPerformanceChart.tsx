@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import { GlassCard } from "@/components/ui";
 import type { Trade } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 
 interface AssetPerformanceChartProps {
   trades: Trade[];

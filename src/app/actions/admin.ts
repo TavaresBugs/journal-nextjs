@@ -14,7 +14,7 @@
  */
 
 import { prismaAdminRepo, UserExtended, AuditLog, AdminStats } from "@/lib/database/repositories";
-import { deleteCurrentWeekEvents } from "@/lib/repositories/economicEvents.repository";
+import { deleteCurrentWeekEvents } from "@/lib/database/repositories/external/economicEvents.repository";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { prisma } from "@/lib/database";
 import {

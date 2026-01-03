@@ -15,7 +15,7 @@ import {
 import { AccountSelectionSkeleton } from "@/components/accounts/AccountSelectionSkeleton";
 import { Button, IconActionButton } from "@/components/ui";
 import type { Account } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { usePrefetchAccountData } from "@/hooks/usePrefetchAccountData";
 import { getUserProfileAction, type UserProfile } from "@/app/actions/accounts";
 import { MetricCard } from "@/components/ui/MetricCard";

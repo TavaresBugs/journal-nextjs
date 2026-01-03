@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/switch";
 import { AssetIcon } from "@/components/shared/AssetIcon";
 import { Search, RotateCcw, Lock, Settings2 } from "lucide-react";
-import { ASSET_OPTIONS, type AssetOption, getDefaultMultiplier } from "@/features/trades";
+import { ASSET_OPTIONS, type AssetOption } from "@/constants/assetComboboxData";
+import { getDefaultMultiplier } from "@/constants/defaultMultipliers";
 
 import { cn } from "@/lib/utils/general";
 

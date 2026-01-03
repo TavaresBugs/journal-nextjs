@@ -23,6 +23,7 @@ import { prisma } from "@/lib/database";
 import { getCurrentUserId } from "@/lib/database/auth";
 import { Account, Settings, UserSettings } from "@/types";
 import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { withAuthRead, withAuthMutation } from "./_helpers/actionHelpers";
 
 /**
  * User profile data from users_extended table.
@@ -39,28 +40,14 @@ export interface UserProfile {
  * @returns UserProfile or null if not found.
  */
 export async function getUserProfileAction(): Promise<UserProfile | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getUserProfileAction", async (userId) => {
     const profile = await prisma.profiles.findUnique({
       where: { id: userId },
-      select: {
-        display_name: true,
-        avatar_url: true,
-      },
+      select: { display_name: true, avatar_url: true },
     });
-
     if (!profile) return null;
-
-    return {
-      name: profile.display_name,
-      avatarUrl: profile.avatar_url,
-    };
-  } catch (error) {
-    console.error("[getUserProfileAction] Error:", error);
-    return null;
-  }
+    return { name: profile.display_name, avatarUrl: profile.avatar_url };
+  });
 }
 
 /**
@@ -122,25 +109,16 @@ export async function getAccountsAction(): Promise<Account[]> {
  * @returns The account or null if not found/unauthorized.
  */
 export async function getAccountAction(accountId: string): Promise<Account | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getAccountAction", async (userId) => {
     const result = await prismaAccountRepo.getById(accountId, userId);
-
     if (result.error) {
-      // Don't log NOT_FOUND as an error
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getAccountAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getAccountAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -196,28 +174,16 @@ export async function saveAccountAction(
 export async function deleteAccountAction(
   accountId: string
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) {
-      return { success: false, error: "Not authenticated" };
-    }
-
+  return withAuthMutation("deleteAccountAction", async (userId) => {
     const result = await prismaAccountRepo.delete(accountId, userId);
-
     if (result.error) {
       console.error("[deleteAccountAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
-
-    // Invalidate accounts cache and revalidate
     revalidateTag(`accounts:${userId}`, "max");
     revalidatePath("/");
-
     return { success: true };
-  } catch (error) {
-    console.error("[deleteAccountAction] Unexpected error:", error);
-    return { success: false, error: "Unexpected error occurred" };
-  }
+  });
 }
 
 /**
@@ -265,24 +231,16 @@ export async function updateAccountBalanceAction(
  * @returns Settings or null.
  */
 export async function getSettingsAction(accountId?: string): Promise<Settings | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.getSettings(userId, accountId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getSettingsAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getSettingsAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -293,22 +251,14 @@ export async function getSettingsAction(accountId?: string): Promise<Settings | 
 export async function saveSettingsAction(
   settings: Partial<Settings>
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return { success: false, error: "Not authenticated" };
-
+  return withAuthMutation("saveSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.saveSettings({ ...settings, userId });
-
     if (result.error) {
       console.error("[saveSettingsAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
-
     return { success: true };
-  } catch (error) {
-    console.error("[saveSettingsAction] Unexpected error:", error);
-    return { success: false, error: "Unexpected error occurred" };
-  }
+  });
 }
 
 /**
@@ -316,24 +266,16 @@ export async function saveSettingsAction(
  * @returns UserSettings or null.
  */
 export async function getUserSettingsAction(): Promise<UserSettings | null> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return null;
-
+  return withAuthRead("getUserSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.getUserSettings(userId);
-
     if (result.error) {
       if (result.error.code !== "DB_NOT_FOUND") {
         console.error("[getUserSettingsAction] Error:", result.error);
       }
       return null;
     }
-
     return result.data;
-  } catch (error) {
-    console.error("[getUserSettingsAction] Unexpected error:", error);
-    return null;
-  }
+  });
 }
 
 /**
@@ -344,22 +286,14 @@ export async function getUserSettingsAction(): Promise<UserSettings | null> {
 export async function saveUserSettingsAction(
   settings: Partial<UserSettings>
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const userId = await getCurrentUserId();
-    if (!userId) return { success: false, error: "Not authenticated" };
-
+  return withAuthMutation("saveUserSettingsAction", async (userId) => {
     const result = await prismaSettingsRepo.saveUserSettings(userId, settings);
-
     if (result.error) {
       console.error("[saveUserSettingsAction] Error:", result.error);
       return { success: false, error: result.error.message };
     }
-
     return { success: true };
-  } catch (error) {
-    console.error("[saveUserSettingsAction] Unexpected error:", error);
-    return { success: false, error: "Unexpected error occurred" };
-  }
+  });
 }
 
 /**

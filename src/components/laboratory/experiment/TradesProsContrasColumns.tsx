@@ -1,6 +1,6 @@
 "use client";
 
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import type { ExperimentLinkedTrade } from "@/lib/database/repositories";
 import dayjs from "dayjs";
 

@@ -1,4 +1,5 @@
 // Laboratory components barrel export
+export { BaseLabCard } from "./BaseLabCard";
 export { ExperimentCard } from "./ExperimentCard";
 export { RecapCard } from "./RecapCard";
 export { ExperimentsTab } from "./ExperimentsTab";

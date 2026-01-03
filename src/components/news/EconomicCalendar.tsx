@@ -3,7 +3,10 @@
 import { useState, useMemo, useRef, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getEventsForWeek, getEventsByDate } from "@/lib/repositories/economicEvents.repository";
+import {
+  getEventsForWeek,
+  getEventsByDate,
+} from "@/lib/database/repositories/external/economicEvents.repository";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { IconActionButton } from "@/components/ui/IconActionButton";

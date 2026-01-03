@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import type { Trade, JournalEntry } from "@/types";
-import { groupTradesByDay, formatCurrency } from "@/lib/calculations";
+import { groupTradesByDay, formatCurrency } from "@/lib/utils/trading";
 import { useJournalStore } from "@/store/useJournalStore";
 // import { usePrefetchCalendarData } from "@/hooks/usePrefetchCalendarData";
 import { GlassCard } from "@/components/ui";

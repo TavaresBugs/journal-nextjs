@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { GlassCard, Button } from "@/components/ui";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import type { Trade } from "@/types";
 import dayjs from "dayjs";
 

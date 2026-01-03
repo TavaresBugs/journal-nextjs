@@ -3,7 +3,7 @@
 import React from "react";
 import { FormSection, FormRow } from "@/components/ui";
 import { DatePickerInput, TimePickerInput } from "@/components/ui/DateTimePicker";
-import { getSessionEmoji, type TradingSession } from "@/lib/timeframeUtils";
+import { getSessionEmoji, type TradingSession } from "@/lib/utils/trading";
 
 interface TradeDateTimeSectionProps {
   // Values

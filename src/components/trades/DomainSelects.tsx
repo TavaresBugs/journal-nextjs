@@ -2,6 +2,16 @@
 
 import React from "react";
 import { Input } from "@/components/ui/Input";
+import {
+  HTF_OPTIONS,
+  LTF_OPTIONS,
+  MARKET_CONDITIONS,
+  PD_ARRAY_OPTIONS,
+  ENTRY_QUALITY_OPTIONS,
+} from "@/constants/trading";
+
+// Re-export for backward compatibility
+export { HTF_OPTIONS, LTF_OPTIONS, MARKET_CONDITIONS, PD_ARRAY_OPTIONS, ENTRY_QUALITY_OPTIONS };
 
 // ============================================
 // SHARED TYPES
@@ -22,9 +32,6 @@ interface DatalistInputProps {
 // ============================================
 // TIMEFRAME SELECT
 // ============================================
-
-export const HTF_OPTIONS = ["Monthly", "Weekly", "Daily", "H4", "H1", "M15"];
-export const LTF_OPTIONS = ["Daily", "H4", "H1", "M15", "M5", "M3", "M1"];
 
 interface TimeframeSelectProps extends DatalistInputProps {
   type: "htf" | "ltf";
@@ -113,13 +120,6 @@ export function DirectionSelect({
 // MARKET CONDITION SELECT
 // ============================================
 
-export const MARKET_CONDITIONS = [
-  "↔️ Lateralidade",
-  "📈 Tendência de Alta",
-  "📉 Tendência de Baixa",
-  "⚡ Rompimento",
-];
-
 type MarketConditionSelectProps = DatalistInputProps;
 
 /**
@@ -160,17 +160,6 @@ export function MarketConditionSelect({
 // ============================================
 // PD ARRAY SELECT
 // ============================================
-
-export const PD_ARRAY_OPTIONS = [
-  { value: "FVG", label: "👑 FVG" },
-  { value: "MB", label: "🛡️ Mitigation Block" },
-  { value: "OB", label: "📦 Order Block" },
-  { value: "BB", label: "💥 Breaker" },
-  { value: "PXH", label: "🔺 PXH" },
-  { value: "PXL", label: "🔻 PXL" },
-  { value: "PDH", label: "⬆️ PDH" },
-  { value: "PDL", label: "⬇️ PDL" },
-];
 
 interface PdArraySelectProps extends DatalistInputProps {
   icon?: string;
@@ -224,13 +213,6 @@ export function PdArraySelect({
 // ============================================
 // ENTRY QUALITY SELECT
 // ============================================
-
-export const ENTRY_QUALITY_OPTIONS = [
-  "🌟 Picture Perfect ST",
-  "✅ Nice ST",
-  "➖ Normal ST",
-  "⚠️ Ugly ST",
-];
 
 type EntryQualitySelectProps = DatalistInputProps;
 

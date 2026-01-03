@@ -10,7 +10,7 @@ import {
   formatTimeMinutes,
   calculateTradeMetrics,
   calculateConsecutiveStreaks,
-} from "@/lib/calculations";
+} from "@/lib/utils/trading";
 import type { Trade } from "@/types";
 
 // ============================================
@@ -569,7 +569,7 @@ describe("calculateConsecutiveStreaks", () => {
 // calculateAverageHoldTime Tests
 // ============================================
 
-import { calculateAverageHoldTime } from "@/lib/calculations";
+import { calculateAverageHoldTime } from "@/lib/utils/trading";
 
 describe("calculateAverageHoldTime", () => {
   const baseTrade = {

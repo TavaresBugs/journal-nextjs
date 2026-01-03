@@ -12,7 +12,7 @@ import {
 } from "@/app/actions/laboratory";
 import type { ExperimentLinkedTrade } from "@/lib/database/repositories";
 import type { TradeLite } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import dayjs from "dayjs";
 
 interface ExperimentTradesSectionProps {

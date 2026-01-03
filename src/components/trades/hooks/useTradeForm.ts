@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import dayjs from "dayjs";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { detectSession, getTimeframeAlignment, calculateRMultiple } from "@/lib/timeframeUtils";
+import { detectSession, getTimeframeAlignment, calculateRMultiple } from "@/lib/utils/trading";
 import type { Trade } from "@/types";
 
 // ============================================
@@ -18,7 +18,7 @@ import {
   mapEntryQualityFromDb,
   mapMarketConditionToDb,
   mapMarketConditionFromDb,
-} from "@/lib/trade-mappings";
+} from "@/lib/utils/trading";
 
 export {
   MARKET_CONDITIONS_V2,

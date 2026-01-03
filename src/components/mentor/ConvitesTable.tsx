@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/Button";
+import { StatusBadge, PermissionBadge } from "@/components/ui";
 import Image from "next/image";
 import type { MentorInvite } from "@/types";
 
@@ -9,26 +10,6 @@ interface ConvitesTableProps {
   onRevoke: (id: string) => void;
   loading: boolean;
 }
-
-const getStatusBadge = (status: string) => {
-  const styles: Record<string, string> = {
-    pending: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-    accepted: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-    rejected: "bg-red-500/20 text-red-400 border border-red-500/30",
-    revoked: "bg-gray-500/20 text-gray-400 border border-gray-500/30",
-  };
-  const labels: Record<string, string> = {
-    pending: "Pendente",
-    accepted: "Aceito",
-    rejected: "Rejeitado",
-    revoked: "Revogado",
-  };
-  return (
-    <span className={`rounded px-2 py-1 text-xs font-medium ${styles[status]}`}>
-      {labels[status]}
-    </span>
-  );
-};
 
 /**
  * Table showing sent invites with status and actions.
@@ -98,17 +79,13 @@ export function ConvitesTable({ invites, onRevoke, loading }: ConvitesTableProps
                 </div>
               </td>
               <td className="px-4 py-4 text-center">
-                <span
-                  className={`rounded px-2 py-1 text-xs font-medium ${
-                    invite.permission === "comment"
-                      ? "border border-purple-500/30 bg-purple-500/20 text-purple-400"
-                      : "border border-cyan-500/30 bg-cyan-500/20 text-cyan-400"
-                  }`}
-                >
-                  {invite.permission === "comment" ? "Comentar" : "Visualizar"}
-                </span>
+                <PermissionBadge permission={invite.permission} />
               </td>
-              <td className="px-4 py-4 text-center">{getStatusBadge(invite.status)}</td>
+              <td className="px-4 py-4 text-center">
+                <StatusBadge
+                  status={invite.status as "pending" | "accepted" | "rejected" | "revoked"}
+                />
+              </td>
               <td className="px-4 py-4 text-center text-gray-400">
                 {new Date(invite.createdAt).toLocaleDateString("pt-BR")}
               </td>

@@ -14,7 +14,7 @@
 
 import React, { useState } from "react";
 import type { Trade, JournalEntry } from "@/types";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import { AssetIcon } from "@/components/shared/AssetIcon";
 import { IconActionButton } from "@/components/ui";
 import dayjs from "dayjs";

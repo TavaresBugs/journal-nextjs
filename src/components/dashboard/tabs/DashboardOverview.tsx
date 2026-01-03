@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent, GlassCard } from "@/components/ui";
 import { Trade, TradeMetrics, PlaybookStats } from "@/types";
-import { formatCurrency, formatTimeMinutes } from "@/lib/calculations";
-import { calculateWolfScore } from "@/lib/wolfScore";
+import { formatCurrency, formatTimeMinutes } from "@/lib/utils/trading";
+import { calculateWolfScore } from "@/lib/utils/trading";
 const WolfScoreCard = dynamic(
   () => import("@/components/dashboard/WolfScoreCard").then((mod) => mod.WolfScoreCard),
   {

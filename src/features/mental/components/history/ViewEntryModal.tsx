@@ -2,6 +2,7 @@ import { formatDistanceToNow, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Clock, AlertTriangle, CheckCircle, Zap, AlertOctagon, ClipboardCheck } from "lucide-react";
 import { Modal, IconActionButton } from "@/components/ui";
+import { MentalStepSection } from "../MentalStepSection";
 import type { MentalLog } from "@/lib/database/repositories/MentalRepository";
 
 interface Props {
@@ -59,71 +60,67 @@ export function ViewEntryModal({ entry, entryConfig, isOpen, onClose, onEdit }: 
         </div>
 
         {/* O Problema */}
-        <div>
-          <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-red-400 uppercase">
-            <AlertTriangle size={16} />O PROBLEMA
-          </label>
-          <div className="rounded-lg bg-red-500/10 p-4">
-            <p className="leading-relaxed whitespace-pre-wrap text-gray-200">
-              {entry.step1Problem}
-            </p>
-          </div>
-        </div>
+        <MentalStepSection
+          icon={<AlertTriangle size={16} />}
+          label="O PROBLEMA"
+          colorClass="text-red-400"
+          bgClass="bg-red-500/10"
+        >
+          <p className="leading-relaxed whitespace-pre-wrap text-gray-200">{entry.step1Problem}</p>
+        </MentalStepSection>
 
         {/* A Falha Lógica */}
         {entry.step3Flaw && (
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-orange-400 uppercase">
-              <AlertOctagon size={16} />A FALHA LÓGICA
-            </label>
-            <div className="rounded-lg bg-orange-500/10 p-4">
-              <p className="leading-relaxed whitespace-pre-wrap text-gray-200">{entry.step3Flaw}</p>
-            </div>
-          </div>
+          <MentalStepSection
+            icon={<AlertOctagon size={16} />}
+            label="A FALHA LÓGICA"
+            colorClass="text-orange-400"
+            bgClass="bg-orange-500/10"
+          >
+            <p className="leading-relaxed whitespace-pre-wrap text-gray-200">{entry.step3Flaw}</p>
+          </MentalStepSection>
         )}
 
         {/* A Correção */}
         {entry.step4Correction && (
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-green-400 uppercase">
-              <CheckCircle size={16} />A CORREÇÃO
-            </label>
-            <div className="rounded-lg bg-green-500/10 p-4">
-              <p className="leading-relaxed whitespace-pre-wrap text-gray-200">
-                {entry.step4Correction}
-              </p>
-            </div>
-          </div>
+          <MentalStepSection
+            icon={<CheckCircle size={16} />}
+            label="A CORREÇÃO"
+            colorClass="text-green-400"
+            bgClass="bg-green-500/10"
+          >
+            <p className="leading-relaxed whitespace-pre-wrap text-gray-200">
+              {entry.step4Correction}
+            </p>
+          </MentalStepSection>
         )}
 
         {/* Validação */}
         {entry.step2Validation && (
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-gray-400 uppercase">
-              <ClipboardCheck size={16} />
-              VALIDAÇÃO
-            </label>
-            <div className="rounded-lg bg-gray-700/30 p-4">
-              <p className="leading-relaxed whitespace-pre-wrap text-gray-300">
-                {entry.step2Validation}
-              </p>
-            </div>
-          </div>
+          <MentalStepSection
+            icon={<ClipboardCheck size={16} />}
+            label="VALIDAÇÃO"
+            colorClass="text-gray-400"
+            bgClass="bg-gray-700/30"
+          >
+            <p className="leading-relaxed whitespace-pre-wrap text-gray-300">
+              {entry.step2Validation}
+            </p>
+          </MentalStepSection>
         )}
 
         {/* Reforço Lógico */}
         {entry.step5Logic && (
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-blue-400 uppercase">
-              <Zap size={16} />
-              REFORÇO LÓGICO
-            </label>
-            <div className="rounded-lg bg-blue-500/10 p-4">
-              <p className="leading-relaxed whitespace-pre-wrap text-blue-100/90 italic">
-                &quot;{entry.step5Logic}&quot;
-              </p>
-            </div>
-          </div>
+          <MentalStepSection
+            icon={<Zap size={16} />}
+            label="REFORÇO LÓGICO"
+            colorClass="text-blue-400"
+            bgClass="bg-blue-500/10"
+          >
+            <p className="leading-relaxed whitespace-pre-wrap text-blue-100/90 italic">
+              &quot;{entry.step5Logic}&quot;
+            </p>
+          </MentalStepSection>
         )}
       </div>
     </Modal>

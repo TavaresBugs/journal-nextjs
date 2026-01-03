@@ -23,7 +23,7 @@ import {
   upsertEconomicEvents,
   deleteOldEvents,
   deleteCurrentWeekEvents,
-} from "../src/lib/repositories/economicEvents.repository";
+} from "../src/lib/database/repositories/external/economicEvents.repository";
 
 // Parse argumentos
 const args = process.argv.slice(2);

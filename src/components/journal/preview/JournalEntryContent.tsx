@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { GlassCard } from "@/components/ui";
-import { formatCurrency } from "@/lib/calculations";
+import { formatCurrency } from "@/lib/utils/trading";
 import type { Trade, JournalEntry } from "@/types";
 import { useAuth } from "@/hooks/useAuth";
 import { getReviewsForJournalEntryAction, markReviewAsReadAction } from "@/app/actions/reviews";

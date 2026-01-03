@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { DEFAULT_ASSETS } from "@/types";
-import { formatRMultiple, getRMultipleColor } from "@/lib/timeframeUtils";
+import { formatRMultiple, getRMultipleColor } from "@/lib/utils/trading";
 
 interface TradeResultBadgeProps {
   entryPrice: string;

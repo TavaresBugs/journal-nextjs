@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import type { Trade } from "@/types";
-import { calculateTradeMetrics } from "@/lib/calculations";
+import { calculateTradeMetrics } from "@/lib/utils/trading";
 
 export interface PnLMetrics {
   pnl: number;

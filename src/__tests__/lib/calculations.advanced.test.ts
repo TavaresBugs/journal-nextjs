@@ -3,7 +3,7 @@ import {
   calculateSharpeRatio,
   calculateCalmarRatio,
   calculateTradeDuration,
-} from "@/lib/calculations";
+} from "@/lib/utils/trading";
 import type { Trade } from "@/types";
 
 // ============================================

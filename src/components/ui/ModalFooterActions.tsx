@@ -20,8 +20,7 @@ export interface ModalFooterActionsProps {
     | "danger"
     | "zorin-primary"
     | "gradient-success"
-    | "solid-danger"
-    | "solid-gray";
+    | "solid-danger";
 
   /** Handlers */
   onPrimary?: () => void;

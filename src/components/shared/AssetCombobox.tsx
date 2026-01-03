@@ -19,7 +19,7 @@ import {
   groupAssetsByType,
   findAssetBySymbol,
   type AssetOption,
-} from "@/features/trades";
+} from "@/constants/assetComboboxData";
 
 // ============================================
 // TYPES
